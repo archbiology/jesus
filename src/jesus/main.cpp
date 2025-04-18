@@ -1,6 +1,7 @@
 #include <iostream>
 #include <string>
 #include "lexer/lexer.hpp"
+#include "parser/parser.hpp"
 
 int main()
 {
@@ -10,10 +11,25 @@ int main()
     while (std::getline(std::cin, line))
     {
         auto tokens = lex(line);
-        for (const auto &token : tokens)
+        auto node = parse(tokens);
+
+        if (node)
         {
-            std::cout << "[" << token.type << ": " << token.value << "]\n";
+            node->execute();
         }
+        else
+        {
+            std::cout << "And the command was without form and void.\n";
+        }
+
+        // ----------------
+        // Print the tokens
+        // ----------------
+        // for (const auto &token : tokens)
+        // {
+        //     std::cout << "[" << token.type << ": " << token.value << "]\n";
+        // }
+
         std::cout << "(Jesus) ";
     }
 

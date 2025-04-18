@@ -15,7 +15,7 @@ Compile using the following command:
 ```bash
 cd src/jesus
 
-g++ main.cpp lexer/lexer.cpp -o jesus
+g++ main.cpp lexer/lexer.cpp parser/parser.cpp -I . -o jesus
 ```
 
 Then run:
