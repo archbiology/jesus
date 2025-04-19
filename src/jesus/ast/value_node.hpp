@@ -29,10 +29,18 @@ struct ValueNode : ASTNode
      */
     ValueNode(const std::string &value) : value(value) {}
 
+    std::optional<std::string> evaluate(Heart *heart)
+    {
+        return value;
+    }
+
     /**
      * @brief Executes the node (currently does nothing).
      *
      * @param heart Pointer to the Heart (Symbol table) for variable storage.
      */
     void execute(Heart* heart) override {}
+
+    std::string toString() const override { return "ValueNode(" + value + ")"; }
+
 };
