@@ -1,4 +1,8 @@
 #pragma once
+
+#include <optional> // for std::optional
+#include <iostream>
+
 struct Heart; // forward declaration
 
 /**
@@ -25,5 +29,41 @@ struct ASTNode
      *
      * @param heart Pointer to the Heart (Symbol table) for variable storage.
      */
-    virtual void execute(Heart* heart) = 0;
+    virtual void execute(Heart *heart) = 0;
+
+    /**
+     * @brief Evaluates the node and returns an optional value.
+     * Defaults to no value, meant to be overridden in subclasses that produce a result.
+     *
+     * "The Spirit searches all things, even the deep things of God." — 1 Corinthians 2:10
+     *
+     * @param heart Runtime context containing variables and their values.
+     * @return std::optional<std::string> The result of the evaluation, or nullopt if not applicable.
+     */
+    virtual std::optional<std::string> evaluate(Heart *heart)
+    {
+
+        std::cout << "🔴️ ASTNode.evaluate(should be implemented on child classes)\n";
+        return std::nullopt;
+    }
+
+    /**
+     * @brief Returns a string representation of the node.
+     *
+     * "For nothing is hidden that will not be made manifest, nor is anything
+     * secret that will not be known and come to light." — Luke 8:17
+     */
+    virtual std::string toString() const { return "ASTNode"; }
 };
+
+/**
+ * @brief Output stream overload for ASTNode
+ *
+ * Uses the node's `toString()` method to produce a readable description.
+ *
+ * "Therefore, if anyone is in Christ, he is a new creation. The old has passed away; behold, the new has come." — 2 Corinthians 5:17
+ */
+inline std::ostream &operator<<(std::ostream &os, const ASTNode &node)
+{
+    return os << node.toString();
+}

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "ast_node.hpp"
+#include "spirit/heart.hpp"
 #include <string>
 
 /**
@@ -22,5 +23,18 @@ struct IdentifierNode : ASTNode
 
     IdentifierNode(const std::string &name) : name(name) {}
 
+    std::optional<std::string> evaluate(Heart *heart)
+    {
+
+        if (heart)
+        {
+            return heart->get(name);
+        }
+
+        return std::nullopt;
+    }
+
     void execute(Heart* heart) override {}
+
+    std::string toString() const override { return "IdentifierNode(" + name + ")"; }
 };
