@@ -1,4 +1,5 @@
 #pragma once
+struct Heart; // forward declaration
 
 /**
  * @brief Abstract base class for all nodes in the Abstract Syntax Tree (AST).
@@ -21,6 +22,8 @@ struct ASTNode
      *
      * This method should be overridden in derived classes to define
      * how each specific type of node behaves at runtime.
+     *
+     * @param heart Pointer to the Heart (Symbol table) for variable storage.
      */
-    virtual void execute() = 0;
+    virtual void execute(Heart* heart) = 0;
 };
