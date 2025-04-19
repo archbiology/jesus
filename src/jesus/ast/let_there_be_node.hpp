@@ -3,6 +3,7 @@
 #include "ast_node.hpp"
 #include "identifier_node.hpp"
 #include "value_node.hpp"
+#include "spirit/heart.hpp"
 #include <memory>
 #include <iostream>
 
@@ -53,13 +54,22 @@ struct LetThereBeNode : ASTNode
      * name = value
      * ```
      * Otherwise, only the name is printed.
+     *
+     * @param heart Pointer to the Heart (Symbol table) for variable storage.
      */
-    void execute() override
+    void execute(Heart *heart) override
     {
         std::cout << identifier->name;
 
         if (!value->value.empty())
+        {
             std::cout << " = " << value->value;
+
+            if (heart)
+            {
+                heart->set(identifier->name, value->value);
+            }
+        }
 
         std::cout << std::endl;
     }

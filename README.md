@@ -15,7 +15,7 @@ Compile using the following command:
 ```bash
 cd src/jesus
 
-g++ main.cpp lexer/lexer.cpp parser/parser.cpp -I . -o jesus
+g++ main.cpp lexer/lexer.cpp parser/parser.cpp spirit/heart.cpp -I . -o jesus
 ```
 
 Then run:
@@ -35,10 +35,22 @@ Type a line and see the tokens printed as output.
 ## 📁 Project Structure
 
 ```
-├── main.cpp            # Entry point of the language
+├── main.cpp                 # Entry point of the language
 ├── lexer/
-│   ├── lexer.hpp       # Token definitions and lexer interface
-│   └── lexer.cpp       # Implementation of the lexer
+│   ├── lexer.hpp            # Token definitions and lexer interface
+│   └── lexer.cpp            # Implementation of the lexer
+├── parser
+│   ├── parser.hpp           # Parses a list of tokens into an Abstract Syntax Tree (AST)
+│   └── parser.cpp
+├── ast
+│   ├── ast_node.hpp          # Abstract base class for all nodes
+│   ├── identifier_node.hpp   # AST node representing an identifier (e.g., variable name)
+│   ├── let_there_be_node.hpp # AST node representing a variable declaration and assignment.
+│   └── value_node.hpp        # AST node representing a literal value.
+├── spirit
+│   ├── heart.hpp             # The "Symbol table"
+│   └── heart.cpp
+
 ```
 
 ## 🙏 Purpose

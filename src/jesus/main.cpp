@@ -2,9 +2,11 @@
 #include <string>
 #include "lexer/lexer.hpp"
 #include "parser/parser.hpp"
+#include "spirit/heart.hpp"
 
 int main()
 {
+    Heart heart;
     std::string line;
 
     std::cout << "(Jesus) ";
@@ -15,7 +17,7 @@ int main()
 
         if (node)
         {
-            node->execute();
+            node->execute(&heart);
         }
         else
         {

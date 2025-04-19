@@ -22,5 +22,5 @@ struct IdentifierNode : ASTNode
 
     IdentifierNode(const std::string &name) : name(name) {}
 
-    void execute() override {}
+    void execute(Heart* heart) override {}
 };

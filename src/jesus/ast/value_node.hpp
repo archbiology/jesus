@@ -31,6 +31,8 @@ struct ValueNode : ASTNode
 
     /**
      * @brief Executes the node (currently does nothing).
+     *
+     * @param heart Pointer to the Heart (Symbol table) for variable storage.
      */
-    void execute() override {}
+    void execute(Heart* heart) override {}
 };
