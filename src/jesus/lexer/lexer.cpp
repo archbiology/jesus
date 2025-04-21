@@ -33,7 +33,7 @@ std::vector<Token> lex(const std::string &input)
 
     while (stream >> word)
     {
-        tokens.push_back(Token{recognize_token_type(word), word});
+        tokens.push_back(Token(recognize_token_type(word), word, word));
     }
 
     return tokens;

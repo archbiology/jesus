@@ -1,12 +1,5 @@
 #pragma once
 
-/// Forward declarations of all expression types
-class BinaryExpr;
-class UnaryExpr;
-class LiteralExpr;
-class VariableExpr;
-class GroupingExpr;
-
 /**
  * @brief The base class for all expression types in the AST.
  *

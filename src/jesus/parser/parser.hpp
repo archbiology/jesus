@@ -2,8 +2,8 @@
 
 #include <vector>
 #include <memory>
-#include "lexer/lexer.hpp"
-#include "ast/ast_node.hpp"
+#include "../lexer/token.hpp"
+#include "../ast/ast_node.hpp"
 
 /**
  * @brief Parses a list of tokens into an Abstract Syntax Tree (AST).

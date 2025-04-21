@@ -1,3 +1,5 @@
+#pragma once
+
 /**
  * @brief Represents the type of a token recognized by the lexer.
  *
@@ -13,5 +15,24 @@ enum class TokenType
     BeginNote,
     EndNote,
     Word,
-    Unknown
+    Unknown,
+
+    NOT,
+    AND,
+    OR,
+    EQUAL_EQUAL,
+    NOT_EQUAL,
+    GREATER,
+    GREATER_EQUAL,
+    LESS,
+    LESS_EQUAL,
+    FALSE,
+    TRUE,
+    NUMBER,
+    STRING,
+    IDENTIFIER,
+    LEFT_PAREN,
+    RIGHT_PAREN,
+
+    END_OF_FILE
 };
