@@ -34,5 +34,7 @@ enum class TokenType
     LEFT_PAREN,
     RIGHT_PAREN,
 
+    PLUS,
+
     END_OF_FILE
 };

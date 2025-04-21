@@ -16,7 +16,7 @@
 class LiteralExpr : public Expr
 {
 public:
-    std::variant<std::string, double, bool, std::nullptr_t> value;
+    std::variant<std::string, double, bool, std::monostate> value;
 
     /**
      * @brief Construct a new LiteralExpr with a given value.
@@ -29,5 +29,5 @@ public:
      *
      * @param value  The literal value (e.g., 7, "Jesus", true, "Wisdom").
      */
-    explicit LiteralExpr(const std::variant<std::string, double, bool, std::nullptr_t> &value) : value(value) {}
+    explicit LiteralExpr(const std::variant<std::string, double, bool, std::monostate> &value) : value(value) {}
 };

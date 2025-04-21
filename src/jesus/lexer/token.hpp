@@ -4,7 +4,16 @@
 #include <variant>
 #include "token_type.hpp"
 
-using LiteralValue = std::variant<std::string, double, bool, std::nullptr_t>;
+/**
+ * @brief Represents any value in the interpreted language:
+ * string, number, boolean, or null (as monostate).
+ *
+ * `std::monostate` is used to represent "null" or "no value"
+ *
+ * "The words of the Lord are pure words, like silver refined in a furnace..."
+ * — Psalm 12:6
+ */
+using LiteralValue = std::variant<std::string, double, bool, std::monostate>;
 
 /**
  * @brief Represents a lexical token with a type and string value.
