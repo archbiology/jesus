@@ -1,6 +1,32 @@
 #include "lexer.hpp"
 #include <sstream>
 #include <ostream> // For std::ostream
+#include <string>
+
+bool isDouble(const std::string& word) {
+    try {
+        size_t pos;
+        std::stod(word, &pos);
+
+        // Make sure the whole string was converted
+        return pos == word.length();
+    } catch (...) {
+        return false;
+    }
+}
+
+bool isInteger(const std::string& word) {
+    try {
+        size_t pos;
+        std::stoi(word, &pos);
+
+        // Make sure the whole string was converted
+        return pos == word.length();
+    } catch (...) {
+        return false;
+    }
+}
+
 
 TokenType recognize_token_type(const std::string &word)
 {
@@ -21,6 +47,54 @@ TokenType recognize_token_type(const std::string &word)
 
     if (word == "end")
         return TokenType::EndNote;
+
+    if (word == "not")
+        return TokenType::NOT;
+
+    if (word == "and")
+        return TokenType::AND;
+
+    if (word == "or")
+        return TokenType::OR;
+
+    if (word == "==")
+        return TokenType::EQUAL_EQUAL;
+
+    if (word == "!=")
+        return TokenType::NOT_EQUAL;
+
+    if (word == ">")
+        return TokenType::GREATER;
+
+    if (word == ">=")
+        return TokenType::GREATER_EQUAL;
+
+    if (word == "<")
+        return TokenType::LESS;
+
+    if (word == "<=")
+        return TokenType::LESS_EQUAL;
+
+    if (word == "false")
+        return TokenType::FALSE;
+
+    if (word == "true")
+        return TokenType::TRUE;
+
+    if (word == "(")
+        return TokenType::LEFT_PAREN;
+
+    if (word == ")")
+        return TokenType::RIGHT_PAREN;
+
+    if (word == "+")
+        return TokenType::PLUS;
+
+    if (isInteger(word))
+        return TokenType::INT;
+
+    if (isDouble(word))
+        return TokenType::DOUBLE;
 
     return TokenType::Word;
 }

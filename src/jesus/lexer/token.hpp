@@ -3,6 +3,7 @@
 #include <string>
 #include <variant>
 #include "token_type.hpp"
+#include <iostream>
 
 /**
  * @brief Represents any value in the interpreted language:
@@ -13,7 +14,7 @@
  * "The words of the Lord are pure words, like silver refined in a furnace..."
  * — Psalm 12:6
  */
-using LiteralValue = std::variant<std::string, double, bool, std::monostate>;
+using LiteralValue = std::variant<std::string, double, int, bool, std::monostate>;
 
 /**
  * @brief Represents a lexical token with a type and string value.
@@ -47,6 +48,81 @@ public:
      */
     LiteralValue literal;
 
-    Token(TokenType type, std::string lexeme, LiteralValue literal)
-        : type(type), lexeme(std::move(lexeme)), literal(std::move(literal)) {}
+    Token(TokenType type, std::string _lexeme, LiteralValue _literal)
+        : type(type), lexeme(std::move(_lexeme)), literal(std::move(_literal))
+    {
+
+        switch (type)
+        {
+        case TokenType::INT:
+            literal = std::stoi(lexeme);
+            break;
+
+        case TokenType::DOUBLE:
+            literal = std::stod(lexeme);
+            break;
+        }
+    }
+
+    std::string toString()
+    {
+        switch (type)
+        {
+        case TokenType::Note:
+            return "NOTE";
+        case TokenType::Todo:
+            return "TODO";
+        case TokenType::Warn:
+            return "WARN";
+        case TokenType::Explain:
+            return "EXPLAIN";
+        case TokenType::BeginNote:
+            return "BEGIN_NOTE";
+        case TokenType::NOT:
+            return "NOT";
+        case TokenType::AND:
+            return "AND";
+        case TokenType::OR:
+            return "OR";
+        case TokenType::EQUAL_EQUAL:
+            return "EQUAL_EQUAL";
+        case TokenType::NOT_EQUAL:
+            return "NOT_EQUAL";
+        case TokenType::GREATER:
+            return "GREATER";
+        case TokenType::GREATER_EQUAL:
+            return "GREATER_EQUAL";
+        case TokenType::LESS:
+            return "LESS";
+        case TokenType::LESS_EQUAL:
+            return "LESS_EQUAL";
+        case TokenType::FALSE:
+            return "FALSE";
+        case TokenType::TRUE:
+            return "TRUE";
+        case TokenType::LEFT_PAREN:
+            return "LEFT_PAREN";
+        case TokenType::RIGHT_PAREN:
+            return "RIGHT_PAREN";
+        case TokenType::PLUS:
+            return "PLUS";
+        case TokenType::INT:
+            return "INT(" + lexeme + ")";
+        case TokenType::DOUBLE:
+            return "DOUBLE(" + lexeme + ")";
+        case TokenType::IDENTIFIER:
+            return "IDENTIFIER(" + lexeme + ")";
+        case TokenType::SAY:
+            return "SAY";
+        case TokenType::WARN:
+            return "WARN";
+        case TokenType::UPDATE:
+            return "UPDATE";
+        case TokenType::Word:
+            return "WORD(" + lexeme + ")";
+
+        default:
+            return "🔴 Unknown(" + lexeme + ")";
+        }
+    }
 };
