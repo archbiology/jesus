@@ -21,6 +21,16 @@ Value Interpreter::evaluate(std::unique_ptr<Expr> &expr)
     throw std::runtime_error("Unknown expression type");
 }
 
+void Interpreter::defineVariable(const std::string &name, const Value &value)
+{
+    heart.define(name, value);
+}
+
+void Interpreter::assignVariable(const std::string &name, const Value &value)
+{
+    heart.assign(name, value);
+}
+
 Value Interpreter::visitBinary(BinaryExpr *expr)
 {
     Value left = evaluate(expr->left);
@@ -77,7 +87,7 @@ Value Interpreter::visitLiteral(LiteralExpr *expr)
 
 Value Interpreter::visitVariable(VariableExpr *expr)
 {
-    throw std::runtime_error("Variable resolution not implemented yet.");
+    return heart.get(expr->name);
 }
 
 Value Interpreter::visitGrouping(GroupingExpr *expr)
@@ -111,4 +121,33 @@ std::string Interpreter::valueToString(const Value &value)
         return std::get<bool>(value) ? "true" : "false";
 
     return "unknown";
+}
+
+void Interpreter::execute(std::unique_ptr<Stmt> &stmt)
+{
+    if (auto set = dynamic_cast<SetStmt *>(stmt.get()))
+        return visitSet(set);
+
+    throw std::runtime_error("Unknown statement type.");
+}
+
+void Interpreter::visitSet(SetStmt *stmt)
+{
+    Value val = evaluate(stmt->value);
+    heart.define(stmt->name, val);
+}
+
+Value Interpreter::visitConditional(ConditionalExpr *expr)
+{
+    Value conditionValue = evaluate(expr->condition);
+
+    // Interpret the condition as boolean
+    if (isTruthy(conditionValue))
+    {
+        return evaluate(expr->thenBranch);
+    }
+    else
+    {
+        return evaluate(expr->elseBranch);
+    }
 }

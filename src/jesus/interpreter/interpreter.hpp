@@ -4,10 +4,15 @@
 #include "value.hpp"
 #include "../ast/expr/expr.hpp"
 #include "../ast/expr/binary_expr.hpp"
+#include "../ast/expr/conditional_expr.hpp"
 #include "../ast/expr/unary_expr.hpp"
 #include "../ast/expr/literal_expr.hpp"
 #include "../ast/expr/variable_expr.hpp"
 #include "../ast/expr/grouping_expr.hpp"
+#include "../ast/stmt/stmt.hpp"
+#include "../ast/stmt/set_stmt.hpp"
+#include "../spirit/heart.hpp"
+
 
 /**
  * @brief Interprets expressions of the language and evaluates their result.
@@ -29,7 +34,18 @@ public:
      */
     Value evaluate(std::unique_ptr<Expr> &expr);
 
+    void defineVariable(const std::string &name, const Value &value);
+    void assignVariable(const std::string &name, const Value &value);
+    void execute(std::unique_ptr<Stmt>& stmt);
+
 private:
+    /**
+     * @brief It acts like a symbol table — each variable has a name (string)
+     *
+     * “The good man brings good things out of the good stored up in his heart…” — Luke 6:45
+     */
+    Heart heart;
+
     /**
      * @brief Evaluates a binary expression such as addition, comparison, etc.
      *
@@ -90,4 +106,8 @@ private:
      * — Luke 8:17
      */
     std::string valueToString(const Value &value);
+
+    void visitSet(SetStmt* stmt);
+
+    Value visitConditional(ConditionalExpr* expr);
 };
