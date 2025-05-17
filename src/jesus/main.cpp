@@ -1,5 +1,6 @@
 #include <iostream>
 #include <string>
+// #include "ignore-this-folder/lexer-color.h"
 #include "lexer/lexer.hpp"
 #include "parser/parser.hpp"
 #include "spirit/heart.hpp"
@@ -13,11 +14,21 @@ int main()
     while (std::getline(std::cin, line))
     {
         auto tokens = lex(line);
+
+        for(int i =0; i < tokens.size(); i++) {
+            std::cout<< "TOKEN: " << tokens[i].toString() << std::endl;
+        }
+
         auto node = parse(tokens);
 
         if (node)
         {
+            std::cout<<"node.toString(): ";
+            std::cout<< node->toString() << "\n";
+
+            std::cout << "VISITing...: ";
             node->execute(&heart);
+            std::cout<<std::endl;
         }
         else
         {

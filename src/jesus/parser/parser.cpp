@@ -32,7 +32,7 @@ std::unique_ptr<ASTNode> parse(const std::vector<Token> &tokens)
             ASTNode *condition = new BinaryOperationNode(
                 tokens[ifIndex + 2].lexeme,                     // operator (e.g.: == )
                 new IdentifierNode(tokens[ifIndex + 1].lexeme), // left operand
-                new ValueNode(tokens[ifIndex + 3].lexeme));     // right operand
+                new ValueNode(tokens[ifIndex + 3].literal));     // right operand
 
             // Parse "otherwise/else"
             for (size_t i = ifIndex + 1; i < tokens_count; ++i)
@@ -51,13 +51,20 @@ std::unique_ptr<ASTNode> parse(const std::vector<Token> &tokens)
         return std::make_unique<RevealNode>(new IdentifierNode(tokens[1].lexeme));
     }
 
+    // if (tokens[0].lexeme == "use") {
+    //     if (tokens.size() >= 2) {
+    //     return std::make_unique<UseNode>(new IdentifierNode(tokens[1].text));
+    //     }
+    // }
+
     if (tokens_count >= 3 &&
         tokens[0].lexeme == "let" &&
         tokens[1].lexeme == "there" &&
         tokens[2].lexeme == "be")
     {
         std::string identifier;
-        std::string value;
+        // std::string value;
+        Value value;
 
         if (tokens_count >= 4)
         {
@@ -66,7 +73,7 @@ std::unique_ptr<ASTNode> parse(const std::vector<Token> &tokens)
 
         if (tokens_count >= 7 && tokens[4].lexeme == "set" && tokens[5].lexeme == "to")
         {
-            value = tokens[6].lexeme;
+            value = tokens[6].literal;
         }
 
         auto idNode = std::make_unique<IdentifierNode>(identifier);
