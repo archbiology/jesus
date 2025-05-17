@@ -3,7 +3,7 @@
 #include "ast_node.hpp"
 #include "identifier_node.hpp"
 #include "value_node.hpp"
-#include "spirit/heart.hpp"
+#include "../spirit/heart.hpp"
 #include <memory>
 #include <iostream>
 
@@ -61,16 +61,36 @@ struct LetThereBeNode : ASTNode
     {
         std::cout << identifier->name;
 
-        if (!value->value.empty())
+        if (!std::holds_alternative<std::monostate>(value->value))
         {
-            std::cout << " = " << value->value;
+            std::cout << " = " << std::visit(make_string_functor(), value->value);
 
             if (heart)
             {
-                heart->set(identifier->name, value->value);
+                heart->assign(identifier->name, value->value);
             }
         }
 
         std::cout << std::endl;
+    }
+
+    /**
+     * @brief Returns a string representation of the node.
+     *
+     * "For nothing is hidden that will not be made manifest, nor is anything
+     * secret that will not be known and come to light." — Luke 8:17
+     */
+    std::string toString() const override  {
+
+        std::string str = "LetThereBeNode";
+
+        if (identifier) str += "(" + identifier->toString();
+        if (value) str += ", " + value->toString();
+
+        str += ")";
+
+        return str;
+
+
     }
 };

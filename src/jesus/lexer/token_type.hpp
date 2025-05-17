@@ -28,13 +28,18 @@ enum class TokenType
     LESS_EQUAL,
     FALSE,
     TRUE,
-    NUMBER,
+    INT,
+    DOUBLE,
     STRING,
     IDENTIFIER,
     LEFT_PAREN,
     RIGHT_PAREN,
 
     PLUS,
+
+    SAY,
+    WARN,
+    UPDATE,
 
     END_OF_FILE
 };

@@ -1,7 +1,6 @@
 #pragma once
 #include "ast_node.hpp"
-#include "value_node.hpp"
-#include "spirit/heart.hpp"
+#include "../spirit/heart.hpp"
 
 /**
  * @brief Represents a binary operation between two AST nodes (e.g., age >= 18)
@@ -39,37 +38,58 @@ struct BinaryOperationNode : public ASTNode
      * @param heart The "Symbol table"
      * @return An optional string result: "true", "false", or std::nullopt if evaluation failed.
      */
-    std::optional<std::string> evaluate(Heart *heart)
+    Value evaluate(Heart *heart) override
     {
-        auto l = left->evaluate(heart);
-        auto r = right->evaluate(heart);
+        Value l = left->evaluate(heart);
+        Value r = right->evaluate(heart);
 
-        if (!l.has_value() || !r.has_value())
-            return std::nullopt;
+        if (!std::holds_alternative<int>(l) || !std::holds_alternative<int>(r)) {
+            return std::monostate{};
+        }
 
-        int leftNum = std::stoi(l.value());
-        int rightNum = std::stoi(r.value());
+        int leftNum = std::get<int>(l);
+        int rightNum = std::get<int>(r);
 
         if (op == ">=")
-            return (leftNum >= rightNum) ? "true" : "false";
+            return (leftNum >= rightNum);
 
         if (op == "<=")
-            return (leftNum <= rightNum) ? "true" : "false";
+            return (leftNum <= rightNum);
 
         if (op == "==")
-            return (leftNum == rightNum) ? "true" : "false";
+            return (leftNum == rightNum);
 
         if (op == "!=")
-            return (leftNum != rightNum) ? "true" : "false";
+            return (leftNum != rightNum);
 
         if (op == ">")
-            return (leftNum > rightNum) ? "true" : "false";
+            return (leftNum > rightNum);
 
         if (op == "<")
-            return (leftNum < rightNum) ? "true" : "false";
+            return (leftNum < rightNum);
 
-        return std::nullopt;
+        return std::monostate{};
     }
 
     void execute(Heart *heart) override {}
+
+    /**
+     * @brief Returns a string representation of the node.
+     *
+     * "For nothing is hidden that will not be made manifest, nor is anything
+     * secret that will not be known and come to light." — Luke 8:17
+     */
+    std::string toString() const override {
+
+        std::string str = "BinaryOperationNode";
+
+        str += "(operator: " + op;
+
+        if (left) str += ", left: " + left->toString();
+        if (right) str += ", right: " + right->toString();
+
+        str += ")";
+
+        return str;
+    }
 };

@@ -17,22 +17,22 @@ std::unique_ptr<ASTNode> parse(const std::vector<Token> &tokens)
     if (tokens[0].lexeme == "reveal" && tokens_count >= 2)
     {
         // Check if "if" exists in tokens
-        auto it = std::find_if(tokens.begin(), tokens.end(),
+        auto ifIt = std::find_if(tokens.begin(), tokens.end(),
                                [](const Token &t)
                                { return t.lexeme == "if"; });
 
-        if (it != tokens.end())
+        if (ifIt != tokens.end())
         {
 
             int otherwiseIndex = -1;
-            int ifIndex = std::distance(tokens.begin(), it);
+            int ifIndex = std::distance(tokens.begin(), ifIt);
             ASTNode *elseValue = NULL;
 
             ASTNode *ifValue = new ValueNode(tokens[1].lexeme);
             ASTNode *condition = new BinaryOperationNode(
                 tokens[ifIndex + 2].lexeme,                     // operator (e.g.: == )
                 new IdentifierNode(tokens[ifIndex + 1].lexeme), // left operand
-                new ValueNode(tokens[ifIndex + 3].lexeme));     // right operand
+                new ValueNode(tokens[ifIndex + 3].literal));    // right operand
 
             // Parse "otherwise/else"
             for (size_t i = ifIndex + 1; i < tokens_count; ++i)
@@ -57,7 +57,7 @@ std::unique_ptr<ASTNode> parse(const std::vector<Token> &tokens)
         tokens[2].lexeme == "be")
     {
         std::string identifier;
-        std::string value;
+        Value value;
 
         if (tokens_count >= 4)
         {
@@ -66,7 +66,7 @@ std::unique_ptr<ASTNode> parse(const std::vector<Token> &tokens)
 
         if (tokens_count >= 7 && tokens[4].lexeme == "set" && tokens[5].lexeme == "to")
         {
-            value = tokens[6].lexeme;
+            value = tokens[6].literal;
         }
 
         auto idNode = std::make_unique<IdentifierNode>(identifier);

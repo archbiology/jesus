@@ -2,6 +2,8 @@
 
 #include <optional> // for std::optional
 #include <iostream>
+#include "../interpreter/value.hpp"
+
 
 struct Heart; // forward declaration
 
@@ -38,13 +40,13 @@ struct ASTNode
      * "The Spirit searches all things, even the deep things of God." — 1 Corinthians 2:10
      *
      * @param heart Runtime context containing variables and their values.
-     * @return std::optional<std::string> The result of the evaluation, or nullopt if not applicable.
+     * @return Value The result of the evaluation, or monostate if not applicable.
      */
-    virtual std::optional<std::string> evaluate(Heart *heart)
+    virtual Value evaluate(Heart *heart)
     {
 
         std::cout << "🔴️ ASTNode.evaluate(should be implemented on child classes)\n";
-        return std::nullopt;
+        return std::monostate{};
     }
 
     /**

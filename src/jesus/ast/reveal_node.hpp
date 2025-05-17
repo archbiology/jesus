@@ -2,8 +2,9 @@
 
 #include "ast_node.hpp"
 #include "identifier_node.hpp"
-#include "spirit/heart.hpp"
+#include "../spirit/heart.hpp"
 #include <iostream>
+#include <variant>
 
 /**
  * @brief The RevealNode class represents the `reveal` command in the language.
@@ -50,13 +51,27 @@ struct RevealNode : public ASTNode
             return;
 
         auto value = heart->get(identifier->name);
-        if (value.has_value())
+        if (!std::holds_alternative<std::monostate>(value))
         {
-            std::cout << value.value() << std::endl;
-        }
-        else
-        {
+            std::cout << std::visit(make_string_functor(), value) << std::endl;
+        } else {
             std::cout << "Unknown: " << identifier->name << std::endl;
         }
+    }
+
+    /**
+     * @brief Returns a string representation of the node.
+     *
+     * "For nothing is hidden that will not be made manifest, nor is anything
+     * secret that will not be known and come to light." — Luke 8:17
+     */
+    std::string toString() const override
+    {
+        std::string str = "RevealNode";
+
+        if (identifier)
+            str += "(" + identifier->name + ")";
+
+        return str;
     }
 };

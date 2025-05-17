@@ -82,7 +82,7 @@ std::unique_ptr<Expr> ExpressionParser::parseLiteralOrGroupOrVar()
     if (match(TokenType::TRUE))
         return std::make_unique<LiteralExpr>(true);
 
-    if (match(TokenType::NUMBER, TokenType::STRING))
+    if (match(TokenType::INT, TokenType::DOUBLE, TokenType::STRING))
     {
         return std::make_unique<LiteralExpr>(previous().literal);
     }
@@ -116,6 +116,11 @@ bool ExpressionParser::match(TokenType type)
 bool ExpressionParser::match(TokenType type1, TokenType type2)
 {
     return match(type1) || match(type2);
+}
+
+bool ExpressionParser::match(TokenType type1, TokenType type2, TokenType type3)
+{
+    return match(type1) || match(type2) || match(type3);
 }
 
 bool ExpressionParser::match(TokenType type1, TokenType type2, TokenType type3, TokenType type4)

@@ -1,7 +1,7 @@
 #pragma once
 
 #include "expr.hpp"
-#include "lexer/token.hpp"
+#include "../../lexer/token.hpp"
 #include <memory>
 
 /**

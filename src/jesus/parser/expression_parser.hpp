@@ -109,6 +109,17 @@ private:
     bool match(TokenType type1, TokenType type2);
 
     /**
+     * @brief Checks if the current token matches either of the given types and consumes it if true.
+     *
+     * @param type1 First token type to check.
+     * @param type2 Second token type to check.
+     * @param type3 Third token type to check.
+     *
+     * @return true if a match occurred and was consumed, false otherwise.
+     */
+    bool match(TokenType type1, TokenType type2, TokenType type3);
+
+    /**
      * @brief Checks if the current token matches any of the given four types and consumes it if true.
      *
      * "The word of God is alive and active. Sharper than any double-edged sword..." – Hebrews 4:12
