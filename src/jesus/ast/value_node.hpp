@@ -3,13 +3,6 @@
 #include "ast_node.hpp"
 #include <string>
 
-enum class ValueType {
-    STRING,
-    DOUBLE,
-    INT,
-    BOOL,
-    NONE
-};
 
 /**
  * @brief AST node representing a literal value.
@@ -29,14 +22,13 @@ struct ValueNode : ASTNode
      * @brief The literal value held by this node.
      */
     Value value;
-    ValueType valueType;
 
     /**
      * @brief Constructs a ValueNode with the given literal value.
      *
      * @param value The raw string value.
      */
-    ValueNode(const Value &value) : value(value), valueType(deduceLiteralType(value)) { }
+    ValueNode(const Value &value) : value(value) { }
 
     Value evaluate(Heart *heart) override
     {
@@ -50,31 +42,21 @@ struct ValueNode : ASTNode
      */
     void execute(Heart* heart) override {}
 
-    std::string toString() const override { return "ValueNode(" + std::visit(make_string_functor(), value) + ")"; }
+    std::string toString() const override { return "ValueNode(" + value.toString() + ")"; }
 
     bool isNumber() {
-        return valueType == ValueType::INT || valueType == ValueType::DOUBLE;
+        return value.IS_NUMBER;
     }
 
     bool isString() {
-        return valueType == ValueType::STRING;
+        return value.IS_STRING;
     }
 
     bool isBoolean() {
-        return valueType ==  ValueType::BOOL;
+        return value.IS_BOOLEAN;
     }
 
-    bool isMonostate() {
-        return valueType == ValueType::NONE;
-    }
-
-private:
-    static ValueType deduceLiteralType(const Value& val) {
-        if (std::holds_alternative<std::string>(val)) return ValueType::STRING;
-        if (std::holds_alternative<double>(val))      return ValueType::DOUBLE;
-        if (std::holds_alternative<int>(val))         return ValueType::INT;
-        if (std::holds_alternative<bool>(val))        return ValueType::BOOL;
-
-        return ValueType::NONE;
+    bool isFormless() {
+        return value.IS_FORMLESS;
     }
 };

@@ -77,10 +77,10 @@ std::unique_ptr<Expr> ExpressionParser::parseUnaryExpression()
 std::unique_ptr<Expr> ExpressionParser::parseLiteralOrGroupOrVar()
 {
     if (match(TokenType::FALSE))
-        return std::make_unique<LiteralExpr>(false);
+        return std::make_unique<LiteralExpr>(Value(false));
 
     if (match(TokenType::TRUE))
-        return std::make_unique<LiteralExpr>(true);
+        return std::make_unique<LiteralExpr>(Value(true));
 
     if (match(TokenType::INT, TokenType::DOUBLE, TokenType::STRING))
     {

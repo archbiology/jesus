@@ -25,16 +25,18 @@ struct IdentifierNode : public ASTNode
 
     Value evaluate(Heart *heart) override
     {
-
         if (heart)
         {
             return heart->get(name);
         }
 
-        return std::monostate{};
+        return Value::formless();
     }
 
-    void execute(Heart* heart) override {}
+    void execute(Heart *heart) override
+    {
+        std::cout << evaluate(heart).toString() << std::endl;
+    }
 
     std::string toString() const override { return "IdentifierNode(" + name + ")"; }
 };

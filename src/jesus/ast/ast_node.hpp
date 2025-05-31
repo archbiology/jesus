@@ -1,8 +1,7 @@
 #pragma once
 
-#include <optional> // for std::optional
 #include <iostream>
-#include "../interpreter/value.hpp"
+#include "../spirit/value.hpp"
 
 
 struct Heart; // forward declaration
@@ -46,7 +45,7 @@ struct ASTNode
     {
 
         std::cout << "🔴️ ASTNode.evaluate(should be implemented on child classes)\n";
-        return std::monostate{};
+        return Value::formless();
     }
 
     /**

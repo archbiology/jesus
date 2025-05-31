@@ -1,8 +1,6 @@
 #pragma once
 
 #include "expr.hpp"
-#include <variant>
-#include <string>
 
 /**
  * @brief Represents a literal value like a number, string, or boolean.
@@ -16,7 +14,7 @@
 class LiteralExpr : public Expr
 {
 public:
-    std::variant<std::string, double, int, bool, std::monostate> value;
+    Value value;
 
     /**
      * @brief Construct a new LiteralExpr with a given value.
@@ -29,5 +27,17 @@ public:
      *
      * @param value  The literal value (e.g., 7, "Jesus", true, "Wisdom").
      */
-    explicit LiteralExpr(const std::variant<std::string, double, int, bool, std::monostate> &value) : value(value) {}
+    explicit LiteralExpr(Value value) : value(value) {}
+
+    Value evaluate(Heart *heart) override {
+        return value;
+    }
+
+    /**
+     * @brief Returns a string representation of the expression.
+     *
+     * "For nothing is hidden that will not be made manifest, nor is anything
+     * secret that will not be known and come to light." — Luke 8:17
+     */
+    virtual std::string toString() const override { return "LiteralExpr(" + value.toString() + ")"; }
 };

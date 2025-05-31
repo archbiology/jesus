@@ -2,7 +2,7 @@
 
 #include <string>
 #include <unordered_map>
-#include <optional>
+#include "value.hpp"
 
 /**
  * @brief The Heart class stores variables declared during execution.
@@ -29,7 +29,7 @@ public:
      * @param name The name of the variable (e.g., "age")
      * @param value The value to assign (e.g., "33")
      */
-    void set(const std::string &name, const std::string &value);
+    void define(const std::string &name, const Value& value);
 
     /**
      * @brief Retrieves the value of a variable.
@@ -39,10 +39,12 @@ public:
      * who brings out of his treasure new and old things.” - Matthew 13:52
      *
      * @param name The name of the variable to retrieve.
-     * @return std::optional<std::string> The value, or std::nullopt if not found.
+     * @return Value The value, which may be std::monostate if not found.
      */
-    std::optional<std::string> get(const std::string &name) const;
+    Value get(const std::string& name) const;
+
+    void assign(const std::string& name, const Value& value);
 
 private:
-    std::unordered_map<std::string, std::string> variables;
+    std::unordered_map<std::string, Value> variables;
 };

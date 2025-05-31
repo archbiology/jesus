@@ -61,9 +61,9 @@ struct LetThereBeNode : ASTNode
     {
         std::cout << identifier->name;
 
-        if (!std::holds_alternative<std::monostate>(value->value))
+        if (! value->isFormless())
         {
-            std::cout << " = " << std::visit(make_string_functor(), value->value);
+            std::cout << " = " << value->toString();
 
             if (heart)
             {

@@ -53,24 +53,25 @@ struct ConditionalExpressionNode : public ASTNode
     {
         Value result = condition->evaluate(heart);
 
-        if (std::holds_alternative<bool>(result) && std::get<bool>(result))
+        if (result.AS_BOOLEAN)
         {
             return ifTrue->evaluate(heart);
         }
 
-        if (!ifFalse)
-            return std::monostate{};
+        if (ifFalse) {
+            return ifFalse->evaluate(heart);
+        }
 
-        return ifFalse->evaluate(heart);
+        return Value::formless();
     }
 
     void execute(Heart *heart) override
     {
         Value value = evaluate(heart);
 
-        if (!std::holds_alternative<std::monostate>(value))
+        if (! value.IS_FORMLESS)
         {
-            std::cout << std::visit(make_string_functor(), value) << std::endl;
+            std::cout << value.toString() << std::endl;
         }
     }
 

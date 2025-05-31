@@ -1,20 +1,9 @@
 #pragma once
 
 #include <string>
-#include <variant>
 #include "token_type.hpp"
-#include <iostream>
+#include "../spirit/value.hpp"
 
-/**
- * @brief Represents any value in the interpreted language:
- * string, number, boolean, or null (as monostate).
- *
- * `std::monostate` is used to represent "null" or "no value"
- *
- * "The words of the Lord are pure words, like silver refined in a furnace..."
- * — Psalm 12:6
- */
-using LiteralValue = std::variant<std::string, double, int, bool, std::monostate>;
 
 /**
  * @brief Represents a lexical token with a type and string value.
@@ -46,20 +35,20 @@ public:
      *
      * "The unfolding of Your words gives light; it gives understanding to the simple." – Psalm 119:130
      */
-    LiteralValue literal;
+    Value literal;
 
-    Token(TokenType type, std::string _lexeme, LiteralValue _literal)
+    Token(TokenType type, std::string _lexeme, Value _literal)
         : type(type), lexeme(std::move(_lexeme)), literal(std::move(_literal))
     {
 
         switch (type)
         {
         case TokenType::INT:
-            literal = std::stoi(lexeme);
+            literal = Value(std::stoi(lexeme));
             break;
 
         case TokenType::DOUBLE:
-            literal = std::stod(lexeme);
+            literal = Value(std::stod(lexeme));
             break;
         }
     }
@@ -122,7 +111,7 @@ public:
             return "WORD(" + lexeme + ")";
 
         default:
-            return "🔴 Unknown(" + lexeme + ")";
+            return "🔴 Unknown.val(" + lexeme + ")";
         }
     }
 };

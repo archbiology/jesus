@@ -4,7 +4,6 @@
 #include "identifier_node.hpp"
 #include "../spirit/heart.hpp"
 #include <iostream>
-#include <variant>
 
 /**
  * @brief The RevealNode class represents the `reveal` command in the language.
@@ -31,7 +30,7 @@ struct RevealNode : public ASTNode
      *
      * @param id A pointer to an IdentifierNode representing the variable name.
      */
-    RevealNode(IdentifierNode *id) : identifier(id) {}
+    explicit RevealNode(IdentifierNode *id) : identifier(id) {}
 
     /**
      * @brief Executes the `reveal` command by displaying the value of a stored variable.
@@ -51,9 +50,9 @@ struct RevealNode : public ASTNode
             return;
 
         auto value = heart->get(identifier->name);
-        if (!std::holds_alternative<std::monostate>(value))
+        if (! value.IS_FORMLESS)
         {
-            std::cout << std::visit(make_string_functor(), value) << std::endl;
+            std::cout << value.toString() << std::endl;
         } else {
             std::cout << "Unknown: " << identifier->name << std::endl;
         }

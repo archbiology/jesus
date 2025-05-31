@@ -43,32 +43,25 @@ struct BinaryOperationNode : public ASTNode
         Value l = left->evaluate(heart);
         Value r = right->evaluate(heart);
 
-        if (!std::holds_alternative<int>(l) || !std::holds_alternative<int>(r)) {
-            return std::monostate{};
-        }
-
-        int leftNum = std::get<int>(l);
-        int rightNum = std::get<int>(r);
-
         if (op == ">=")
-            return (leftNum >= rightNum);
+            return  Value(l >= r);
 
         if (op == "<=")
-            return (leftNum <= rightNum);
+            return Value(l <= r);
 
         if (op == "==")
-            return (leftNum == rightNum);
+            return Value(l == r);
 
         if (op == "!=")
-            return (leftNum != rightNum);
+            return Value(l != r);
 
         if (op == ">")
-            return (leftNum > rightNum);
+            return Value(l > r);
 
         if (op == "<")
-            return (leftNum < rightNum);
+            return Value(l < r);
 
-        return std::monostate{};
+        return Value::formless();
     }
 
     void execute(Heart *heart) override {}

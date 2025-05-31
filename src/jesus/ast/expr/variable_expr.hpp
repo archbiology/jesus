@@ -31,6 +31,18 @@ public:
      *
      * @param name The name of the variable being referenced (e.g., prophet).
      */
-    explicit VariableExpr(const std::string &name)
+    explicit VariableExpr(std::string name)
         : name(name) {}
+
+    Value evaluate(Heart *heart) override {
+        return heart->get(name);
+    }
+
+    /**
+     * @brief Returns a string representation of the expression.
+     *
+     * "For nothing is hidden that will not be made manifest, nor is anything
+     * secret that will not be known and come to light." — Luke 8:17
+     */
+    virtual std::string toString() const override { return "VariableExpr(" + name + ")"; }
 };

@@ -97,30 +97,12 @@ Value Interpreter::visitGrouping(GroupingExpr *expr)
 
 bool Interpreter::isTruthy(const Value &value)
 {
-    if (std::holds_alternative<std::monostate>(value))
-        return false;
-
-    if (std::holds_alternative<bool>(value))
-        return std::get<bool>(value);
-
-    return true;
+    return value.AS_BOOLEAN;
 }
 
 std::string Interpreter::valueToString(const Value &value)
 {
-    if (std::holds_alternative<std::monostate>(value))
-        return "none";
-
-    if (std::holds_alternative<std::string>(value))
-        return std::get<std::string>(value);
-
-    if (std::holds_alternative<double>(value))
-        return std::to_string(std::get<double>(value));
-
-    if (std::holds_alternative<bool>(value))
-        return std::get<bool>(value) ? "true" : "false";
-
-    return "unknown";
+    return value.toString(); // FIXME: Maybe we don't want the (type) returned: (bool) true
 }
 
 void Interpreter::execute(std::unique_ptr<Stmt> &stmt)
