@@ -97,7 +97,7 @@ std::unique_ptr<Expr> ExpressionParser::parseMultiplication() {
 
 std::unique_ptr<Expr> ExpressionParser::parseUnaryExpression()
 {
-    if (match(TokenType::NOT))
+    if (match(TokenType::NOT, TokenType::MINUS, TokenType::PLUS))
     {
         Token op = previous();
         auto right = parseUnaryExpression();

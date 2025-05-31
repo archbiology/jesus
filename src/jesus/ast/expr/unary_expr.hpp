@@ -38,20 +38,37 @@ public:
     UnaryExpr(Token op, std::unique_ptr<Expr> right)
         : op(op), right(std::move(right)) {}
 
-    Value evaluate(Heart *heart)
+    Value evaluate(Heart *heart) override
     {
         Value rightVal = right->evaluate(heart);
 
-        if (op.lexeme == "-") { // TODO: Check the token instead
+        if (op.type == TokenType::PLUS)
+        {
 
-            if (rightVal.IS_INT) {
+            if (rightVal.IS_NUMBER)
+            {
+                return rightVal;
+            }
+
+            throw std::runtime_error("Unary '+' applied to non-number: " + rightVal.toString());
+        }
+
+        if (op.type == TokenType::MINUS)
+        {
+
+            if (rightVal.IS_NUMBER)
+            {
                 return Value(-rightVal.toNumber());
             }
 
-            throw std::runtime_error("Unary '-' applied to non-number");
+            throw std::runtime_error("Unary '-' applied to non-number: " + rightVal.toString());
         }
 
-        // Add other unary ops if needed
+        if (op.type == TokenType::NOT)
+        {
+            return Value(!rightVal.AS_BOOLEAN);
+        }
+
         throw std::runtime_error("Unknown unary operator: " + op.lexeme);
     }
 
