@@ -41,54 +41,62 @@ public:
         Value leftVal = left->evaluate(heart);
         Value rightVal = right->evaluate(heart);
 
-        if (op.lexeme == "==")
+        if (op.type == TokenType::EQUAL_EQUAL)
         {
             return Value(leftVal == rightVal);
         }
 
-        if (op.lexeme == "+")
+        if (op.type == TokenType::PLUS)
         {
             return leftVal + rightVal;
         }
 
-        if (op.lexeme == "-")
+        if (op.type == TokenType::MINUS)
         {
             return leftVal - rightVal;
         }
 
-        if (op.lexeme == "*")
+        if (op.type == TokenType::STAR)
         {
             return leftVal * rightVal;
         }
 
-        if (op.lexeme == "/")
+        if (op.type == TokenType::SLASH)
         {
             return leftVal / rightVal;
         }
 
-        if (op.lexeme == "<")
+        if (op.type == TokenType::LESS)
         {
             return Value(leftVal < rightVal);
         }
 
-        if (op.lexeme == "!=")
+        if (op.type == TokenType::NOT_EQUAL)
         {
             return Value(leftVal != rightVal);
         }
 
-        if (op.lexeme == ">")
+        if (op.type == TokenType::GREATER)
         {
             return Value(leftVal > rightVal);
         }
 
-        if (op.lexeme == "<=")
+        if (op.type == TokenType::LESS_EQUAL)
         {
             return Value(leftVal <= rightVal);
         }
 
-        if (op.lexeme == ">=")
+        if (op.type == TokenType::GREATER_EQUAL)
         {
             return Value(leftVal >= rightVal);
+        }
+
+        if (op.type == TokenType::OR) {
+            return leftVal.AS_BOOLEAN ? leftVal : rightVal;
+        }
+
+        if (op.type == TokenType::AND) {
+            return leftVal.AS_BOOLEAN ? leftVal : rightVal;
         }
 
         // TODO: Support plus, minus, multiply, divide, is, has, etc

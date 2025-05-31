@@ -61,6 +61,13 @@ struct BinaryOperationNode : public ASTNode
         if (op == "<")
             return Value(l < r);
 
+        if (op == "or")
+            return Value(l.AS_BOOLEAN || r.AS_BOOLEAN);
+
+        if (op  == "and") {
+            return Value(l.AS_BOOLEAN && r.AS_BOOLEAN);
+        }
+
         return Value::formless();
     }
 
