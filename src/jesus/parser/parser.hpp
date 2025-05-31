@@ -23,3 +23,5 @@
  * @return std::unique_ptr<ASTNode>  A unique pointer to the root AST node representing the parsed structure.
  */
 std::unique_ptr<ASTNode> parse(const std::vector<Token> &tokens);
+
+std::unique_ptr<ASTNode> parseExpression(const std::vector<Token> &tokens);

@@ -96,7 +96,10 @@ TokenType recognize_token_type(const std::string &word)
     if (isDouble(word))
         return TokenType::DOUBLE;
 
-    return TokenType::Word;
+    if (word[0] == '"')
+        return TokenType::Word;
+
+    return TokenType::IDENTIFIER;
 }
 
 std::vector<Token> lex(const std::string &input)
@@ -107,7 +110,7 @@ std::vector<Token> lex(const std::string &input)
 
     while (stream >> word)
     {
-        tokens.push_back(Token(recognize_token_type(word), word, word));
+        tokens.push_back(Token(recognize_token_type(word), word, Value(word)));
     }
 
     return tokens;

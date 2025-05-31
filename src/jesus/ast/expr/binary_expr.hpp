@@ -34,4 +34,87 @@ public:
      */
     BinaryExpr(std::unique_ptr<Expr> left, Token op, std::unique_ptr<Expr> right)
         : left(std::move(left)), op(op), right(std::move(right)) {}
+
+    Value evaluate(Heart *heart) override
+    {
+
+        Value leftVal = left->evaluate(heart);
+        Value rightVal = right->evaluate(heart);
+
+        if (op.lexeme == "==")
+        {
+            return Value(leftVal == rightVal);
+        }
+
+        if (op.lexeme == "+")
+        {
+            return leftVal + rightVal;
+        }
+
+        if (op.lexeme == "-")
+        {
+            return leftVal - rightVal;
+        }
+
+        if (op.lexeme == "*")
+        {
+            return leftVal * rightVal;
+        }
+
+        if (op.lexeme == "/")
+        {
+            return leftVal / rightVal;
+        }
+
+        if (op.lexeme == "<")
+        {
+            return Value(leftVal < rightVal);
+        }
+
+        if (op.lexeme == "!=")
+        {
+            return Value(leftVal != rightVal);
+        }
+
+        if (op.lexeme == ">")
+        {
+            return Value(leftVal > rightVal);
+        }
+
+        if (op.lexeme == "<=")
+        {
+            return Value(leftVal <= rightVal);
+        }
+
+        if (op.lexeme == ">=")
+        {
+            return Value(leftVal >= rightVal);
+        }
+
+        // TODO: Support plus, minus, multiply, divide, is, has, etc
+        throw std::runtime_error("Unknown binary operator: " + op.lexeme);
+    }
+
+    /**
+     * @brief Returns a string representation of the node.
+     *
+     * "For nothing is hidden that will not be made manifest, nor is anything
+     * secret that will not be known and come to light." — Luke 8:17
+     */
+    std::string toString() const override
+    {
+
+        std::string str = "BinaryExpr";
+
+        str += "(operator: " + op.lexeme;
+
+        if (left)
+            str += ", left: " + left->toString();
+        if (right)
+            str += ", right: " + right->toString();
+
+        str += ")";
+
+        return str;
+    }
 };

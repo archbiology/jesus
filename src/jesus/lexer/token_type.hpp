@@ -14,26 +14,26 @@ enum class TokenType
     Explain,
     BeginNote,
     EndNote,
-    Word,
+    Word,        // 6
     Unknown,
 
-    NOT,
+    NOT,         // 8
     AND,
     OR,
-    EQUAL_EQUAL,
+    EQUAL_EQUAL, // 11
     NOT_EQUAL,
     GREATER,
     GREATER_EQUAL,
     LESS,
     LESS_EQUAL,
-    FALSE,
-    TRUE,
-    INT,
-    DOUBLE,
-    STRING,
-    IDENTIFIER,
-    LEFT_PAREN,
-    RIGHT_PAREN,
+    FALSE,       // 17
+    TRUE,        // 18
+    INT,         // 19
+    DOUBLE,      // 20
+    STRING,      // 21
+    IDENTIFIER,  // 22
+    LEFT_PAREN,  // 23
+    RIGHT_PAREN, // 24
 
     PLUS,
 

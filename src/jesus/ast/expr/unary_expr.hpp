@@ -37,4 +37,29 @@ public:
      */
     UnaryExpr(Token op, std::unique_ptr<Expr> right)
         : op(op), right(std::move(right)) {}
+
+    Value evaluate(Heart *heart)
+    {
+        Value rightVal = right->evaluate(heart);
+
+        if (op.lexeme == "-") { // TODO: Check the token instead
+
+            if (rightVal.IS_INT) {
+                return Value(-rightVal.toNumber());
+            }
+
+            throw std::runtime_error("Unary '-' applied to non-number");
+        }
+
+        // Add other unary ops if needed
+        throw std::runtime_error("Unknown unary operator: " + op.lexeme);
+    }
+
+    /**
+     * @brief Returns a string representation of the expression.
+     *
+     * "For nothing is hidden that will not be made manifest, nor is anything
+     * secret that will not be known and come to light." — Luke 8:17
+     */
+    virtual std::string toString() const override { return "UnaryExpr(" + op.lexeme + ")"; }
 };

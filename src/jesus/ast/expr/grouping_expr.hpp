@@ -2,6 +2,7 @@
 
 #include "expr.hpp"
 #include <memory>
+#include "../../spirit/value.hpp"
 
 /**
  * @brief Represents a parenthesized expression: (a + b)
@@ -34,4 +35,17 @@ public:
      */
     explicit GroupingExpr(std::unique_ptr<Expr> expression)
         : expression(std::move(expression)) {}
+
+    Value evaluate(Heart *heart) override
+    {
+        return expression->evaluate(heart);
+    }
+
+    /**
+     * @brief Returns a string representation of the expression.
+     *
+     * "For nothing is hidden that will not be made manifest, nor is anything
+     * secret that will not be known and come to light." — Luke 8:17
+     */
+    virtual std::string toString() const override { return "GroupingExpr(" + expression->toString() + ")"; }
 };
