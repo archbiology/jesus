@@ -3,6 +3,7 @@
 #include "ast_node.hpp"
 #include <string>
 
+
 /**
  * @brief AST node representing a literal value.
  *
@@ -20,16 +21,16 @@ struct ValueNode : ASTNode
     /**
      * @brief The literal value held by this node.
      */
-    std::string value;
+    Value value;
 
     /**
      * @brief Constructs a ValueNode with the given literal value.
      *
      * @param value The raw string value.
      */
-    ValueNode(const std::string &value) : value(value) {}
+    ValueNode(const Value &value) : value(value) { }
 
-    std::optional<std::string> evaluate(Heart *heart)
+    Value evaluate(Heart *heart) override
     {
         return value;
     }
@@ -41,6 +42,21 @@ struct ValueNode : ASTNode
      */
     void execute(Heart* heart) override {}
 
-    std::string toString() const override { return "ValueNode(" + value + ")"; }
+    std::string toString() const override { return "ValueNode(" + value.toString() + ")"; }
 
+    bool isNumber() {
+        return value.IS_NUMBER;
+    }
+
+    bool isString() {
+        return value.IS_STRING;
+    }
+
+    bool isBoolean() {
+        return value.IS_BOOLEAN;
+    }
+
+    bool isFormless() {
+        return value.IS_FORMLESS;
+    }
 };

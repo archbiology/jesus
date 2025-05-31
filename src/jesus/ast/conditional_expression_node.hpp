@@ -1,8 +1,10 @@
 #pragma once
 
 #include "ast_node.hpp"
-#include "spirit/heart.hpp"
+#include "../spirit/heart.hpp"
 #include <iostream>
+#include <variant>
+
 
 /**
  * @brief Represents `reveal "adult" if age >= 18 otherwise "young"`
@@ -47,27 +49,47 @@ struct ConditionalExpressionNode : public ASTNode
      * @param heart The "Symbol table"
      * @return std::optional<std::string>
      */
-    std::optional<std::string> evaluate(Heart *heart) override
+    Value evaluate(Heart *heart) override
     {
-        auto result = condition->evaluate(heart);
+        Value result = condition->evaluate(heart);
 
-        if (result.has_value() && result.value() == "true")
+        if (result.AS_BOOLEAN)
         {
             return ifTrue->evaluate(heart);
         }
 
-        if (!ifFalse)
-            return std::nullopt;
+        if (ifFalse) {
+            return ifFalse->evaluate(heart);
+        }
 
-        return ifFalse->evaluate(heart);
+        return Value::formless();
     }
 
-    void execute(Heart *heart)
+    void execute(Heart *heart) override
     {
-        auto value = evaluate(heart);
-        if (value.has_value())
+        Value value = evaluate(heart);
+
+        if (! value.IS_FORMLESS)
         {
-            std::cout << value.value() << std::endl;
+            std::cout << value.toString() << std::endl;
         }
+    }
+
+    /**
+     * @brief Returns a string representation of the node.
+     *
+     * "For nothing is hidden that will not be made manifest, nor is anything
+     * secret that will not be known and come to light." — Luke 8:17
+     */
+    std::string toString() const override  {
+        std::string str = "ConditionalExpressionNode";
+
+        if (condition) str += "(condition: " + condition->toString();
+        if (ifTrue) str += ", ifTrue: " + ifTrue->toString();
+        if (ifFalse) str += ", ifFalse: " + ifFalse->toString();
+
+        str += ")";
+
+        return str;
     }
 };

@@ -1,36 +1,7 @@
 #pragma once
 #include <string>
 #include <vector>
-
-/**
- * @brief Represents the type of a token recognized by the lexer.
- *
- * Each token type corresponds to a meaningful symbol or word
- * within the custom language's syntax.
- */
-enum class TokenType
-{
-    Note,
-    Todo,
-    Warn,
-    Explain,
-    BeginNote,
-    EndNote,
-    Word,
-    Unknown
-};
-
-/**
- * @brief Represents a lexical token with a type and string value.
- *
- * Tokens are the result of breaking down a line of input text.
- * Each token has a `TokenType` and an associated `value`.
- */
-struct Token
-{
-    TokenType type;
-    std::string value;
-};
+#include "token.hpp"
 
 /**
  * @brief Lexical analyzer function.

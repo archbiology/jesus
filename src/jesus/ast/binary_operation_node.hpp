@@ -1,7 +1,6 @@
 #pragma once
 #include "ast_node.hpp"
-#include "value_node.hpp"
-#include "spirit/heart.hpp"
+#include "../spirit/heart.hpp"
 
 /**
  * @brief Represents a binary operation between two AST nodes (e.g., age >= 18)
@@ -39,37 +38,79 @@ struct BinaryOperationNode : public ASTNode
      * @param heart The "Symbol table"
      * @return An optional string result: "true", "false", or std::nullopt if evaluation failed.
      */
-    std::optional<std::string> evaluate(Heart *heart)
+    Value evaluate(Heart *heart) override
     {
-        auto l = left->evaluate(heart);
-        auto r = right->evaluate(heart);
-
-        if (!l.has_value() || !r.has_value())
-            return std::nullopt;
-
-        int leftNum = std::stoi(l.value());
-        int rightNum = std::stoi(r.value());
+        Value l = left->evaluate(heart);
+        Value r = right->evaluate(heart);
 
         if (op == ">=")
-            return (leftNum >= rightNum) ? "true" : "false";
+            return  Value(l >= r);
 
         if (op == "<=")
-            return (leftNum <= rightNum) ? "true" : "false";
+            return Value(l <= r);
 
         if (op == "==")
-            return (leftNum == rightNum) ? "true" : "false";
+            return Value(l == r);
 
         if (op == "!=")
-            return (leftNum != rightNum) ? "true" : "false";
+            return Value(l != r);
 
         if (op == ">")
-            return (leftNum > rightNum) ? "true" : "false";
+            return Value(l > r);
 
         if (op == "<")
-            return (leftNum < rightNum) ? "true" : "false";
+            return Value(l < r);
 
-        return std::nullopt;
+        if (op == "or")
+            return Value(l.AS_BOOLEAN || r.AS_BOOLEAN);
+
+        if (op  == "and") {
+            return Value(l.AS_BOOLEAN && r.AS_BOOLEAN);
+        }
+
+        if (op == "versus") {
+            if (l.IS_BOOLEAN && r.IS_BOOLEAN) {
+                // Logical XOR
+                return Value(l.AS_BOOLEAN != r.AS_BOOLEAN);
+            }
+
+            if (l.IS_NUMBER && r.IS_BOOLEAN) {
+                // Bitwise XOR
+                return Value(l.toInt() ^ r.toInt());
+            }
+
+            return Value::formless(); // fallback if types mismatch
+        }
+
+        return Value::formless();
     }
 
-    void execute(Heart *heart) override {}
+    void execute(Heart *heart) override {
+        Value value = evaluate(heart);
+
+        if (! value.IS_FORMLESS)
+        {
+            std::cout << value.toString() << std::endl;
+        }
+    }
+
+    /**
+     * @brief Returns a string representation of the node.
+     *
+     * "For nothing is hidden that will not be made manifest, nor is anything
+     * secret that will not be known and come to light." — Luke 8:17
+     */
+    std::string toString() const override {
+
+        std::string str = "BinaryOperationNode";
+
+        str += "(operator: " + op;
+
+        if (left) str += ", left: " + left->toString();
+        if (right) str += ", right: " + right->toString();
+
+        str += ")";
+
+        return str;
+    }
 };
