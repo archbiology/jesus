@@ -68,10 +68,31 @@ struct BinaryOperationNode : public ASTNode
             return Value(l.AS_BOOLEAN && r.AS_BOOLEAN);
         }
 
+        if (op == "versus") {
+            if (l.IS_BOOLEAN && r.IS_BOOLEAN) {
+                // Logical XOR
+                return Value(l.AS_BOOLEAN != r.AS_BOOLEAN);
+            }
+
+            if (l.IS_NUMBER && r.IS_BOOLEAN) {
+                // Bitwise XOR
+                return Value(l.toInt() ^ r.toInt());
+            }
+
+            return Value::formless(); // fallback if types mismatch
+        }
+
         return Value::formless();
     }
 
-    void execute(Heart *heart) override {}
+    void execute(Heart *heart) override {
+        Value value = evaluate(heart);
+
+        if (! value.IS_FORMLESS)
+        {
+            std::cout << value.toString() << std::endl;
+        }
+    }
 
     /**
      * @brief Returns a string representation of the node.

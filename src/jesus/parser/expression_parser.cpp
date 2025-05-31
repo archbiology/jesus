@@ -18,13 +18,27 @@ std::unique_ptr<Expr> ExpressionParser::parse()
 
 std::unique_ptr<Expr> ExpressionParser::parseOr()
 {
-    auto expr = parseAnd();
+    auto expr = parseVersus();
     while (match(TokenType::OR))
+    {
+        Token op = previous();
+        auto right = parseVersus();
+        expr = std::make_unique<BinaryExpr>(std::move(expr), op, std::move(right));
+    }
+    return expr;
+}
+
+std::unique_ptr<Expr> ExpressionParser::parseVersus()
+{
+    auto expr = parseAnd();
+
+    while (match(TokenType::VERSUS))
     {
         Token op = previous();
         auto right = parseAnd();
         expr = std::make_unique<BinaryExpr>(std::move(expr), op, std::move(right));
     }
+
     return expr;
 }
 

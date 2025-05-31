@@ -4,7 +4,6 @@
 #include "token_type.hpp"
 #include "../spirit/value.hpp"
 
-
 /**
  * @brief Represents a lexical token with a type and string value.
  *
@@ -73,6 +72,8 @@ public:
             return "AND";
         case TokenType::OR:
             return "OR";
+        case TokenType::VERSUS:
+            return "VERSUS";
         case TokenType::EQUAL_EQUAL:
             return "EQUAL_EQUAL";
         case TokenType::NOT_EQUAL:

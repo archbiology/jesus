@@ -96,7 +96,21 @@ public:
         }
 
         if (op.type == TokenType::AND) {
-            return leftVal.AS_BOOLEAN ? leftVal : rightVal;
+            return leftVal.AS_BOOLEAN ? rightVal : leftVal;
+        }
+
+        if (op.type == TokenType::VERSUS) {
+            if (leftVal.IS_BOOLEAN && rightVal.IS_BOOLEAN) {
+                // Logical XOR
+                return Value(leftVal.AS_BOOLEAN != rightVal.AS_BOOLEAN);
+            }
+
+            if (leftVal.IS_NUMBER && rightVal.IS_NUMBER) {
+                // Bitwise XOR
+                return Value(leftVal.toInt() ^ rightVal.toInt());
+            }
+
+            return Value::formless(); // fallback if types mismatch
         }
 
         // TODO: Support plus, minus, multiply, divide, is, has, etc

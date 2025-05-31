@@ -37,6 +37,8 @@ private:
      */
     std::unique_ptr<Expr> parseOr();
 
+    std::unique_ptr<Expr> parseVersus(); // parseXor
+
     /**
      * @brief Parses logical AND expressions: expr and expr
      *

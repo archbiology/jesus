@@ -63,6 +63,9 @@ TokenType recognize_token_type(const std::string &word)
     if (word == "or")
         return TokenType::OR;
 
+    if (word == "vs" || word == "versus")
+        return TokenType::VERSUS;
+
     if (word == "==")
         return TokenType::EQUAL_EQUAL;
 

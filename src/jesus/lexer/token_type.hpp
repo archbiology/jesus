@@ -20,6 +20,7 @@ enum class TokenType
     NOT,            // not
     AND,            // and
     OR,             // or
+    VERSUS,         // versus or vs (it's called XOR, represented as "^" in other languages)
     EQUAL_EQUAL,    // ==
     NOT_EQUAL,      // !=
     GREATER,        // >

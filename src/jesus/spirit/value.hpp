@@ -64,11 +64,17 @@ public:
             return std::get<int>(value);
         }
 
-        if (IS_DOUBLE) {
+        if (IS_DOUBLE)
+        {
             return std::get<double>(value);
         }
 
         throw std::runtime_error("Value is not a number");
+    }
+
+    int toInt() const
+    {
+        return (int)toNumber();
     }
 
     bool toBoolean() const
