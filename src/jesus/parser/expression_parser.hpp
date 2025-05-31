@@ -69,6 +69,10 @@ private:
      */
     std::unique_ptr<Expr> parseComparison();
 
+    std::unique_ptr<Expr> parseAddition();
+
+    std::unique_ptr<Expr> parseMultiplication();
+
     /**
      * @brief Parses unary expressions: not kill
      *

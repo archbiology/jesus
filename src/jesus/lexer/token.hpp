@@ -93,8 +93,19 @@ public:
             return "LEFT_PAREN";
         case TokenType::RIGHT_PAREN:
             return "RIGHT_PAREN";
+
+        case TokenType::STAR:
+            return "STAR";
+
+        case TokenType::SLASH:
+            return "SLASH";
+
         case TokenType::PLUS:
             return "PLUS";
+
+        case TokenType::MINUS:
+            return "MINUS";
+
         case TokenType::INT:
             return "INT(" + lexeme + ")";
         case TokenType::DOUBLE:

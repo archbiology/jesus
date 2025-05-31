@@ -3,30 +3,36 @@
 #include <ostream> // For std::ostream
 #include <string>
 
-bool isDouble(const std::string& word) {
+bool isDouble(const std::string &word)
+{
     try {
         size_t pos;
         std::stod(word, &pos);
 
         // Make sure the whole string was converted
         return pos == word.length();
-    } catch (...) {
+    }
+    catch (...)
+    {
         return false;
     }
 }
 
-bool isInteger(const std::string& word) {
-    try {
+bool isInteger(const std::string &word)
+{
+    try
+    {
         size_t pos;
         std::stoi(word, &pos);
 
         // Make sure the whole string was converted
         return pos == word.length();
-    } catch (...) {
+    }
+    catch (...)
+    {
         return false;
     }
 }
-
 
 TokenType recognize_token_type(const std::string &word)
 {
@@ -87,8 +93,17 @@ TokenType recognize_token_type(const std::string &word)
     if (word == ")")
         return TokenType::RIGHT_PAREN;
 
+    if (word == "*")
+        return TokenType::STAR;
+
+    if (word == "/")
+        return TokenType::SLASH;
+
     if (word == "+")
         return TokenType::PLUS;
+
+    if (word == "-")
+        return TokenType::MINUS;
 
     if (isInteger(word))
         return TokenType::INT;

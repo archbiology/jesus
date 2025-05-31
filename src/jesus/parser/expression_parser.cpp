@@ -54,14 +54,44 @@ std::unique_ptr<Expr> ExpressionParser::parseEquality()
 
 std::unique_ptr<Expr> ExpressionParser::parseComparison()
 {
-    auto expr = parseUnaryExpression();
+    // -----------------------------------------------
+    // Operator precedence:
+    //  arithmetic > relational > logical operators
+    //  * and / > + and - > comparisons > logical ops
+    // -----------------------------------------------
+    auto expr = parseAddition();
+
     while (match(TokenType::GREATER, TokenType::GREATER_EQUAL,
                  TokenType::LESS, TokenType::LESS_EQUAL))
     {
         Token op = previous();
+        auto right = parseAddition();
+        expr = std::make_unique<BinaryExpr>(std::move(expr), op, std::move(right));
+    }
+    return expr;
+}
+
+std::unique_ptr<Expr> ExpressionParser::parseAddition() {
+    auto expr = parseMultiplication();
+
+    while (match(TokenType::PLUS, TokenType::MINUS)) {
+        Token op = previous();
+        auto right = parseMultiplication();
+        expr = std::make_unique<BinaryExpr>(std::move(expr), op, std::move(right));
+    }
+
+    return expr;
+}
+
+std::unique_ptr<Expr> ExpressionParser::parseMultiplication() {
+    auto expr = parseUnaryExpression();
+
+    while (match(TokenType::STAR, TokenType::SLASH)) {
+        Token op = previous();
         auto right = parseUnaryExpression();
         expr = std::make_unique<BinaryExpr>(std::move(expr), op, std::move(right));
     }
+
     return expr;
 }
 

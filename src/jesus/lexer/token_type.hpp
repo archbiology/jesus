@@ -36,6 +36,9 @@ enum class TokenType
     RIGHT_PAREN, // 24
 
     PLUS,
+    MINUS,
+    STAR,       // *
+    SLASH,      // /
 
     SAY,
     WARN,
