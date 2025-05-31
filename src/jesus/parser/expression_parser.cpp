@@ -11,6 +11,8 @@ ExpressionParser::ExpressionParser(const std::vector<Token> &tokens)
 
 std::unique_ptr<Expr> ExpressionParser::parse()
 {
+    if (isAtEnd()) return NULL;
+
     return parseOr();
 }
 
@@ -76,11 +78,13 @@ std::unique_ptr<Expr> ExpressionParser::parseUnaryExpression()
 
 std::unique_ptr<Expr> ExpressionParser::parseLiteralOrGroupOrVar()
 {
-    if (match(TokenType::FALSE))
+    if (match(TokenType::FALSE)) {
         return std::make_unique<LiteralExpr>(Value(false));
+    }
 
-    if (match(TokenType::TRUE))
+    if (match(TokenType::TRUE)) {
         return std::make_unique<LiteralExpr>(Value(true));
+    }
 
     if (match(TokenType::INT, TokenType::DOUBLE, TokenType::STRING))
     {

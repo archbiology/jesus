@@ -109,6 +109,8 @@ public:
             return "UPDATE";
         case TokenType::Word:
             return "WORD(" + lexeme + ")";
+        case TokenType::END_OF_FILE:
+            return "EOF";
 
         default:
             return "🔴 Unknown.val(" + lexeme + ")";

@@ -113,6 +113,8 @@ std::vector<Token> lex(const std::string &input)
         tokens.push_back(Token(recognize_token_type(word), word, Value(word)));
     }
 
+    tokens.push_back(Token(TokenType::END_OF_FILE, "EOF", Value().formless()));
+
     return tokens;
 }
 
