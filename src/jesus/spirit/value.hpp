@@ -77,23 +77,6 @@ public:
         return (int)toNumber();
     }
 
-    bool toBoolean() const
-    {
-        if (IS_FORMLESS)
-            return false;
-
-        if (IS_BOOLEAN)
-            return std::get<bool>(value);
-
-        if (IS_NUMBER)
-            return std::get<double>(value) != 0;
-
-        if (IS_STRING)
-            return std::get<std::string>(value) != "";
-
-        return false;
-    }
-
     std::string toString() const
     {
         return std::visit(make_string_functor(), value);
