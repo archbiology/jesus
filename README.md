@@ -15,7 +15,7 @@ Compile using the following command:
 ```bash
 cd src/jesus
 
-g++ main.cpp lexer/lexer.cpp parser/parser.cpp spirit/heart.cpp -I . -o jesus
+g++ main.cpp lexer/lexer.cpp parser/parser.cpp spirit/heart.cpp parser/expression_parser.cpp -I . -o jesus
 ```
 
 Then run:
