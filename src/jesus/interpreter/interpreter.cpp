@@ -118,6 +118,9 @@ void Interpreter::execute(std::unique_ptr<Stmt> &stmt)
     if (auto loop = dynamic_cast<RepeatWhileStmt *>(stmt.get()))
         return visitRepeatWhile(loop);
 
+    if (auto loopTimes = dynamic_cast<RepeatTimesStmt *>(stmt.get()))
+        return visitRepeatTimes(loopTimes);
+
     throw std::runtime_error("Unknown statement tyspe.");
 }
 
@@ -154,6 +157,25 @@ void Interpreter::visitOutput(OutputStmt *stmt)
 void Interpreter::visitRepeatWhile(RepeatWhileStmt *stmt)
 {
     while (evaluate(stmt->condition).AS_BOOLEAN)
+    {
+        for (auto &statement : stmt->body)
+        {
+            execute(statement);
+        }
+    }
+}
+
+void Interpreter::visitRepeatTimes(RepeatTimesStmt *stmt)
+{
+    Value countVal = evaluate(stmt->countExpr);
+    if (!countVal.IS_INT)
+    {
+        throw std::runtime_error("repeat times expects a numeric value.");
+    }
+
+    int times = countVal.toInt();
+
+    for (int i = 0; i < times; ++i)
     {
         for (auto &statement : stmt->body)
         {

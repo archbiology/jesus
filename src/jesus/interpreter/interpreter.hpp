@@ -13,6 +13,7 @@
 #include "../ast/stmt/set_stmt.hpp"
 #include "../ast/stmt/output_statement.hpp"
 #include "../ast/stmt/repeat_while_stmt.hpp"
+#include "../ast/stmt/repeat_times_stmt.hpp"
 #include "../spirit/heart.hpp"
 
 /**
@@ -119,4 +120,10 @@ private:
      *   say "Still going..."
      */
     void visitRepeatWhile(RepeatWhileStmt *stmt);
+
+    /**
+     * repeat 3 times:
+     *   say "Jesus is Lord!"
+     */
+    void visitRepeatTimes(RepeatTimesStmt *stmt);
 };
