@@ -12,6 +12,7 @@
 #include "../ast/stmt/stmt.hpp"
 #include "../ast/stmt/set_stmt.hpp"
 #include "../ast/stmt/output_statement.hpp"
+#include "../ast/stmt/repeat_while_stmt.hpp"
 #include "../spirit/heart.hpp"
 
 /**
@@ -112,4 +113,10 @@ private:
     Value visitConditional(ConditionalExpr *expr);
 
     void visitOutput(OutputStmt *stmt);
+
+    /**
+     * repeat while condition:
+     *   say "Still going..."
+     */
+    void visitRepeatWhile(RepeatWhileStmt *stmt);
 };

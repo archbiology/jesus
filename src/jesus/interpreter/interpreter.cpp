@@ -115,6 +115,9 @@ void Interpreter::execute(std::unique_ptr<Stmt> &stmt)
     if (auto out = dynamic_cast<OutputStmt *>(stmt.get()))
         return visitOutput(out);
 
+    if (auto loop = dynamic_cast<RepeatWhileStmt *>(stmt.get()))
+        return visitRepeatWhile(loop);
+
     throw std::runtime_error("Unknown statement tyspe.");
 }
 
@@ -146,4 +149,15 @@ void Interpreter::visitOutput(OutputStmt *stmt)
     std::ostream &out = (stmt->type == OutputType::WARN) ? std::cerr : std::cout;
 
     out << value.toString() << std::endl;
+}
+
+void Interpreter::visitRepeatWhile(RepeatWhileStmt *stmt)
+{
+    while (evaluate(stmt->condition).AS_BOOLEAN)
+    {
+        for (auto &statement : stmt->body)
+        {
+            execute(statement);
+        }
+    }
 }
