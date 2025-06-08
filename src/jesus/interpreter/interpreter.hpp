@@ -14,6 +14,7 @@
 #include "../ast/stmt/output_statement.hpp"
 #include "../ast/stmt/repeat_while_stmt.hpp"
 #include "../ast/stmt/repeat_times_stmt.hpp"
+#include "../ast/stmt/for_each_stmt.hpp"
 #include "../spirit/heart.hpp"
 
 /**
@@ -126,4 +127,11 @@ private:
      *   say "Jesus is Lord!"
      */
     void visitRepeatTimes(RepeatTimesStmt *stmt);
+
+    /**
+     * set disciples to ["Peter", "James", "John"]
+     * for each name in disciples:
+     *    say name
+     */
+    void visitForEach(ForEachStmt *stmt);
 };

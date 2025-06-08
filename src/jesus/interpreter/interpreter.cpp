@@ -121,6 +121,9 @@ void Interpreter::execute(std::unique_ptr<Stmt> &stmt)
     if (auto loopTimes = dynamic_cast<RepeatTimesStmt *>(stmt.get()))
         return visitRepeatTimes(loopTimes);
 
+    if (auto foreachStmt = dynamic_cast<ForEachStmt *>(stmt.get()))
+        return visitForEach(foreachStmt);
+
     throw std::runtime_error("Unknown statement tyspe.");
 }
 
@@ -177,6 +180,29 @@ void Interpreter::visitRepeatTimes(RepeatTimesStmt *stmt)
 
     for (int i = 0; i < times; ++i)
     {
+        for (auto &statement : stmt->body)
+        {
+            execute(statement);
+        }
+    }
+}
+
+void Interpreter::visitForEach(ForEachStmt *stmt)
+{
+    Value listValue = evaluate(stmt->iterable);
+    if (!listValue.isList())
+    {
+        throw std::runtime_error("Expected a list to iterate over.");
+    }
+
+    const auto &items = listValue.asList();
+
+    for (const Value &item : items)
+    {
+
+        // FIXME: Remove the line below.
+        heart.define(stmt->varName, item); // like "let name = item"
+
         for (auto &statement : stmt->body)
         {
             execute(statement);
