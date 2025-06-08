@@ -21,7 +21,7 @@ std::unique_ptr<ASTNode> parse(const std::vector<Token> &tokens)
     }
 
     // parse use "value" if condition otherwise "value"
-    if (tokens[0].lexeme == "reveal" && tokens_count >= 2)
+    if ((tokens[0].type == TokenType::SAY || tokens[0].type == TokenType::WARN)  && tokens_count >= 2)
     {
         // Check if "if" exists in tokens
         auto ifIt = std::find_if(tokens.begin(), tokens.end(),
@@ -91,7 +91,10 @@ std::unique_ptr<ASTNode> parse(const std::vector<Token> &tokens)
             return std::make_unique<ConditionalExpressionNode>(condition, ifValue, elseValue);
         }
 
-        return std::make_unique<RevealNode>(new IdentifierNode(tokens[1].lexeme));
+        if (tokens[1].type == TokenType::IDENTIFIER)
+            return std::make_unique<RevealNode>(new IdentifierNode(tokens[1].lexeme));
+
+        return std::make_unique<RevealNode>(new ValueNode(tokens[1].literal));
     }
 
     if (tokens_count >= 3 &&

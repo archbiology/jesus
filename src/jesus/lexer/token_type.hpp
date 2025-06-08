@@ -41,8 +41,8 @@ enum class TokenType
     STAR,           // *
     SLASH,          // /
 
-    SAY,
-    WARN,
+    SAY,            // "say" prints to stdout
+    WARN,           // "warn" prints to stderr
     UPDATE,
 
     END_OF_FILE
