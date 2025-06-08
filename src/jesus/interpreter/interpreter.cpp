@@ -3,6 +3,14 @@
 #include "../ast/stmt/output_statement.hpp"
 #include <iostream>
 
+// Custom control-flow exceptions
+class BreakSignal : public std::exception
+{
+};
+class ContinueSignal : public std::exception
+{
+};
+
 Value Interpreter::evaluate(std::unique_ptr<Expr> &expr)
 {
     if (auto b = dynamic_cast<BinaryExpr *>(expr.get()))
@@ -124,6 +132,12 @@ void Interpreter::execute(std::unique_ptr<Stmt> &stmt)
     if (auto foreachStmt = dynamic_cast<ForEachStmt *>(stmt.get()))
         return visitForEach(foreachStmt);
 
+    if (auto br = dynamic_cast<BreakStmt *>(stmt.get()))
+        return visitBreak(br);
+
+    if (auto cont = dynamic_cast<ContinueStmt *>(stmt.get()))
+        return visitContinue(cont);
+
     throw std::runtime_error("Unknown statement tyspe.");
 }
 
@@ -161,9 +175,20 @@ void Interpreter::visitRepeatWhile(RepeatWhileStmt *stmt)
 {
     while (evaluate(stmt->condition).AS_BOOLEAN)
     {
-        for (auto &statement : stmt->body)
+        try
         {
-            execute(statement);
+            for (auto &statement : stmt->body)
+            {
+                execute(statement);
+            }
+        }
+        catch (const ContinueSignal &)
+        {
+            continue;
+        }
+        catch (const BreakSignal &)
+        {
+            break;
         }
     }
 }
@@ -180,9 +205,20 @@ void Interpreter::visitRepeatTimes(RepeatTimesStmt *stmt)
 
     for (int i = 0; i < times; ++i)
     {
-        for (auto &statement : stmt->body)
+        try
         {
-            execute(statement);
+            for (auto &statement : stmt->body)
+            {
+                execute(statement);
+            }
+        }
+        catch (const ContinueSignal &)
+        {
+            continue;
+        }
+        catch (const BreakSignal &)
+        {
+            break;
         }
     }
 }
@@ -203,9 +239,30 @@ void Interpreter::visitForEach(ForEachStmt *stmt)
         // FIXME: Remove the line below.
         heart.define(stmt->varName, item); // like "let name = item"
 
-        for (auto &statement : stmt->body)
+        try
         {
-            execute(statement);
+            for (auto &statement : stmt->body)
+            {
+                execute(statement);
+            }
+        }
+        catch (const ContinueSignal &)
+        {
+            continue;
+        }
+        catch (const BreakSignal &)
+        {
+            break;
         }
     }
+}
+
+void Interpreter::visitBreak(BreakStmt *)
+{
+    throw BreakSignal();
+}
+
+void Interpreter::visitContinue(ContinueStmt *)
+{
+    throw ContinueSignal();
 }

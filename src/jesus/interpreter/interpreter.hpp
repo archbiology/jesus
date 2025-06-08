@@ -15,6 +15,8 @@
 #include "../ast/stmt/repeat_while_stmt.hpp"
 #include "../ast/stmt/repeat_times_stmt.hpp"
 #include "../ast/stmt/for_each_stmt.hpp"
+#include "../ast/stmt/break_stmt.hpp"
+#include "../ast/stmt/continue_stmt.hpp"
 #include "../spirit/heart.hpp"
 
 /**
@@ -134,4 +136,24 @@ private:
      *    say name
      */
     void visitForEach(ForEachStmt *stmt);
+
+    /**
+     * set disciples to ["Peter", "James", "John"]
+     * for each name in disciples:
+     *    if name == James:
+     *      break # or stop
+     *
+     *    say name
+     */
+    void visitBreak(BreakStmt *stmt);
+
+    /**
+     * set disciples to ["Peter", "James", "John"]
+     * for each name in disciples:
+     *    if name == James:
+     *      continue # or next; skip;
+     *
+     *    say name
+     */
+    void visitContinue(ContinueStmt *stmt);
 };
