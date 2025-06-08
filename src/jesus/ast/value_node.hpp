@@ -11,7 +11,7 @@
  * that can be used in expressions, assignments, or function calls.
  *
  * In a full interpreter, this node might return the value or push it
- * onto an evaluation stack. For now, `execute()` is a no-op.
+ * onto an evaluation stack.
  *
  * "Every good and perfect gift is from above..." — James 1:17
  *  A ValueNode reminds us that even simple values can carry meaning and purpose.
@@ -40,7 +40,9 @@ struct ValueNode : ASTNode
      *
      * @param heart Pointer to the Heart (Symbol table) for variable storage.
      */
-    void execute(Heart* heart) override {}
+    void execute(Heart* heart) override {
+        std::cout << value.toString() << std::endl;
+    }
 
     std::string toString() const override { return "ValueNode(" + value.toString() + ")"; }
 

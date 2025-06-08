@@ -1,9 +1,7 @@
 #pragma once
 
 #include "ast_node.hpp"
-#include "identifier_node.hpp"
 #include "../spirit/heart.hpp"
-#include <iostream>
 
 /**
  * @brief The RevealNode class represents the `reveal` command in the language.
@@ -17,23 +15,24 @@
  * @example
  * (Jesus) let there be name set to Jesus
  * name = Jesus
- * (Jesus) reveal name
+ * (Jesus) say name
  * Jesus
- * (Jesus)
+ * (Jesus) warn name
+ * Jesus
  */
 struct RevealNode : public ASTNode
 {
-    IdentifierNode *identifier;
+    ASTNode *node;
 
     /**
      * @brief Construct a new RevealNode object
      *
-     * @param id A pointer to an IdentifierNode representing the variable name.
+     * @param id A pointer to an ASTNode representing a variable or a value.
      */
-    explicit RevealNode(IdentifierNode *id) : identifier(id) {}
+    explicit RevealNode(ASTNode *node) : node(node) {}
 
     /**
-     * @brief Executes the `reveal` command by displaying the value of a stored variable.
+     * @brief Executes the `say` command by displaying the value of `node`.
      *
      * This method queries the Heart (symbol table) for the variable associated with
      * the provided identifier. If found, it prints the value; otherwise, it prints
@@ -46,16 +45,10 @@ struct RevealNode : public ASTNode
      */
     void execute(Heart *heart) override
     {
-        if (!heart)
+        if (!node)
             return;
 
-        auto value = heart->get(identifier->name);
-        if (! value.IS_FORMLESS)
-        {
-            std::cout << value.toString() << std::endl;
-        } else {
-            std::cout << "Unknown: " << identifier->name << std::endl;
-        }
+        node->execute(heart);
     }
 
     /**
@@ -68,8 +61,8 @@ struct RevealNode : public ASTNode
     {
         std::string str = "RevealNode";
 
-        if (identifier)
-            str += "(" + identifier->name + ")";
+        if (node)
+            str += "(" + node->toString() + ")";
 
         return str;
     }

@@ -1,5 +1,7 @@
 #include "interpreter.hpp"
 #include <stdexcept>
+#include "../ast/stmt/output_statement.hpp"
+#include <iostream>
 
 Value Interpreter::evaluate(std::unique_ptr<Expr> &expr)
 {
@@ -110,7 +112,10 @@ void Interpreter::execute(std::unique_ptr<Stmt> &stmt)
     if (auto set = dynamic_cast<SetStmt *>(stmt.get()))
         return visitSet(set);
 
-    throw std::runtime_error("Unknown statement type.");
+    if (auto out = dynamic_cast<OutputStmt *>(stmt.get()))
+        return visitOutput(out);
+
+    throw std::runtime_error("Unknown statement tyspe.");
 }
 
 void Interpreter::visitSet(SetStmt *stmt)
@@ -132,4 +137,13 @@ Value Interpreter::visitConditional(ConditionalExpr *expr)
     {
         return evaluate(expr->elseBranch);
     }
+}
+
+void Interpreter::visitOutput(OutputStmt *stmt)
+{
+    Value value = evaluate(stmt->message);
+
+    std::ostream &out = (stmt->type == OutputType::WARN) ? std::cerr : std::cout;
+
+    out << value.toString() << std::endl;
 }

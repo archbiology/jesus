@@ -146,6 +146,12 @@ TokenType recognize_token_type(const std::string &word)
     if (word == "-")
         return TokenType::MINUS;
 
+    if (word == "say")
+        return TokenType::SAY;
+
+    if (word == "warn")
+        return TokenType::WARN;
+
     if (isInteger(word))
         return TokenType::INT;
 

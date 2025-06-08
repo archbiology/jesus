@@ -11,8 +11,8 @@
 #include "../ast/expr/grouping_expr.hpp"
 #include "../ast/stmt/stmt.hpp"
 #include "../ast/stmt/set_stmt.hpp"
+#include "../ast/stmt/output_statement.hpp"
 #include "../spirit/heart.hpp"
-
 
 /**
  * @brief Interprets expressions of the language and evaluates their result.
@@ -36,7 +36,7 @@ public:
 
     void defineVariable(const std::string &name, const Value &value);
     void assignVariable(const std::string &name, const Value &value);
-    void execute(std::unique_ptr<Stmt>& stmt);
+    void execute(std::unique_ptr<Stmt> &stmt);
 
 private:
     /**
@@ -107,7 +107,9 @@ private:
      */
     std::string valueToString(const Value &value);
 
-    void visitSet(SetStmt* stmt);
+    void visitSet(SetStmt *stmt);
 
-    Value visitConditional(ConditionalExpr* expr);
+    Value visitConditional(ConditionalExpr *expr);
+
+    void visitOutput(OutputStmt *stmt);
 };
