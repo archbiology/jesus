@@ -1,8 +1,7 @@
 #pragma once
 
-#include "ast_node.hpp"
+#include "../ast/expr/expr.hpp"
 #include <string>
-
 
 /**
  * @brief AST node representing a literal value.
@@ -16,7 +15,7 @@
  * "Every good and perfect gift is from above..." — James 1:17
  *  A ValueNode reminds us that even simple values can carry meaning and purpose.
  */
-struct ValueNode : ASTNode
+struct ValueNode : Expr
 {
     /**
      * @brief The literal value held by this node.
@@ -28,20 +27,11 @@ struct ValueNode : ASTNode
      *
      * @param value The raw string value.
      */
-    ValueNode(const Value &value) : value(value) { }
+    ValueNode(const Value &value) : value(value) {}
 
     Value evaluate(Heart *heart) override
     {
         return value;
-    }
-
-    /**
-     * @brief Executes the node (currently does nothing).
-     *
-     * @param heart Pointer to the Heart (Symbol table) for variable storage.
-     */
-    void execute(Heart* heart) override {
-        std::cout << value.toString() << std::endl;
     }
 
     std::string toString() const override { return "ValueNode(" + value.toString() + ")"; }

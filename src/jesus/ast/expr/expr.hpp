@@ -8,6 +8,8 @@
  * Expressions are units that produce values — such as literals, variables,
  * or operations. All expression types derive from this base.
  *
+ * Expressions represent values or computations (variables, literals, arithmetic, function calls).
+ *
  * "The unfolding of Your words gives light; it gives understanding to the simple."
  * — Psalm 119:130
  */

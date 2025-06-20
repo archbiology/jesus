@@ -1,11 +1,9 @@
 #pragma once
 
-#include "ast_node.hpp"
+#include "../ast/stmt/stmt.hpp"
+#include "../ast/expr/literal_expr.hpp"
 #include "identifier_node.hpp"
-#include "value_node.hpp"
-#include "../spirit/heart.hpp"
 #include <memory>
-#include <iostream>
 
 /**
  * @brief AST node representing a variable declaration and assignment.
@@ -25,7 +23,7 @@
  * This node reflects that same pattern: a spoken declaration resulting in
  * something coming into existence.
  */
-struct LetThereBeNode : ASTNode
+struct LetThereBeNode : Stmt
 {
     /**
      * @brief The identifier being declared (e.g., a variable name).
@@ -35,7 +33,7 @@ struct LetThereBeNode : ASTNode
     /**
      * @brief The value being assigned to the identifier.
      */
-    std::unique_ptr<ValueNode> value;
+    std::unique_ptr<LiteralExpr> value;
 
     /**
      * @brief Constructs a LetThereBeNode with the given identifier and value.
@@ -43,36 +41,8 @@ struct LetThereBeNode : ASTNode
      * @param id The identifier to bind.
      * @param val The value to assign to the identifier.
      */
-    LetThereBeNode(std::unique_ptr<IdentifierNode> id, std::unique_ptr<ValueNode> val)
+    LetThereBeNode(std::unique_ptr<IdentifierNode> id, std::unique_ptr<LiteralExpr> val)
         : identifier(std::move(id)), value(std::move(val)) {}
-
-    /**
-     * @brief Executes the node by printing the declaration.
-     *
-     * If the value is not empty, it is printed in the format:
-     * ```
-     * name = value
-     * ```
-     * Otherwise, only the name is printed.
-     *
-     * @param heart Pointer to the Heart (Symbol table) for variable storage.
-     */
-    void execute(Heart *heart) override
-    {
-        std::cout << identifier->name;
-
-        if (! value->isFormless())
-        {
-            std::cout << " = " << value->toString();
-
-            if (heart)
-            {
-                heart->assign(identifier->name, value->value);
-            }
-        }
-
-        std::cout << std::endl;
-    }
 
     /**
      * @brief Returns a string representation of the node.
@@ -90,7 +60,5 @@ struct LetThereBeNode : ASTNode
         str += ")";
 
         return str;
-
-
     }
 };

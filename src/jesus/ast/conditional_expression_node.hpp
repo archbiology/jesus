@@ -1,10 +1,9 @@
 #pragma once
 
 #include "ast_node.hpp"
+#include "../ast/stmt/stmt.hpp"
+#include "../ast/expr/expr.hpp"
 #include "../spirit/heart.hpp"
-#include <iostream>
-#include <variant>
-
 
 /**
  * @brief Represents `reveal "adult" if age >= 18 otherwise "young"`
@@ -18,11 +17,11 @@
  * It enables decision-making logic in the language's syntax, allowing
  * expressions such as: condition ? ifTrue : ifFalse
  */
-struct ConditionalExpressionNode : public ASTNode
+struct ConditionalExpressionNode : public Stmt
 {
-    ASTNode *condition;
-    ASTNode *ifTrue;
-    ASTNode *ifFalse;
+    std::unique_ptr<Expr> condition;
+    std::unique_ptr<Expr> ifTrue;
+    std::unique_ptr<Expr> ifFalse;
 
     /**
      * @brief Construct a new ConditionalExpressionNode object
@@ -36,8 +35,10 @@ struct ConditionalExpressionNode : public ASTNode
      * @param ifTrue The expression to evaluate if the condition is true.
      * @param ifFalse The expression to evaluate if the condition is false.
      */
-    ConditionalExpressionNode(ASTNode *condition, ASTNode *ifTrue, ASTNode *ifFalse)
-        : condition(condition), ifTrue(ifTrue), ifFalse(ifFalse) {}
+    ConditionalExpressionNode(std::unique_ptr<Expr> condition,
+                              std::unique_ptr<Expr> ifTrue,
+                              std::unique_ptr<Expr> ifFalse)
+        : condition(std::move(condition)), ifTrue(std::move(ifTrue)), ifFalse(std::move(ifFalse)) {}
 
     /**
      * @brief  Evaluates a condition and returns the result of either the
@@ -63,16 +64,6 @@ struct ConditionalExpressionNode : public ASTNode
         }
 
         return Value::formless();
-    }
-
-    void execute(Heart *heart) override
-    {
-        Value value = evaluate(heart);
-
-        if (! value.IS_FORMLESS)
-        {
-            std::cout << value.toString() << std::endl;
-        }
     }
 
     /**

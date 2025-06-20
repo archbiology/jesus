@@ -3,7 +3,6 @@
 #include <iostream>
 #include "../spirit/value.hpp"
 
-
 struct Heart; // forward declaration
 
 /**
@@ -16,21 +15,14 @@ struct Heart; // forward declaration
  * The use of a virtual destructor ensures proper cleanup when deleting derived
  * nodes through a base class pointer.
  *
+ * AST nodes hold structure, Interpreter holds behavior.
+ *
  * "Let all things be done decently and in order." — 1 Corinthians 14:40
  */
-struct ASTNode
+class ASTNode
 {
+public:
     virtual ~ASTNode() = default;
-
-    /**
-     * @brief Execute the logic associated with this AST node.
-     *
-     * This method should be overridden in derived classes to define
-     * how each specific type of node behaves at runtime.
-     *
-     * @param heart Pointer to the Heart (Symbol table) for variable storage.
-     */
-    virtual void execute(Heart *heart) = 0;
 
     /**
      * @brief Evaluates the node and returns an optional value.

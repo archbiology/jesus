@@ -1,7 +1,6 @@
 #pragma once
 
-#include "ast_node.hpp"
-#include "../spirit/heart.hpp"
+#include "../ast/stmt/stmt.hpp"
 
 /**
  * @brief The RevealNode class represents the `reveal` command in the language.
@@ -20,36 +19,19 @@
  * (Jesus) warn name
  * Jesus
  */
-struct RevealNode : public ASTNode
+struct RevealNode : public Stmt
 {
     ASTNode *node;
 
     /**
      * @brief Construct a new RevealNode object
      *
-     * @param id A pointer to an ASTNode representing a variable or a value.
-     */
-    explicit RevealNode(ASTNode *node) : node(node) {}
-
-    /**
-     * @brief Executes the `say` command by displaying the value of `node`.
-     *
-     * This method queries the Heart (symbol table) for the variable associated with
-     * the provided identifier. If found, it prints the value; otherwise, it prints
-     * a message indicating that the variable is unknown.
-     *
      * "Call to me and I will answer you and tell you great and unsearchable things you do not know."
      * — Jeremiah 33:3
      *
-     * @param heart A pointer to the Heart environment that stores all declared variables.
+     * @param id A pointer to an ASTNode representing a variable or a value.
      */
-    void execute(Heart *heart) override
-    {
-        if (!node)
-            return;
-
-        node->execute(heart);
-    }
+    explicit RevealNode(ASTNode *node) : node(node) {}
 
     /**
      * @brief Returns a string representation of the node.

@@ -1,6 +1,5 @@
 #pragma once
 
-#include "ast_node.hpp"
 #include "../spirit/heart.hpp"
 #include "../ast/expr/expr.hpp"
 #include <string>
@@ -16,22 +15,12 @@
  * 📖 "The unfolding of your words gives light; it gives understanding to the simple."
  * — Psalm 119:130
  */
-struct ExpressionNode : public ASTNode
+struct ExpressionNode : public Expr
 {
     std::unique_ptr<Expr> expr;
 
     explicit ExpressionNode(std::unique_ptr<Expr> expr)
-    : expr(std::move(expr)) {}
-
-    void execute(Heart *heart) override
-    {
-        Value value = evaluate(heart);
-
-        if (! value.IS_FORMLESS)
-        {
-            std::cout << value.toString() << std::endl;
-        }
-    }
+        : expr(std::move(expr)) {}
 
     Value evaluate(Heart *heart) override
     {
@@ -51,4 +40,3 @@ struct ExpressionNode : public ASTNode
         return str;
     }
 };
-
