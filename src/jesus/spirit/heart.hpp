@@ -18,10 +18,21 @@
  */
 class Heart
 {
+
+    /**
+     * @brief Checks whether a variable with the given name already exists.
+     *
+     * 📖 "Be sure you know the condition of your flocks, give careful attention to your herds." — Proverbs 27:23
+     *
+     * @param name The name of the variable to check.
+     * @return true if the variable is already defined, false otherwise.
+     */
+    bool varExists(const std::string &name) const;
+
 public:
     /**
-     * @brief Sets a variable with the given name and value.
-     * If the variable already exists, it will be updated.
+     * @brief Create a variable with the given name and value.
+     * If the variable already exists, it will raise an exception.
      *
      * "And God called the light Day, and the darkness he called Night." - Genesis 1:5
      * Just as God gave names and meaning, this method gives values to variables
@@ -29,7 +40,7 @@ public:
      * @param name The name of the variable (e.g., "age")
      * @param value The value to assign (e.g., "33")
      */
-    void define(const std::string &name, const Value& value);
+    void createVar(const std::string &name, const Value &value);
 
     /**
      * @brief Retrieves the value of a variable.
@@ -41,9 +52,20 @@ public:
      * @param name The name of the variable to retrieve.
      * @return Value The value, which may be std::monostate if not found.
      */
-    Value get(const std::string& name) const;
+    Value getVar(const std::string &name) const;
 
-    void assign(const std::string& name, const Value& value);
+    /**
+     * @brief Updates the value of an already existing variable.
+     *
+     * "Do not conform to the pattern of this world, but be transformed
+     * by the renewing of your mind." — Romans 12:2
+     *
+     * @param name The name of the variable to update.
+     * @param value The new value to assign to the variable.
+     *
+     * @throws std::runtime_error If the variable doesn't exist yet.
+     */
+    void updateVar(const std::string &name, const Value &value);
 
 private:
     std::unordered_map<std::string, Value> variables;
