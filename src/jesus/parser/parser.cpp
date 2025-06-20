@@ -35,7 +35,7 @@ std::unique_ptr<Stmt> parse(const std::vector<Token> &tokens)
 
         std::vector<Token> innerTokens(tokens.begin() + 4, tokens.end());
 
-        std::unique_ptr<ASTNode> innerStmt = parse(innerTokens);
+        std::unique_ptr<Stmt> innerStmt = parse(innerTokens);
         if (!innerStmt)
         {
             throw std::runtime_error("Could not parse body of 'repeat N times'");

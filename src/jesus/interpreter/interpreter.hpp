@@ -1,7 +1,6 @@
 
 #pragma once
 
-#include "value.hpp"
 #include "../ast/expr/expr.hpp"
 #include "../ast/expr/binary_expr.hpp"
 #include "../ast/expr/conditional_expr.hpp"
@@ -10,7 +9,8 @@
 #include "../ast/expr/variable_expr.hpp"
 #include "../ast/expr/grouping_expr.hpp"
 #include "../ast/stmt/stmt.hpp"
-#include "../ast/stmt/set_stmt.hpp"
+#include "../ast/stmt/create_var_stmt.hpp"
+#include "../ast/stmt/update_var_stmt.hpp"
 #include "../ast/stmt/output_statement.hpp"
 #include "../ast/stmt/repeat_while_stmt.hpp"
 #include "../ast/stmt/repeat_times_stmt.hpp"
@@ -27,21 +27,56 @@
  *
  * This class interprets user-defined expressions and produces runtime values,
  * though true understanding and interpretation come only from God.
+ *
+ * AST nodes hold structure, Interpreter holds behavior.
+ *
+ * 🌟 Why This Helps for Future JIT & Debugging
+ *
+ *   Want to debug? Wrap the Interpreter::execute() methods with trace logs or breakpoints.
+ *   Want to switch to JIT? Swap Interpreter with a JITCompiler.
+ *   Want to record execution? Just add hooks in Interpreter.
  */
 class Interpreter
 {
 public:
+    explicit Interpreter(Heart *heart) : heart(*heart) {}
     /**
      * @brief Evaluates a given expression and returns its computed value.
      *
      * "Give me understanding, so that I may keep your law and obey it with all my heart."
      * — Psalm 119:34
      */
-    Value evaluate(std::unique_ptr<Expr> &expr);
+    Value evaluate(const std::unique_ptr<Expr> &expr);
 
-    void defineVariable(const std::string &name, const Value &value);
-    void assignVariable(const std::string &name, const Value &value);
-    void execute(std::unique_ptr<Stmt> &stmt);
+    void createVariable(const std::string &name, const Value &value);
+    void updateVariable(const std::string &name, const Value &value);
+
+    /**
+     * @brief Executes a single statement node in the abstract syntax tree (AST).
+     *
+     * This method dynamically dispatches the runtime behavior of a statement,
+     * such as variable assignment, loop execution, or output operations.
+     * It delegates control to the appropriate visitor method
+     * (visitBinary, visitRepeatWhile, etc) based on the dynamic type of the
+     * statement.
+     *
+     * Statements are side-effect-driven instructions and do not produce
+     * direct values like expressions do. Therefore, this function returns void.
+     *
+     * Example usage:
+     * @code
+     *  std::unique_ptr<Stmt> stmt = std::make_unique<ForEachStmt>(...);
+     *  interpreter.execute(stmt);
+     * @endcode
+     *
+     * "Do not merely listen to the word, and so deceive yourselves. Do what it says."
+     * — James 1:22
+     *
+     * Just as we are called not only to hear God's Word but to act on it,
+     * this method does not evaluate the statement intellectually — it **executes**
+     * it, causing the program to act.
+     */
+    void execute(const std::unique_ptr<Stmt> &stmt);
 
 private:
     /**
@@ -97,14 +132,6 @@ private:
     Value visitGrouping(GroupingExpr *expr);
 
     /**
-     * @brief Determines whether a value should be considered "truthy".
-     *
-     * “Jesus said to him, ‘I am the way, and the truth, and the life. No one comes to the Father except through me.’”
-     * — John 14:6
-     */
-    bool isTruthy(const Value &value);
-
-    /**
      * @brief Converts a runtime value into a string representation.
      *
      * “For there is nothing hidden that will not be disclosed, and nothing concealed that will not be known or brought out into the open.”
@@ -112,9 +139,11 @@ private:
      */
     std::string valueToString(const Value &value);
 
-    void visitSet(SetStmt *stmt);
+    void visitCreateVar(const CreateVarStmt *stmt);
 
-    Value visitConditional(ConditionalExpr *expr);
+    void visitUpdateVar(const UpdateVarStmt *stmt);
+
+    Value visitConditional(const ConditionalExpr *expr);
 
     void visitOutput(OutputStmt *stmt);
 
@@ -122,13 +151,13 @@ private:
      * repeat while condition:
      *   say "Still going..."
      */
-    void visitRepeatWhile(RepeatWhileStmt *stmt);
+    void visitRepeatWhile(const RepeatWhileStmt *stmt);
 
     /**
      * repeat 3 times:
      *   say "Jesus is Lord!"
      */
-    void visitRepeatTimes(RepeatTimesStmt *stmt);
+    void visitRepeatTimes(const RepeatTimesStmt *stmt);
 
     /**
      * set disciples to ["Peter", "James", "John"]
