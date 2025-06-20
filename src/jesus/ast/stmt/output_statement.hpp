@@ -18,4 +18,6 @@ public:
 
     OutputStmt(OutputType type, std::unique_ptr<Expr> message)
         : type(type), message(std::move(message)) {}
+
+    virtual std::string toString() const { return "OutputStmt"; }
 };

@@ -1,23 +1,47 @@
 #include "parser.hpp"
 #include "expression_parser.hpp"
-#include "../ast/let_there_be_node.hpp"
 #include "../ast/identifier_node.hpp"
-#include "../ast/value_node.hpp"
-#include "../ast/reveal_node.hpp"
+#include "../ast/expr/literal_expr.hpp"
+#include "../ast/expr/variable_expr.hpp"
 #include "../ast/binary_operation_node.hpp"
-#include "../ast/expression_node.hpp"
-#include "../ast/conditional_expression_node.hpp"
+#include "../ast/expr/conditional_expr.hpp"
+#include "../ast/stmt/repeat_times_stmt.hpp"
+#include "../ast/stmt/output_statement.hpp"
+#include "../ast/stmt/create_var_stmt.hpp"
 #include <bits/stdc++.h> // for std::find_if and std::distance
 #include <string>
+#include <memory>
 
-std::unique_ptr<ASTNode> parse(const std::vector<Token> &tokens)
+std::unique_ptr<Stmt> parse(const std::vector<Token> &tokens)
 {
     const int tokens_count = tokens.size();
     if (!tokens_count)
         return nullptr;
 
-    if (tokens_count == 1 && tokens[0].type == TokenType::IDENTIFIER) {
-        return std::make_unique<IdentifierNode>(tokens[0].lexeme);
+    if (tokens_count == 1 && tokens[0].type == TokenType::IDENTIFIER)
+    {
+        // WARN because the person didn't use 'say'
+        return std::make_unique<OutputStmt>(OutputType::WARN,  std::make_unique<VariableExpr>(tokens[1].lexeme));
+
+    }
+
+    if (tokens_count >= 4 &&
+        tokens[0].type == TokenType::REPEAT &&
+        tokens[1].type == TokenType::INT &&
+        tokens[2].type == TokenType::TIMES &&
+        tokens[3].lexeme == ":")
+    {
+        int repeatCount = std::stoi(tokens[1].lexeme); // assuming it's an integer literal
+
+        std::vector<Token> innerTokens(tokens.begin() + 4, tokens.end());
+
+        std::unique_ptr<ASTNode> innerStmt = parse(innerTokens);
+        if (!innerStmt)
+        {
+            throw std::runtime_error("Could not parse body of 'repeat N times'");
+        }
+
+        return std::make_unique<RepeatTimesStmt>(repeatCount, std::move(innerStmt));
     }
 
     // parse use "value" if condition otherwise "value"
@@ -33,11 +57,10 @@ std::unique_ptr<ASTNode> parse(const std::vector<Token> &tokens)
 
             int otherwiseIndex = -1;
             int ifIndex = std::distance(tokens.begin(), ifIt);
-            ASTNode *elseValue = NULL;
+            std::unique_ptr<Expr> condition;
+            std::unique_ptr<Expr> ifValue = std::make_unique<LiteralExpr>(Value(tokens[1].lexeme));
+            std::unique_ptr<Expr> elseValue;
 
-            ASTNode *ifValue = new ValueNode(Value(tokens[1].lexeme));
-
-            ASTNode *condition;
             if (tokens[ifIndex + 1].lexeme == "(")
             {
                 int parenDepth = 1;
@@ -63,19 +86,18 @@ std::unique_ptr<ASTNode> parse(const std::vector<Token> &tokens)
 
                 std::vector<Token> conditionTokens(tokens.begin() + conditionStart, tokens.begin() + conditionEnd);
 
-                auto parsedCondition = parseExpression(conditionTokens);
-                if (!parsedCondition)
+                condition = parseExpression(conditionTokens);
+                if (!condition)
                 {
                     throw std::runtime_error("Failed to parse condition expression inside 'if'.");
                 }
-
-                condition = parsedCondition.release(); // make it raw pointer
             }
             else
-                condition = new BinaryOperationNode(
+                condition = std::make_unique<BinaryOperationNode>(
                     tokens[ifIndex + 2].lexeme,                     // operator (e.g.: == )
-                    new IdentifierNode(tokens[ifIndex + 1].lexeme), // left operand
-                    new ValueNode(tokens[ifIndex + 3].literal));    // right operand
+                    std::make_unique<IdentifierNode>(tokens[ifIndex + 1].lexeme), // left operand
+                    std::make_unique<LiteralExpr>(tokens[ifIndex + 3].literal)  // right operand
+                );
 
             // Parse "otherwise/else"
             for (size_t i = ifIndex + 1; i < tokens_count; ++i)
@@ -83,18 +105,19 @@ std::unique_ptr<ASTNode> parse(const std::vector<Token> &tokens)
                 if (tokens[i].lexeme == "otherwise")
                 {
                     otherwiseIndex = i;
-                    elseValue = new ValueNode(Value(tokens[otherwiseIndex + 1].lexeme));
+                    elseValue = std::make_unique<LiteralExpr>(Value(tokens[otherwiseIndex + 1].lexeme));
                     break;
                 }
             }
 
-            return std::make_unique<ConditionalExpressionNode>(condition, ifValue, elseValue);
+            return std::make_unique<OutputStmt>(OutputType::WARN,  std::make_unique<ConditionalExpr>(std::move(condition), std::move(ifValue), std::move(elseValue)));
         }
 
+        // Using WARN because the person didn't call 'say'
         if (tokens[1].type == TokenType::IDENTIFIER)
-            return std::make_unique<RevealNode>(new IdentifierNode(tokens[1].lexeme));
+            return std::make_unique<OutputStmt>(OutputType::WARN,  std::make_unique<VariableExpr>(tokens[1].lexeme));
 
-        return std::make_unique<RevealNode>(new ValueNode(tokens[1].literal));
+        return std::make_unique<OutputStmt>(OutputType::WARN, std::make_unique<LiteralExpr>(tokens[1].literal));
     }
 
     if (tokens_count >= 3 &&
@@ -103,7 +126,7 @@ std::unique_ptr<ASTNode> parse(const std::vector<Token> &tokens)
         tokens[2].lexeme == "be")
     {
         std::string identifier;
-        Value value;
+        std::unique_ptr<Expr> value;
 
         if (tokens_count >= 4)
         {
@@ -112,30 +135,27 @@ std::unique_ptr<ASTNode> parse(const std::vector<Token> &tokens)
 
         if (tokens_count >= 7 && tokens[4].lexeme == "set" && tokens[5].lexeme == "to")
         {
-            value = tokens[6].literal;
+            value = std::make_unique<LiteralExpr>(tokens[6].literal);
         }
 
-        auto idNode = std::make_unique<IdentifierNode>(identifier);
-        auto valNode = std::make_unique<ValueNode>(value);
-
-        return std::make_unique<LetThereBeNode>(std::move(idNode), std::move(valNode));
+        return std::make_unique<CreateVarStmt>(identifier, std::move(value));
     }
 
     // If no match, fall back to expression parsing
-    return parseExpression(tokens);
+    auto expr = parseExpression(tokens);
+
+    // Using WARN because the person didn't call 'say'
+    return std::make_unique<OutputStmt>(OutputType::WARN, std::move(expr));
+
 }
 
-std::unique_ptr<ASTNode> parseExpression(const std::vector<Token> &tokens)
+std::unique_ptr<Expr> parseExpression(const std::vector<Token> &tokens)
 {
     try
     {
         ExpressionParser exprParser(tokens);
         auto expr = exprParser.parse();
-
-        if (expr)
-        {
-            return std::make_unique<ExpressionNode>(std::move(expr));
-        }
+        return expr;
     }
     catch (const std::exception &e)
     {
