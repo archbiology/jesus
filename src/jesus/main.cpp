@@ -3,25 +3,31 @@
 #include "lexer/lexer.hpp"
 #include "parser/parser.hpp"
 #include "spirit/heart.hpp"
+#include "interpreter/interpreter.hpp"
 
 int main()
 {
     Heart heart;
+    Interpreter interpreter(&heart);
     std::string line;
 
     std::cout << "(Jesus) ";
     while (std::getline(std::cin, line))
     {
-        auto tokens = lex(line);
-        auto node = parse(tokens);
+        try
+        {
 
-        if (node)
-        {
-            node->execute(&heart);
+            auto tokens = lex(line);
+            auto node = parse(tokens);
+
+            if (node)
+            {
+                interpreter.execute(node);
+            }
         }
-        else
+        catch (const std::exception &e)
         {
-            std::cout << "And the command was without form and void.\n";
+            std::cerr << "❌ Error: " << e.what() << "\n";
         }
 
         // ----------------

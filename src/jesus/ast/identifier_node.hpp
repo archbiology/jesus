@@ -1,6 +1,6 @@
 #pragma once
 
-#include "ast_node.hpp"
+#include "../ast/expr/expr.hpp"
 #include "../spirit/heart.hpp"
 #include <string>
 
@@ -17,7 +17,7 @@
  * "The Lord knows those who are his." — 2 Timothy 2:19
  * In the same way, each identifier must be identified within the language.
  */
-struct IdentifierNode : public ASTNode
+struct IdentifierNode : public Expr
 {
     std::string name;
 
@@ -27,15 +27,10 @@ struct IdentifierNode : public ASTNode
     {
         if (heart)
         {
-            return heart->get(name);
+            return heart->getVar(name);
         }
 
         return Value::formless();
-    }
-
-    void execute(Heart *heart) override
-    {
-        std::cout << evaluate(heart).toString() << std::endl;
     }
 
     std::string toString() const override { return "IdentifierNode(" + name + ")"; }

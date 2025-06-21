@@ -3,6 +3,11 @@
 #include <string>
 #include <variant>
 #include <iostream>
+#include <vector>
+#include <memory>
+
+class Value;                // Forward declaration, since it is used on Dust.
+struct make_string_functor; // Forward declaration
 
 /**
  * @brief Represents any value in the interpreted language:
@@ -13,16 +18,7 @@
  * "then the Lord God formed the man of dust from the ground and breathed into his nostrils the breath of life, and the man became a living creature."
  * — Genesis 2:7
  */
-using Dust = std::variant<std::string, double, int, bool, std::monostate>;
-
-struct make_string_functor
-{
-    std::string operator()(const std::string &x) const { return "(text) " + x; }
-    std::string operator()(double x) const { return "(double) " + std::to_string(x); }
-    std::string operator()(int x) const { return "(int) " + std::to_string(x); }
-    std::string operator()(bool x) const { return "(logic) " + std::to_string(x); }
-    std::string operator()(std::monostate x) const { return "null"; }
-};
+using Dust = std::variant<std::vector<std::shared_ptr<Value>>, std::string, double, int, bool, std::monostate>; // or std::unique_ptr<Value>, etc.
 
 class Value
 {
@@ -33,6 +29,7 @@ public:
     bool IS_NUMBER = false;
     bool IS_BOOLEAN = false;
     bool IS_STRING = false;
+    bool IS_LIST = false;
 
     bool AS_BOOLEAN = false;
 
@@ -43,6 +40,7 @@ public:
     explicit Value(bool v) : value(v), IS_BOOLEAN(true), AS_BOOLEAN(v) {}
     explicit Value(const std::string &v) : value(v), IS_STRING(true), AS_BOOLEAN(v != "") {}
     explicit Value(const char *v) : value(std::string(v)), IS_STRING(true), AS_BOOLEAN(std::string(v) != "") {}
+    explicit Value(const std::vector<std::shared_ptr<Value>> &v) : value(v), IS_LIST(true), AS_BOOLEAN(!v.empty()) {}
 
     /**
      * @brief Create a NONE/NULL/monostate Value.
@@ -77,9 +75,14 @@ public:
         return (int)toNumber();
     }
 
-    std::string toString() const
+    std::string toString() const;
+
+    const std::vector<std::shared_ptr<Value>> &asList() const
     {
-        return std::visit(make_string_functor(), value);
+        if (!IS_LIST)
+            throw std::runtime_error("This value is not a list.");
+
+        return std::get<std::vector<std::shared_ptr<Value>>>(value);
     }
 
     /**

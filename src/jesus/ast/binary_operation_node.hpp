@@ -1,5 +1,5 @@
 #pragma once
-#include "ast_node.hpp"
+#include "../ast/expr/expr.hpp"
 #include "../spirit/heart.hpp"
 
 /**
@@ -13,11 +13,11 @@
  *     BinaryOperationNode(">=", leftNode, rightNode);
  *     => Evaluates to "true" or "false" depending on the values.
  */
-struct BinaryOperationNode : public ASTNode
+struct BinaryOperationNode : public Expr
 {
     std::string op;
-    ASTNode *left;
-    ASTNode *right;
+    std::unique_ptr<Expr> left;
+    std::unique_ptr<Expr> right;
 
     /**
      * @brief Construct a new BinaryOperationNode object (e.g., age >= 18)
@@ -29,9 +29,8 @@ struct BinaryOperationNode : public ASTNode
      * @param left Pointer to the left operand node.
      * @param right Pointer to the right operand node.
      */
-    BinaryOperationNode(std::string op, ASTNode *left, ASTNode *right)
-        : op(op), left(left), right(right) {}
-
+    BinaryOperationNode(std::string op, std::unique_ptr<Expr> left, std::unique_ptr<Expr> right)
+        : op(op), left(std::move(left)), right(std::move(right)) {}
     /**
      * @brief Evaluates the binary operation and returns an optional value.
      *
@@ -44,7 +43,7 @@ struct BinaryOperationNode : public ASTNode
         Value r = right->evaluate(heart);
 
         if (op == ">=")
-            return  Value(l >= r);
+            return Value(l >= r);
 
         if (op == "<=")
             return Value(l <= r);
@@ -64,9 +63,8 @@ struct BinaryOperationNode : public ASTNode
         if (op == "or")
             return Value(l.AS_BOOLEAN || r.AS_BOOLEAN);
 
-        if (op  == "and") {
+        if (op == "and")
             return Value(l.AS_BOOLEAN && r.AS_BOOLEAN);
-        }
 
         if (op == "versus") {
             if (l.IS_BOOLEAN && r.IS_BOOLEAN) {
@@ -83,15 +81,6 @@ struct BinaryOperationNode : public ASTNode
         }
 
         return Value::formless();
-    }
-
-    void execute(Heart *heart) override {
-        Value value = evaluate(heart);
-
-        if (! value.IS_FORMLESS)
-        {
-            std::cout << value.toString() << std::endl;
-        }
     }
 
     /**

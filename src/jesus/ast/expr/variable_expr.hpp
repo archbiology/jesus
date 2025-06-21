@@ -35,7 +35,7 @@ public:
         : name(name) {}
 
     Value evaluate(Heart *heart) override {
-        return heart->get(name);
+        return heart->getVar(name);
     }
 
     /**

@@ -45,5 +45,8 @@ enum class TokenType
     WARN,           // "warn" prints to stderr
     UPDATE,
 
+    REPEAT,         // `repeat` 3 times
+    TIMES,          // repeat 3 `times`
+
     END_OF_FILE
 };
