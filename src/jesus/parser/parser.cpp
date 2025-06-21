@@ -34,14 +34,17 @@ std::unique_ptr<Stmt> parse(const std::vector<Token> &tokens)
         int repeatCount = std::stoi(tokens[1].lexeme); // assuming it's an integer literal
 
         std::vector<Token> innerTokens(tokens.begin() + 4, tokens.end());
+        auto countExpr = std::make_unique<LiteralExpr>(Value(repeatCount));
 
+        std::vector<std::unique_ptr<Stmt>> block;
         std::unique_ptr<Stmt> innerStmt = parse(innerTokens);
         if (!innerStmt)
         {
             throw std::runtime_error("Could not parse body of 'repeat N times'");
         }
+        block.emplace_back(std::move(innerStmt));
 
-        return std::make_unique<RepeatTimesStmt>(repeatCount, std::move(innerStmt));
+        return std::make_unique<RepeatTimesStmt>(std::move(countExpr), std::move(block));
     }
 
     // parse use "value" if condition otherwise "value"

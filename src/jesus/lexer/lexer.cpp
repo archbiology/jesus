@@ -161,6 +161,12 @@ TokenType recognize_token_type(const std::string &word)
     if (word[0] == '"')
         return TokenType::Word;
 
+    if (word == "repeat")
+        return TokenType::REPEAT;
+
+    if (word == "times")
+        return TokenType::TIMES;
+
     return TokenType::IDENTIFIER;
 }
 
@@ -285,6 +291,13 @@ std::vector<Token> lex(const std::string &input)
                 op += input[++i];
 
             tokens.emplace_back(recognize_token_type(op), op, Value(op));
+            i++;
+            continue;
+        }
+
+        if (c == ':')
+        {
+            tokens.emplace_back(TokenType::COLON, ":", Value(":"));
             i++;
             continue;
         }

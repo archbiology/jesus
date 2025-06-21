@@ -47,6 +47,7 @@ enum class TokenType
 
     REPEAT,         // `repeat` 3 times
     TIMES,          // repeat 3 `times`
+    COLON,          // :
 
     END_OF_FILE
 };
