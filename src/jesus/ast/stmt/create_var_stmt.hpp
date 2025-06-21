@@ -18,4 +18,23 @@ public:
 
     CreateVarStmt(std::string name, std::unique_ptr<Expr> value)
         : name(name), value(std::move(value)) {}
+
+    /**
+     * @brief Returns a string representation of the statement.
+     *
+     * "For nothing is hidden that will not be made manifest, nor is anything
+     * secret that will not be known and come to light." — Luke 8:17
+     */
+    std::string toString() const override
+    {
+
+        std::string str = "CreateVarStmt(" + name;
+
+        if (value)
+            str += ", " + value->toString();
+
+        str += ")";
+
+        return str;
+    }
 };

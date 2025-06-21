@@ -2,6 +2,19 @@
 #include "expr.hpp"
 #include <memory>
 
+/**
+ * @brief Represents conditional expressions like the following:
+ *   say "adult" if age >= 18 otherwise "young"
+ *
+ * 📖 "I have set before you life and death, blessings and curses. Now choose life, so that you and your children may live."
+ * — Deuteronomy 30:19
+ *
+ * This node evaluates a condition and returns the result of either the
+ * `thenBranch` or `elseBranch` branch based on the logic outcome of the condition.
+ *
+ * It enables decision-making logic in the language's syntax, allowing
+ * expressions such as: condition ? thenBranch : elseBranch
+ */
 class ConditionalExpr : public Expr
 {
 public:
@@ -10,6 +23,18 @@ public:
 
     std::unique_ptr<Expr> elseBranch;
 
+    /**
+     * @brief Construct a new ConditionalExpr object
+     *
+     * Represents a conditional expression (similar to a ternary operation).
+     *
+     * 📖 "I have set before you life and death, blessings and curses. Now choose life, so that you and your children may live."
+     * — Deuteronomy 30:19
+     *
+     * @param condition The condition to evaluate (should return "true" or "false").
+     * @param thenBranch The expression to evaluate if the condition is true.
+     * @param elseBranch The expression to evaluate if the condition is false.
+     */
     ConditionalExpr(std::unique_ptr<Expr> condition,
                     std::unique_ptr<Expr> thenBranch,
                     std::unique_ptr<Expr> elseBranch)
@@ -19,10 +44,10 @@ public:
 
   /**
    * @brief  Evaluates a condition and returns the result of either the
-   * `ifTrue` or `ifFalse` branch based on the logic outcome of the condition.
+   * `thenBranch` or `elseBranch` branch based on the logic outcome of the condition.
    *
-   * - If the condition evaluates to "true", it evaluates and returns the `ifTrue` branch.
-   * - If the condition evaluates to anything else (or fails), it evaluates and returns the `ifFalse` branch if available.
+   * - If the condition evaluates to "true", it evaluates and returns the `thenBranch` branch.
+   * - If the condition evaluates to anything else (or fails), it evaluates and returns the `elseBranch` branch if available.
    *
    * @param heart The "Symbol table"
    * @return std::optional<std::string>
@@ -57,9 +82,9 @@ public:
         if (condition)
             str += "(condition: " + condition->toString();
         if (thenBranch)
-            str += ", ifTrue: " + thenBranch->toString();
+            str += ", thenBranch: " + thenBranch->toString();
         if (elseBranch)
-            str += ", ifFalse: " + elseBranch->toString();
+            str += ", elseBranch: " + elseBranch->toString();
 
         str += ")";
 
