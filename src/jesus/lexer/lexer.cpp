@@ -167,6 +167,12 @@ TokenType recognize_token_type(const std::string &word)
     if (word == "times")
         return TokenType::TIMES;
 
+    if (word == "amen")
+        return TokenType::AMEN;
+
+    if (word == "\n")
+        return TokenType::NEW_LINE;
+
     return TokenType::IDENTIFIER;
 }
 
@@ -184,6 +190,13 @@ std::vector<Token> lex(const std::string &input)
     while (i < input.size())
     {
         char c = input[i];
+
+        // / Special handling for actual newline character
+        if (c == '\n') {
+            tokens.emplace_back(TokenType::NEW_LINE, "\n", Value("\n"));
+            i++;
+            continue;
+        }
 
         // Skip whitespace
         if (std::isspace(c))

@@ -47,7 +47,9 @@ enum class TokenType
 
     REPEAT,         // `repeat` 3 times
     TIMES,          // repeat 3 `times`
-    COLON,          // :
+    COLON,          // : (start of a block)
+    NEW_LINE,       // \n
 
+    AMEN,          // amen (end of a block)
     END_OF_FILE
 };

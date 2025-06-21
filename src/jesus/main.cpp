@@ -10,24 +10,43 @@ int main()
     Heart heart;
     Interpreter interpreter(&heart);
     std::string line;
+    std::string buffer;
+    std::cout << std::unitbuf;  // Enable automatic flushing on cout
 
     std::cout << "(Jesus) ";
     while (std::getline(std::cin, line))
     {
+        buffer += line + "\n";  // Accumulate first
         try
         {
-
-            auto tokens = lex(line);
-            auto node = parse(tokens);
-
-            if (node)
+            // Accumulate lines until we reach 'amen' or EOF
+            if (line.find("amen") != std::string::npos || std::cin.eof())
             {
-                interpreter.execute(node);
+
+                if (buffer.empty())
+                {
+                    continue;
+                }
+
+                auto tokens = lex(buffer);
+
+                auto node = parse(tokens);
+
+                if (node)
+                {
+                    interpreter.execute(node);
+                }
+
+                buffer.clear();
+                continue;
             }
+
+            buffer += line + "\n"; // Accumulate
         }
         catch (const std::exception &e)
         {
             std::cerr << "❌ Error: " << e.what() << "\n";
+            buffer.clear(); // Reset buffer on error
         }
 
         // ----------------

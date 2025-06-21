@@ -21,28 +21,93 @@ std::unique_ptr<Stmt> parse(const std::vector<Token> &tokens)
     if (tokens_count == 1 && tokens[0].type == TokenType::IDENTIFIER)
     {
         // WARN because the person didn't use 'say'
-        return std::make_unique<OutputStmt>(OutputType::WARN,  std::make_unique<VariableExpr>(tokens[1].lexeme));
-
+        return std::make_unique<OutputStmt>(OutputType::WARN, std::make_unique<VariableExpr>(tokens[0].lexeme));
     }
 
-    if (tokens_count >= 4 &&
+    if (tokens.size() >= 4 &&
         tokens[0].type == TokenType::REPEAT &&
         tokens[1].type == TokenType::INT &&
         tokens[2].type == TokenType::TIMES &&
-        tokens[3].lexeme == ":")
+        tokens[3].type == TokenType::COLON)
     {
-        int repeatCount = std::stoi(tokens[1].lexeme); // assuming it's an integer literal
-
-        std::vector<Token> innerTokens(tokens.begin() + 4, tokens.end());
+        int repeatCount = std::stoi(tokens[1].lexeme);
         auto countExpr = std::make_unique<LiteralExpr>(Value(repeatCount));
 
         std::vector<std::unique_ptr<Stmt>> block;
-        std::unique_ptr<Stmt> innerStmt = parse(innerTokens);
-        if (!innerStmt)
+
+        // Tokens after the colon
+        std::vector<Token> bodyTokens(tokens.begin() + 4, tokens.end());
+
+        size_t i = 0;
+
+        // Skip any leading NEW_LINE tokens (multi-line block style)
+        while (i < bodyTokens.size() && bodyTokens[i].type == TokenType::NEW_LINE)
+            i++;
+
+        // Check if next tokens contain AMEN to detect single-line style
+        bool singleLine = false;
+        for (size_t j = i; j < bodyTokens.size(); j++)
         {
-            throw std::runtime_error("Could not parse body of 'repeat N times'");
+            if (bodyTokens[j].type == TokenType::AMEN)
+            {
+                singleLine = true;
+                break;
+            }
         }
-        block.emplace_back(std::move(innerStmt));
+
+        if (singleLine)
+        {
+            // Single-line style: parse everything before AMEN as one statement
+            std::vector<Token> stmtTokens;
+            while (i < bodyTokens.size() && bodyTokens[i].type != TokenType::AMEN)
+            {
+                stmtTokens.push_back(bodyTokens[i]);
+                i++;
+            }
+            // Parse the single statement
+            if (!stmtTokens.empty())
+            {
+                auto stmt = parse(stmtTokens);
+                if (stmt)
+                    block.emplace_back(std::move(stmt));
+                else
+                    throw std::runtime_error("Could not parse single-line body of 'repeat N times'");
+            }
+        }
+        else
+        {
+            // Multi-line style: parse statements separated by NEW_LINE until AMEN or EOF
+            while (i < bodyTokens.size())
+            {
+                if (bodyTokens[i].type == TokenType::AMEN || bodyTokens[i].type == TokenType::END_OF_FILE)
+                    break;
+
+                if (bodyTokens[i].type == TokenType::NEW_LINE)
+                {
+                    i++;
+                    continue;
+                }
+
+                std::vector<Token> stmtTokens;
+                while (i < bodyTokens.size() &&
+                       bodyTokens[i].type != TokenType::NEW_LINE &&
+                       bodyTokens[i].type != TokenType::AMEN &&
+                       bodyTokens[i].type != TokenType::END_OF_FILE)
+                {
+                    stmtTokens.push_back(bodyTokens[i]);
+                    i++;
+                }
+
+                if (!stmtTokens.empty())
+                {
+                    auto stmt = parse(stmtTokens);
+                    if (stmt)
+                        block.emplace_back(std::move(stmt));
+                    else
+                        throw std::runtime_error("Could not parse multi-line body of 'repeat N times'");
+                }
+            }
+        }
 
         return std::make_unique<RepeatTimesStmt>(std::move(countExpr), std::move(block));
     }

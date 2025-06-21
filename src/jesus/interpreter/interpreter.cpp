@@ -164,10 +164,11 @@ void Interpreter::visitRepeatTimes(const RepeatTimesStmt *stmt)
     Value countVal = evaluate(stmt->countExpr);
     if (!countVal.IS_INT)
     {
+        // FIXME: Validate at parser time, rather than at execution time?
         throw std::runtime_error("repeat times expects a numeric value.");
     }
 
-    int times = countVal.toInt();
+    const int times = countVal.toInt();
 
     for (int i = 0; i < times; ++i)
     {
