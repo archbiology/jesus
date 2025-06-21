@@ -32,6 +32,60 @@ You will see the REPL prompt:
 
 Type a line and see the tokens printed as output.
 
+## 🧪 Running the Test Suite
+
+The Jesus language comes with a built-in test runner to validate the behavior of `.jesus` programs.
+
+Each test is composed of:
+
+- A `.jesus` file containing the program to be interpreted.
+- A corresponding `.jesus.expected` file that contains the expected combined output from `stdout` and `stderr`.
+
+### ▶️ How to Run Tests
+
+Make sure both the `jesus` binary and the `test_runner` are built. Build the `test_runner` using this command:
+```
+g++ -std=c++17 -o test_runner test_runner.cpp
+```
+
+Then simply run:
+
+```bash
+./test_runner
+```
+
+✅ What It Does
+
+- Automatically runs all .jesus test files in the tests/ directory.
+
+- Captures both stdout and stderr of the Jesus interpreter.
+
+- Compares the actual output against the .expected file.
+
+- Shows a per-line diff with ✅ or 🔴 indicators.
+
+- Fails with exit code 1 if any test fails.
+
+🛠 Example Output
+
+```
+[✓] Passed: tests/hello_world.jesus
+[✗] Failed: tests/if_else.jesus
+Line 3 differs 🔴️:
+  Expected: 'Result: 42'
+  Actual:   'Result: 0'
+```
+
+💡 Tip for Contributors
+
+To add a new test, create a file like `tests/my_test.jesus` and its expected output in `tests/my_test.jesus.expected`.
+
+You can generate the .expected file like this:
+
+```
+./jesus < tests/my_test.jesus &> tests/my_test.jesus.expected
+```
+
 ## 📁 Project Structure
 
 ```
