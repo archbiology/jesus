@@ -19,8 +19,8 @@
 class ParserContext
 {
 public:
-    explicit ParserContext(const std::vector<Token> &tokens)
-        : tokens(tokens), current(0) {}
+    explicit ParserContext(const std::vector<Token> &tokens, int current=0)
+        : tokens(tokens), current(current) {}
 
     /**
      * @brief Returns the current token without consuming it
@@ -101,8 +101,6 @@ public:
      */
     bool isAtEnd() const
     {
-        std::cout << "  ParserContext::isAtEnd()\n";
-
         return peek().type == TokenType::END_OF_FILE;
     }
 

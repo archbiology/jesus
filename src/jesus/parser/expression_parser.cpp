@@ -4,6 +4,7 @@
 #include "../ast/expr/literal_expr.hpp"
 #include "../ast/expr/variable_expr.hpp"
 #include "../ast/expr/grouping_expr.hpp"
+#include "grammar/jesus_grammar.hpp"
 #include <stdexcept>
 
 ExpressionParser::ExpressionParser(const std::vector<Token> &tokens)
@@ -130,8 +131,11 @@ std::unique_ptr<Expr> ExpressionParser::parseLiteralOrGroupOrVar()
         return std::make_unique<LiteralExpr>(Value(true));
     }
 
-    if (match(TokenType::INT, TokenType::DOUBLE, TokenType::STRING))
-    {
+    // Try primitive EBNF-based parsing
+    ParserContext ctx(tokens, current);
+    auto isNumberOrString = grammar::Primary->parse(ctx); // this includes Number | String for now
+    if (isNumberOrString) {
+        advance();
         return std::make_unique<LiteralExpr>(previous().literal);
     }
 
