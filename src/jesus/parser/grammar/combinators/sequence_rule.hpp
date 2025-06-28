@@ -23,8 +23,13 @@ public:
         return false;
     }
 
-    std::string toString() override
+    std::string toStr(GrammarRuleHashTable &visitedTable) const override
     {
-        return "Sequence( " + first->toString() + " >> " + second->toString() + ")";
+        if (visitedTable.count(this))
+            return "Sequence(...)";
+
+        visitedTable.insert(this);
+
+        return "Sequence( " + first->toStr(visitedTable) + " >> " + second->toStr(visitedTable) + ")";
     }
 };

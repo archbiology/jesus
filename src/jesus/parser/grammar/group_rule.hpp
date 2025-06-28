@@ -12,8 +12,13 @@ public:
 
     bool parse(ParserContext &ctx) override;
 
-    std::string toString() override
+    std::string toStr(GrammarRuleHashTable &visitedTable) const override
     {
-        return "Group(" + inner->toString() + ")";
+        if (visitedTable.count(this))
+            return "Group(...)";
+
+        visitedTable.insert(this);
+
+        return "Group(" + inner->toStr(visitedTable) + ")";
     }
 };

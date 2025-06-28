@@ -35,22 +35,24 @@ public:
         return false;
     }
 
-    std::string toString() override
+    std::string toStr(GrammarRuleHashTable &visitedTable) const override
     {
-        std::string str = "OrRule(";
-        bool firstGone = false;
-        for (auto &rule : rules)
+        if (visitedTable.count(this))
+            return "Or(...)";
+
+        visitedTable.insert(this);
+
+        std::string str = "";
+        bool first = true;
+        for (const auto &rule : rules)
         {
-            if (firstGone)
-            {
-                str += "|";
-            }
+            if (!first)
+                str += " | ";
 
-            str += rule->toString();
+            str += rule->toStr(visitedTable);
 
-            firstGone = true;
+            first = false;
         }
-        str += ")";
 
         return str;
     }

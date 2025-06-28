@@ -9,7 +9,7 @@ class NumberRule : public IGrammarRule
 public:
     bool parse(ParserContext &ctx) override;
 
-    std::string toString() override
+    std::string toStr(GrammarRuleHashTable &visitedTable) const override
     {
         return "Number";
     }
