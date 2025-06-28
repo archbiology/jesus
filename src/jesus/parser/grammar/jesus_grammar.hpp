@@ -1,5 +1,6 @@
 #pragma once
 
+#include "combinators/forward_rule.hpp"
 #include "grammar_aliases.hpp" // for Number, String, etc.
 #include "operators.hpp"
 
@@ -16,8 +17,32 @@
 namespace grammar
 {
 
-    inline auto Primary = Number | String;
+    /**
+     * @brief Create a forward declaration for ExpressionRule
+     *
+     * It solves the following problem: Primary refers to ExpressionRule, and ExpressionRule refers to Primary.
+     * That's a cyclic dependency — a common issue in recursive descent parsers.
+     *
+     * It acts as a placeholder that we can define later
+     */
+    inline auto Expression = std::make_shared<ForwardRule>("Expression");
 
-    inline auto ExpressionRule = Primary | Group(Number | String); // simplistic for now
+    /**
+     * @brief Primary is anything that can be evaluated directly: number, string, or a grouped expression.
+     */
+    inline auto Primary = Number | String | Group(Expression);
 
+    /**
+     * @brief Set the Expression rule to something (for now just Primary)
+     *
+     *  Expression, in its full form, will later be:
+     *  Expression → Or → And → Equality → Comparison → Term → Factor → Primary
+     *
+     *  But for now, Expression := Primary
+     *
+     */
+    inline void initializeGrammar()
+    {
+        std::static_pointer_cast<ForwardRule>(Expression)->setTarget(Primary);
+    }
 }

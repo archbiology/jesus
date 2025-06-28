@@ -2,6 +2,7 @@
 #include <filesystem>
 #include <iostream>
 #include <fstream>
+#include "parser/grammar/jesus_grammar.hpp"
 
 std::string runJesusInterpreter(const std::string &inputFile)
 {
@@ -55,6 +56,8 @@ void showDiff(const std::string &expected, const std::string &actual)
 
 int main()
 {
+    grammar::initializeGrammar(); // Sets the Expression rule target to Primary
+
     std::string testDir = "tests";
     bool allPassed = true;
 

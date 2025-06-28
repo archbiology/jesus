@@ -1,3 +1,5 @@
+#pragma once
+
 #include <memory>
 #include "primitives/number_rule.hpp"
 #include "primitives/string_rule.hpp"
