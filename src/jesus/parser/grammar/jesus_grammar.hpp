@@ -7,6 +7,7 @@
 #include "primitives/comparison_rule.hpp"
 #include "primitives/equality_rule.hpp"
 #include "primitives/logical_and_rule.hpp"
+#include "primitives/logical_or_rule.hpp"
 #include "primitives/multiplication_rule.hpp"
 #include "primitives/versus_rule.hpp"
 #include "unary_rule.hpp"
@@ -39,8 +40,9 @@ namespace grammar
     inline auto Comparison = std::make_shared<ComparisonRule>(Addition);
     inline auto Equality = std::make_shared<EqualityRule>(Comparison);
     inline auto LogicalAnd = std::make_shared<LogicalAndRule>(Equality);
-    inline auto Expression = LogicalAnd;
-    inline auto Versus = std::make_shared<VersusRule>(Addition, Addition);
+    inline auto Versus = std::make_shared<VersusRule>(LogicalAnd, LogicalAnd);
+    inline auto LogicalOr = std::make_shared<LogicalOrRule>(Versus);
+    inline auto Expression = LogicalOr;
 
     /**
      * @brief Primary is anything that can be evaluated directly: number, string, or a grouped expression.
