@@ -5,6 +5,7 @@
 #include "operators.hpp"
 #include "primitives/addition_rule.hpp"
 #include "primitives/comparison_rule.hpp"
+#include "primitives/equality_rule.hpp"
 #include "primitives/multiplication_rule.hpp"
 #include "unary_rule.hpp"
 
@@ -34,7 +35,8 @@ namespace grammar
     inline auto Multiplication = std::make_shared<MultiplicationRule>(Unary);
     inline auto Addition = std::make_shared<AdditionRule>(Multiplication);
     inline auto Comparison = std::make_shared<ComparisonRule>(Addition);
-    inline auto Expression = Comparison;
+    inline auto Equality = std::make_shared<EqualityRule>(Comparison);
+    inline auto Expression = Equality;
 
     /**
      * @brief Primary is anything that can be evaluated directly: number, string, or a grouped expression.
