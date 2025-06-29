@@ -6,6 +6,7 @@
 #include "primitives/addition_rule.hpp"
 #include "primitives/comparison_rule.hpp"
 #include "primitives/equality_rule.hpp"
+#include "primitives/logical_and_rule.hpp"
 #include "primitives/multiplication_rule.hpp"
 #include "primitives/versus_rule.hpp"
 #include "unary_rule.hpp"
@@ -37,7 +38,8 @@ namespace grammar
     inline auto Addition = std::make_shared<AdditionRule>(Multiplication);
     inline auto Comparison = std::make_shared<ComparisonRule>(Addition);
     inline auto Equality = std::make_shared<EqualityRule>(Comparison);
-    inline auto Expression = Equality;
+    inline auto LogicalAnd = std::make_shared<LogicalAndRule>(Equality);
+    inline auto Expression = LogicalAnd;
     inline auto Versus = std::make_shared<VersusRule>(Addition, Addition);
 
     /**
