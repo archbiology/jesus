@@ -3,6 +3,7 @@
 #include "combinators/forward_rule.hpp"
 #include "grammar_aliases.hpp" // for Number, String, etc.
 #include "operators.hpp"
+#include "primitives/multiplication_rule.hpp"
 #include "unary_rule.hpp"
 
 /**
@@ -29,6 +30,7 @@ namespace grammar
 
     inline auto Unary = std::make_shared<ForwardRule>("Unary");
     inline auto Expression = std::make_shared<ForwardRule>("Expression");
+    inline auto Multiplication = std::make_shared<ForwardRule>("Multiplication");
 
     /**
      * @brief Primary is anything that can be evaluated directly: number, string, or a grouped expression.
@@ -48,5 +50,6 @@ namespace grammar
     {
         Expression->setTarget(Primary);
         Unary->setTarget(std::make_shared<UnaryRule>(Primary));
+        Multiplication->setTarget(std::make_shared<MultiplicationRule>(Unary));
     }
 }
