@@ -3,6 +3,7 @@
 #include "combinators/forward_rule.hpp"
 #include "grammar_aliases.hpp" // for Number, String, etc.
 #include "operators.hpp"
+#include "unary_rule.hpp"
 
 /**
  * @brief Central EBNF-style grammar definition for the Jesus language.
@@ -25,6 +26,8 @@ namespace grammar
      *
      * It acts as a placeholder that we can define later
      */
+
+    inline auto Unary = std::make_shared<ForwardRule>("Unary");
     inline auto Expression = std::make_shared<ForwardRule>("Expression");
 
     /**
@@ -43,6 +46,7 @@ namespace grammar
      */
     inline void initializeGrammar()
     {
-        std::static_pointer_cast<ForwardRule>(Expression)->setTarget(Primary);
+        Expression->setTarget(Primary);
+        Unary->setTarget(std::make_shared<UnaryRule>(Primary));
     }
 }
