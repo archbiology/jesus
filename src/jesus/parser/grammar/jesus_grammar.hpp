@@ -4,6 +4,7 @@
 #include "grammar_aliases.hpp" // for Number, String, etc.
 #include "operators.hpp"
 #include "primitives/addition_rule.hpp"
+#include "primitives/comparison_rule.hpp"
 #include "primitives/multiplication_rule.hpp"
 #include "unary_rule.hpp"
 
@@ -30,9 +31,10 @@ namespace grammar
      */
 
     inline auto Unary = std::make_shared<ForwardRule>("Unary");
-    inline auto Expression = std::make_shared<ForwardRule>("Expression");
-    inline auto Multiplication = std::make_shared<ForwardRule>("Multiplication");
+    inline auto Multiplication = std::make_shared<MultiplicationRule>(Unary);
     inline auto Addition = std::make_shared<AdditionRule>(Multiplication);
+    inline auto Comparison = std::make_shared<ComparisonRule>(Addition);
+    inline auto Expression = Comparison;
 
     /**
      * @brief Primary is anything that can be evaluated directly: number, string, or a grouped expression.
@@ -50,8 +52,6 @@ namespace grammar
      */
     inline void initializeGrammar()
     {
-        Expression->setTarget(Primary);
         Unary->setTarget(std::make_shared<UnaryRule>(Primary));
-        Multiplication->setTarget(std::make_shared<MultiplicationRule>(Unary));
     }
 }
