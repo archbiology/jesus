@@ -86,10 +86,10 @@ public:
             return "LESS";
         case TokenType::LESS_EQUAL:
             return "LESS_EQUAL";
-        case TokenType::FALSE:
-            return "FALSE";
-        case TokenType::TRUE:
-            return "TRUE";
+        case TokenType::YES:
+            return "YES";
+        case TokenType::NO:
+            return "NO";
         case TokenType::LEFT_PAREN:
             return "LEFT_PAREN";
         case TokenType::RIGHT_PAREN:

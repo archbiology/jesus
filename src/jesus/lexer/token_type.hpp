@@ -27,8 +27,8 @@ enum class TokenType
     GREATER_EQUAL,  // >=
     LESS,           // <
     LESS_EQUAL,     // <=
-    FALSE,          // 17
-    TRUE,           // 18
+    YES,            // 17
+    NO,             // 18
     INT,            // 19
     DOUBLE,         // 20
     STRING,         // 21

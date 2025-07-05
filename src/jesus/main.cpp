@@ -4,9 +4,12 @@
 #include "parser/parser.hpp"
 #include "spirit/heart.hpp"
 #include "interpreter/interpreter.hpp"
+#include "parser/grammar/jesus_grammar.hpp"
 
 int main()
 {
+    grammar::initializeGrammar(); // Sets the Expression rule target to Primary
+
     Heart heart;
     Interpreter interpreter(&heart);
     std::string line;
