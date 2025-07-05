@@ -110,23 +110,23 @@ TokenType recognize_token_type(const std::string &word)
     if (word == "!=")
         return TokenType::NOT_EQUAL;
 
-    if (word == ">")
+    if (word == ">") // greater than
         return TokenType::GREATER;
 
-    if (word == ">=")
+    if (word == ">=") // greater or equals to
         return TokenType::GREATER_EQUAL;
 
-    if (word == "<")
+    if (word == "<") // less than
         return TokenType::LESS;
 
-    if (word == "<=")
+    if (word == "<=") // less or equal to
         return TokenType::LESS_EQUAL;
 
-    if (word == "false")
-        return TokenType::FALSE;
+    if (word == "no")
+        return TokenType::NO;
 
-    if (word == "true")
-        return TokenType::TRUE;
+    if (word == "yes")
+        return TokenType::YES;
 
     if (word == "(")
         return TokenType::LEFT_PAREN;

@@ -1,16 +1,17 @@
 #include "group_rule.hpp"
-#include "../../lexer/token_type.hpp"
+#include "../../ast/expr/grouping_expr.hpp"
 
-bool GroupRule::parse(ParserContext &ctx)
+std::unique_ptr<Expr> GroupRule::parse(ParserContext &ctx)
 {
     if (!ctx.match(TokenType::LEFT_PAREN))
-        return false;
+        return nullptr;
 
-    if (!inner->parse(ctx))
-        return false;
+    auto expr = inner->parse(ctx);
+    if (!expr)
+        return nullptr;
 
     if (!ctx.match(TokenType::RIGHT_PAREN))
-        return false;
+        throw std::runtime_error("Expected ')' after expression.");
 
-    return true;
+    return std::make_unique<GroupingExpr>(std::move(expr));
 }

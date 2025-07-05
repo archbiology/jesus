@@ -20,19 +20,20 @@ public:
         return *this;
     }
 
-    bool parse(ParserContext &ctx) override
+    std::unique_ptr<Expr> parse(ParserContext &ctx) override
     {
-        auto count = 1;
         for (auto &rule : rules)
         {
-            ParserContext backup = ctx.snapshot();
-            if (rule->parse(ctx))
-                return true;
+            ParserContext backup = ctx.snapshot(); // Save state in case this rule fails
+            auto result = rule->parse(ctx);        // Try this rule
 
-            ctx = backup;
-            count++;
+            if (result) // If it parsed successfully
+                return result;
+
+            ctx = backup; // Restore context and try next
         }
-        return false;
+
+        return nullptr; // None of the rules matched
     }
 
     std::string toStr(GrammarRuleHashTable &visitedTable) const override

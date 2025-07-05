@@ -30,7 +30,7 @@ public:
     explicit EqualityRule(std::shared_ptr<IGrammarRule> operandRule)
         : operand(std::move(operandRule)) {}
 
-    bool parse(ParserContext &ctx) override;
+    std::unique_ptr<Expr> parse(ParserContext &ctx) override;
 
     std::string toStr(GrammarRuleHashTable &visited) const override;
 };

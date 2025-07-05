@@ -11,7 +11,7 @@ public:
     explicit MultiplicationRule(std::shared_ptr<IGrammarRule> unaryRule)
         : unary(std::move(unaryRule)) {}
 
-    bool parse(ParserContext &ctx) override;
+    std::unique_ptr<Expr> parse(ParserContext &ctx) override;
 
     std::string toStr(GrammarRuleHashTable &visited) const override;
 };

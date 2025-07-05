@@ -17,7 +17,7 @@ public:
     explicit LogicalAndRule(std::shared_ptr<IGrammarRule> next)
         : nextRule(std::move(next)) {}
 
-    bool parse(ParserContext &ctx) override;
+    std::unique_ptr<Expr> parse(ParserContext &ctx) override;
 
     std::string toStr(GrammarRuleHashTable &visited) const override;
 };

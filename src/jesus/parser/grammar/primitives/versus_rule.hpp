@@ -21,7 +21,7 @@ private:
 public:
     explicit VersusRule(std::shared_ptr<IGrammarRule> lhs, std::shared_ptr<IGrammarRule> rhs);
 
-    bool parse(ParserContext &ctx) override;
+    std::unique_ptr<Expr> parse(ParserContext &ctx) override;
 
     std::string toStr(GrammarRuleHashTable &visitedTable) const override;
 };

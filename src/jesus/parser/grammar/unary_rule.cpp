@@ -1,15 +1,17 @@
 #include "unary_rule.hpp"
-#include "../../lexer/token_type.hpp"
+#include "../../ast/expr/unary_expr.hpp"
 
-bool UnaryRule::parse(ParserContext &ctx)
+std::unique_ptr<Expr> UnaryRule::parse(ParserContext &ctx)
 {
     if (ctx.matchAny({TokenType::NOT, TokenType::MINUS, TokenType::PLUS}))
     {
-        // Recursively call self to support cases like -(--42)
-        if (!parse(ctx))
-            return false;
+        Token op = ctx.previous();
 
-        return true;
+        auto right = parse(ctx); // Recursive call to allow repeated like `-(--42)`
+        if (!right)
+            return nullptr;
+
+        return std::make_unique<UnaryExpr>(op, std::move(right));
     }
 
     // Try to parse operand directly without unary operator.

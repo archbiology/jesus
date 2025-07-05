@@ -49,7 +49,7 @@ public:
         target = std::move(rule);
     }
 
-    bool parse(ParserContext &ctx) override
+    std::unique_ptr<Expr> parse(ParserContext &ctx) override
     {
         if (!target)
             throw std::runtime_error("ForwardRule target not set");

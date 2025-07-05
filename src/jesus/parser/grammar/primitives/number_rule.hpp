@@ -7,7 +7,7 @@
 class NumberRule : public IGrammarRule
 {
 public:
-    bool parse(ParserContext &ctx) override;
+    std::unique_ptr<Expr> parse(ParserContext &ctx) override;
 
     std::string toStr(GrammarRuleHashTable &visitedTable) const override
     {

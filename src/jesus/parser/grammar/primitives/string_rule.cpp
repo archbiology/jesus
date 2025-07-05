@@ -1,11 +1,12 @@
 #include "string_rule.hpp"
-#include "../../../lexer/token_type.hpp"
+#include "../../../ast/expr/literal_expr.hpp"
 
-bool StringRule::parse(ParserContext &ctx)
+std::unique_ptr<Expr> StringRule::parse(ParserContext &ctx)
 {
     if (ctx.match(TokenType::STRING))
     {
-        return true;
+        return std::make_unique<LiteralExpr>(ctx.previous().literal);
     }
-    return false;
+
+    return nullptr;
 }

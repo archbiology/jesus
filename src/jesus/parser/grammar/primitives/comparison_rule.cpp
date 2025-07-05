@@ -1,20 +1,29 @@
 #include "comparison_rule.hpp"
+#include "../../../ast/expr/binary_expr.hpp"
 
-bool ComparisonRule::parse(ParserContext &ctx)
+std::unique_ptr<Expr> ComparisonRule::parse(ParserContext &ctx)
 {
-    if (!inner->parse(ctx))
-        return false;
+    auto left = inner->parse(ctx);
+    if (!left)
+        return nullptr;
 
     while (ctx.matchAny({TokenType::GREATER,
                          TokenType::GREATER_EQUAL,
                          TokenType::LESS,
                          TokenType::LESS_EQUAL}))
     {
-        if (!inner->parse(ctx))
-            return false;
+        Token op = ctx.previous();
+        auto right = inner->parse(ctx);
+        if (!right)
+        {
+            std::cerr << "Expected right-hand expression after '" << op.lexeme << "' comparison operator.\n";
+            return nullptr;
+        }
+
+        left = std::make_unique<BinaryExpr>(std::move(left), op, std::move(right));
     }
 
-    return true;
+    return left;
 }
 
 std::string ComparisonRule::toStr(GrammarRuleHashTable &visited) const

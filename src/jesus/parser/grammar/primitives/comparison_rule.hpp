@@ -17,7 +17,7 @@ public:
     explicit ComparisonRule(std::shared_ptr<IGrammarRule> addition)
         : inner(std::move(addition)) {}
 
-    bool parse(ParserContext &ctx) override;
+    std::unique_ptr<Expr> parse(ParserContext &ctx) override;
 
     std::string toStr(GrammarRuleHashTable &visited) const override;
 };

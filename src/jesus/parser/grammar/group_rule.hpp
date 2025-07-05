@@ -10,7 +10,7 @@ public:
     explicit GroupRule(std::shared_ptr<IGrammarRule> rule)
         : inner(std::move(rule)) {}
 
-    bool parse(ParserContext &ctx) override;
+    std::unique_ptr<Expr> parse(ParserContext &ctx) override;
 
     std::string toStr(GrammarRuleHashTable &visitedTable) const override
     {

@@ -1,7 +1,12 @@
 #include "number_rule.hpp"
-#include "../../../lexer/token_type.hpp"
+#include "../../../ast/expr/literal_expr.hpp"
 
-bool NumberRule::parse(ParserContext &ctx)
+std::unique_ptr<Expr> NumberRule::parse(ParserContext &ctx)
 {
-    return ctx.matchAny({TokenType::INT, TokenType::DOUBLE});
+    if (ctx.matchAny({TokenType::INT, TokenType::DOUBLE}))
+    {
+        return std::make_unique<LiteralExpr>(ctx.previous().literal);
+    }
+
+    return nullptr;
 }

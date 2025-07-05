@@ -1,22 +1,31 @@
 #include "versus_rule.hpp"
+#include "../../../ast/expr/binary_expr.hpp"
 
 VersusRule::VersusRule(std::shared_ptr<IGrammarRule> lhs, std::shared_ptr<IGrammarRule> rhs)
     : lhsRule(std::move(lhs)), rhsRule(std::move(rhs))
 {
 }
 
-bool VersusRule::parse(ParserContext &ctx)
+std::unique_ptr<Expr> VersusRule::parse(ParserContext &ctx)
 {
-    // Parse left-hand side expression
-    if (!lhsRule->parse(ctx))
-        return false;
+    auto left = lhsRule->parse(ctx);
+    if (!left)
+        return nullptr;
 
-    // Check if next token is VERSUS
-    if (!ctx.match(TokenType::VERSUS))
-        return true; // no operator found, expression is just lhs
+    while (ctx.match(TokenType::VERSUS))
+    {
+        Token op = ctx.previous();
+        auto right = rhsRule->parse(ctx);
+        if (!right)
+        {
+            std::cerr << "Expected right-hand expression after '" << op.lexeme << "' VERSUS operator.\n";
+            return nullptr;
+        }
 
-    // Parse right-hand side expression
-    return rhsRule->parse(ctx);
+        left = std::make_unique<BinaryExpr>(std::move(left), op, std::move(right));
+    }
+
+    return left;
 }
 
 std::string VersusRule::toStr(GrammarRuleHashTable &visitedTable) const

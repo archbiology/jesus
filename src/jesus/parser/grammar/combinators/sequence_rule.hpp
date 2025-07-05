@@ -11,16 +11,25 @@ public:
     SequenceRule(std::shared_ptr<IGrammarRule> a, std::shared_ptr<IGrammarRule> b)
         : first(std::move(a)), second(std::move(b)) {}
 
-    bool parse(ParserContext &ctx) override
+    std::unique_ptr<Expr> parse(ParserContext &ctx) override
     {
-        ParserContext backup = ctx.snapshot();
-        if (first->parse(ctx))
+        ParserContext backup = ctx.snapshot(); // Save state in case this rule fails
+
+        auto firstExpr = first->parse(ctx);
+        if (!firstExpr)
         {
-            if (second->parse(ctx))
-                return true;
+            ctx = backup;
+            return nullptr;
         }
-        ctx = backup;
-        return false;
+
+        auto secondExpr = second->parse(ctx);
+        if (!secondExpr)
+        {
+            ctx = backup;
+            return nullptr;
+        }
+
+        return secondExpr;
     }
 
     std::string toStr(GrammarRuleHashTable &visitedTable) const override

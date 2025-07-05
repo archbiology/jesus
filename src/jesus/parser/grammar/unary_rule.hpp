@@ -22,7 +22,7 @@ public:
     explicit UnaryRule(std::shared_ptr<IGrammarRule> operandRule)
         : operandRule(std::move(operandRule)) {}
 
-    bool parse(ParserContext &ctx) override;
+     std::unique_ptr<Expr> parse(ParserContext &ctx) override;
 
     std::string toStr(GrammarRuleHashTable &visitedTable) const override;
 };

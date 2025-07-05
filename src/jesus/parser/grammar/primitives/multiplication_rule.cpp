@@ -1,17 +1,23 @@
 #include "multiplication_rule.hpp"
+#include "../../../ast/expr/binary_expr.hpp"
 
-bool MultiplicationRule::parse(ParserContext &ctx)
+std::unique_ptr<Expr> MultiplicationRule::parse(ParserContext &ctx)
 {
-    if (!unary->parse(ctx))
-        return false;
+    auto left = unary->parse(ctx);
+    if (!left)
+        return nullptr;
 
     while (ctx.matchAny({TokenType::STAR, TokenType::SLASH}))
     {
-        if (!unary->parse(ctx))
-            return false;
+        Token op = ctx.previous();
+        auto right = unary->parse(ctx);
+        if (!right)
+            return nullptr;
+
+        left = std::make_unique<BinaryExpr>(std::move(left), op, std::move(right));
     }
 
-    return true;
+    return left;
 }
 
 std::string MultiplicationRule::toStr(GrammarRuleHashTable &visited) const

@@ -12,10 +12,7 @@
 class YesNoRule : public IGrammarRule
 {
 public:
-    bool parse(ParserContext &ctx) override
-    {
-        return ctx.match(TokenType::YES) || ctx.match(TokenType::NO);
-    }
+    std::unique_ptr<Expr> parse(ParserContext &ctx) override;
 
     std::string toStr(GrammarRuleHashTable &) const override
     {

@@ -1,5 +1,6 @@
 #pragma once
 #include "../parser_context.hpp"
+#include "../../ast/expr/expr.hpp"
 #include <unordered_set>
 
 class IGrammarRule; // Forward declaration
@@ -23,7 +24,7 @@ public:
      * @param ctx The parser context containing tokens and state.
      * @return true if the rule matched and consumed tokens.
      */
-    virtual bool parse(ParserContext &ctx) = 0;
+    virtual std::unique_ptr<Expr> parse(ParserContext &ctx) = 0;
 
     /**
      * @brief Return a string version of the rule

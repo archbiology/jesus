@@ -1,18 +1,26 @@
 #include "equality_rule.hpp"
-#include "../../../lexer/token_type.hpp"
+#include "../../../ast/expr/binary_expr.hpp"
 
-bool EqualityRule::parse(ParserContext &ctx)
+std::unique_ptr<Expr> EqualityRule::parse(ParserContext &ctx)
 {
-    if (!operand->parse(ctx))
-        return false;
+    auto left = operand->parse(ctx);
+    if (!left)
+        return nullptr;
 
     while (ctx.matchAny({TokenType::EQUAL_EQUAL, TokenType::NOT_EQUAL}))
     {
-        if (!operand->parse(ctx))
-            return false;
+        Token op = ctx.previous();
+        auto right = operand->parse(ctx);
+        if (!right)
+        {
+            std::cerr << "Expected right-hand expression after '" << op.lexeme << "' equality operator.\n";
+            return nullptr;
+        }
+
+        left = std::make_unique<BinaryExpr>(std::move(left), op, std::move(right));
     }
 
-    return true;
+    return left;
 }
 
 std::string EqualityRule::toStr(GrammarRuleHashTable &visited) const

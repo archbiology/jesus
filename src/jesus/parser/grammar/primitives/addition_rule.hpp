@@ -21,7 +21,7 @@ public:
     explicit AdditionRule(std::shared_ptr<IGrammarRule> innerRule)
         : inner(std::move(innerRule)) {}
 
-    bool parse(ParserContext &ctx) override;
+    std::unique_ptr<Expr> parse(ParserContext &ctx) override;
 
     std::string toStr(GrammarRuleHashTable &visited) const override
     {
