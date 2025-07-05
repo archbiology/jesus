@@ -10,6 +10,7 @@
 #include "primitives/logical_or_rule.hpp"
 #include "primitives/multiplication_rule.hpp"
 #include "primitives/versus_rule.hpp"
+#include "primitives/yes_no_rule.hpp"
 #include "unary_rule.hpp"
 
 /**
@@ -44,10 +45,12 @@ namespace grammar
     inline auto LogicalOr = std::make_shared<LogicalOrRule>(Versus);
     inline auto Expression = LogicalOr;
 
+    inline auto YesNo = std::make_shared<YesNoRule>();
+
     /**
      * @brief Primary is anything that can be evaluated directly: number, string, or a grouped expression.
      */
-    inline auto Primary = Number | String | Group(Expression);
+    inline auto Primary = Number | String | YesNo | Group(Expression);
 
     /**
      * @brief Set the Expression rule to something (for now just Primary)
