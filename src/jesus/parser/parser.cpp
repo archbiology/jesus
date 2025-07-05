@@ -1,5 +1,6 @@
 #include "parser.hpp"
-#include "expression_parser.hpp"
+#include "grammar/jesus_grammar.hpp"
+#include "parser_context.hpp"
 #include "../ast/identifier_node.hpp"
 #include "../ast/expr/literal_expr.hpp"
 #include "../ast/expr/variable_expr.hpp"
@@ -86,7 +87,8 @@ std::unique_ptr<Stmt> parse(const std::vector<Token> &tokens)
 
                 std::vector<Token> conditionTokens(tokens.begin() + conditionStart, tokens.begin() + conditionEnd);
 
-                condition = parseExpression(conditionTokens);
+                ParserContext context(conditionTokens);
+                condition = grammar::Expression->parse(context);
                 if (!condition)
                 {
                     throw std::runtime_error("Failed to parse condition expression inside 'if'.");
@@ -142,25 +144,13 @@ std::unique_ptr<Stmt> parse(const std::vector<Token> &tokens)
     }
 
     // If no match, fall back to expression parsing
-    auto expr = parseExpression(tokens);
+    ParserContext context(tokens);
+    auto expr = grammar::Expression->parse(context);
+    if (!expr)
+    {
+        throw std::runtime_error("Unknown expression type");
+    }
 
     // Using WARN because the person didn't call 'say'
     return std::make_unique<OutputStmt>(OutputType::WARN, std::move(expr));
-
-}
-
-std::unique_ptr<Expr> parseExpression(const std::vector<Token> &tokens)
-{
-    try
-    {
-        ExpressionParser exprParser(tokens);
-        auto expr = exprParser.parse();
-        return expr;
-    }
-    catch (const std::exception &e)
-    {
-        std::cerr << "💥 Expression parsing error: " << e.what() << "\n";
-    }
-
-    return nullptr; // or an error node in the future
 }

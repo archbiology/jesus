@@ -15,7 +15,7 @@ Compile using the following command:
 ```bash
 cd src/jesus
 
-g++ main.cpp lexer/lexer.cpp parser/parser.cpp spirit/heart.cpp parser/expression_parser.cpp spirit/value.cpp interpreter/interpreter.cpp  -I . -o jesus
+g++ main.cpp lexer/lexer.cpp parser/parser.cpp spirit/heart.cpp spirit/value.cpp interpreter/interpreter.cpp parser/grammar/primitives/number_rule.cpp parser/grammar/primitives/string_rule.cpp parser/grammar/group_rule.cpp parser/grammar/unary_rule.cpp parser/grammar/primitives/addition_rule.cpp parser/grammar/primitives/comparison_rule.cpp parser/grammar/primitives/equality_rule.cpp parser/grammar/primitives/logical_and_rule.cpp parser/grammar/primitives/logical_or_rule.cpp parser/grammar/primitives/multiplication_rule.cpp parser/grammar/primitives/yes_no_rule.cpp parser/grammar/primitives/variable_rule.cpp parser/grammar/primitives/versus_rule.cpp -I . -o jesus
 ```
 
 Then run:

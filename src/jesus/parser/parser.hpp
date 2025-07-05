@@ -4,7 +4,6 @@
 #include <memory>
 #include "../lexer/token.hpp"
 #include "../ast/stmt/stmt.hpp"
-#include "../ast/expr/expr.hpp"
 
 /**
  * @brief Parses a list of tokens into an Abstract Syntax Tree (AST).
@@ -24,5 +23,3 @@
  * @return std::unique_ptr<Stmt> A unique pointer to the root Stmt node.
  */
 std::unique_ptr<Stmt> parse(const std::vector<Token> &tokens);
-
-std::unique_ptr<Expr> parseExpression(const std::vector<Token> &tokens);
