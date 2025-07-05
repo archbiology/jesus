@@ -8,29 +8,36 @@ This repository currently contains the basic lexer (lexical analyzer) and REPL l
 
 ## 🛠 Compilation
 
-To build and run the project, make sure you have a C++ compiler (like `g++`) installed.
+This project uses **CMake** and **Make** to simplify building.
 
-Compile using the following command:
+##### Requirements
+
+Make sure you have:
+
+* A C++ compiler that supports C++17 (e.g., `g++`)
+* `cmake` installed (version 3.10 or higher)
+* `make`
+
+##### Build & Run
+
+In the root folder of the project, run:
 
 ```bash
-cd src/jesus
-
-g++ main.cpp lexer/lexer.cpp parser/parser.cpp spirit/heart.cpp spirit/value.cpp interpreter/interpreter.cpp parser/grammar/primitives/number_rule.cpp parser/grammar/primitives/string_rule.cpp parser/grammar/group_rule.cpp parser/grammar/unary_rule.cpp parser/grammar/primitives/addition_rule.cpp parser/grammar/primitives/comparison_rule.cpp parser/grammar/primitives/equality_rule.cpp parser/grammar/primitives/logical_and_rule.cpp parser/grammar/primitives/logical_or_rule.cpp parser/grammar/primitives/multiplication_rule.cpp parser/grammar/primitives/yes_no_rule.cpp parser/grammar/primitives/variable_rule.cpp parser/grammar/primitives/versus_rule.cpp -I . -o jesus
+make clean     # Optional: cleans previous build artifacts
+make           # Compiles the project using CMake and Make
+make run       # Runs the Jesus interpreter
 ```
 
-Then run:
+##### Output
 
-```bash
-./jesus
-```
-
-You will see the REPL prompt:
+After running, you’ll see the REPL prompt:
 
 ```
 (Jesus)
 ```
 
-Type a line and see the tokens printed as output.
+Type any valid expression or command and press enter.
+
 
 ## 🧪 Running the Test Suite
 
@@ -45,6 +52,8 @@ Each test is composed of:
 
 Make sure both the `jesus` binary and the `test_runner` are built. Build the `test_runner` using this command:
 ```
+cd src/jesus/
+
 g++ -std=c++17 -o test_runner test_runner.cpp
 ```
 
@@ -56,7 +65,7 @@ Then simply run:
 
 ✅ What It Does
 
-- Automatically runs all .jesus test files in the tests/ directory.
+- Automatically runs all `.jesus` test files in the [tests](src/jesus/tests) directory.
 
 - Captures both stdout and stderr of the Jesus interpreter.
 
@@ -78,7 +87,7 @@ Line 3 differs 🔴️:
 
 💡 Tip for Contributors
 
-To add a new test, create a file like `tests/my_test.jesus` and its expected output in `tests/my_test.jesus.expected`.
+To add a new test, create a file like `src/jesus/tests/my_test.jesus` and its expected output in `src/jesus/tests/my_test.jesus.expected`.
 
 You can generate the .expected file like this:
 
