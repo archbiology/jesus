@@ -125,3 +125,19 @@ This project is not just about building a programming language — it's about cr
 ---
 
 Feel free to build, experiment, and expand. May this be a small tool used for a greater purpose.
+
+## 🕊️ A Note on the Embedded Bible Files
+
+The *Jesus Programming Language* was created to glorify Jesus Christ, the Word of God.
+As part of this mission, the the Holy Bible in English and Spanish are included under [src/bible/data/en/](src/bible/data/en/) and [src/bible/data/es/](src/bible/data/es/).
+
+These files are not just data — they are core to the purpose and identity of this project.
+
+While the MIT License permits full modification and redistribution, **we humbly ask that you do not remove or alter these Scripture files** in derived versions,
+so that the message of God’s Word may continue to reach hearts through this tool.
+
+> "So is my word that goes out from my mouth:
+> It will not return to me empty,
+> but will accomplish what I desire
+> and achieve the purpose for which I sent it."
+— Isaiah 55:11
