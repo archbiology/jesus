@@ -21,6 +21,7 @@ enum class TokenType
     AND,            // and
     OR,             // or
     VERSUS,         // versus or vs (it's called XOR, represented as "^" in other languages)
+    EQUAL,          // =
     EQUAL_EQUAL,    // ==
     NOT_EQUAL,      // !=
     GREATER,        // >
@@ -41,12 +42,16 @@ enum class TokenType
     STAR,           // *
     SLASH,          // /
 
+    CREATE,         // create days = 7
     SAY,            // "say" prints to stdout
     WARN,           // "warn" prints to stderr
     UPDATE,
 
     REPEAT,         // `repeat` 3 times
     TIMES,          // repeat 3 `times`
+
+    IF,
+    OTHERWISE,
 
     END_OF_FILE
 };

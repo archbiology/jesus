@@ -121,6 +121,13 @@ public:
             return "UPDATE";
         case TokenType::Word:
             return "WORD(" + lexeme + ")";
+
+        case TokenType::IF:
+            return "IF";
+
+        case TokenType::OTHERWISE:
+            return "OTHERWISE";
+
         case TokenType::END_OF_FILE:
             return "EOF";
 

@@ -1,8 +1,8 @@
-let there be light set to Day
-let there be messiah set to Jesus
-let there be age set to 33
-let there be priest set to me
-let there be average set to 2.3
+create light = "Day"
+create messiah = "Jesus"
+create age = 33
+create priest = "me"
+create average = 2.3
 say age
 say messiah
 say priest
@@ -32,7 +32,7 @@ not not 23
 (0 versus age)
 (1 versus age )
 ( 1 versus 0 )
-let there be name set to "Jesus"
+create name = "Jesus"
 ( age versus name )
 ( 1 vs 9 )
 say name if ( 1 vs 1 ) otherwise "final"
@@ -47,7 +47,7 @@ say "adult" if ((age>=18)) otherwise "minor"
 ( age <= 1 )
 ( ( age <= 1 ) )
 
-let there be age set to 33
+create age = 33
 say "adult" if ( ( age >= 18 ) ) otherwise "minor"
 ( 1 + 1 )
 ( 2 + 7 )
@@ -90,7 +90,7 @@ not not 23
 ( 1 versus 7 )
 ( 1.0 versus 7 )
 ( 1.0 versus 7.98 )
-let there be name set to "Jesus"
+create name = "Jesus"
 ( age versus name )
 ( 1 vs 9 )
 say name if ( 1 vs 1 ) otherwise "final"

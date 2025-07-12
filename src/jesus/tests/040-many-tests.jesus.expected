@@ -2,7 +2,7 @@
 (Jesus) (text) Jesus
 (Jesus) (text) me
 (Jesus) (int) 33
-(Jesus) (text) "adult"
+(Jesus) (text) adult
 (Jesus) (int) 2
 (Jesus) (int) 9
 (Jesus) (int) 34
@@ -29,9 +29,9 @@
 (Jesus) (int) 1
 (Jesus) (Jesus) null
 (Jesus) (int) 8
-(Jesus) (text) "final"
+(Jesus) (text) final
 (Jesus) (int) 132
-(Jesus) (text) "adult"
+(Jesus) (text) adult
 (Jesus) (logic) 0
 (Jesus) (logic) 1
 (Jesus) (logic) 0
@@ -40,9 +40,9 @@
 (Jesus) (logic) 1
 (Jesus) (logic) 0
 (Jesus) (logic) 0
-(Jesus) ❌ Error: Unknown expression type
+(Jesus) ❌ Error: Unknown expression type (parser.cpp)
 (Jesus) ❌ Error: The variable 'age' already exists.
-(Jesus) (text) "adult"
+(Jesus) (text) adult
 (Jesus) (int) 2
 (Jesus) (int) 9
 (Jesus) (int) 34
@@ -87,7 +87,7 @@
 (Jesus) ❌ Error: The variable 'name' already exists.
 (Jesus) null
 (Jesus) (int) 8
-(Jesus) (text) "final"
+(Jesus) (text) final
 (Jesus) (int) 132
-(Jesus) (text) "adult"
-(Jesus)
+(Jesus) (text) adult
+(Jesus) 
