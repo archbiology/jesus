@@ -159,7 +159,13 @@ TokenType recognize_token_type(const std::string &word)
         return TokenType::DOUBLE;
 
     if (word[0] == '"')
-        return TokenType::Word;
+        return TokenType::STRING;
+
+    if (word == "if")
+        return TokenType::IF;
+
+    if (word == "otherwise")
+        return TokenType::OTHERWISE;
 
     return TokenType::IDENTIFIER;
 }
@@ -239,7 +245,7 @@ std::vector<Token> lex(const std::string &input)
                 throw std::runtime_error("Unterminated string literal");
 
             std::string str = input.substr(start, end - start);
-            tokens.emplace_back(TokenType::Word, "\"" + str + "\"", Value(str));
+            tokens.emplace_back(TokenType::STRING, "\"" + str + "\"", Value(str));
             i = end + 1;
             continue;
         }
