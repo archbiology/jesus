@@ -32,6 +32,8 @@ set(JESUS_CPP_FILES
     src/jesus/parser/grammar/primitives/addition_rule.cpp
     src/jesus/parser/grammar/primitives/equality_rule.cpp
     src/jesus/parser/grammar/primitives/variable_rule.cpp
+    src/jesus/parser/grammar/expr/conditional_expr_rule.cpp
+    src/jesus/parser/grammar/stmt/create_var_stmt_rule.cpp
     src/jesus/parser/grammar/primitives/comparison_rule.cpp
     src/jesus/parser/grammar/primitives/logical_or_rule.cpp
     src/jesus/parser/grammar/primitives/logical_and_rule.cpp

@@ -104,6 +104,9 @@ TokenType recognize_token_type(const std::string &word)
     if (word == "vs" || word == "versus")
         return TokenType::VERSUS;
 
+    if (word == "=")
+        return TokenType::EQUAL;
+
     if (word == "==")
         return TokenType::EQUAL_EQUAL;
 
@@ -160,6 +163,9 @@ TokenType recognize_token_type(const std::string &word)
 
     if (word[0] == '"')
         return TokenType::STRING;
+
+    if (word == "create")
+        return TokenType::CREATE;
 
     if (word == "if")
         return TokenType::IF;

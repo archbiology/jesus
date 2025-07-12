@@ -13,6 +13,7 @@
 #include "primitives/versus_rule.hpp"
 #include "primitives/yes_no_rule.hpp"
 #include "expr/conditional_expr_rule.hpp"
+#include "stmt/create_var_stmt_rule.hpp"
 #include "unary_rule.hpp"
 
 /**
@@ -55,6 +56,11 @@ namespace grammar
      * @brief Primary is anything that can be evaluated directly: number, string, or a grouped expression.
      */
     inline auto Primary = Number | String | YesNo | Variable | Group(Expression);
+
+    // ----------
+    // Statements
+    // ----------
+    inline auto CreateVar = std::make_shared<CreateVarStmtRule>(Expression);
 
     /**
      * @brief Set the Expression rule to something (for now just Primary)

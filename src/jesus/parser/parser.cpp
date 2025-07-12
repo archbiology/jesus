@@ -1,12 +1,10 @@
 #include "parser.hpp"
 #include "grammar/jesus_grammar.hpp"
 #include "parser_context.hpp"
-#include "../ast/expr/literal_expr.hpp"
 #include "../ast/expr/variable_expr.hpp"
 #include "../ast/expr/conditional_expr.hpp"
 #include "../ast/stmt/repeat_times_stmt.hpp"
 #include "../ast/stmt/output_statement.hpp"
-#include "../ast/stmt/create_var_stmt.hpp"
 #include <bits/stdc++.h> // for std::find_if and std::distance
 #include <string>
 #include <memory>
@@ -54,26 +52,10 @@ std::unique_ptr<Stmt> parse(const std::vector<Token> &tokens)
                 std::move(expr));
     }
 
-    if (tokens_count >= 3 &&
-        tokens[0].lexeme == "let" &&
-        tokens[1].lexeme == "there" &&
-        tokens[2].lexeme == "be")
-    {
-        std::string identifier;
-        std::unique_ptr<Expr> value;
-
-        if (tokens_count >= 4)
-        {
-            identifier = tokens[3].lexeme;
-        }
-
-        if (tokens_count >= 7 && tokens[4].lexeme == "set" && tokens[5].lexeme == "to")
-        {
-            value = std::make_unique<LiteralExpr>(tokens[6].literal);
-        }
-
-        return std::make_unique<CreateVarStmt>(identifier, std::move(value));
-    }
+    ParserContext ctx(tokens);
+    auto createVarStmt = grammar::CreateVar->parse(ctx);
+    if (createVarStmt)
+        return createVarStmt;
 
     // If no match, fall back to expression parsing
     ParserContext context(tokens);
