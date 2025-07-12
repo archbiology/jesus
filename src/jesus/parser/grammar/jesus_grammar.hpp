@@ -12,6 +12,7 @@
 #include "primitives/variable_rule.hpp"
 #include "primitives/versus_rule.hpp"
 #include "primitives/yes_no_rule.hpp"
+#include "expr/conditional_expr_rule.hpp"
 #include "unary_rule.hpp"
 
 /**
@@ -44,7 +45,8 @@ namespace grammar
     inline auto LogicalAnd = std::make_shared<LogicalAndRule>(Equality);
     inline auto Versus = std::make_shared<VersusRule>(LogicalAnd, LogicalAnd);
     inline auto LogicalOr = std::make_shared<LogicalOrRule>(Versus);
-    inline auto Expression = LogicalOr;
+    inline auto Conditional = std::make_shared<ConditionalExprRule>(LogicalOr);
+    inline auto Expression = Conditional;
 
     inline auto YesNo = std::make_shared<YesNoRule>();
     inline auto Variable = std::make_shared<VariableRule>();
