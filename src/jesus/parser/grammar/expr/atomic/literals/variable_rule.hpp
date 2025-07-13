@@ -1,5 +1,5 @@
 #pragma once
-#include "../grammar_rule.hpp"
+#include "../../../grammar_rule.hpp"
 
 /**
  * @brief Grammar rule that matches variable references.

@@ -1,16 +1,17 @@
+
 #pragma once
-#include "../grammar_rule.hpp"
+#include "../../../grammar_rule.hpp"
 
 /**
- * @brief Matches a number literal.
+ * @brief Matches a string literal.
  */
-class NumberRule : public IGrammarRule
+class StringRule : public IGrammarRule
 {
 public:
     std::unique_ptr<Expr> parse(ParserContext &ctx) override;
 
     std::string toStr(GrammarRuleHashTable &visitedTable) const override
     {
-        return "Number";
+        return "String";
     }
 };

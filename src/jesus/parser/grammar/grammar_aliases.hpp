@@ -1,8 +1,8 @@
 #pragma once
 
 #include <memory>
-#include "primitives/number_rule.hpp"
-#include "primitives/string_rule.hpp"
+#include "expr/atomic/literals/number_rule.hpp"
+#include "expr/atomic/literals/string_rule.hpp"
 #include "group_rule.hpp"
 
 /**

@@ -1,5 +1,5 @@
 #include "logical_or_rule.hpp"
-#include "../../../ast/expr/binary_expr.hpp"
+#include "../../../../../ast/expr/binary_expr.hpp"
 
 std::unique_ptr<Expr> LogicalOrRule::parse(ParserContext &ctx)
 {

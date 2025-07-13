@@ -1,5 +1,5 @@
 #pragma once
-#include "../grammar_rule.hpp"
+#include "../../../grammar_rule.hpp"
 
 /**
  * @brief Parses boolean literals: `yes` or `no`.
