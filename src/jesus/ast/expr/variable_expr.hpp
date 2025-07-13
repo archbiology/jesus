@@ -34,7 +34,8 @@ public:
     explicit VariableExpr(std::string name)
         : name(name) {}
 
-    Value evaluate(Heart *heart) override {
+    Value evaluate(Heart *heart) const override
+    {
         return heart->getVar(name);
     }
 
@@ -45,4 +46,6 @@ public:
      * secret that will not be known and come to light." — Luke 8:17
      */
     virtual std::string toString() const override { return "VariableExpr(" + name + ")"; }
+
+    Value accept(ExprVisitor &visitor) const override;
 };

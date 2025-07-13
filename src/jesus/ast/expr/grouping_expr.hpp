@@ -36,7 +36,7 @@ public:
     explicit GroupingExpr(std::unique_ptr<Expr> expression)
         : expression(std::move(expression)) {}
 
-    Value evaluate(Heart *heart) override
+    Value evaluate(Heart *heart) const override
     {
         return expression->evaluate(heart);
     }
@@ -48,4 +48,6 @@ public:
      * secret that will not be known and come to light." — Luke 8:17
      */
     virtual std::string toString() const override { return "GroupingExpr(" + expression->toString() + ")"; }
+
+    Value accept(ExprVisitor &visitor) const override;
 };

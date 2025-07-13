@@ -22,7 +22,13 @@ set(JESUS_CPP_FILES
     src/jesus/spirit/value.cpp
     src/jesus/spirit/heart.cpp
     src/jesus/parser/parser.cpp
+    src/jesus/ast/expr/unary_expr.cpp
+    src/jesus/ast/expr/binary_expr.cpp
+    src/jesus/ast/expr/literal_expr.cpp
+    src/jesus/ast/expr/variable_expr.cpp
+    src/jesus/ast/expr/grouping_expr.cpp
     src/jesus/interpreter/interpreter.cpp
+    src/jesus/ast/expr/conditional_expr.cpp
     src/jesus/parser/grammar/group_rule.cpp
     src/jesus/parser/grammar/unary_rule.cpp
     src/jesus/parser/grammar/primitives/number_rule.cpp

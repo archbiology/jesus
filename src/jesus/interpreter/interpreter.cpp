@@ -13,25 +13,7 @@ class ContinueSignal : public std::exception
 
 Value Interpreter::evaluate(const std::unique_ptr<Expr> &expr)
 {
-    if (auto b = dynamic_cast<BinaryExpr *>(expr.get()))
-        return visitBinary(b);
-
-    if (auto c = dynamic_cast<ConditionalExpr *>(expr.get()))
-        return visitConditional(c);
-
-    if (auto u = dynamic_cast<UnaryExpr *>(expr.get()))
-        return visitUnary(u);
-
-    if (auto l = dynamic_cast<LiteralExpr *>(expr.get()))
-        return visitLiteral(l);
-
-    if (auto v = dynamic_cast<VariableExpr *>(expr.get()))
-        return visitVariable(v);
-
-    if (auto g = dynamic_cast<GroupingExpr *>(expr.get()))
-        return visitGrouping(g);
-
-    throw std::runtime_error("Unknown expression type");
+    return expr->accept(*this);
 }
 
 void Interpreter::createVariable(const std::string &name, const Value &value)
@@ -44,29 +26,29 @@ void Interpreter::updateVariable(const std::string &name, const Value &value)
     heart.updateVar(name, value);
 }
 
-Value Interpreter::visitBinary(BinaryExpr *expr)
+Value Interpreter::visitBinary(const BinaryExpr &expr)
 {
-    return expr->evaluate(&heart);
+    return expr.evaluate(&heart);
 }
 
-Value Interpreter::visitUnary(UnaryExpr *expr)
+Value Interpreter::visitUnary(const UnaryExpr &expr)
 {
-    return expr->evaluate(&heart);
+    return expr.evaluate(&heart);
 }
 
-Value Interpreter::visitLiteral(LiteralExpr *expr)
+Value Interpreter::visitLiteral(const LiteralExpr &expr)
 {
-    return expr->value;
+    return expr.value;
 }
 
-Value Interpreter::visitVariable(VariableExpr *expr)
+Value Interpreter::visitVariable(const VariableExpr &expr)
 {
-    return heart.getVar(expr->name);
+    return heart.getVar(expr.name);
 }
 
-Value Interpreter::visitGrouping(GroupingExpr *expr)
+Value Interpreter::visitGrouping(const GroupingExpr &expr)
 {
-    return evaluate(expr->expression);
+    return evaluate(expr.expression);
 }
 
 std::string Interpreter::valueToString(const Value &value)
@@ -115,17 +97,17 @@ void Interpreter::visitUpdateVar(const UpdateVarStmt *stmt)
     updateVariable(stmt->name, val);
 }
 
-Value Interpreter::visitConditional(const ConditionalExpr *expr)
+Value Interpreter::visitConditional(const ConditionalExpr &expr)
 {
-    Value conditionValue = evaluate(expr->condition);
+    Value conditionValue = evaluate(expr.condition);
 
     // Interpret the condition as boolean
     if (conditionValue.AS_BOOLEAN)
     {
-        return evaluate(expr->thenBranch);
+        return evaluate(expr.thenBranch);
     }
 
-    return evaluate(expr->elseBranch);
+    return evaluate(expr.elseBranch);
 }
 
 void Interpreter::visitOutput(OutputStmt *stmt)

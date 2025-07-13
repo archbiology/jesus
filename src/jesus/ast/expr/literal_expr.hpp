@@ -29,7 +29,8 @@ public:
      */
     explicit LiteralExpr(Value value) : value(value) {}
 
-    Value evaluate(Heart *heart) override {
+    Value evaluate(Heart *heart) const override
+    {
         return value;
     }
 
@@ -40,4 +41,6 @@ public:
      * secret that will not be known and come to light." — Luke 8:17
      */
     virtual std::string toString() const override { return "LiteralExpr(" + value.toString() + ")"; }
+
+    Value accept(ExprVisitor &visitor) const override;
 };
