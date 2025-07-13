@@ -1,5 +1,6 @@
 #include "create_var_stmt_rule.hpp"
 #include "../../../ast/stmt/create_var_stmt.hpp"
+#include "../../../types/known_types.hpp"
 #include <stdexcept>
 
 std::unique_ptr<Stmt> CreateVarStmtRule::parse(ParserContext &ctx)
@@ -16,6 +17,12 @@ std::unique_ptr<Stmt> CreateVarStmtRule::parse(ParserContext &ctx)
         throw std::runtime_error("Expected variable name after 'create type'");
 
     std::string varName = ctx.previous().lexeme;
+
+    const auto *creationType = KnownTypes::resolve(varType, "core");
+    if (!creationType)
+    {
+        throw std::runtime_error("Unknown variable type: '" + varType + "'");
+    }
 
     std::unique_ptr<Expr> value = nullptr;
 

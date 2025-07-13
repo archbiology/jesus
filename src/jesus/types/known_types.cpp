@@ -5,6 +5,7 @@
 #include "atomic/numbers/negative_type.hpp"
 #include "atomic/numbers/natural_type.hpp"
 #include "atomic/numbers/percentage_type.hpp"
+#include "atomic/numbers/decimal_type.hpp"
 #include "atomic/strings/text_type.hpp"
 #include "atomic/strings/word_type.hpp"
 #include "atomic/strings/phrase_type.hpp"
@@ -22,6 +23,7 @@ void KnownTypes::registerBuiltInTypes()
     registerType(std::make_unique<PositiveType>());
     registerType(std::make_unique<NegativeType>());
     registerType(std::make_unique<PercentageType>());
+    registerType(std::make_unique<DecimalType>());
 }
 
 void KnownTypes::registerType(std::unique_ptr<CreationType> type)

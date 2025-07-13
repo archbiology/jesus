@@ -5,6 +5,7 @@
 #include "spirit/heart.hpp"
 #include "interpreter/interpreter.hpp"
 #include "parser/grammar/jesus_grammar.hpp"
+#include "types/known_types.hpp"
 
 int main()
 {
@@ -13,6 +14,8 @@ int main()
     Heart heart;
     Interpreter interpreter(&heart);
     std::string line;
+
+    KnownTypes::registerBuiltInTypes();
 
     std::cout << "(Jesus) ";
     while (std::getline(std::cin, line))

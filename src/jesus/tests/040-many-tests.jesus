@@ -142,3 +142,7 @@ create text valid = ""
 say valid
 create text rebellion = 13
 warn rebellion
+create car hilux = 0
+say hilux
+create decimal forgive = 70 * 7
+say forgive
