@@ -8,7 +8,12 @@ std::unique_ptr<Stmt> CreateVarStmtRule::parse(ParserContext &ctx)
         return nullptr;
 
     if (!ctx.match(TokenType::IDENTIFIER))
-        throw std::runtime_error("Expected variable name after 'create'");
+        throw std::runtime_error("Expected variable type after 'create'");
+
+    std::string varType = ctx.previous().lexeme;
+
+    if (!ctx.match(TokenType::IDENTIFIER))
+        throw std::runtime_error("Expected variable name after 'create type'");
 
     std::string varName = ctx.previous().lexeme;
 
@@ -21,5 +26,5 @@ std::unique_ptr<Stmt> CreateVarStmtRule::parse(ParserContext &ctx)
             throw std::runtime_error("Expected expression after '=' in create statement.");
     }
 
-    return std::make_unique<CreateVarStmt>(varName, std::move(value));
+    return std::make_unique<CreateVarStmt>(varType, varName, std::move(value));
 }
