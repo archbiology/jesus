@@ -22,6 +22,11 @@ set(JESUS_CPP_FILES
     src/jesus/spirit/value.cpp
     src/jesus/spirit/heart.cpp
 
+    # ----------------------
+    # Initial variable types
+    # ----------------------
+    src/jesus/types/known_types.cpp
+
     # ---------------
     # AST Expressions
     # ---------------
