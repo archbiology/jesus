@@ -13,4 +13,6 @@ class ContinueStmt : public Stmt
 {
 public:
   ContinueStmt() = default;
+
+  void accept(StmtVisitor &visitor) const override;
 };

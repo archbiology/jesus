@@ -35,7 +35,7 @@ public:
     BinaryExpr(std::unique_ptr<Expr> left, Token op, std::unique_ptr<Expr> right)
         : left(std::move(left)), op(op), right(std::move(right)) {}
 
-    Value evaluate(Heart *heart) override
+    Value evaluate(Heart *heart) const override
     {
 
         Value leftVal = left->evaluate(heart);
@@ -139,4 +139,6 @@ public:
 
         return str;
     }
+
+    Value accept(ExprVisitor &visitor) const override;
 };

@@ -2,6 +2,8 @@
 #include <string>
 #include "../../spirit/heart.hpp"
 
+class ExprVisitor; // Forward declaration
+
 /**
  * @brief The base class for all expression types in the AST.
  *
@@ -22,7 +24,9 @@ public:
      *
      * "But the one who looks into the perfect law... will be blessed." — James 1:25
      */
-    virtual Value evaluate(Heart *heart) = 0;
+    virtual Value evaluate(Heart *heart) const = 0;
+
+    virtual Value accept(ExprVisitor &visitor) const = 0;
 
     virtual ~Expr() = default;
 

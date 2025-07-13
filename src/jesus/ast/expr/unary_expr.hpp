@@ -38,7 +38,7 @@ public:
     UnaryExpr(Token op, std::unique_ptr<Expr> right)
         : op(op), right(std::move(right)) {}
 
-    Value evaluate(Heart *heart) override
+    Value evaluate(Heart *heart) const override
     {
         Value rightVal = right->evaluate(heart);
 
@@ -79,4 +79,6 @@ public:
      * secret that will not be known and come to light." — Luke 8:17
      */
     virtual std::string toString() const override { return "UnaryExpr(" + op.lexeme + ")"; }
+
+    Value accept(ExprVisitor &visitor) const override;
 };

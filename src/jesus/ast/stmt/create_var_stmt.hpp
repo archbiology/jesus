@@ -37,4 +37,6 @@ public:
 
         return str;
     }
+
+    void accept(StmtVisitor &visitor) const override;
 };

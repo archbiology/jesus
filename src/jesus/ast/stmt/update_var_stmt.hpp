@@ -18,4 +18,6 @@ public:
 
     UpdateVarStmt(const std::string &name, std::unique_ptr<Expr> value)
         : name(name), value(std::move(value)) {}
+
+    void accept(StmtVisitor &visitor) const override;
 };

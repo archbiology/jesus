@@ -1,3 +1,4 @@
+#pragma once
 
 #include "expr.hpp"
 #include <memory>
@@ -52,7 +53,7 @@ public:
    * @param heart The "Symbol table"
    * @return std::optional<std::string>
    */
-  Value evaluate(Heart *heart) override
+  Value evaluate(Heart *heart) const override
   {
     Value result = condition->evaluate(heart);
 
@@ -90,4 +91,6 @@ public:
 
         return str;
     }
+
+  Value accept(ExprVisitor &visitor) const override;
 };

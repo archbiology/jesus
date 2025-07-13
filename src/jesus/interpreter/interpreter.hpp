@@ -1,6 +1,8 @@
 
 #pragma once
 
+#include "expr_visitor.hpp"
+#include "stmt_visitor.hpp"
 #include "../ast/expr/expr.hpp"
 #include "../ast/expr/binary_expr.hpp"
 #include "../ast/expr/conditional_expr.hpp"
@@ -36,7 +38,7 @@
  *   Want to switch to JIT? Swap Interpreter with a JITCompiler.
  *   Want to record execution? Just add hooks in Interpreter.
  */
-class Interpreter
+class Interpreter : public ExprVisitor, public StmtVisitor
 {
 public:
     explicit Interpreter(Heart *heart) : heart(*heart) {}
@@ -86,6 +88,10 @@ private:
      */
     Heart heart;
 
+    // 🟢️🟢️🟢️🟢️🟢️🟢️🟢️🟢️🟢️🟢️🟢️🟢️🟢️🟢️
+    // 🟢️ Visit expression methods 🟢️
+    // 🟢️🟢️🟢️🟢️🟢️🟢️🟢️🟢️🟢️🟢️🟢️🟢️🟢️🟢️
+
     /**
      * @brief Evaluates a binary expression such as addition, comparison, etc.
      *
@@ -94,14 +100,14 @@ private:
      *
      * good + evil = deadly knowledge
      */
-    Value visitBinary(BinaryExpr *expr);
+    Value visitBinary(const BinaryExpr &expr) override;
 
     /**
      * @brief Evaluates a unary expression like negation or logical NOT.
      *
      * “I and the Father are one.” — John 10:30
      */
-    Value visitUnary(UnaryExpr *expr);
+    Value visitUnary(const UnaryExpr &expr) override;
 
     /**
      * @brief Evaluates a literal value like a number, string, or boolean.
@@ -109,7 +115,7 @@ private:
      * “And God said, ‘Let there be light,’ and there was light.”
      * — Genesis 1:3
      */
-    Value visitLiteral(LiteralExpr *expr);
+    Value visitLiteral(const LiteralExpr &expr) override;
 
     /**
      * @brief Resolves the value of a variable.
@@ -118,7 +124,7 @@ private:
      * And Moses said, ‘Here I am.’”
      * — Exodus 3:4–5
      */
-    Value visitVariable(VariableExpr *expr);
+    Value visitVariable(const VariableExpr &expr) override;
 
     /**
      * @brief Evaluates a grouped expression (expressions in parentheses).
@@ -129,7 +135,9 @@ private:
      * All of them were filled with the Holy Spirit and began to speak in other tongues as the Spirit enabled them.”
      * — Acts 2:1–4
      */
-    Value visitGrouping(GroupingExpr *expr);
+    Value visitGrouping(const GroupingExpr &expr) override;
+
+    Value visitConditional(const ConditionalExpr &expr) override;
 
     /**
      * @brief Converts a runtime value into a string representation.
@@ -139,32 +147,34 @@ private:
      */
     std::string valueToString(const Value &value);
 
-    void visitCreateVar(const CreateVarStmt *stmt);
+    // 🟢️🟢️🟢️🟢️🟢️🟢️🟢️🟢️🟢️🟢️🟢️🟢️🟢️🟢️
+    // 🟢️ Visit statement methods 🟢️
+    // 🟢️🟢️🟢️🟢️🟢️🟢️🟢️🟢️🟢️🟢️🟢️🟢️🟢️🟢️
 
-    void visitUpdateVar(const UpdateVarStmt *stmt);
+    void visitCreateVar(const CreateVarStmt &stmt) override;
 
-    Value visitConditional(const ConditionalExpr *expr);
+    void visitUpdateVar(const UpdateVarStmt &stmt) override;
 
-    void visitOutput(OutputStmt *stmt);
+    void visitOutput(const OutputStmt &stmt) override;
 
     /**
      * repeat while condition:
      *   say "Still going..."
      */
-    void visitRepeatWhile(const RepeatWhileStmt *stmt);
+    void visitRepeatWhile(const RepeatWhileStmt &stmt) override;
 
     /**
      * repeat 3 times:
      *   say "Jesus is Lord!"
      */
-    void visitRepeatTimes(const RepeatTimesStmt *stmt);
+    void visitRepeatTimes(const RepeatTimesStmt &stmt) override;
 
     /**
      * set disciples to ["Peter", "James", "John"]
      * for each name in disciples:
      *    say name
      */
-    void visitForEach(ForEachStmt *stmt);
+    void visitForEach(const ForEachStmt &stmt) override;
 
     /**
      * set disciples to ["Peter", "James", "John"]
@@ -174,7 +184,7 @@ private:
      *
      *    say name
      */
-    void visitBreak(BreakStmt *stmt);
+    void visitBreak(const BreakStmt &stmt) override;
 
     /**
      * set disciples to ["Peter", "James", "John"]
@@ -184,5 +194,5 @@ private:
      *
      *    say name
      */
-    void visitContinue(ContinueStmt *stmt);
+    void visitContinue(const ContinueStmt &stmt) override;
 };
