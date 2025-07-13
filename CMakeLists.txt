@@ -50,19 +50,29 @@ set(JESUS_CPP_FILES
     src/jesus/parser/parser.cpp
     src/jesus/parser/grammar/group_rule.cpp
     src/jesus/parser/grammar/unary_rule.cpp
-    src/jesus/parser/grammar/primitives/number_rule.cpp
-    src/jesus/parser/grammar/primitives/string_rule.cpp
-    src/jesus/parser/grammar/primitives/versus_rule.cpp
-    src/jesus/parser/grammar/primitives/yes_no_rule.cpp
-    src/jesus/parser/grammar/primitives/addition_rule.cpp
-    src/jesus/parser/grammar/primitives/equality_rule.cpp
-    src/jesus/parser/grammar/primitives/variable_rule.cpp
+
+    # ------------------
+    # Expression parsers
+    # ------------------
     src/jesus/parser/grammar/expr/conditional_expr_rule.cpp
+
+    src/jesus/parser/grammar/expr/atomic/literals/number_rule.cpp
+    src/jesus/parser/grammar/expr/atomic/literals/string_rule.cpp
+    src/jesus/parser/grammar/expr/atomic/literals/yes_no_rule.cpp
+    src/jesus/parser/grammar/expr/atomic/literals/variable_rule.cpp
+
+    src/jesus/parser/grammar/expr/atomic/operators/versus_rule.cpp
+    src/jesus/parser/grammar/expr/atomic/operators/addition_rule.cpp
+    src/jesus/parser/grammar/expr/atomic/operators/equality_rule.cpp
+    src/jesus/parser/grammar/expr/atomic/operators/comparison_rule.cpp
+    src/jesus/parser/grammar/expr/atomic/operators/logical_or_rule.cpp
+    src/jesus/parser/grammar/expr/atomic/operators/logical_and_rule.cpp
+    src/jesus/parser/grammar/expr/atomic/operators/multiplication_rule.cpp
+
+    # -----------------
+    # Statement parsers
+    # -----------------
     src/jesus/parser/grammar/stmt/create_var_stmt_rule.cpp
-    src/jesus/parser/grammar/primitives/comparison_rule.cpp
-    src/jesus/parser/grammar/primitives/logical_or_rule.cpp
-    src/jesus/parser/grammar/primitives/logical_and_rule.cpp
-    src/jesus/parser/grammar/primitives/multiplication_rule.cpp
 
     # -----------
     # Interpreter

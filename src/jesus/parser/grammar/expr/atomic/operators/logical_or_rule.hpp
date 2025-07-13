@@ -1,5 +1,5 @@
 #pragma once
-#include "../grammar_rule.hpp"
+#include "../../../grammar_rule.hpp"
 
 /**
  * @brief Parses expressions combined by logical OR (e.g., a or b or c).

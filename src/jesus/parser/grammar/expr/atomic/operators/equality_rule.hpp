@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../grammar_rule.hpp"
+#include "../../../grammar_rule.hpp"
 
 /**
  * @brief Grammar rule to parse equality comparisons (==, !=).

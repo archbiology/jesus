@@ -1,5 +1,5 @@
 #include "versus_rule.hpp"
-#include "../../../ast/expr/binary_expr.hpp"
+#include "../../../../../ast/expr/binary_expr.hpp"
 
 VersusRule::VersusRule(std::shared_ptr<IGrammarRule> lhs, std::shared_ptr<IGrammarRule> rhs)
     : lhsRule(std::move(lhs)), rhsRule(std::move(rhs))

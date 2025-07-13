@@ -3,15 +3,18 @@
 #include "combinators/forward_rule.hpp"
 #include "grammar_aliases.hpp" // for Number, String, etc.
 #include "operators.hpp"
-#include "primitives/addition_rule.hpp"
-#include "primitives/comparison_rule.hpp"
-#include "primitives/equality_rule.hpp"
-#include "primitives/logical_and_rule.hpp"
-#include "primitives/logical_or_rule.hpp"
-#include "primitives/multiplication_rule.hpp"
-#include "primitives/variable_rule.hpp"
-#include "primitives/versus_rule.hpp"
-#include "primitives/yes_no_rule.hpp"
+
+#include "expr/atomic/operators/addition_rule.hpp"
+#include "expr/atomic/operators/comparison_rule.hpp"
+#include "expr/atomic/operators/equality_rule.hpp"
+#include "expr/atomic/operators/logical_and_rule.hpp"
+#include "expr/atomic/operators/logical_or_rule.hpp"
+#include "expr/atomic/operators/multiplication_rule.hpp"
+#include "expr/atomic/operators/versus_rule.hpp"
+
+#include "expr/atomic/literals/variable_rule.hpp"
+#include "expr/atomic/literals/yes_no_rule.hpp"
+
 #include "expr/conditional_expr_rule.hpp"
 #include "stmt/create_var_stmt_rule.hpp"
 #include "unary_rule.hpp"

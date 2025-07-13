@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../grammar_rule.hpp"
+#include "../../../grammar_rule.hpp"
 
 /**
  * @brief Parses logical AND expressions (e.g. a AND b AND c).

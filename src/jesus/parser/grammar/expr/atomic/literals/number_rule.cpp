@@ -1,5 +1,5 @@
 #include "number_rule.hpp"
-#include "../../../ast/expr/literal_expr.hpp"
+#include "../../../../../ast/expr/literal_expr.hpp"
 
 std::unique_ptr<Expr> NumberRule::parse(ParserContext &ctx)
 {
