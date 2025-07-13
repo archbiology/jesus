@@ -90,4 +90,28 @@
 (Jesus) (text) final
 (Jesus) (int) 132
 (Jesus) (text) adult
+(Jesus) ❌ Error: Expected variable name after 'create type'
+(Jesus) (Jesus) (Jesus) (text) wrong value
+(Jesus) (int) 1
+(Jesus) (Jesus) (int) 0
+(Jesus) (Jesus) (double) 3.140000
+(Jesus) (Jesus) (double) -6.000000
+(Jesus) (Jesus) (int) 24
+(Jesus) (Jesus) (int) 0
+(Jesus) (Jesus) (double) -1.000000
+(Jesus) (Jesus) (int) 13
+(Jesus) (Jesus) (int) 0
+(Jesus) (Jesus) (int) 7
+(Jesus) (Jesus) (double) -13.000000
+(Jesus) (Jesus) (double) 0.333000
+(Jesus) (Jesus) (double) -0.333000
+(Jesus) (Jesus) ❌ Error: The variable 'ships' already exists.
+(Jesus) (int) 100
+(Jesus) (Jesus) (text) 
+(Jesus) (Jesus) (text) Jesus
+(Jesus) (Jesus) (text) Sinful wise
+(Jesus) (Jesus) (int) 6
+(Jesus) (Jesus) (text) God does not see
+(Jesus) (Jesus) (text) 
+(Jesus) (Jesus) (int) 13
 (Jesus) 

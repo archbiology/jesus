@@ -1,8 +1,8 @@
-create light = "Day"
-create messiah = "Jesus"
-create age = 33
-create priest = "me"
-create average = 2.3
+create text light = "Day"
+create text messiah = "Jesus"
+create number age = 33
+create text priest = "me"
+create real average = 2.3
 say age
 say messiah
 say priest
@@ -32,7 +32,7 @@ not not 23
 (0 versus age)
 (1 versus age )
 ( 1 versus 0 )
-create name = "Jesus"
+create text name = "Jesus"
 ( age versus name )
 ( 1 vs 9 )
 say name if ( 1 vs 1 ) otherwise "final"
@@ -47,7 +47,7 @@ say "adult" if ((age>=18)) otherwise "minor"
 ( age <= 1 )
 ( ( age <= 1 ) )
 
-create age = 33
+create number age = 33
 say "adult" if ( ( age >= 18 ) ) otherwise "minor"
 ( 1 + 1 )
 ( 2 + 7 )
@@ -90,9 +90,55 @@ not not 23
 ( 1 versus 7 )
 ( 1.0 versus 7 )
 ( 1.0 versus 7.98 )
-create name = "Jesus"
+create text name = "Jesus"
 ( age versus name )
 ( 1 vs 9 )
 say name if ( 1 vs 1 ) otherwise "final"
 (age*4)
 say "adult" if ((age>=18)) otherwise "minor"
+create with_no_type = 33
+create number count = "wrong value"
+create number one = 1
+say count
+say one
+create number zero = 0
+say zero
+create number PI = 3.14
+say PI
+create number temperature = -6
+say temperature
+create positive elders = 24
+say elders
+create positive sinful = 0
+say sinful
+create negative debt = -1
+say debt
+create negative credit = 13
+say credit
+create negative void = 0
+say void
+create natural spirits = 7
+say spirits
+create natural darkness = -13
+say darkness
+create percentage fallen_angels = 0.333
+say fallen_angels
+create percentage fallen_wise = -0.333
+say fallen_wise
+create percentage ships = 100
+create percentage ships = 101
+say ships
+create word empty = ""
+say empty
+create word savior = "Jesus"
+say savior
+create word invalid = "Sinful wise"
+warn invalid
+create phrase confusion = 6
+warn confusion
+create phrase lie = "God does not see"
+warn lie
+create text valid = ""
+say valid
+create text rebellion = 13
+warn rebellion
