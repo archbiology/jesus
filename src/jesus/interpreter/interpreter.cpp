@@ -16,6 +16,11 @@ Value Interpreter::evaluate(const std::unique_ptr<Expr> &expr)
     return expr->accept(*this);
 }
 
+void Interpreter::execute(const std::unique_ptr<Stmt> &stmt)
+{
+    stmt->accept(*this);
+}
+
 void Interpreter::createVariable(const std::string &name, const Value &value)
 {
     heart.createVar(name, value);
@@ -56,45 +61,16 @@ std::string Interpreter::valueToString(const Value &value)
     return value.toString();
 }
 
-void Interpreter::execute(const std::unique_ptr<Stmt> &stmt)
+void Interpreter::visitCreateVar(const CreateVarStmt &stmt)
 {
-    if (auto create = dynamic_cast<CreateVarStmt *>(stmt.get()))
-        return visitCreateVar(create);
-
-    if (auto update = dynamic_cast<UpdateVarStmt *>(stmt.get()))
-        return visitUpdateVar(update);
-
-    if (auto out = dynamic_cast<OutputStmt *>(stmt.get()))
-        return visitOutput(out);
-
-    if (auto loop = dynamic_cast<RepeatWhileStmt *>(stmt.get()))
-        return visitRepeatWhile(loop);
-
-    if (auto loopTimes = dynamic_cast<RepeatTimesStmt *>(stmt.get()))
-        return visitRepeatTimes(loopTimes);
-
-    if (auto foreachStmt = dynamic_cast<ForEachStmt *>(stmt.get()))
-        return visitForEach(foreachStmt);
-
-    if (auto br = dynamic_cast<BreakStmt *>(stmt.get()))
-        return visitBreak(br);
-
-    if (auto cont = dynamic_cast<ContinueStmt *>(stmt.get()))
-        return visitContinue(cont);
-
-    throw std::runtime_error("Unknown statement type.");
+    Value val = evaluate(stmt.value);
+    createVariable(stmt.name, val);
 }
 
-void Interpreter::visitCreateVar(const CreateVarStmt *stmt)
+void Interpreter::visitUpdateVar(const UpdateVarStmt &stmt)
 {
-    Value val = evaluate(stmt->value);
-    createVariable(stmt->name, val);
-}
-
-void Interpreter::visitUpdateVar(const UpdateVarStmt *stmt)
-{
-    Value val = evaluate(stmt->value);
-    updateVariable(stmt->name, val);
+    Value val = evaluate(stmt.value);
+    updateVariable(stmt.name, val);
 }
 
 Value Interpreter::visitConditional(const ConditionalExpr &expr)
@@ -110,22 +86,22 @@ Value Interpreter::visitConditional(const ConditionalExpr &expr)
     return evaluate(expr.elseBranch);
 }
 
-void Interpreter::visitOutput(OutputStmt *stmt)
+void Interpreter::visitOutput(const OutputStmt &stmt)
 {
-    Value value = evaluate(stmt->message);
+    Value value = evaluate(stmt.message);
 
-    std::ostream &out = (stmt->type == OutputType::WARN) ? std::cerr : std::cout;
+    std::ostream &out = (stmt.type == OutputType::WARN) ? std::cerr : std::cout;
 
     out << value.toString() << std::endl;
 }
 
-void Interpreter::visitRepeatWhile(const RepeatWhileStmt *stmt)
+void Interpreter::visitRepeatWhile(const RepeatWhileStmt &stmt)
 {
-    while (evaluate(stmt->condition).AS_BOOLEAN)
+    while (evaluate(stmt.condition).AS_BOOLEAN)
     {
         try
         {
-            for (const auto &statement : stmt->body)
+            for (const auto &statement : stmt.body)
             {
                 execute(statement);
             }
@@ -141,9 +117,9 @@ void Interpreter::visitRepeatWhile(const RepeatWhileStmt *stmt)
     }
 }
 
-void Interpreter::visitRepeatTimes(const RepeatTimesStmt *stmt)
+void Interpreter::visitRepeatTimes(const RepeatTimesStmt &stmt)
 {
-    Value countVal = evaluate(stmt->countExpr);
+    Value countVal = evaluate(stmt.countExpr);
     if (!countVal.IS_INT)
     {
         throw std::runtime_error("repeat times expects a numeric value.");
@@ -155,7 +131,7 @@ void Interpreter::visitRepeatTimes(const RepeatTimesStmt *stmt)
     {
         try
         {
-            for (const auto &statement : stmt->body)
+            for (const auto &statement : stmt.body)
             {
                 execute(statement);
             }
@@ -171,9 +147,9 @@ void Interpreter::visitRepeatTimes(const RepeatTimesStmt *stmt)
     }
 }
 
-void Interpreter::visitForEach(ForEachStmt *stmt)
+void Interpreter::visitForEach(const ForEachStmt &stmt)
 {
-    Value listValue = evaluate(stmt->iterable);
+    Value listValue = evaluate(stmt.iterable);
     if (!listValue.IS_LIST)
     {
         throw std::runtime_error("Expected a list to iterate over.");
@@ -185,11 +161,11 @@ void Interpreter::visitForEach(ForEachStmt *stmt)
     {
 
         // FIXME: Remove the line below.
-        heart.createVar(stmt->varName, *value); // like "let name = item" // TODO: Use a pointer instead of *value
+        heart.createVar(stmt.varName, *value); // like "let name = item" // TODO: Use a pointer instead of *value
 
         try
         {
-            for (auto &statement : stmt->body)
+            for (auto &statement : stmt.body)
             {
                 execute(statement);
             }
@@ -205,12 +181,12 @@ void Interpreter::visitForEach(ForEachStmt *stmt)
     }
 }
 
-void Interpreter::visitBreak(BreakStmt *)
+void Interpreter::visitBreak(const BreakStmt &)
 {
     throw BreakSignal();
 }
 
-void Interpreter::visitContinue(ContinueStmt *)
+void Interpreter::visitContinue(const ContinueStmt &)
 {
     throw ContinueSignal();
 }

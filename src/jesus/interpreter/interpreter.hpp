@@ -2,6 +2,7 @@
 #pragma once
 
 #include "expr_visitor.hpp"
+#include "stmt_visitor.hpp"
 #include "../ast/expr/expr.hpp"
 #include "../ast/expr/binary_expr.hpp"
 #include "../ast/expr/conditional_expr.hpp"
@@ -37,7 +38,7 @@
  *   Want to switch to JIT? Swap Interpreter with a JITCompiler.
  *   Want to record execution? Just add hooks in Interpreter.
  */
-class Interpreter : public ExprVisitor
+class Interpreter : public ExprVisitor, public StmtVisitor
 {
 public:
     explicit Interpreter(Heart *heart) : heart(*heart) {}
@@ -87,6 +88,10 @@ private:
      */
     Heart heart;
 
+    // 🟢️🟢️🟢️🟢️🟢️🟢️🟢️🟢️🟢️🟢️🟢️🟢️🟢️🟢️
+    // 🟢️ Visit expression methods 🟢️
+    // 🟢️🟢️🟢️🟢️🟢️🟢️🟢️🟢️🟢️🟢️🟢️🟢️🟢️🟢️
+
     /**
      * @brief Evaluates a binary expression such as addition, comparison, etc.
      *
@@ -132,6 +137,8 @@ private:
      */
     Value visitGrouping(const GroupingExpr &expr) override;
 
+    Value visitConditional(const ConditionalExpr &expr) override;
+
     /**
      * @brief Converts a runtime value into a string representation.
      *
@@ -140,32 +147,34 @@ private:
      */
     std::string valueToString(const Value &value);
 
-    void visitCreateVar(const CreateVarStmt *stmt);
+    // 🟢️🟢️🟢️🟢️🟢️🟢️🟢️🟢️🟢️🟢️🟢️🟢️🟢️🟢️
+    // 🟢️ Visit statement methods 🟢️
+    // 🟢️🟢️🟢️🟢️🟢️🟢️🟢️🟢️🟢️🟢️🟢️🟢️🟢️🟢️
 
-    void visitUpdateVar(const UpdateVarStmt *stmt);
+    void visitCreateVar(const CreateVarStmt &stmt) override;
 
-    Value visitConditional(const ConditionalExpr &expr) override;
+    void visitUpdateVar(const UpdateVarStmt &stmt) override;
 
-    void visitOutput(OutputStmt *stmt);
+    void visitOutput(const OutputStmt &stmt) override;
 
     /**
      * repeat while condition:
      *   say "Still going..."
      */
-    void visitRepeatWhile(const RepeatWhileStmt *stmt);
+    void visitRepeatWhile(const RepeatWhileStmt &stmt) override;
 
     /**
      * repeat 3 times:
      *   say "Jesus is Lord!"
      */
-    void visitRepeatTimes(const RepeatTimesStmt *stmt);
+    void visitRepeatTimes(const RepeatTimesStmt &stmt) override;
 
     /**
      * set disciples to ["Peter", "James", "John"]
      * for each name in disciples:
      *    say name
      */
-    void visitForEach(ForEachStmt *stmt);
+    void visitForEach(const ForEachStmt &stmt) override;
 
     /**
      * set disciples to ["Peter", "James", "John"]
@@ -175,7 +184,7 @@ private:
      *
      *    say name
      */
-    void visitBreak(BreakStmt *stmt);
+    void visitBreak(const BreakStmt &stmt) override;
 
     /**
      * set disciples to ["Peter", "James", "John"]
@@ -185,5 +194,5 @@ private:
      *
      *    say name
      */
-    void visitContinue(ContinueStmt *stmt);
+    void visitContinue(const ContinueStmt &stmt) override;
 };

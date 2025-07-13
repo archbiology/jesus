@@ -23,4 +23,6 @@ public:
         : varName(std::move(varName)),
           iterable(std::move(iterable)),
           body(std::move(body)) {}
+
+  void accept(StmtVisitor &visitor) const override;
 };

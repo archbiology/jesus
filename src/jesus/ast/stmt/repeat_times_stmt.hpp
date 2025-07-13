@@ -23,4 +23,6 @@ public:
 
     RepeatTimesStmt(int count, std::unique_ptr<Stmt> body)
         : count(count), body2(std::move(body)) {}
+
+    void accept(StmtVisitor &visitor) const override;
 };

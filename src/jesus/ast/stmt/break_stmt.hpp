@@ -13,4 +13,6 @@ class BreakStmt : public Stmt
 {
 public:
   BreakStmt() = default;
+
+  void accept(StmtVisitor &visitor) const override;
 };
