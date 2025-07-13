@@ -137,6 +137,27 @@ TokenType recognize_token_type(const std::string &word)
     if (word == "female")
         return TokenType::FEMALE;
 
+    if (word == "lightday")
+        return TokenType::LIGHDAY;
+
+    if (word == "skyday")
+        return TokenType::SKYDAY;
+
+    if (word == "treeday")
+        return TokenType::TREEDAY;
+
+    if (word == "lampday")
+        return TokenType::LAMPDAY;
+
+    if (word == "fishday")
+        return TokenType::FISHDAY;
+
+    if (word == "walkday")
+        return TokenType::WALKDAY;
+
+    if (word == "shabbat")
+        return TokenType::SHABBAT;
+
     if (word == "(")
         return TokenType::LEFT_PAREN;
 

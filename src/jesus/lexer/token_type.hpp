@@ -50,6 +50,15 @@ enum class TokenType
     MALE,           // male
     FEMALE,         // female
 
+    // Week days
+    LIGHDAY,        // lighday = Sunday = 1
+    SKYDAY,         // skyday = Monday = 2
+    TREEDAY,        // treeday = Tuesday = 3
+    LAMPDAY,        // lampday = Wednesday = 4
+    FISHDAY,        // fishday = Thursday = 5
+    WALKDAY,        // walkday = man and animal = Friday = 6
+    SHABBAT,        // shabbat = saturday = 7
+
     REPEAT,         // `repeat` 3 times
     TIMES,          // repeat 3 `times`
 

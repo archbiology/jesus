@@ -15,6 +15,7 @@
 #include "expr/atomic/literals/variable_rule.hpp"
 #include "expr/atomic/literals/yes_no_rule.hpp"
 #include "expr/atomic/literals/born_rule.hpp"
+#include "expr/atomic/literals/weekday_rule.hpp"
 
 #include "expr/conditional_expr_rule.hpp"
 #include "stmt/create_var_stmt_rule.hpp"
@@ -55,12 +56,13 @@ namespace grammar
 
     inline auto YesNo = std::make_shared<YesNoRule>(); // yes|no
     inline auto Sex = std::make_shared<BornRule>(); // male|female
+    inline auto Weekday = std::make_shared<WeekdayRule>(); // lighday|skyday|treeday|lampday|fishday|walkday|shabbat
     inline auto Variable = std::make_shared<VariableRule>();
 
     /**
      * @brief Primary is anything that can be evaluated directly: number, string, or a grouped expression.
      */
-    inline auto Primary = Number | String | YesNo | Sex | Variable | Group(Expression);
+    inline auto Primary = Number | String | YesNo | Sex | Weekday | Variable | Group(Expression);
 
     // ----------
     // Statements
