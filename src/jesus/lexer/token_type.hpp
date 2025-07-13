@@ -47,6 +47,9 @@ enum class TokenType
     WARN,           // "warn" prints to stderr
     UPDATE,
 
+    MALE,           // male
+    FEMALE,         // female
+
     REPEAT,         // `repeat` 3 times
     TIMES,          // repeat 3 `times`
 

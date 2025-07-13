@@ -60,6 +60,7 @@ set(JESUS_CPP_FILES
     src/jesus/parser/grammar/expr/atomic/literals/string_rule.cpp
     src/jesus/parser/grammar/expr/atomic/literals/yes_no_rule.cpp
     src/jesus/parser/grammar/expr/atomic/literals/variable_rule.cpp
+    src/jesus/parser/grammar/expr/atomic/literals/born_rule.cpp
 
     src/jesus/parser/grammar/expr/atomic/operators/versus_rule.cpp
     src/jesus/parser/grammar/expr/atomic/operators/addition_rule.cpp

@@ -14,6 +14,7 @@
 
 #include "expr/atomic/literals/variable_rule.hpp"
 #include "expr/atomic/literals/yes_no_rule.hpp"
+#include "expr/atomic/literals/born_rule.hpp"
 
 #include "expr/conditional_expr_rule.hpp"
 #include "stmt/create_var_stmt_rule.hpp"
@@ -52,13 +53,14 @@ namespace grammar
     inline auto Conditional = std::make_shared<ConditionalExprRule>(LogicalOr);
     inline auto Expression = Conditional;
 
-    inline auto YesNo = std::make_shared<YesNoRule>();
+    inline auto YesNo = std::make_shared<YesNoRule>(); // yes|no
+    inline auto Sex = std::make_shared<BornRule>(); // male|female
     inline auto Variable = std::make_shared<VariableRule>();
 
     /**
      * @brief Primary is anything that can be evaluated directly: number, string, or a grouped expression.
      */
-    inline auto Primary = Number | String | YesNo | Variable | Group(Expression);
+    inline auto Primary = Number | String | YesNo | Sex | Variable | Group(Expression);
 
     // ----------
     // Statements

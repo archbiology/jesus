@@ -131,6 +131,12 @@ TokenType recognize_token_type(const std::string &word)
     if (word == "yes")
         return TokenType::YES;
 
+    if (word == "male")
+        return TokenType::MALE;
+
+    if (word == "female")
+        return TokenType::FEMALE;
+
     if (word == "(")
         return TokenType::LEFT_PAREN;
 
