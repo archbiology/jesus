@@ -105,7 +105,7 @@
 (Jesus) (Jesus) (double) -13.000000
 (Jesus) (Jesus) (double) 0.333000
 (Jesus) (Jesus) (double) -0.333000
-(Jesus) (Jesus) ❌ Error: The variable 'ships' already exists.
+(Jesus) (Jesus) ❌ Error: The variable 'sheep' already exists.
 (Jesus) (int) 100
 (Jesus) (Jesus) (text) 
 (Jesus) (Jesus) (text) Jesus
@@ -117,4 +117,5 @@
 (Jesus) ❌ Error: Unknown variable type: 'car'
 (Jesus) ❌ Error: Undefined variable: hilux
 (Jesus) (Jesus) (int) 490
+(Jesus) (Jesus) (text) Jesus loves YOU
 (Jesus) 

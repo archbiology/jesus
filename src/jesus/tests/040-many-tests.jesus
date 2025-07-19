@@ -125,9 +125,9 @@ create percentage fallen_angels = 0.333
 say fallen_angels
 create percentage fallen_wise = -0.333
 say fallen_wise
-create percentage ships = 100
-create percentage ships = 101
-say ships
+create percentage sheep = 100
+create percentage sheep = 101
+say sheep
 create word empty = ""
 say empty
 create word savior = "Jesus"
@@ -146,3 +146,5 @@ create car hilux = 0
 say hilux
 create decimal forgive = 70 * 7
 say forgive
+valid = "Jesus loves YOU"
+say valid

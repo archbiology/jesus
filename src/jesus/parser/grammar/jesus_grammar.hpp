@@ -19,6 +19,7 @@
 
 #include "expr/conditional_expr_rule.hpp"
 #include "stmt/create_var_stmt_rule.hpp"
+#include "stmt/update_var_stmt_rule.hpp"
 #include "unary_rule.hpp"
 
 /**
@@ -68,6 +69,7 @@ namespace grammar
     // Statements
     // ----------
     inline auto CreateVar = std::make_shared<CreateVarStmtRule>(Expression);
+    inline auto UpdateVar = std::make_shared<UpdateVarStmtRule>(Expression);
 
     /**
      * @brief Set the Expression rule to something (for now just Primary)
