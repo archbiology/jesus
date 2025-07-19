@@ -57,6 +57,10 @@ std::unique_ptr<Stmt> parse(const std::vector<Token> &tokens)
     if (createVarStmt)
         return createVarStmt;
 
+    auto updateVarStmt = grammar::UpdateVar->parse(ctx);
+    if (updateVarStmt)
+        return updateVarStmt;
+
     // If no match, fall back to expression parsing
     ParserContext context(tokens);
     auto expr = grammar::Expression->parse(context);

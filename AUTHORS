@@ -14,4 +14,4 @@ Scribe:
 - Ruben Alves - https://github.com/rubenanapu
 
 Special thanks to all contributors.
-See the Git history for details.
+See the Git history (git shortlog -sne) for details.
