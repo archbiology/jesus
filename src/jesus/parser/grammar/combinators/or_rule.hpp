@@ -24,13 +24,13 @@ public:
     {
         for (auto &rule : rules)
         {
-            ParserContext backup = ctx.snapshot(); // Save state in case this rule fails
+            int backup = ctx.snapshot(); // Save current token position in case this rule fails
             auto result = rule->parse(ctx);        // Try this rule
 
             if (result) // If it parsed successfully
                 return result;
 
-            ctx = backup; // Restore context and try next
+            ctx.restore(backup); // Restore just the token position and try next
         }
 
         return nullptr; // None of the rules matched

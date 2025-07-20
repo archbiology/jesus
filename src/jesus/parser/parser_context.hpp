@@ -7,6 +7,9 @@
 #include <vector>
 #include <stdexcept>
 
+
+class Interpreter; // Forward declaration
+
 /**
  * @brief The context passed around during parsing, holding tokens and parsing position.
  *
@@ -19,8 +22,9 @@
 class ParserContext
 {
 public:
-    explicit ParserContext(const std::vector<Token> &tokens, int current = 0)
-        : tokens(tokens), current(current) {}
+    Interpreter *interpreter = nullptr;
+
+    explicit ParserContext(std::vector<Token> tokens, Interpreter *interpreter, int current = 0);
 
     /**
      * @brief Returns the current token without advancing.
@@ -142,11 +146,17 @@ public:
         current = pos;
     }
 
-    ParserContext snapshot() const
+
+    /**
+     * @brief Return current token position
+     */
+    int snapshot() const
     {
-        ParserContext copy(this->tokens);
-        copy.current = this->current;
-        return copy;
+        return this->current;
+    }
+
+    void restore(int snapshot) {
+        current = snapshot;
     }
 
     std::string toString()
