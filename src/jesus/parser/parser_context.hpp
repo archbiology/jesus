@@ -2,10 +2,14 @@
 
 #include "../lexer/token.hpp"
 #include "../lexer/token_type.hpp"
+#include "../semantic/semantic_analyser.hpp"
 
 #include <string>
 #include <vector>
 #include <stdexcept>
+
+
+class Interpreter; // Forward declaration
 
 /**
  * @brief The context passed around during parsing, holding tokens and parsing position.
@@ -19,8 +23,9 @@
 class ParserContext
 {
 public:
-    explicit ParserContext(const std::vector<Token> &tokens, int current = 0)
-        : tokens(tokens), current(current) {}
+    Interpreter *interpreter = nullptr;
+
+    explicit ParserContext(std::vector<Token> tokens, Interpreter *interpreter, int current = 0);
 
     /**
      * @brief Returns the current token without advancing.
@@ -142,11 +147,25 @@ public:
         current = pos;
     }
 
-    ParserContext snapshot() const
+
+    /**
+     * @brief Return current token position
+     */
+    int snapshot() const
     {
-        ParserContext copy(this->tokens);
-        copy.current = this->current;
-        return copy;
+        return this->current;
+    }
+
+    void restore(int snapshot) {
+        current = snapshot;
+    }
+
+    void registerVarType(const std::string& varName, const std::string& typeName) {
+        SemanticAnalyzer::registerVarType(varName, typeName);
+    }
+
+    const CreationType* getVarType(const std::string& varName) {
+        return SemanticAnalyzer::getVarType(varName);
     }
 
     std::string toString()

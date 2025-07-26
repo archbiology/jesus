@@ -4,13 +4,13 @@
 
 std::unique_ptr<Expr> ConditionalExprRule::parse(ParserContext &ctx)
 {
-    ParserContext backup = ctx.snapshot();
+    int backup = ctx.snapshot();
 
     // Parse the "then" expression
     auto ifExpr = expression->parse(ctx);
     if (!ifExpr)
     {
-        ctx = backup;
+        ctx.restore(backup);
         return nullptr;
     }
 
@@ -25,7 +25,7 @@ std::unique_ptr<Expr> ConditionalExprRule::parse(ParserContext &ctx)
     if (!condition)
     {
         std::cerr << "Expected condition after 'if'.\n";
-        ctx = backup;
+        ctx.restore(backup);
         return nullptr;
     }
 
@@ -33,7 +33,7 @@ std::unique_ptr<Expr> ConditionalExprRule::parse(ParserContext &ctx)
     if (!ctx.match(TokenType::OTHERWISE))
     {
         std::cerr << "Expected 'otherwise' after condition.\n";
-        ctx = backup;
+        ctx.restore(backup);
         return nullptr;
     }
 
@@ -42,7 +42,7 @@ std::unique_ptr<Expr> ConditionalExprRule::parse(ParserContext &ctx)
     if (!otherwiseExpr)
     {
         std::cerr << "[ConditionalExprRule] Expected expression after 'otherwise'.\n";
-        ctx = backup;
+        ctx.restore(backup);
         return nullptr;
     }
 

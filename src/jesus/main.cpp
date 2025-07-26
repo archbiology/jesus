@@ -24,7 +24,8 @@ int main()
         {
 
             auto tokens = lex(line);
-            auto node = parse(tokens);
+            ParserContext context(tokens, &interpreter);
+            auto node = parse(tokens, context);
 
             if (node)
             {

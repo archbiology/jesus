@@ -53,6 +53,7 @@ set(JESUS_CPP_FILES
     # Parser classes
     # --------------
     src/jesus/parser/parser.cpp
+    src/jesus/parser/parser_context.cpp
     src/jesus/parser/grammar/group_rule.cpp
     src/jesus/parser/grammar/unary_rule.cpp
 

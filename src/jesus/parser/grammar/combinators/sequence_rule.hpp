@@ -13,19 +13,19 @@ public:
 
     std::unique_ptr<Expr> parse(ParserContext &ctx) override
     {
-        ParserContext backup = ctx.snapshot(); // Save state in case this rule fails
+        int backup = ctx.snapshot(); // Save current token position in case this rule fails
 
         auto firstExpr = first->parse(ctx);
         if (!firstExpr)
         {
-            ctx = backup;
+            ctx.restore(backup); // Restore just the token position
             return nullptr;
         }
 
         auto secondExpr = second->parse(ctx);
         if (!secondExpr)
         {
-            ctx = backup;
+            ctx.restore(backup); // Restore just the token position
             return nullptr;
         }
 
