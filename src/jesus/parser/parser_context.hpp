@@ -2,6 +2,7 @@
 
 #include "../lexer/token.hpp"
 #include "../lexer/token_type.hpp"
+#include "../semantic/semantic_analyser.hpp"
 
 #include <string>
 #include <vector>
@@ -157,6 +158,14 @@ public:
 
     void restore(int snapshot) {
         current = snapshot;
+    }
+
+    void registerVarType(const std::string& varName, const std::string& typeName) {
+        SemanticAnalyzer::registerVarType(varName, typeName);
+    }
+
+    const CreationType* getVarType(const std::string& varName) {
+        return SemanticAnalyzer::getVarType(varName);
     }
 
     std::string toString()

@@ -41,8 +41,10 @@ std::unique_ptr<Stmt> CreateVarStmtRule::parse(ParserContext &ctx)
         Value evaluated = ctx.interpreter->evaluate(value);
         if (!creationType->validate(evaluated))
         {
-            throw std::runtime_error("Invalid value (" + evaluated.toString() + ") for type: " + creationType->name);
+            throw std::runtime_error("Error: Invalid value value \"" + evaluated.toString() + "\" to variable '"+ varName +"' declared as type " + creationType->name);
         }
+
+        ctx.registerVarType(varName, creationType->name);
     }
 
     return std::make_unique<CreateVarStmt>(varType, varName, std::move(value));
