@@ -13,12 +13,12 @@
 class CreateVarStmt : public Stmt
 {
 public:
-    std::string type;
+    std::string base_type;
     std::string name;
     std::unique_ptr<Expr> value;
 
     CreateVarStmt(std::string type, std::string name, std::unique_ptr<Expr> value)
-        : type(type), name(name), value(std::move(value)) {}
+        : base_type(type), name(name), value(std::move(value)) {}
 
     /**
      * @brief Returns a string representation of the statement.

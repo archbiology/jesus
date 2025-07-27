@@ -11,6 +11,7 @@
 #include "../ast/expr/variable_expr.hpp"
 #include "../ast/expr/grouping_expr.hpp"
 #include "../ast/stmt/stmt.hpp"
+#include "../ast/stmt/create_var_type_stmt.hpp"
 #include "../ast/stmt/create_var_stmt.hpp"
 #include "../ast/stmt/update_var_stmt.hpp"
 #include "../ast/stmt/output_statement.hpp"
@@ -152,6 +153,8 @@ private:
     // 🟢️🟢️🟢️🟢️🟢️🟢️🟢️🟢️🟢️🟢️🟢️🟢️🟢️🟢️
 
     void visitCreateVar(const CreateVarStmt &stmt) override;
+
+    void visitCreateVarType(const CreateVarTypeStmt &stmt) override;
 
     void visitUpdateVar(const UpdateVarStmt &stmt) override;
 
