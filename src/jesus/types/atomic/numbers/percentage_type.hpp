@@ -5,7 +5,7 @@
 class PercentageType : public CreationType
 {
 public:
-    PercentageType() : CreationType("percentage", "core") {}
+    PercentageType() : CreationType(PrimitiveType::Number, "percentage", "core") {}
 
     bool validate(const Value &value) const override
     {

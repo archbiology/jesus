@@ -35,6 +35,7 @@ std::unique_ptr<Stmt> CreateVarTypeStmtRule::parse(ParserContext &ctx)
         throw std::runtime_error("Unknown base type: '" + baseTypeStr + "'");
     }
 
+    int snapshot = ctx.snapshot();
     // Here comes the key difference: we check if there’s a constraint (like > 0)
     // Otherwise it's not a variable type declaration
     if (!ctx.matchAny({TokenType::GREATER, TokenType::LESS,
@@ -44,6 +45,7 @@ std::unique_ptr<Stmt> CreateVarTypeStmtRule::parse(ParserContext &ctx)
     {
         return nullptr;
     }
+    ctx.restore(snapshot);  // becauase matchAny above calls advance()
 
     std::vector<std::shared_ptr<IConstraint>> constraints;
 

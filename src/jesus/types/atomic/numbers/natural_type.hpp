@@ -5,7 +5,7 @@
 class NaturalType : public CreationType
 {
 public:
-    NaturalType() : CreationType("natural", "core") {}
+    NaturalType() : CreationType(PrimitiveType::Number, "natural", "core") {}
 
     bool validate(const Value &value) const override
     {

@@ -2,7 +2,7 @@
 
 struct make_string_functor
 {
-    std::string operator()(const std::string &x) const { return "(text) " + x; }
+    std::string operator()(const std::string &x) const { return x; }
     std::string operator()(double x) const { return "(double) " + std::to_string(x); }
     std::string operator()(int x) const { return "(int) " + std::to_string(x); }
     std::string operator()(bool x) const { return "(logic) " + std::to_string(x); }

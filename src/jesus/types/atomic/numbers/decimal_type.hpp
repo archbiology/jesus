@@ -5,7 +5,7 @@
 class DecimalType : public CreationType
 {
 public:
-    DecimalType() : CreationType("decimal", "core") {}
+    DecimalType() : CreationType(PrimitiveType::Number, "decimal", "core") {}
 
     bool validate(const Value &value) const override
     {

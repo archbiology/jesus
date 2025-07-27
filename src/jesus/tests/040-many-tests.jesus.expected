@@ -1,8 +1,8 @@
 (Jesus) (Jesus) (Jesus) (Jesus) (Jesus) (Jesus) (int) 33
-(Jesus) (text) Jesus
-(Jesus) (text) me
+(Jesus) Jesus
+(Jesus) me
 (Jesus) (int) 33
-(Jesus) (text) adult
+(Jesus) adult
 (Jesus) (int) 2
 (Jesus) (int) 9
 (Jesus) (int) 34
@@ -29,9 +29,9 @@
 (Jesus) (int) 1
 (Jesus) (Jesus) null
 (Jesus) (int) 8
-(Jesus) (text) final
+(Jesus) final
 (Jesus) (int) 132
-(Jesus) (text) adult
+(Jesus) adult
 (Jesus) (logic) 0
 (Jesus) (logic) 1
 (Jesus) (logic) 0
@@ -42,7 +42,7 @@
 (Jesus) (logic) 0
 (Jesus) ❌ Error: Unknown expression type (parser.cpp)
 (Jesus) ❌ Error: The variable 'age' already exists.
-(Jesus) (text) adult
+(Jesus) adult
 (Jesus) (int) 2
 (Jesus) (int) 9
 (Jesus) (int) 34
@@ -87,11 +87,11 @@
 (Jesus) ❌ Error: The variable 'name' already exists.
 (Jesus) null
 (Jesus) (int) 8
-(Jesus) (text) final
+(Jesus) final
 (Jesus) (int) 132
-(Jesus) (text) adult
-(Jesus) ❌ Error: Expected variable name after 'create type'
-(Jesus) ❌ Error: Error: Invalid value value "(text) wrong value" to variable 'count' declared as type number
+(Jesus) adult
+(Jesus) ❌ Error: Expected new type name after 'create with_no_type'
+(Jesus) ❌ Error: Error: Invalid value value "wrong value" to variable 'count' declared as type number
 (Jesus) (Jesus) ❌ Error: Undefined variable: count
 (Jesus) (int) 1
 (Jesus) (Jesus) (int) 0
@@ -99,13 +99,15 @@
 (Jesus) ❌ Error: Undefined variable: PI
 (Jesus) ❌ Error: Error: Invalid value value "(double) -6.000000" to variable 'temperature' declared as type number
 (Jesus) ❌ Error: Undefined variable: temperature
-(Jesus) (Jesus) (int) 24
-(Jesus) ❌ Error: Error: Invalid value value "(int) 0" to variable 'sinful' declared as type positive
+(Jesus) ❌ Error: Unknown base type: 'positive'
+(Jesus) ❌ Error: Undefined variable: elders
+(Jesus) ❌ Error: Unknown base type: 'positive'
 (Jesus) ❌ Error: Undefined variable: sinful
-(Jesus) (Jesus) (double) -1.000000
-(Jesus) ❌ Error: Error: Invalid value value "(int) 13" to variable 'credit' declared as type negative
+(Jesus) ❌ Error: Unknown base type: 'negative'
+(Jesus) ❌ Error: Undefined variable: debt
+(Jesus) ❌ Error: Unknown base type: 'negative'
 (Jesus) ❌ Error: Undefined variable: credit
-(Jesus) ❌ Error: Error: Invalid value value "(int) 0" to variable 'void' declared as type negative
+(Jesus) ❌ Error: Unknown base type: 'negative'
 (Jesus) ❌ Error: Undefined variable: void
 (Jesus) (Jesus) (int) 7
 (Jesus) ❌ Error: Error: Invalid value value "(double) -13.000000" to variable 'darkness' declared as type natural
@@ -115,17 +117,29 @@
 (Jesus) ❌ Error: Undefined variable: fallen_wise
 (Jesus) (Jesus) ❌ Error: Error: Invalid value value "(int) 101" to variable 'sheep' declared as type percentage
 (Jesus) (int) 100
-(Jesus) (Jesus) (text) 
-(Jesus) (Jesus) (text) Jesus
-(Jesus) (Jesus) (text) Sinful wise
+(Jesus) (Jesus) 
+(Jesus) (Jesus) Jesus
+(Jesus) (Jesus) Sinful wise
 (Jesus) ❌ Error: Error: Invalid value value "(int) 6" to variable 'confusion' declared as type phrase
 (Jesus) ❌ Error: Undefined variable: confusion
-(Jesus) (Jesus) (text) God does not see
-(Jesus) (Jesus) (text) 
+(Jesus) (Jesus) God does not see
+(Jesus) (Jesus) 
 (Jesus) ❌ Error: Error: Invalid value value "(int) 13" to variable 'rebellion' declared as type text
 (Jesus) ❌ Error: Undefined variable: rebellion
-(Jesus) ❌ Error: Unknown variable type: 'car'
+(Jesus) ❌ Error: Unknown base type: 'car'
 (Jesus) ❌ Error: Undefined variable: hilux
 (Jesus) (Jesus) (int) 490
-(Jesus) (Jesus) (text) Jesus loves YOU
+(Jesus) (Jesus) Jesus loves YOU
+(Jesus) ❌ Error: The variable 'age' already exists.
+(Jesus) (Jesus) ❌ Error: Expected value > (double) 0.000000
+(Jesus) ❌ Error: Undefined variable: abc
+(Jesus) (Jesus) (int) 9
+(Jesus) (Jesus) (Jesus) (double) -6.000000
+(Jesus) ❌ Error: Expected value < (double) 0.000000
+(Jesus) (Jesus) (Jesus) (int) 7
+(Jesus) ❌ Error: Expected value >= (double) 7.000000
+(Jesus) (Jesus) (Jesus) ❌ Error: Expected value <= (double) 12.000000
+(Jesus) (int) 12
+(Jesus) (Jesus) (Jesus) ❌ Error: Value "no" does not match expected pattern.
+(Jesus) Yes
 (Jesus) 
