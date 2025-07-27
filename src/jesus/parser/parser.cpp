@@ -51,6 +51,12 @@ std::unique_ptr<Stmt> parse(const std::vector<Token> &tokens, ParserContext &con
                 std::move(expr));
     }
 
+    int snapshot = context.snapshot();
+    auto createVarTypeStmt = grammar::CreateVarType->parse(context);
+    if (createVarTypeStmt)
+        return createVarTypeStmt;
+
+    context.restore(snapshot);
     auto createVarStmt = grammar::CreateVar->parse(context);
     if (createVarStmt)
         return createVarStmt;

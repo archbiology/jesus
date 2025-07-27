@@ -46,6 +46,8 @@ enum class TokenType
     SAY,            // "say" prints to stdout
     WARN,           // "warn" prints to stderr
     UPDATE,
+    MATCHES,        // create text Confirm matches "(Y|y)es"
+    BETEWEEN,       // create real Percentage between 0 and 100
 
     MALE,           // male
     FEMALE,         // female
