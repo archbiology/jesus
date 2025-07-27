@@ -5,7 +5,7 @@
 class RealType : public CreationType
 {
 public:
-    RealType() : CreationType("real", "core") {}
+    RealType() : CreationType(PrimitiveType::Number, "real", "core") {}
 
     bool validate(const Value &value) const override
     {

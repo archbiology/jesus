@@ -1,6 +1,8 @@
 #include "interpreter.hpp"
 #include <stdexcept>
 #include "../ast/stmt/output_statement.hpp"
+#include "../types/known_types.hpp"
+
 #include <iostream>
 
 // Custom control-flow exceptions
@@ -66,6 +68,19 @@ void Interpreter::visitCreateVar(const CreateVarStmt &stmt)
     Value val = evaluate(stmt.value);
     createVariable(stmt.name, val);
 }
+
+void Interpreter::visitCreateVarType(const CreateVarTypeStmt &stmt)
+{
+    auto custom_type = std::make_shared<CreationType>(
+        stmt.base_type.primitive_type,
+        stmt.name,
+        stmt.module_name,
+        stmt.constraints
+    );
+
+    KnownTypes::registerType(std::move(custom_type));
+}
+
 
 void Interpreter::visitUpdateVar(const UpdateVarStmt &stmt)
 {

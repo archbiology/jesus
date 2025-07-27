@@ -5,7 +5,7 @@
 class WordType : public CreationType
 {
 public:
-    WordType() : CreationType("word", "core") {}
+    WordType() : CreationType(PrimitiveType::Text, "word", "core") {}
 
     bool validate(const Value &value) const override
     {

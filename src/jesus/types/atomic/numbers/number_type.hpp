@@ -5,7 +5,7 @@
 class NumberType : public CreationType
 {
 public:
-    NumberType() : CreationType("number", "core") {}
+    NumberType() : CreationType(PrimitiveType::Number, "number", "core") {}
 
     bool validate(const Value &value) const override
     {

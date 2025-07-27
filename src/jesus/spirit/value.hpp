@@ -210,6 +210,38 @@ public:
     friend bool operator<=(const Value &left, const Value &right) { return !(right < left); }
     friend bool operator>=(const Value &left, const Value &right) { return !(left < right); }
 
+    /**
+     * @brief Value + std::string
+     */
+    friend std::string operator+(const Value &val, const std::string &str)
+    {
+        return val.toString() + str;
+    }
+
+    /**
+     * @brief std::string + Value
+     */
+    friend std::string operator+(const std::string &str, const Value &val)
+    {
+        return str + val.toString();
+    }
+
+    /**
+     * @brief const char* + Value
+     */
+    friend std::string operator+(const char *str, const Value &val)
+    {
+        return std::string(str) + val.toString();
+    }
+
+    /**
+     * @brief Value + const char*
+     */
+    friend std::string operator+(const Value &val, const char *str)
+    {
+        return val.toString() + std::string(str);
+    }
+
 private:
     Dust value;
 };

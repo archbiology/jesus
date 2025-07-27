@@ -158,6 +158,12 @@ TokenType recognize_token_type(const std::string &word)
     if (word == "shabbat")
         return TokenType::SHABBAT;
 
+    if (word == "matches")
+        return TokenType::MATCHES;
+
+    if (word == "between")
+        return TokenType::BETEWEEN;
+
     if (word == "(")
         return TokenType::LEFT_PAREN;
 

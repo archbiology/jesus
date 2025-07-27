@@ -5,7 +5,7 @@
 class PhraseType : public CreationType
 {
 public:
-    PhraseType() : CreationType("phrase", "core") {}
+    PhraseType() : CreationType(PrimitiveType::Text, "phrase", "core") {}
 
     bool validate(const Value &value) const override
     {

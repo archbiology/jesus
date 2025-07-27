@@ -12,12 +12,15 @@
 #include "expr/atomic/operators/multiplication_rule.hpp"
 #include "expr/atomic/operators/versus_rule.hpp"
 
+#include "expr/atomic/literals/number_rule.hpp"
+#include "expr/atomic/literals/string_rule.hpp"
 #include "expr/atomic/literals/variable_rule.hpp"
 #include "expr/atomic/literals/yes_no_rule.hpp"
 #include "expr/atomic/literals/born_rule.hpp"
 #include "expr/atomic/literals/weekday_rule.hpp"
 
 #include "expr/conditional_expr_rule.hpp"
+#include "stmt/create_var_type_stmt_rule.hpp"
 #include "stmt/create_var_stmt_rule.hpp"
 #include "stmt/update_var_stmt_rule.hpp"
 #include "unary_rule.hpp"
@@ -55,6 +58,8 @@ namespace grammar
     inline auto Conditional = std::make_shared<ConditionalExprRule>(LogicalOr);
     inline auto Expression = Conditional;
 
+    inline auto Number = std::make_shared<NumberRule>();
+    inline auto String = std::make_shared<StringRule>();
     inline auto YesNo = std::make_shared<YesNoRule>(); // yes|no
     inline auto Sex = std::make_shared<BornRule>(); // male|female
     inline auto Weekday = std::make_shared<WeekdayRule>(); // lighday|skyday|treeday|lampday|fishday|walkday|shabbat
@@ -68,6 +73,7 @@ namespace grammar
     // ----------
     // Statements
     // ----------
+    inline auto CreateVarType = std::make_shared<CreateVarTypeStmtRule>();
     inline auto CreateVar = std::make_shared<CreateVarStmtRule>(Expression);
     inline auto UpdateVar = std::make_shared<UpdateVarStmtRule>(Expression);
 

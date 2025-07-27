@@ -148,3 +148,25 @@ create decimal forgive = 70 * 7
 say forgive
 valid = "Jesus loves YOU"
 say valid
+create number age = 8
+create number Positive > 0
+create Positive abc = -9
+say abc
+create Positive gifts = 9
+say gifts
+create number Negative < 0
+create Negative debit = -6
+say debit
+debit = 19
+create number Oter >= 7
+create Oter a = 7
+say a
+create Oter a = 6
+create number Tribe <= 12
+create Tribe israel = 12
+create Tribe israel = 13
+say israel
+create text Confirm matches "(Y|y)es"
+create Confirm sure = "Yes"
+sure = "no"
+say sure

@@ -1,8 +1,6 @@
 #include "known_types.hpp"
 #include "atomic/numbers/number_type.hpp"
 #include "atomic/numbers/real_type.hpp"
-#include "atomic/numbers/positive_type.hpp"
-#include "atomic/numbers/negative_type.hpp"
 #include "atomic/numbers/natural_type.hpp"
 #include "atomic/numbers/percentage_type.hpp"
 #include "atomic/numbers/decimal_type.hpp"
@@ -20,13 +18,11 @@ void KnownTypes::registerBuiltInTypes()
     registerType(std::make_unique<RealType>());
     registerType(std::make_unique<NumberType>());
     registerType(std::make_unique<NaturalType>());
-    registerType(std::make_unique<PositiveType>());
-    registerType(std::make_unique<NegativeType>());
     registerType(std::make_unique<PercentageType>());
     registerType(std::make_unique<DecimalType>());
 }
 
-void KnownTypes::registerType(std::unique_ptr<CreationType> type)
+void KnownTypes::registerType(std::shared_ptr<CreationType> type)
 {
     const std::string fullname = makeKey(type->module_name, type->name);
     int id = type->id;
