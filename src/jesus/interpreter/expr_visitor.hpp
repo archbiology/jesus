@@ -7,6 +7,7 @@
 #include "../ast/expr/literal_expr.hpp"
 #include "../ast/expr/variable_expr.hpp"
 #include "../ast/expr/grouping_expr.hpp"
+#include "../ast/expr/ask_expr.hpp"
 
 /**
  * @brief Interface for visiting and evaluating expression nodes in the AST.
@@ -49,6 +50,7 @@ public:
     virtual Value visitUnary(const UnaryExpr &expr) = 0;
     virtual Value visitConditional(const ConditionalExpr &expr) = 0;
     virtual Value visitVariable(const VariableExpr &expr) = 0;
+    virtual Value visitAsk(const AskExpr &expr) = 0;
 
     virtual ~ExprVisitor() = default;
 };

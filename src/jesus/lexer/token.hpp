@@ -115,6 +115,8 @@ public:
             return "IDENTIFIER(" + lexeme + ")";
         case TokenType::SAY:
             return "SAY";
+        case TokenType::ASK:
+            return "ASK";
         case TokenType::WARN:
             return "WARN";
         case TokenType::UPDATE:

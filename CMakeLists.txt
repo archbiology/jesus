@@ -30,6 +30,7 @@ set(JESUS_CPP_FILES
     # ---------------
     # AST Expressions
     # ---------------
+    src/jesus/ast/expr/ask_expr.cpp
     src/jesus/ast/expr/unary_expr.cpp
     src/jesus/ast/expr/binary_expr.cpp
     src/jesus/ast/expr/literal_expr.cpp
@@ -44,6 +45,7 @@ set(JESUS_CPP_FILES
     src/jesus/ast/stmt/continue_stmt.cpp
     src/jesus/ast/stmt/create_var_type_stmt.cpp
     src/jesus/ast/stmt/create_var_stmt.cpp
+    src/jesus/ast/stmt/create_var_with_ask_stmt.cpp
     src/jesus/ast/stmt/for_each_stmt.cpp
     src/jesus/ast/stmt/output_stmt.cpp
     src/jesus/ast/stmt/repeat_times_stmt.cpp
@@ -61,6 +63,7 @@ set(JESUS_CPP_FILES
     # ------------------
     # Expression parsers
     # ------------------
+    src/jesus/parser/grammar/expr/ask_expr_rule.cpp
     src/jesus/parser/grammar/expr/conditional_expr_rule.cpp
 
     src/jesus/parser/grammar/expr/atomic/literals/number_rule.cpp

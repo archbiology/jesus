@@ -2,6 +2,7 @@
 #include <stdexcept>
 #include "../ast/stmt/output_statement.hpp"
 #include "../types/known_types.hpp"
+#include "../utils/string_utils.hpp"
 
 #include <iostream>
 
@@ -53,6 +54,12 @@ Value Interpreter::visitVariable(const VariableExpr &expr)
     return heart.getVar(expr.name);
 }
 
+Value Interpreter::visitAsk(const AskExpr &expr)
+{
+    auto question = expr.evaluate(&heart);
+    return question;
+}
+
 Value Interpreter::visitGrouping(const GroupingExpr &expr)
 {
     return evaluate(expr.expression);
@@ -69,18 +76,49 @@ void Interpreter::visitCreateVar(const CreateVarStmt &stmt)
     createVariable(stmt.name, val);
 }
 
+void Interpreter::visitCreateVarWithAsk(const CreateVarWithAskStmt &stmt)
+{
+    // Step 1: Evaluate the ask expression (e.g., ask "Your age?")
+    Value question = stmt.ask_expr->evaluate(&heart);
+
+    while (true)
+    {
+        // Step 2: Show the question to the user
+        std::cout << question.toString();
+
+        // Step 3: Get the answer from the user
+        std::string answer;
+        std::getline(std::cin, answer);
+
+        try
+        {
+            answer = utils::trim(answer);
+
+            // Step 4: Validate the value according to the creation type
+            Value value = stmt.var_type.parseFromString(answer);
+            stmt.var_type.validate(value);
+
+            // Step 5: Only if validation passed, create the variable
+            createVariable(stmt.var_name, value);
+            break;
+        }
+        catch (const std::exception &e)
+        {
+            std::cerr << "Validation failed: " << e.what() << std::endl;
+        }
+    }
+}
+
 void Interpreter::visitCreateVarType(const CreateVarTypeStmt &stmt)
 {
     auto custom_type = std::make_shared<CreationType>(
         stmt.base_type.primitive_type,
         stmt.name,
         stmt.module_name,
-        stmt.constraints
-    );
+        stmt.constraints);
 
     KnownTypes::registerType(std::move(custom_type));
 }
-
 
 void Interpreter::visitUpdateVar(const UpdateVarStmt &stmt)
 {

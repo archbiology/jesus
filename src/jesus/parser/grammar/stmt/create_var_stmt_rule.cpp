@@ -1,5 +1,6 @@
 #include "create_var_stmt_rule.hpp"
 #include "../../../ast/stmt/create_var_stmt.hpp"
+#include "../../../ast/stmt/create_var_with_ask_stmt.hpp"
 #include "../../../types/known_types.hpp"
 #include "../../../interpreter/interpreter.hpp"
 #include <stdexcept>
@@ -19,7 +20,7 @@ std::unique_ptr<Stmt> CreateVarStmtRule::parse(ParserContext &ctx)
 
     std::string varName = ctx.previous().lexeme;
 
-    const auto *creationType = KnownTypes::resolve(varType, "core");
+    auto *creationType = KnownTypes::resolve(varType, "core");
     if (!creationType)
     {
         throw std::runtime_error("Unknown variable type: '" + varType + "'");
@@ -29,10 +30,20 @@ std::unique_ptr<Stmt> CreateVarStmtRule::parse(ParserContext &ctx)
 
     if (ctx.match(TokenType::EQUAL))
     {
+        int snapshot = ctx.snapshot();
+        if (ctx.match(TokenType::ASK))
+        {
+            ctx.restore(snapshot); // because 'ask->parse()' expects TokenType::ASK, but since it matched, it already advanced.
+
+            std::unique_ptr<Expr> ask_expr = ask->parse(ctx);
+            if (!ask_expr)
+                throw std::runtime_error("Expected a text literal or a text-typed variable after 'ask' (e.g., ask \"What is your name?\" or ask question).");
+
+            return std::make_unique<CreateVarWithAskStmt>(*creationType, varName, std::move(ask_expr));
+        }
         value = expression->parse(ctx);
         if (!value)
             throw std::runtime_error("Expected expression after '=' in create statement.");
-
 
         // Evaluating functions that could send an 'ok' to bomb explosions is not safe.
         // Let's warn this until we can check the return type from functions
@@ -41,7 +52,7 @@ std::unique_ptr<Stmt> CreateVarStmtRule::parse(ParserContext &ctx)
         Value evaluated = ctx.interpreter->evaluate(value);
         if (!creationType->validate(evaluated))
         {
-            throw std::runtime_error("Error: Invalid value value \"" + evaluated.toString() + "\" to variable '"+ varName +"' declared as type " + creationType->name);
+            throw std::runtime_error("Error: Invalid value value \"" + evaluated.toString() + "\" to variable '" + varName + "' declared as type " + creationType->name);
         }
 
         ctx.registerVarType(varName, creationType->name);

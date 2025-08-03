@@ -2,6 +2,7 @@
 
 #include "../ast/stmt/create_var_type_stmt.hpp"
 #include "../ast/stmt/create_var_stmt.hpp"
+#include "../ast/stmt/create_var_with_ask_stmt.hpp"
 #include "../ast/stmt/update_var_stmt.hpp"
 #include "../ast/stmt/output_statement.hpp"
 #include "../ast/stmt/repeat_while_stmt.hpp"
@@ -47,6 +48,7 @@ class StmtVisitor
 public:
     virtual void visitCreateVarType(const CreateVarTypeStmt &stmt) = 0;
     virtual void visitCreateVar(const CreateVarStmt &stmt) = 0;
+    virtual void visitCreateVarWithAsk(const CreateVarWithAskStmt &stmt) = 0;
     virtual void visitUpdateVar(const UpdateVarStmt &stmt) = 0;
     virtual void visitOutput(const OutputStmt &stmt) = 0;
     virtual void visitRepeatWhile(const RepeatWhileStmt &stmt) = 0;

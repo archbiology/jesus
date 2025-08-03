@@ -43,6 +43,7 @@ enum class TokenType
     SLASH,          // /
 
     CREATE,         // create days = 7
+    ASK,            // create int age = ask "What is your age?"
     SAY,            // "say" prints to stdout
     WARN,           // "warn" prints to stderr
     UPDATE,

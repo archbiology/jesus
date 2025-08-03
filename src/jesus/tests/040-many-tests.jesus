@@ -170,3 +170,14 @@ create text Confirm matches "(Y|y)es"
 create Confirm sure = "Yes"
 sure = "no"
 say sure
+create text question = "What is your age? "
+create number edad = ask question
+18
+say edad
+create number idade = ask "Qual sua idade? "
+seven
+fourteen
+33
+say idade
+create number year = ask PI
+create number year2 = ask temperature

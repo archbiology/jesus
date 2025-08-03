@@ -182,6 +182,9 @@ TokenType recognize_token_type(const std::string &word)
     if (word == "-")
         return TokenType::MINUS;
 
+    if (word == "ask")
+        return TokenType::ASK;
+
     if (word == "say")
         return TokenType::SAY;
 
