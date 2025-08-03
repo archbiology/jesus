@@ -142,4 +142,10 @@
 (Jesus) (int) 12
 (Jesus) (Jesus) (Jesus) ❌ Error: Value "no" does not match expected pattern.
 (Jesus) Yes
+(Jesus) (Jesus) What is your age? (Jesus) (double) 18.000000
+(Jesus) Qual sua idade? Validation failed: Invalid number: 'seven'
+Qual sua idade? Validation failed: Invalid number: 'fourteen'
+Qual sua idade? (Jesus) (double) 33.000000
+(Jesus) ❌ Error: Variable 'PI' not found. Are you really sure it was declared?
+(Jesus) ❌ Error: Variable 'temperature' not found. Are you really sure it was declared?
 (Jesus) 
