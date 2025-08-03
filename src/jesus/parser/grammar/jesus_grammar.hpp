@@ -19,6 +19,7 @@
 #include "expr/atomic/literals/born_rule.hpp"
 #include "expr/atomic/literals/weekday_rule.hpp"
 
+#include "expr/ask_expr_rule.hpp"
 #include "expr/conditional_expr_rule.hpp"
 #include "stmt/create_var_type_stmt_rule.hpp"
 #include "stmt/create_var_stmt_rule.hpp"
@@ -64,6 +65,7 @@ namespace grammar
     inline auto Sex = std::make_shared<BornRule>(); // male|female
     inline auto Weekday = std::make_shared<WeekdayRule>(); // lighday|skyday|treeday|lampday|fishday|walkday|shabbat
     inline auto Variable = std::make_shared<VariableRule>();
+    inline auto Ask = std::make_shared<AskExprRule>();
 
     /**
      * @brief Primary is anything that can be evaluated directly: number, string, or a grouped expression.
@@ -74,7 +76,7 @@ namespace grammar
     // Statements
     // ----------
     inline auto CreateVarType = std::make_shared<CreateVarTypeStmtRule>();
-    inline auto CreateVar = std::make_shared<CreateVarStmtRule>(Expression);
+    inline auto CreateVar = std::make_shared<CreateVarStmtRule>(Expression, Ask);
     inline auto UpdateVar = std::make_shared<UpdateVarStmtRule>(Expression);
 
     /**
