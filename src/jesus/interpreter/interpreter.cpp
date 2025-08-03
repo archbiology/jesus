@@ -2,6 +2,7 @@
 #include <stdexcept>
 #include "../ast/stmt/output_statement.hpp"
 #include "../types/known_types.hpp"
+#include "../utils/string_utils.hpp"
 
 #include <iostream>
 
@@ -91,6 +92,8 @@ void Interpreter::visitCreateVarWithAsk(const CreateVarWithAskStmt &stmt)
 
         try
         {
+            answer = utils::trim(answer);
+
             // Step 4: Validate the value according to the creation type
             Value value = stmt.var_type.parseFromString(answer);
             stmt.var_type.validate(value);
