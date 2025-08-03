@@ -36,6 +36,44 @@ public:
                  std::vector<std::shared_ptr<IConstraint>> constraints = {})
         : primitive_type(primitive_type), name(name), module_name(module), constraints(std::move(constraints)), id(lastId++) {}
 
+    virtual Value parseFromString(const std::string &raw) const
+    {
+        switch (primitive_type)
+        {
+        case PrimitiveType::Number:
+        {
+            try
+            {
+                double number = std::stod(raw);
+                return Value(number);
+            }
+            catch (...)
+            {
+                throw std::runtime_error("Invalid number: '" + raw + "'");
+            }
+        }
+
+        case PrimitiveType::Text:
+            return Value(raw);
+
+        default:
+            throw std::runtime_error("Unknown primitive type for parsing.");
+        }
+    }
+
+    std::string primitiveTypeName() const
+    {
+        switch (primitive_type)
+        {
+        case PrimitiveType::Number:
+            return "number";
+        case PrimitiveType::Text:
+            return "text";
+        default:
+            return "unknown";
+        }
+    }
+
     /**
      * @brief Returns true if the value belongs to this type.
      */

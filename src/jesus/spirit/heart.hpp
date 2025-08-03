@@ -4,6 +4,8 @@
 #include <unordered_map>
 #include "value.hpp"
 
+#define STRINGIFY(x) #x
+
 /**
  * @brief The Heart class stores variables declared during execution.
  *
