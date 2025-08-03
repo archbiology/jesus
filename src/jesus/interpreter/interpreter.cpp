@@ -1,5 +1,6 @@
 #include "interpreter.hpp"
 #include <stdexcept>
+#include <csignal>
 #include "../ast/stmt/output_statement.hpp"
 #include "../types/known_types.hpp"
 #include "../utils/string_utils.hpp"
@@ -13,6 +14,26 @@ class BreakSignal : public std::exception
 class ContinueSignal : public std::exception
 {
 };
+
+void Interpreter::setSignalHandler()
+{
+    std::signal(SIGINT, signalHandler); // SIGINT = CTRL+C
+}
+
+/**
+ * Creating the Interpreter::instance variable.
+ */
+Interpreter *Interpreter::instance = nullptr;
+
+void Interpreter::signalHandler(int signum)
+{
+    std::cout << "\nCaught signal " << signum << ". Exiting input loop..." << std::endl;
+
+    if (Interpreter::instance)
+    {
+        Interpreter::instance->keep_running.store(false);
+    }
+}
 
 Value Interpreter::evaluate(const std::unique_ptr<Expr> &expr)
 {
@@ -81,7 +102,7 @@ void Interpreter::visitCreateVarWithAsk(const CreateVarWithAskStmt &stmt)
     // Step 1: Evaluate the ask expression (e.g., ask "Your age?")
     Value question = stmt.ask_expr->evaluate(&heart);
 
-    while (true)
+    while (keep_running)
     {
         // Step 2: Show the question to the user
         std::cout << question.toString();
@@ -89,6 +110,13 @@ void Interpreter::visitCreateVarWithAsk(const CreateVarWithAskStmt &stmt)
         // Step 3: Get the answer from the user
         std::string answer;
         std::getline(std::cin, answer);
+
+        if (! keep_running) {
+            std::cerr << "\n^C caught. Input aborted. Try again.\n";
+            interrupted = 0;
+            input.clear();
+            // print prompt again
+        }
 
         try
         {
@@ -107,6 +135,7 @@ void Interpreter::visitCreateVarWithAsk(const CreateVarWithAskStmt &stmt)
             std::cerr << "Validation failed: " << e.what() << std::endl;
         }
     }
+
 }
 
 void Interpreter::visitCreateVarType(const CreateVarTypeStmt &stmt)

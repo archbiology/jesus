@@ -1,6 +1,7 @@
 
 #pragma once
 
+#include <atomic>
 #include "expr_visitor.hpp"
 #include "stmt_visitor.hpp"
 #include "../ast/expr/expr.hpp"
@@ -42,7 +43,18 @@
 class Interpreter : public ExprVisitor, public StmtVisitor
 {
 public:
-    explicit Interpreter(Heart *heart) : heart(*heart) {}
+    explicit Interpreter(Heart *heart) : heart(*heart)
+    {
+        Interpreter::instance = this;
+        setSignalHandler();
+    }
+
+    /**
+     * @brief Set to false when user cancels (E.g.: pressing CTRL+C or CTRL+D)
+     */
+    std::atomic<bool> keep_running = true;
+    static Interpreter *instance; // to be set when constructed. Not creating the variable, just telling the compile that it exists;
+
     /**
      * @brief Evaluates a given expression and returns its computed value.
      *
@@ -82,6 +94,9 @@ public:
     void execute(const std::unique_ptr<Stmt> &stmt);
 
 private:
+    static void signalHandler(int signum);
+    static void setSignalHandler();
+
     /**
      * @brief It acts like a symbol table — each variable has a name (string)
      *
