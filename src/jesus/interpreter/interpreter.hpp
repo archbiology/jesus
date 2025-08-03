@@ -128,6 +128,23 @@ private:
     Value visitVariable(const VariableExpr &expr) override;
 
     /**
+     * @brief Evaluates an AskExpr by evaluating its prompt expression.
+     *
+     * It processes the 'ask' expression node in the AST,
+     * evaluating the prompt (which can be a string literal or a variable
+     * that resolves to text) to produce the question string that will be
+     * presented to the user.
+     *
+     * The returned Value represents the prompt message, ready to be
+     * displayed or used for user input collection.
+     *
+     * "Ask, and it will be given to you..." — Matthew 7:7
+     *
+     * @return Value The evaluated prompt as a Value object (typically text).
+     */
+    Value visitAsk(const AskExpr &expr) override;
+
+    /**
      * @brief Evaluates a grouped expression (expressions in parentheses).
      *
      * “When the day of Pentecost came, they were all together in one place.
@@ -153,6 +170,20 @@ private:
     // 🟢️🟢️🟢️🟢️🟢️🟢️🟢️🟢️🟢️🟢️🟢️🟢️🟢️🟢️
 
     void visitCreateVar(const CreateVarStmt &stmt) override;
+
+    /**
+     * @brief Handles the creation of a variable initialized via an 'ask' expression.
+     *
+     * This method drives the interactive flow of variable creation when
+     * the initialization expression is an 'ask' prompt. It:
+     * - Evaluates the prompt to obtain the question.
+     * - Repeatedly asks the user for input until the provided value
+     *   passes the CreationType's validation constraints.
+     * - Creates the variable in the runtime environment with the validated value.
+     *
+     * This enables type-safe variable initialization with built-in validation.
+     */
+    void visitCreateVarWithAsk(const CreateVarWithAskStmt &stmt) override;
 
     void visitCreateVarType(const CreateVarTypeStmt &stmt) override;
 
