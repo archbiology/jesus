@@ -148,4 +148,8 @@ Qual sua idade? Validation failed: Invalid number: 'fourteen'
 Qual sua idade? (Jesus) (double) 33.000000
 (Jesus) ❌ Error: Variable 'PI' not found. Are you really sure it was declared?
 (Jesus) ❌ Error: Variable 'temperature' not found. Are you really sure it was declared?
+(Jesus) What is your age again? Validation failed: Invalid number: 'fourty'
+What is your age again? Validation failed: Invalid number: 'eternal'
+What is your age again? (Jesus) (double) 2025.000000
+(Jesus) What is your age? (Jesus) What is the new question?
 (Jesus) 

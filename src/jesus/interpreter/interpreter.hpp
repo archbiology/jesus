@@ -172,22 +172,36 @@ private:
     void visitCreateVar(const CreateVarStmt &stmt) override;
 
     /**
-     * @brief Handles the creation of a variable initialized via an 'ask' expression.
+     * @brief Asks for a value and validate it.
      *
-     * This method drives the interactive flow of variable creation when
-     * the initialization expression is an 'ask' prompt. It:
+     * This method drives the interactive flow of variable creation/update when
+     * the expression is an 'ask' prompt. It:
      * - Evaluates the prompt to obtain the question.
      * - Repeatedly asks the user for input until the provided value
      *   passes the CreationType's validation constraints.
-     * - Creates the variable in the runtime environment with the validated value.
+     * - Return the validated value
      *
-     * This enables type-safe variable initialization with built-in validation.
+     * This enables type-safe variable assignment with built-in validation.
+     */
+    Value askAndValidate(const std::shared_ptr<Expr> ask_expr, const CreationType &var_type);
+
+    /**
+     * @brief Handles the creation of a variable initialized via an 'ask' expression.
+     *
+     * * E.g.: create text name = ask "What is your name? "
      */
     void visitCreateVarWithAsk(const CreateVarWithAskStmt &stmt) override;
 
     void visitCreateVarType(const CreateVarTypeStmt &stmt) override;
 
     void visitUpdateVar(const UpdateVarStmt &stmt) override;
+
+    /**
+     * @brief Handles the update of a variable using 'ask' expression.
+     *
+     * E.g.: age = ask "What is your age again?"
+     */
+    void visitUpdateVarWithAsk(const UpdateVarWithAskStmt &stmt) override;
 
     void visitOutput(const OutputStmt &stmt) override;
 
