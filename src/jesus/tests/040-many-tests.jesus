@@ -181,3 +181,11 @@ fourteen
 say idade
 create number year = ask PI
 create number year2 = ask temperature
+age = ask "What is your age again? "
+fourty
+eternal
+2025
+say age
+question = ask question
+What is the new question?
+say question

@@ -76,10 +76,10 @@ void Interpreter::visitCreateVar(const CreateVarStmt &stmt)
     createVariable(stmt.name, val);
 }
 
-void Interpreter::visitCreateVarWithAsk(const CreateVarWithAskStmt &stmt)
+Value Interpreter::askAndValidate(const std::shared_ptr<Expr> ask_expr, const CreationType &var_type)
 {
     // Step 1: Evaluate the ask expression (e.g., ask "Your age?")
-    Value question = stmt.ask_expr->evaluate(&heart);
+    Value question = ask_expr->evaluate(&heart);
 
     while (true)
     {
@@ -89,24 +89,34 @@ void Interpreter::visitCreateVarWithAsk(const CreateVarWithAskStmt &stmt)
         // Step 3: Get the answer from the user
         std::string answer;
         std::getline(std::cin, answer);
+        answer = utils::trim(answer);
 
         try
         {
-            answer = utils::trim(answer);
+            // Step 4: Validate the value according to the variable type
+            Value value = var_type.parseFromString(answer);
+            var_type.validate(value);
 
-            // Step 4: Validate the value according to the creation type
-            Value value = stmt.var_type.parseFromString(answer);
-            stmt.var_type.validate(value);
-
-            // Step 5: Only if validation passed, create the variable
-            createVariable(stmt.var_name, value);
-            break;
+            // Step 5: return validated value
+            return value;
         }
         catch (const std::exception &e)
         {
             std::cerr << "Validation failed: " << e.what() << std::endl;
         }
     }
+}
+
+void Interpreter::visitCreateVarWithAsk(const CreateVarWithAskStmt &stmt)
+{
+    Value value = askAndValidate(stmt.ask_expr, stmt.var_type);
+    createVariable(stmt.var_name, value);
+}
+
+void Interpreter::visitUpdateVarWithAsk(const UpdateVarWithAskStmt &stmt)
+{
+    Value value = askAndValidate(stmt.ask_expr, stmt.var_type);
+    updateVariable(stmt.var_name, value);
 }
 
 void Interpreter::visitCreateVarType(const CreateVarTypeStmt &stmt)
