@@ -39,6 +39,8 @@ std::unique_ptr<Stmt> CreateVarStmtRule::parse(ParserContext &ctx)
             if (!ask_expr)
                 throw std::runtime_error("Expected a text literal or a text-typed variable after 'ask' (e.g., ask \"What is your name?\" or ask question).");
 
+            ctx.registerVarType(varName, creationType->name);
+
             return std::make_unique<CreateVarWithAskStmt>(*creationType, varName, std::move(ask_expr));
         }
         value = expression->parse(ctx);

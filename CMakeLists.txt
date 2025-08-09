@@ -46,6 +46,7 @@ set(JESUS_CPP_FILES
     src/jesus/ast/stmt/create_var_type_stmt.cpp
     src/jesus/ast/stmt/create_var_stmt.cpp
     src/jesus/ast/stmt/create_var_with_ask_stmt.cpp
+    src/jesus/ast/stmt/update_var_with_ask_stmt.cpp
     src/jesus/ast/stmt/for_each_stmt.cpp
     src/jesus/ast/stmt/output_stmt.cpp
     src/jesus/ast/stmt/repeat_times_stmt.cpp
