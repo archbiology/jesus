@@ -5,6 +5,7 @@
 
 enum class PrimitiveType
 {
+    Class,
     Number,
     Text
 };
@@ -65,6 +66,8 @@ public:
     {
         switch (primitive_type)
         {
+        case PrimitiveType::Class:
+            return "creation";
         case PrimitiveType::Number:
             return "number";
         case PrimitiveType::Text:

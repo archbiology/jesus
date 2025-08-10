@@ -21,6 +21,7 @@
 
 #include "expr/ask_expr_rule.hpp"
 #include "expr/conditional_expr_rule.hpp"
+#include "stmt/create_class_stmt_rule.hpp"
 #include "stmt/create_var_type_stmt_rule.hpp"
 #include "stmt/create_var_stmt_rule.hpp"
 #include "stmt/update_var_stmt_rule.hpp"
@@ -75,6 +76,7 @@ namespace grammar
     // ----------
     // Statements
     // ----------
+    inline auto CreateClass = std::make_shared<CreateClassStmtRule>();
     inline auto CreateVarType = std::make_shared<CreateVarTypeStmtRule>();
     inline auto CreateVar = std::make_shared<CreateVarStmtRule>(Expression, Ask);
     inline auto UpdateVar = std::make_shared<UpdateVarStmtRule>(Expression, Ask);
