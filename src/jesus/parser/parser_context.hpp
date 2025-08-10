@@ -8,7 +8,6 @@
 #include <vector>
 #include <stdexcept>
 
-
 class Interpreter; // Forward declaration
 
 /**
@@ -147,7 +146,6 @@ public:
         current = pos;
     }
 
-
     /**
      * @brief Return current token position
      */
@@ -156,15 +154,23 @@ public:
         return this->current;
     }
 
-    void restore(int snapshot) {
+    void restore(int snapshot)
+    {
         current = snapshot;
     }
 
-    void registerVarType(const std::string& varName, const std::string& typeName) {
+    void registerVarType(const std::string &varName, const std::string &typeName)
+    {
         SemanticAnalyzer::registerVarType(varName, typeName);
     }
 
-    const CreationType* getVarType(const std::string& varName) {
+    void registerClassName(const std::string &className)
+    {
+        SemanticAnalyzer::registerClassName(className);
+    }
+
+    const CreationType *getVarType(const std::string &varName)
+    {
         return SemanticAnalyzer::getVarType(varName);
     }
 

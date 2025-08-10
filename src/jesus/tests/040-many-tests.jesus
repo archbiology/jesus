@@ -189,3 +189,6 @@ say age
 question = ask question
 What is the new question?
 say question
+creation User: amen
+create User adam = 1
+say adam

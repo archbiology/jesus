@@ -56,6 +56,8 @@ public:
     {
         switch (type)
         {
+        case TokenType::CREATION:
+            return "CREATION";
         case TokenType::Note:
             return "NOTE";
         case TokenType::Todo:
@@ -106,6 +108,8 @@ public:
 
         case TokenType::MINUS:
             return "MINUS";
+        case TokenType::COLON:
+            return "COLON";
 
         case TokenType::INT:
             return "INT(" + lexeme + ")";
@@ -129,6 +133,9 @@ public:
 
         case TokenType::OTHERWISE:
             return "OTHERWISE";
+
+        case TokenType::AMEN:
+            return "AMEN";
 
         case TokenType::END_OF_FILE:
             return "EOF";

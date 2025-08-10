@@ -43,6 +43,7 @@ set(JESUS_CPP_FILES
     # --------------
     src/jesus/ast/stmt/break_stmt.cpp
     src/jesus/ast/stmt/continue_stmt.cpp
+    src/jesus/ast/stmt/create_class_stmt.cpp
     src/jesus/ast/stmt/create_var_type_stmt.cpp
     src/jesus/ast/stmt/create_var_stmt.cpp
     src/jesus/ast/stmt/create_var_with_ask_stmt.cpp
@@ -85,6 +86,7 @@ set(JESUS_CPP_FILES
     # -----------------
     # Statement parsers
     # -----------------
+    src/jesus/parser/grammar/stmt/create_class_stmt_rule.cpp
     src/jesus/parser/grammar/stmt/create_var_type_stmt_rule.cpp
     src/jesus/parser/grammar/stmt/create_var_stmt_rule.cpp
     src/jesus/parser/grammar/stmt/update_var_stmt_rule.cpp

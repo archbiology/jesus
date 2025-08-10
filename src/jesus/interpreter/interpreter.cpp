@@ -119,6 +119,19 @@ void Interpreter::visitUpdateVarWithAsk(const UpdateVarWithAskStmt &stmt)
     updateVariable(stmt.var_name, value);
 }
 
+void Interpreter::visitCreateClass(const CreateClassStmt &stmt)
+{
+    std::vector<std::shared_ptr<IConstraint>> constraints; // no constraints yet
+
+    auto userClass = std::make_shared<CreationType>(
+        PrimitiveType::Class,
+        stmt.name,
+        stmt.module_name,
+        constraints);
+
+    KnownTypes::registerType(std::move(userClass));
+}
+
 void Interpreter::visitCreateVarType(const CreateVarTypeStmt &stmt)
 {
     auto custom_type = std::make_shared<CreationType>(
