@@ -188,8 +188,14 @@ TokenType recognize_token_type(const std::string &word)
     if (word == "say")
         return TokenType::SAY;
 
+    if (word == "amen")
+        return TokenType::AMEN;
+
     if (word == "warn")
         return TokenType::WARN;
+
+    if (word == "creation")
+        return TokenType::CREATION;
 
     if (isInteger(word))
         return TokenType::INT;
@@ -273,6 +279,13 @@ std::vector<Token> lex(const std::string &input)
         if (c == '/')
         {
             tokens.emplace_back(TokenType::SLASH, "/", Value("/"));
+            i++;
+            continue;
+        }
+
+        if (c == ':')
+        {
+            tokens.emplace_back(TokenType::COLON, ":", Value(":"));
             i++;
             continue;
         }

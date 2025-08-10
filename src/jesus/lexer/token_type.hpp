@@ -41,7 +41,9 @@ enum class TokenType
     MINUS,          // -
     STAR,           // *
     SLASH,          // /
+    COLON,          // ':' (Begining of a block)
 
+    CREATION,       // creation Person: amen (class in other langs)
     CREATE,         // create days = 7
     ASK,            // create int age = ask "What is your age?"
     SAY,            // "say" prints to stdout
@@ -68,5 +70,6 @@ enum class TokenType
     IF,
     OTHERWISE,
 
+    AMEN,           // amen (end of blocks in Jesus lang; '}' in other langs)
     END_OF_FILE
 };
