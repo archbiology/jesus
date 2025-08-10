@@ -192,6 +192,8 @@ private:
      */
     void visitCreateVarWithAsk(const CreateVarWithAskStmt &stmt) override;
 
+    void visitCreateClass(const CreateClassStmt &stmt) override;
+
     void visitCreateVarType(const CreateVarTypeStmt &stmt) override;
 
     void visitUpdateVar(const UpdateVarStmt &stmt) override;

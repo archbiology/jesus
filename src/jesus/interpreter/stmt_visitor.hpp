@@ -1,5 +1,6 @@
 #pragma once
 
+#include "../ast/stmt/create_class_stmt.hpp"
 #include "../ast/stmt/create_var_type_stmt.hpp"
 #include "../ast/stmt/create_var_stmt.hpp"
 #include "../ast/stmt/update_var_stmt.hpp"
@@ -47,6 +48,7 @@
 class StmtVisitor
 {
 public:
+    virtual void visitCreateClass(const CreateClassStmt &stmt) = 0;
     virtual void visitCreateVarType(const CreateVarTypeStmt &stmt) = 0;
     virtual void visitCreateVar(const CreateVarStmt &stmt) = 0;
     virtual void visitCreateVarWithAsk(const CreateVarWithAskStmt &stmt) = 0;
