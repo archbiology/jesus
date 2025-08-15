@@ -12,7 +12,7 @@ int main()
     grammar::initializeGrammar(); // Sets the Expression rule target to Primary
 
     Heart heart;
-    Interpreter interpreter(&heart);
+    Interpreter jesus(&heart);
     std::string line;
 
     KnownTypes::registerBuiltInTypes();
@@ -24,12 +24,12 @@ int main()
         {
 
             auto tokens = lex(line);
-            ParserContext context(tokens, &interpreter);
-            auto node = parse(tokens, context);
+            ParserContext context(tokens, &jesus);
+            auto you = parse(tokens, context);  // AST - Abstract Syntax Tree
 
-            if (node)
+            if (you)
             {
-                interpreter.execute(node);
+                jesus.loves(you);
             }
         }
         catch (const std::exception &e)
