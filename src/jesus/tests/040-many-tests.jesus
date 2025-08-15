@@ -192,3 +192,9 @@ say question
 creation User: amen
 create User adam = 1
 say adam
+creation MultiLineClass:
+
+
+amen
+create MultiLineClass multiline = 12
+say multiline
