@@ -28,11 +28,20 @@ std::unique_ptr<Stmt> CreateClassStmtRule::parse(ParserContext &ctx)
 
     std::string className = ctx.previous().lexeme;
 
-    if (!ctx.match(TokenType::COLON))
-        throw std::runtime_error("Expected ':' after class name in '" + stmt + "' statement.");
-
     // (MVP: no parsing body for the moment; only spirit for now)
     std::vector<std::shared_ptr<Stmt>> body;
+    std::string module_name = "core"; // FIXME: consider user modules.
+
+    if (ctx.isAtEnd())
+    {
+        // Allowing 'empty-bodied' classes without ': amen'.
+        // Just: let there be Light
+        ctx.registerClassName(className);
+        return std::make_unique<CreateClassStmt>(className, module_name, body);
+    }
+
+    if (!ctx.match(TokenType::COLON))
+        throw std::runtime_error("Expected ':' after class name in '" + stmt + "' statement.");
 
     if (ctx.isAtEnd())
     {
@@ -43,7 +52,5 @@ std::unique_ptr<Stmt> CreateClassStmtRule::parse(ParserContext &ctx)
         throw std::runtime_error("Expected 'amen' after ':' in '" + stmt + "' statement.");
 
     ctx.registerClassName(className);
-
-    std::string module_name = "core"; // FIXME: consider user modules.
     return std::make_unique<CreateClassStmt>(className, module_name, body);
 }
