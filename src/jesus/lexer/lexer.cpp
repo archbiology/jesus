@@ -1,7 +1,7 @@
 #include "lexer.hpp"
 #include <ostream> // For std::ostream
 #include <string>
-#include <cctype>
+#include "../utils/string_utils.hpp"
 
 /**
  * @brief Check if a string is a double
@@ -55,9 +55,9 @@ bool isInteger(const std::string &word)
  * @return true if it is a letter or underline (_)
  * @return false otherwise
  */
-bool isIdentifierStart(char c)
+bool isIdentifierStart(const std::string &c)
 {
-    return std::isalpha(c) || c == '_';
+    return utils::is_alpha_utf8(c) || c == "_";
 }
 
 /**
@@ -67,9 +67,9 @@ bool isIdentifierStart(char c)
  * @return true if it is a letter, a number, or underline.
  * @return false otherwise.
  */
-bool isIdentifierChar(char c)
+bool isIdentifierChar(const std::string &c)
 {
-    return std::isalnum(c) || c == '_';
+    return utils::is_alpha_utf8(c) || utils::is_digit_utf8(c) || c == "_";
 }
 
 TokenType recognize_token_type(const std::string &word)
@@ -230,103 +230,125 @@ TokenType recognize_token_type(const std::string &word)
  * @param input
  * @return std::vector<Token>
  */
-std::vector<Token> lex(const std::string &input)
+std::vector<Token> lex(const std::string &raw_input)
 {
     std::vector<Token> tokens;
     size_t i = 0;
+    std::string c;
 
-    while (i < input.size())
+    auto utf8_input = utils::to_utf8(raw_input);
+
+    const std::string quote = "\""; // single ASCII quote
+    const std::string space = " ";
+    const std::string tab = "\t";
+    const std::string newline = "\n";
+    const std::string carriage = "\r";
+
+    while (i < utf8_input.size())
     {
-        char c = input[i];
-
-        // Skip whitespace
-        if (std::isspace(c))
+        c = utf8_input[i];
+        if (c == space || c == tab || c == newline || c == carriage)
         {
             i++;
             continue;
         }
 
         // Handle punctuation/single-char tokens
-        if (c == '(')
+        if (c == "(")
         {
             tokens.emplace_back(TokenType::LEFT_PAREN, "(", Value("("));
             i++;
             continue;
         }
 
-        if (c == ')')
+        if (c == ")")
         {
             tokens.emplace_back(TokenType::RIGHT_PAREN, ")", Value(")"));
             i++;
             continue;
         }
 
-        if (c == '+')
+        if (c == "+")
         {
             tokens.emplace_back(TokenType::PLUS, "+", Value("+"));
             i++;
             continue;
         }
 
-        if (c == '-')
+        if (c == "-")
         {
             tokens.emplace_back(TokenType::MINUS, "-", Value("-"));
             i++;
             continue;
         }
 
-        if (c == '*')
+        if (c == "*")
         {
             tokens.emplace_back(TokenType::STAR, "*", Value("*"));
             i++;
             continue;
         }
 
-        if (c == '/')
+        if (c == "/")
         {
             tokens.emplace_back(TokenType::SLASH, "/", Value("/"));
             i++;
             continue;
         }
 
-        if (c == ':')
+        if (c == ":")
         {
             tokens.emplace_back(TokenType::COLON, ":", Value(":"));
             i++;
             continue;
         }
 
-        if (c == '"')
+        if (c == quote)
         {
             // Handle string literal
-            size_t start = i + 1;
-            size_t end = input.find('"', start);
+            size_t end = i + 1;
+            std::string str;
+            while (end < utf8_input.size() && utf8_input[end] != quote)
+            {
+                str += utf8_input[end];
+                ++end;
+            }
 
-            if (end == std::string::npos)
+            if (end == utf8_input.size())
                 throw std::runtime_error("Unterminated string literal");
 
-            std::string str = input.substr(start, end - start);
             tokens.emplace_back(TokenType::STRING, "\"" + str + "\"", Value(str));
             i = end + 1;
             continue;
         }
 
-        if (std::isdigit(c))
+        if (utils::is_digit_utf8(c))
         {
             // Number (int or double)
-            size_t start = i;
-            while (i < input.size() && (std::isdigit(input[i]) || input[i] == '.'))
-                i++;
+            std::string number_str;
 
-            std::string number = input.substr(start, i - start);
-            if (isInteger(number))
-                tokens.emplace_back(TokenType::INT, number, Value(std::stoi(number)));
+            // Collect all consecutive digits and decimal points
+            while (i < utf8_input.size())
+            {
+                const std::string &d = utf8_input[i];
+                if (utils::is_digit_utf8(d) || d == ".")
+                {
+                    number_str += d; // rebuild number as string
+                    ++i;
+                }
+                else
+                {
+                    break;
+                }
+            }
 
-            else if (isDouble(number))
-                tokens.emplace_back(TokenType::DOUBLE, number, Value(std::stod(number)));
-
+            // Determine type and create token
+            if (isInteger(number_str))
+                tokens.emplace_back(TokenType::INT, number_str, Value(std::stoi(number_str)));
+            else if (isDouble(number_str))
+                tokens.emplace_back(TokenType::DOUBLE, number_str, Value(std::stod(number_str)));
             else
-                throw std::runtime_error("Invalid number format: " + number);
+                throw std::runtime_error("Invalid number format: " + number_str);
 
             continue;
         }
@@ -335,21 +357,25 @@ std::vector<Token> lex(const std::string &input)
         {
             // Keyword or identifier
             size_t start = i;
-            while (i < input.size() && isIdentifierChar(input[i]))
-                i++;
+            std::string word;
 
-            std::string word = input.substr(start, i - start);
+            while (i < utf8_input.size() && isIdentifierChar(utf8_input[i]))
+            {
+                word += utf8_input[i];
+                i++;
+            }
+
             tokens.emplace_back(recognize_token_type(word), word, Value(word));
             continue;
         }
 
-        if (c == '=' || c == '!' || c == '<' || c == '>')
+        if (c == "=" || c == "!" || c == "<" || c == ">")
         {
             // Comparison operators
             std::string op;
             op += c;
-            if (i + 1 < input.size() && input[i + 1] == '=')
-                op += input[++i];
+            if (i + 1 < utf8_input.size() && utf8_input[i + 1] == "=")
+                op += utf8_input[++i];
 
             tokens.emplace_back(recognize_token_type(op), op, Value(op));
             i++;
@@ -357,7 +383,7 @@ std::vector<Token> lex(const std::string &input)
         }
 
         // Unexpected character
-        throw std::runtime_error("Unexpected character: " + std::string(1, c));
+        throw std::runtime_error("Unexpected character: '" + c + "'");
     }
 
     tokens.emplace_back(TokenType::END_OF_FILE, "EOF", Value().formless());
