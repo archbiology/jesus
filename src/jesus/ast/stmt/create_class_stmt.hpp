@@ -7,13 +7,13 @@
 /**
  * @brief Represents the 'creation' of a new class in the Jesus language.
  *
- * In the Jesus language, `creation` is the equivalent of a "class" in other
+ * In the Jesus language, `let there be` is the equivalent of a "class" in other
  * programming languages. It defines a new user-defined type, initially with
  * an empty body, which can later contain attributes and methods.
  *
  * Usage:
  * @code
- *   creation Person: amen
+ *   let there be Person: amen
  * @endcode
  *
  * "God saw all that He had made, and it was very good..." — Genesis 1:31

@@ -189,12 +189,25 @@ say age
 question = ask question
 What is the new question?
 say question
-creation User: amen
+let there be User: amen
 create User adam = 1
 say adam
-creation MultiLineClass:
+let there be MultiLineClass:
 
 
 amen
 create MultiLineClass multiline = 12
 say multiline
+say "igual" se 1 == 1 senão "diferente"
+criar text nome = "Jesus"
+say não nome
+criar number sim = 1
+criar number nao = 0
+say sim ==  1 e nao == 0
+say sim == 1 ou nao == 0
+haja Luz: amém
+criar Luz dia = 1
+say dia
+haja Canção
+criar Canção louvor = "Me ama, Ele me ama..."
+say louvor
