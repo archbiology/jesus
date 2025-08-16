@@ -92,13 +92,13 @@ TokenType recognize_token_type(const std::string &word)
     if (word == "end")
         return TokenType::EndNote;
 
-    if (word == "not")
+    if (word == "not" || word == "não")
         return TokenType::NOT;
 
-    if (word == "and")
+    if (word == "and" || word == "e")
         return TokenType::AND;
 
-    if (word == "or")
+    if (word == "or" || word == "ou")
         return TokenType::OR;
 
     if (word == "vs" || word == "versus")
@@ -188,7 +188,7 @@ TokenType recognize_token_type(const std::string &word)
     if (word == "say")
         return TokenType::SAY;
 
-    if (word == "amen")
+    if (word == "amen" || word == "amém")
         return TokenType::AMEN;
 
     if (word == "warn")
@@ -203,6 +203,9 @@ TokenType recognize_token_type(const std::string &word)
     if (word == "be")
         return TokenType::BE;
 
+    if (word == "haja")
+        return TokenType::HAJA;
+
     if (isInteger(word))
         return TokenType::INT;
 
@@ -212,13 +215,13 @@ TokenType recognize_token_type(const std::string &word)
     if (word[0] == '"')
         return TokenType::STRING;
 
-    if (word == "create")
+    if (word == "create" || word == "criar")
         return TokenType::CREATE;
 
-    if (word == "if")
+    if (word == "if" || word == "se")
         return TokenType::IF;
 
-    if (word == "otherwise")
+    if (word == "otherwise" || word == "senão")
         return TokenType::OTHERWISE;
 
     return TokenType::IDENTIFIER;

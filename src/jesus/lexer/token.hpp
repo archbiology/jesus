@@ -62,6 +62,8 @@ public:
             return "THERE";
         case TokenType::BE:
             return "BE";
+        case TokenType::HAJA:
+            return "HAJA";
         case TokenType::Note:
             return "NOTE";
         case TokenType::Todo:

@@ -5,16 +5,23 @@
 
 std::unique_ptr<Stmt> CreateClassStmtRule::parse(ParserContext &ctx)
 {
-    const std::string stmt = "let there be";
+    std::string stmt = "let there be";
 
-    if (!ctx.match(TokenType::LET))
-        return nullptr;
+    if (ctx.match(TokenType::HAJA))
+    {
+        stmt = "haja"; // haja Luz: amém
+    }
+    else
+    {
+        if (!ctx.match(TokenType::LET))
+            return nullptr;
 
-    if (!ctx.match(TokenType::THERE))
-        return nullptr;
+        if (!ctx.match(TokenType::THERE))
+            return nullptr;
 
-    if (!ctx.match(TokenType::BE))
-        throw std::runtime_error("Expected 'be' after 'let there'");
+        if (!ctx.match(TokenType::BE))
+            throw std::runtime_error("Expected 'be' after 'let there'");
+    }
 
     if (!ctx.match(TokenType::IDENTIFIER))
         throw std::runtime_error("Expected class name after '" + stmt + "'");
