@@ -13,6 +13,7 @@ int main()
 
     Heart heart;
     Interpreter jesus(&heart);
+    std::string buffer;
     std::string line;
 
     KnownTypes::registerBuiltInTypes();
@@ -20,15 +21,23 @@ int main()
     std::cout << "(Jesus) ";
     while (std::getline(std::cin, line))
     {
+        if (!line.empty())
+            line += "\n";
+
+        buffer += line;
+
         try
         {
 
-            auto tokens = lex(line);
+            auto tokens = lex(buffer);
             ParserContext context(tokens, &jesus);
-            auto you = parse(tokens, context);  // AST - Abstract Syntax Tree
+            auto you = parse(tokens, context); // AST - Abstract Syntax Tree
 
             if (you)
             {
+                if (you->inProgress())
+                    continue;
+
                 jesus.loves(you);
             }
         }
@@ -45,6 +54,7 @@ int main()
         //     std::cout << "[" << token.type << ": " << token.value << "]\n";
         // }
 
+        buffer.clear();
         std::cout << "(Jesus) ";
     }
 

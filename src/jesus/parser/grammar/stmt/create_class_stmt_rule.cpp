@@ -1,5 +1,6 @@
 #include "create_class_stmt_rule.hpp"
 #include "../../../ast/stmt/create_class_stmt.hpp"
+#include "../../../ast/stmt/incomplete_block_stmt.hpp"
 #include <stdexcept>
 
 std::unique_ptr<Stmt> CreateClassStmtRule::parse(ParserContext &ctx)
@@ -17,6 +18,11 @@ std::unique_ptr<Stmt> CreateClassStmtRule::parse(ParserContext &ctx)
 
     // (MVP: no parsing body for the moment; only spirit for now)
     std::vector<std::shared_ptr<Stmt>> body;
+
+    if (ctx.isAtEnd())
+    {
+        return std::make_unique<IncompleteBlockStmt>();
+    }
 
     if (!ctx.match(TokenType::AMEN))
         throw std::runtime_error("Expected 'amen' after ':' in creation statement.");
