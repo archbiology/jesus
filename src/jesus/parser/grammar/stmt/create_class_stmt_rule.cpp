@@ -5,16 +5,24 @@
 
 std::unique_ptr<Stmt> CreateClassStmtRule::parse(ParserContext &ctx)
 {
-    if (!ctx.match(TokenType::CREATION))
+    const std::string stmt = "let there be";
+
+    if (!ctx.match(TokenType::LET))
         return nullptr;
 
+    if (!ctx.match(TokenType::THERE))
+        return nullptr;
+
+    if (!ctx.match(TokenType::BE))
+        throw std::runtime_error("Expected 'be' after 'let there'");
+
     if (!ctx.match(TokenType::IDENTIFIER))
-        throw std::runtime_error("Expected class name after 'creation'");
+        throw std::runtime_error("Expected class name after '" + stmt + "'");
 
     std::string className = ctx.previous().lexeme;
 
     if (!ctx.match(TokenType::COLON))
-        throw std::runtime_error("Expected ':' after class name in creation statement.");
+        throw std::runtime_error("Expected ':' after class name in '" + stmt + "' statement.");
 
     // (MVP: no parsing body for the moment; only spirit for now)
     std::vector<std::shared_ptr<Stmt>> body;
@@ -25,7 +33,7 @@ std::unique_ptr<Stmt> CreateClassStmtRule::parse(ParserContext &ctx)
     }
 
     if (!ctx.match(TokenType::AMEN))
-        throw std::runtime_error("Expected 'amen' after ':' in creation statement.");
+        throw std::runtime_error("Expected 'amen' after ':' in '" + stmt + "' statement.");
 
     ctx.registerClassName(className);
 

@@ -194,8 +194,14 @@ TokenType recognize_token_type(const std::string &word)
     if (word == "warn")
         return TokenType::WARN;
 
-    if (word == "creation")
-        return TokenType::CREATION;
+    if (word == "let")
+        return TokenType::LET;
+
+    if (word == "there")
+        return TokenType::THERE;
+
+    if (word == "be")
+        return TokenType::BE;
 
     if (isInteger(word))
         return TokenType::INT;

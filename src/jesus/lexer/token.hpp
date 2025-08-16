@@ -56,8 +56,12 @@ public:
     {
         switch (type)
         {
-        case TokenType::CREATION:
-            return "CREATION";
+        case TokenType::LET:
+            return "LET";
+        case TokenType::THERE:
+            return "THERE";
+        case TokenType::BE:
+            return "BE";
         case TokenType::Note:
             return "NOTE";
         case TokenType::Todo:

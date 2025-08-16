@@ -43,7 +43,9 @@ enum class TokenType
     SLASH,          // /
     COLON,          // ':' (Begining of a block)
 
-    CREATION,       // creation Person: amen (class in other langs)
+    LET,            // let there be Person: amen (class in other langs)
+    THERE,          // let there be Person: amen (class in other langs)
+    BE,             // let there be Person: amen (class in other langs)
     CREATE,         // create days = 7
     ASK,            // create int age = ask "What is your age?"
     SAY,            // "say" prints to stdout
