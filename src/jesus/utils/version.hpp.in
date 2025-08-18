@@ -1,0 +1,40 @@
+#pragma once
+
+/**
+ * @file version.hpp.in
+ * @brief Template header for build versioning of the Jesus Programming Language.
+ *
+ * ⚠️ This is NOT a real header. It is a template processed by CMake at configure time.
+ *
+ * CMake will replace placeholders like:
+ *   @JESUS_BUILD_DATE@   → Current date in JST (UTC+9) at configuration time
+ *   @GIT_COMMIT_HASH@    → Short Git commit hash at configuration time
+ *
+ * The processed file will be generated as:
+ *   src/jesus/utils/version.hpp
+ *
+ * and must be included in code as:
+ *   #include "utils/version.hpp"
+ *
+ * This allows the program to always display correct version/date/commit
+ * without manually editing constants in the source.
+ *
+ * Example final generated string:
+ *   Jesus Programming Language v2025-08-17 JST (י ש ו ע ה, commit a1b2c3d)
+ *
+ * JESUS_BUILD_DATE is generated in UTC+9, which we call "Jerusalem Scriptural Time (JST)".
+ *  Why UTC+9?
+ * - In the Bible, a new day begins at sundown in Jerusalem (around 18:00 local time).
+ * - This moment aligns with 00:00 in Japan Standard Time (UTC+9).
+ * - Using UTC+9 therefore provides a consistent, unambiguous "scriptural day boundary".
+ *
+ * Why "Jerusalem Scriptural Time"?
+ * - To avoid confusion with "Jerusalem Standard Time", which refers to UTC+2/UTC+3.
+ * - To highlight the Biblical reasoning instead of civil timezone definitions.
+ * - To provide a clear, memorable alias (JST) that reflects the spiritual meaning.
+ *
+ * Thus, the build date is always stamped in UTC+9 to reflect the Biblical day cycle.
+ */
+
+#define JESUS_VERSION "v@JESUS_BUILD_DATE@" // Replaced by CMake
+#define JESUS_COMMIT "@GIT_COMMIT_HASH@"    // Replaced by CMake

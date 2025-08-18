@@ -13,6 +13,59 @@ include_directories(src/jesus)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
+# ------------------------------------------------------------------------------
+# Version Information (auto-generated)
+#
+# We don't hardcode version numbers inside the source code.
+# Instead, we generate a header file from a template (version.hpp.in).
+#
+# - version.hpp.in lives in src/jesus/utils/
+# - CMake replaces tokens (@JESUS_BUILD_DATE@, @GIT_COMMIT_HASH@)
+# - The final header is written to src/jesus/utils/version.hpp
+#
+# This ensures the binary always carries correct metadata (date + commit hash)
+# without requiring manual updates in source files.
+# ---
+#
+# JESUS_BUILD_DATE is generated in UTC+9, which we call "Jerusalem Scriptural Time (JST)".
+# Why UTC+9?
+# - In the Bible, a new day begins at sundown in Jerusalem (around 18:00 local time).
+# - This moment aligns with 00:00 in Japan Standard Time (UTC+9).
+# - Using UTC+9 therefore provides a consistent, unambiguous "scriptural day boundary".
+#
+# Why "Jerusalem Scriptural Time"?
+# - To avoid confusion with "Jerusalem Standard Time", which refers to UTC+2/UTC+3.
+# - To highlight the Biblical reasoning instead of civil timezone definitions.
+# - To provide a clear, memorable alias (JST) that reflects the spiritual meaning.
+#
+# Thus, the build date is always stamped in UTC+9 to reflect the Biblical day cycle.
+# ------------------------------------------------------------------------------
+execute_process(
+    COMMAND /bin/sh -c "TZ=Asia/Tokyo date '+%Y.%m.%d JST'" # JST = UTC+9
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+    OUTPUT_VARIABLE JESUS_BUILD_DATE
+    OUTPUT_STRIP_TRAILING_WHITESPACE
+)
+execute_process(
+    COMMAND /bin/sh -c "TZ=Asia/Tokyo date '+%H:%M:%S'" # JST = UTC+9
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+    OUTPUT_VARIABLE JESUS_BUILD_TIME
+    OUTPUT_STRIP_TRAILING_WHITESPACE
+)
+execute_process(
+    COMMAND git rev-parse --short HEAD
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+    OUTPUT_VARIABLE GIT_COMMIT_HASH
+    OUTPUT_STRIP_TRAILING_WHITESPACE
+)
+configure_file(
+    ${CMAKE_SOURCE_DIR}/src/jesus/utils/version.hpp.in
+    ${CMAKE_SOURCE_DIR}/src/jesus/utils/version.hpp
+    @ONLY
+)
+message(STATUS "Build date (Jerusalem Scriptural Time / UTC+9): ${JESUS_BUILD_DATE} ${JESUS_BUILD_TIME}")
+
+
 # -------------------
 # Define source files
 # -------------------
