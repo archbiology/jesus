@@ -6,9 +6,23 @@
 #include "interpreter/interpreter.hpp"
 #include "parser/grammar/jesus_grammar.hpp"
 #include "types/known_types.hpp"
+#include "utils/banner.hpp"
+#include "utils/version.hpp"
 
-int main()
+int main(int argc, char **argv)
 {
+    bool quiet = false;
+    for (int i = 1; i < argc; ++i)
+    {
+        std::string arg = argv[i];
+        if (arg == "--quiet")
+            quiet = true;
+    }
+
+    const std::string version = JESUS_VERSION;
+    const std::string commit = JESUS_COMMIT;
+    Banner::show(version, commit, quiet);
+
     grammar::initializeGrammar(); // Sets the Expression rule target to Primary
 
     Heart heart;

@@ -5,7 +5,7 @@
 
 std::string runJesusInterpreter(const std::string &inputFile)
 {
-    std::string command = "./jesus < " + inputFile + " 2>&1";
+    std::string command = "./jesus --quiet < " + inputFile + " 2>&1";
     std::string result;
 
     FILE *pipe = popen(command.c_str(), "r");
