@@ -20,7 +20,7 @@
  * without manually editing constants in the source.
  *
  * Example final generated string:
- *   Jesus Programming Language v2025-08-17 JST (י ש ו ע ה, commit a1b2c3d)
+ *   Jesus Programming Language v2025.08.19 JST (י ש ו ע ה) [5a3fec4]
  *
  * JESUS_BUILD_DATE is generated in UTC+9, which we call "Jerusalem Scriptural Time (JST)".
  *  Why UTC+9?
