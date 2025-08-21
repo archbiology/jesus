@@ -1,6 +1,7 @@
 #pragma once
 #include <string>
 #include "../spirit/value.hpp"
+#include "../ast/expr/expr.hpp"
 #include "constraints/constraint.hpp"
 
 enum class PrimitiveType
@@ -32,6 +33,8 @@ public:
     const std::string module_name;
 
     const PrimitiveType primitive_type;
+
+    Heart class_attributes;
 
     CreationType(PrimitiveType primitive_type, std::string name, std::string module = "core",
                  std::vector<std::shared_ptr<IConstraint>> constraints = {})
@@ -86,6 +89,21 @@ public:
             c->validate(value); // may throw
 
         return true;
+    }
+
+    void addAttribute(const std::string &name, std::unique_ptr<Expr> initializer, Heart *heart)
+    {
+        if (primitive_type != PrimitiveType::Class)
+            throw std::runtime_error("Only class types can have attributes.");
+
+        Value initVal;
+        if (initializer)
+        {
+            // Evaluate the expression to a Value (optional; could be done lazily)
+            initVal = initializer->evaluate(heart);
+        }
+
+        class_attributes.createVar(name, initVal);
     }
 
 private:

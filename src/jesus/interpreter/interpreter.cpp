@@ -129,6 +129,15 @@ void Interpreter::visitCreateClass(const CreateClassStmt &stmt)
         stmt.module_name,
         constraints);
 
+    // handle attributes
+    for (auto &member : stmt.body)
+    {
+        if (auto attr = static_cast<CreateVarStmt*>(member.get()))
+        {
+            userClass->addAttribute(attr->name, std::move(attr->value),  &heart);
+        }
+    }
+
     KnownTypes::registerType(std::move(userClass));
 }
 

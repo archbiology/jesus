@@ -43,13 +43,25 @@ std::unique_ptr<Stmt> CreateClassStmtRule::parse(ParserContext &ctx)
     if (!ctx.match(TokenType::COLON))
         throw std::runtime_error("Expected ':' after class name in '" + stmt + "' statement.");
 
+    while (!ctx.check(TokenType::AMEN) && !ctx.isAtEnd())
+    {
+        if (auto attr = createVar->parse(ctx))
+        {
+            body.push_back(std::move(attr));
+        }
+        else
+        {
+            throw std::runtime_error("Unexpected statement inside class body.");
+        }
+    }
+
     if (ctx.isAtEnd())
     {
         return std::make_unique<IncompleteBlockStmt>();
     }
 
     if (!ctx.match(TokenType::AMEN))
-        throw std::runtime_error("Expected 'amen' after ':' in '" + stmt + "' statement.");
+        throw std::runtime_error("Expected 'amen' after ':' in '" + stmt + "' to close class body.");
 
     ctx.registerClassName(className);
     return std::make_unique<CreateClassStmt>(className, module_name, body);
