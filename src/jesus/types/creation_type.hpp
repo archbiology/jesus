@@ -106,6 +106,16 @@ public:
         class_attributes.createVar(name, initVal);
     }
 
+    const Value getAttribute(const std::string &name) const
+    {
+        return class_attributes.getVar(name);
+    }
+
+    const std::string toString()
+    {
+        return "<class '" + name + "'>\n";
+    }
+
 private:
     inline static int lastId = 0;
 

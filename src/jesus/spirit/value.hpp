@@ -8,6 +8,7 @@
 
 class Value;                // Forward declaration, since it is used on Dust.
 struct make_string_functor; // Forward declaration
+struct Instance;            // Forward declaration
 
 /**
  * @brief Represents any value in the interpreted language:
@@ -18,7 +19,7 @@ struct make_string_functor; // Forward declaration
  * "then the Lord God formed the man of dust from the ground and breathed into his nostrils the breath of life, and the man became a living creature."
  * — Genesis 2:7
  */
-using Dust = std::variant<std::vector<std::shared_ptr<Value>>, std::string, double, int, bool, std::monostate>; // or std::unique_ptr<Value>, etc.
+using Dust = std::variant<std::vector<std::shared_ptr<Value>>, std::string, double, int, bool, std::monostate, std::shared_ptr<Instance>>; // or std::unique_ptr<Value>, etc.
 
 class Value
 {
@@ -30,6 +31,7 @@ public:
     bool IS_BOOLEAN = false;
     bool IS_STRING = false;
     bool IS_LIST = false;
+    bool IS_INSTANCE = false;
 
     bool AS_BOOLEAN = false;
 
@@ -41,6 +43,7 @@ public:
     explicit Value(const std::string &v) : value(v), IS_STRING(true), AS_BOOLEAN(v != "") {}
     explicit Value(const char *v) : value(std::string(v)), IS_STRING(true), AS_BOOLEAN(std::string(v) != "") {}
     explicit Value(const std::vector<std::shared_ptr<Value>> &v) : value(v), IS_LIST(true), AS_BOOLEAN(!v.empty()) {}
+    explicit Value(const std::shared_ptr<Instance> &v) : value(v), IS_INSTANCE(true), AS_BOOLEAN(static_cast<bool>(v)) {}
 
     /**
      * @brief Create a NONE/NULL/monostate Value.
