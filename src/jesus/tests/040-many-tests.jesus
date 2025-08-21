@@ -211,3 +211,9 @@ say dia
 haja Canção
 criar Canção louvor = "Me ama, Ele me ama..."
 say louvor
+let there be Person:
+    create text name = "Adam"
+    create text wife = "Eve"
+    create number age = 930
+amen
+say wife

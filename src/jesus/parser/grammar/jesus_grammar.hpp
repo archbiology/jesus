@@ -76,9 +76,9 @@ namespace grammar
     // ----------
     // Statements
     // ----------
-    inline auto CreateClass = std::make_shared<CreateClassStmtRule>();
     inline auto CreateVarType = std::make_shared<CreateVarTypeStmtRule>();
     inline auto CreateVar = std::make_shared<CreateVarStmtRule>(Expression, Ask);
+    inline auto CreateClass = std::make_shared<CreateClassStmtRule>(CreateVar);
     inline auto UpdateVar = std::make_shared<UpdateVarStmtRule>(Expression, Ask);
 
     /**
