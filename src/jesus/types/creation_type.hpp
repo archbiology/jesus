@@ -106,6 +106,21 @@ public:
         class_attributes.createVar(name, initVal);
     }
 
+    const Value getAttribute(const std::string &name) const
+    {
+        return class_attributes.getVar(name);
+    }
+
+    const bool isClass() const
+    {
+        return primitive_type == PrimitiveType::Class;
+    }
+
+    const std::string toString()
+    {
+        return "<class '" + name + "'>\n";
+    }
+
 private:
     inline static int lastId = 0;
 
