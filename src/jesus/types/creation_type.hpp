@@ -111,6 +111,11 @@ public:
         return class_attributes.getVar(name);
     }
 
+    const bool isClass() const
+    {
+        return primitive_type == PrimitiveType::Class;
+    }
+
     const std::string toString()
     {
         return "<class '" + name + "'>\n";

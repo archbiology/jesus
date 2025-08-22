@@ -3,6 +3,7 @@
 #include "../../../ast/stmt/create_var_with_ask_stmt.hpp"
 #include "../../../types/known_types.hpp"
 #include "../../../interpreter/interpreter.hpp"
+#include "../../../interpreter/runtime/instance.hpp"
 #include <stdexcept>
 
 std::unique_ptr<Stmt> CreateVarStmtRule::parse(ParserContext &ctx)
@@ -55,6 +56,13 @@ std::unique_ptr<Stmt> CreateVarStmtRule::parse(ParserContext &ctx)
         if (!creationType->validate(evaluated))
         {
             throw std::runtime_error("Error: Invalid value value \"" + evaluated.toString() + "\" to variable '" + varName + "' declared as type " + creationType->name);
+        }
+
+        if (creationType->isClass())
+        {
+            auto instance = std::make_shared<Instance>(*creationType);
+            evaluated = Value(instance);
+            value = std::make_unique<LiteralExpr>(evaluated); // TODO: Consider constructor and 'if' expression
         }
 
         ctx.registerVarType(varName, creationType->name);
