@@ -8,7 +8,7 @@ struct make_string_functor
     std::string operator()(int x) const { return "(int) " + std::to_string(x); }
     std::string operator()(bool x) const { return "(logic) " + std::to_string(x); }
     std::string operator()(std::monostate x) const { return "null"; }
-    std::string operator()(std::shared_ptr<Instance> x) const { return x->toString(); }
+    std::string operator()(const std::shared_ptr<Instance> x) const { return x->toString(); }
 
     std::string operator()(const std::vector<std::shared_ptr<Value>> &list) const
     {
@@ -28,6 +28,17 @@ struct make_string_functor
         return result;
     }
 };
+
+const std::shared_ptr<Instance> Value::toInstance() const
+{
+    if (!IS_INSTANCE)
+    {
+        // FIXME: This has to be validated at parse time
+        throw std::runtime_error("Only instances have attributes.");
+    }
+
+    return std::get<std::shared_ptr<Instance>>(value);
+}
 
 std::string Value::toString() const
 {

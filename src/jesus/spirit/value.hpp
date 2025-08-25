@@ -78,6 +78,8 @@ public:
         return (int)toNumber();
     }
 
+    const std::shared_ptr<Instance> toInstance() const;
+
     std::string toString() const;
 
     const std::vector<std::shared_ptr<Value>> &asList() const

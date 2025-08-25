@@ -190,8 +190,8 @@ question = ask question
 What is the new question?
 say question
 let there be User: amen
-create User adam = 1
-say adam
+create User Jesus = 1
+say Jesus
 let there be MultiLineClass:
 
 
@@ -217,3 +217,7 @@ let there be Person:
     create number age = 930
 amen
 say wife
+create Person adam = 1
+say adam name
+say adam wife
+say adam age
