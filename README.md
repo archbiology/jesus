@@ -104,7 +104,7 @@ To add a new test, create a file like `src/jesus/tests/my_test.jesus` and its ex
 You can generate the .expected file like this:
 
 ```
-./jesus < tests/my_test.jesus &> tests/my_test.jesus.expected
+./jesus --quiet < tests/my_test.jesus &> tests/my_test.jesus.expected
 ```
 
 ## 📁 Project Structure

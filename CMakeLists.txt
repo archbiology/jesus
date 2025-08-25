@@ -88,6 +88,7 @@ set(JESUS_CPP_FILES
     src/jesus/ast/expr/binary_expr.cpp
     src/jesus/ast/expr/literal_expr.cpp
     src/jesus/ast/expr/variable_expr.cpp
+    src/jesus/ast/expr/get_attr_expr.cpp
     src/jesus/ast/expr/grouping_expr.cpp
     src/jesus/ast/expr/conditional_expr.cpp
 
@@ -135,6 +136,8 @@ set(JESUS_CPP_FILES
     src/jesus/parser/grammar/expr/atomic/operators/logical_or_rule.cpp
     src/jesus/parser/grammar/expr/atomic/operators/logical_and_rule.cpp
     src/jesus/parser/grammar/expr/atomic/operators/multiplication_rule.cpp
+
+    src/jesus/parser/grammar/expr/postfix/get_attr_rule.cpp
 
     # -----------------
     # Statement parsers

@@ -19,6 +19,8 @@
 #include "expr/atomic/literals/born_rule.hpp"
 #include "expr/atomic/literals/weekday_rule.hpp"
 
+#include "expr/postfix/get_attr_rule.hpp"
+
 #include "expr/ask_expr_rule.hpp"
 #include "expr/conditional_expr_rule.hpp"
 #include "stmt/create_class_stmt_rule.hpp"
@@ -72,6 +74,7 @@ namespace grammar
      * @brief Primary is anything that can be evaluated directly: number, string, or a grouped expression.
      */
     inline auto Primary = Number | String | YesNo | Sex | Weekday | Variable | Group(Expression);
+    inline auto GetAttribute = std::make_shared<GetAttributeRule>(Primary);
 
     // ----------
     // Statements
@@ -92,6 +95,6 @@ namespace grammar
      */
     inline void initializeGrammar()
     {
-        Unary->setTarget(std::make_shared<UnaryRule>(Primary));
+        Unary->setTarget(std::make_shared<UnaryRule>(GetAttribute));
     }
 }

@@ -129,6 +129,14 @@ private:
     Value visitVariable(const VariableExpr &expr) override;
 
     /**
+     * @brief Resolves the value of an attribute.
+     *
+     * "Likewise, every good tree bears good fruit, but a bad tree bears bad fruit.”
+     * — Matthew 7:17
+     */
+    Value visitGetAttribute(const GetAttributeExpr &expr) override;
+
+    /**
      * @brief Evaluates an AskExpr by evaluating its prompt expression.
      *
      * It processes the 'ask' expression node in the AST,

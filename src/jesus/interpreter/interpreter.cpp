@@ -1,5 +1,6 @@
 #include "interpreter.hpp"
 #include <stdexcept>
+#include "runtime/instance.hpp"
 #include "../ast/stmt/output_statement.hpp"
 #include "../types/known_types.hpp"
 #include "../utils/string_utils.hpp"
@@ -52,6 +53,15 @@ Value Interpreter::visitLiteral(const LiteralExpr &expr)
 Value Interpreter::visitVariable(const VariableExpr &expr)
 {
     return heart.getVar(expr.name);
+}
+
+Value Interpreter::visitGetAttribute(const GetAttributeExpr &expr)
+{
+    Value obj = expr.object->accept(*this);
+
+    std::shared_ptr<Instance> instance = obj.toInstance();
+
+    return instance->getAttribute(expr.attribute);
 }
 
 Value Interpreter::visitAsk(const AskExpr &expr)
@@ -132,9 +142,9 @@ void Interpreter::visitCreateClass(const CreateClassStmt &stmt)
     // handle attributes
     for (auto &member : stmt.body)
     {
-        if (auto attr = static_cast<CreateVarStmt*>(member.get()))
+        if (auto attr = static_cast<CreateVarStmt *>(member.get()))
         {
-            userClass->addAttribute(attr->name, std::move(attr->value),  &heart);
+            userClass->addAttribute(attr->name, std::move(attr->value), &heart);
         }
     }
 
