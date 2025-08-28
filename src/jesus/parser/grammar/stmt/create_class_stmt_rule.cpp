@@ -45,7 +45,11 @@ std::unique_ptr<Stmt> CreateClassStmtRule::parse(ParserContext &ctx)
 
     while (!ctx.check(TokenType::AMEN) && !ctx.isAtEnd())
     {
-        if (auto attr = createVar->parse(ctx))
+        if (auto method = createMethod->parse(ctx))
+        {
+            body.push_back(std::move(method));
+        }
+        else if (auto attr = createVar->parse(ctx))
         {
             body.push_back(std::move(attr));
         }
