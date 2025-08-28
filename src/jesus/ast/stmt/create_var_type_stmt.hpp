@@ -19,13 +19,13 @@
 class CreateVarTypeStmt : public Stmt
 {
 public:
-    CreationType base_type;
+    std::shared_ptr<CreationType> base_type;
     std::string module_name;
     std::string name;
     std::vector<std::shared_ptr<IConstraint>> constraints;
 
 public:
-    CreateVarTypeStmt(CreationType base_type, std::string name, std::string module_name,
+    CreateVarTypeStmt(std::shared_ptr<CreationType> base_type, std::string name, std::string module_name,
                       std::vector<std::shared_ptr<IConstraint>> constraints)
         : base_type(std::move(base_type)),
           name(std::move(name)),

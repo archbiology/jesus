@@ -18,7 +18,7 @@ public:
         variableTypes[varName] = typeName;
     }
 
-    static const CreationType *getVarType(const std::string &varName)
+    static const std::shared_ptr<CreationType> getVarType(const std::string &varName)
     {
 
         auto it = variableTypes.find(varName);
@@ -27,7 +27,7 @@ public:
 
         std::string varTypeStr = it->second;
 
-        const CreationType *varType = KnownTypes::resolve(varTypeStr);
+        auto varType = KnownTypes::resolve(varTypeStr);
         return varType;
     }
 

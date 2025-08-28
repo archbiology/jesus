@@ -20,7 +20,7 @@ std::unique_ptr<Expr> AskExprRule::parse(ParserContext &ctx)
 
     std::string varName = ctx.previous().lexeme;
 
-    const CreationType *varType = ctx.getVarType(varName);
+    std::shared_ptr<CreationType> varType = ctx.getVarType(varName);
     if (!varType)
     {
         throw std::runtime_error("Variable '" + varName + "' not found. Are you really sure it was declared?");

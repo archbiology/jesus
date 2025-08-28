@@ -29,7 +29,7 @@ std::unique_ptr<Stmt> CreateVarTypeStmtRule::parse(ParserContext &ctx)
 
     std::string typeName = ctx.previous().lexeme;
 
-    const auto *baseType = KnownTypes::resolve(baseTypeStr, "core");
+    const auto baseType = KnownTypes::resolve(baseTypeStr, "core");
     if (!baseType)
     {
         throw std::runtime_error("Unknown base type: '" + baseTypeStr + "'");
@@ -104,5 +104,5 @@ std::unique_ptr<Stmt> CreateVarTypeStmtRule::parse(ParserContext &ctx)
     }
 
     std::string module_name = "core"; // FIXME: consider user modules.
-    return std::make_unique<CreateVarTypeStmt>(*baseType, typeName, module_name, std::move(constraints));
+    return std::make_unique<CreateVarTypeStmt>(baseType, typeName, module_name, std::move(constraints));
 }

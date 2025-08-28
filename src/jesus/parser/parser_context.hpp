@@ -169,7 +169,7 @@ public:
         SemanticAnalyzer::registerClassName(className);
     }
 
-    const CreationType *getVarType(const std::string &varName)
+    const std::shared_ptr<CreationType> getVarType(const std::string &varName)
     {
         return SemanticAnalyzer::getVarType(varName);
     }

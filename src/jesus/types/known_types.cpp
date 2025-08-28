@@ -34,17 +34,17 @@ void KnownTypes::registerType(std::shared_ptr<CreationType> type)
     typesByName[fullname] = std::move(type);
 }
 
-const CreationType *KnownTypes::resolve(const std::string &name, const std::string &module)
+const std::shared_ptr<CreationType> KnownTypes::resolve(const std::string &name, const std::string &module)
 {
     const std::string key = makeKey(module, name);
     auto it = typesByName.find(key);
     if (it != typesByName.end())
-        return it->second.get();
+        return it->second;
 
     return nullptr;
 }
 
-const CreationType *KnownTypes::getById(int id)
+const CreationType *KnownTypes::getById(int id) // TODO: return smart pointer
 {
     if (id < 0 || id >= typesById.size())
         return nullptr; // TODO: Remove this checking?

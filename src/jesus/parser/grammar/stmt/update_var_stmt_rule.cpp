@@ -15,7 +15,7 @@ std::unique_ptr<Stmt> UpdateVarStmtRule::parse(ParserContext &ctx)
         return nullptr;
 
     // return KnownTypes::resolve(varName);
-    const CreationType *varType = ctx.getVarType(varName);
+    auto varType = ctx.getVarType(varName);
     if (!varType)
     {
         throw std::runtime_error("Variable '" + varName + "' not found. Are you sure it was declared?");
