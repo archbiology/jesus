@@ -1,6 +1,8 @@
 #include "interpreter.hpp"
 #include <stdexcept>
 #include "runtime/instance.hpp"
+#include "runtime/method.hpp"
+#include "../ast/stmt/create_method_stmt.hpp"
 #include "../ast/stmt/output_statement.hpp"
 #include "../types/known_types.hpp"
 #include "../utils/string_utils.hpp"
@@ -21,6 +23,11 @@ Value Interpreter::evaluate(const std::unique_ptr<Expr> &expr)
 }
 
 void Interpreter::execute(const std::unique_ptr<Stmt> &stmt)
+{
+    stmt->accept(*this);
+}
+
+void Interpreter::execute(const std::shared_ptr<Stmt> &stmt)
 {
     stmt->accept(*this);
 }
@@ -139,12 +146,27 @@ void Interpreter::visitCreateClass(const CreateClassStmt &stmt)
         stmt.module_name,
         constraints);
 
-    // handle attributes
     for (auto &member : stmt.body)
     {
-        if (auto attr = static_cast<CreateVarStmt *>(member.get()))
+        // -----------------
+        // handle attributes
+        // -----------------
+        if (auto attr = dynamic_cast<CreateVarStmt *>(member.get()))
         {
             userClass->addAttribute(attr->name, std::move(attr->value), &heart);
+        }
+        // --------------
+        // handle methods
+        // --------------
+        else if (auto methodStmt = dynamic_cast<CreateMethodStmt *>(member.get()))
+        {
+            auto method = std::make_shared<Method>(
+                methodStmt->name,
+                methodStmt->params,
+                methodStmt->body,
+                userClass);
+
+            userClass->addMethod(methodStmt->name, method);
         }
     }
 
@@ -154,7 +176,7 @@ void Interpreter::visitCreateClass(const CreateClassStmt &stmt)
 void Interpreter::visitCreateVarType(const CreateVarTypeStmt &stmt)
 {
     auto custom_type = std::make_shared<CreationType>(
-        stmt.base_type.primitive_type,
+        stmt.base_type->primitive_type,
         stmt.name,
         stmt.module_name,
         stmt.constraints);

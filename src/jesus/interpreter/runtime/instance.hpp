@@ -1,3 +1,5 @@
+#pragma once
+
 #include "../../types/creation_type.hpp"
 
 /**
@@ -30,27 +32,49 @@ class Instance
 public:
     /**
      * @brief The spirit (class definition/type) of this instance.
+     * Shared across all instances of the same class.
      *
      * "The Spirit gives life; the flesh counts for nothing.
      * The words I have spoken to you—they are full of the Spirit[a] and life."
      * — John 6:63
      */
-    CreationType spirit;
+    std::shared_ptr<CreationType> spirit;
+
+    /**
+     * @brief Instance attributes.
+     * Starts with a copy of the class's default attributes.
+     */
+    Heart attributes;
 
     /**
      * @brief Construct a new Instance with a given spirit (class).
      * @param klass The class (spirit) that defines this instance.
      */
-    explicit Instance(CreationType klass)
-        : spirit(std::move(klass)) {}
+    explicit Instance(std::shared_ptr<CreationType> klass)
+        : spirit(std::move(klass))
+    {
+        // Copy default class attributes into the instance's heart
+        attributes = spirit->class_attributes;
+    }
 
     const Value getAttribute(const std::string &name) const
     {
-        return spirit.getAttribute(name);
+        return attributes.getVar(name);
+    }
+
+    void setAttribute(const std::string &name, const Value &value)
+    {
+        attributes.updateVar(name, value);
     }
 
     std::string toString()
     {
-        return "<Instance '" + spirit.name + "' >";
+        std::string str = "{type: \"instance\",\n class: \"" + spirit->name + "\",\n attributes: {";
+        if (!attributes.isEmpty())
+        {
+            str += attributes.toString();
+        }
+        str += " }\n}";
+        return str;
     }
 };

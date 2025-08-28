@@ -152,16 +152,36 @@ Qual sua idade? (Jesus) (double) 33.000000
 What is your age again? Validation failed: Invalid number: 'eternal'
 What is your age again? (Jesus) (double) 2025.000000
 (Jesus) What is your age? (Jesus) What is the new question?
-(Jesus) (Jesus) (Jesus) <Instance 'User' >
-(Jesus) (Jesus) (Jesus) <Instance 'MultiLineClass' >
+(Jesus) (Jesus) (Jesus) {type: "instance",
+ class: "User",
+ attributes: { }
+}
+(Jesus) (Jesus) (Jesus) {type: "instance",
+ class: "MultiLineClass",
+ attributes: { }
+}
 (Jesus) igual
 (Jesus) (Jesus) (logic) 0
 (Jesus) (Jesus) (Jesus) (logic) 1
 (Jesus) (logic) 1
-(Jesus) (Jesus) (Jesus) <Instance 'Luz' >
-(Jesus) (Jesus) (Jesus) <Instance 'Canção' >
+(Jesus) (Jesus) (Jesus) {type: "instance",
+ class: "Luz",
+ attributes: { }
+}
+(Jesus) (Jesus) (Jesus) {type: "instance",
+ class: "Canção",
+ attributes: { }
+}
 (Jesus) (Jesus) ❌ Error: Undefined variable: wife
 (Jesus) (Jesus) Adam
 (Jesus) Eve
 (Jesus) (int) 930
+(Jesus) {type: "instance",
+ class: "Person",
+ attributes: {
+  age: "(int) 930",
+  wife: "Eve",
+  name: "Adam"
+ }
+}
 (Jesus) 

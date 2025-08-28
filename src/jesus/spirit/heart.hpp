@@ -69,6 +69,34 @@ public:
      */
     void updateVar(const std::string &name, const Value &value);
 
+    bool isEmpty() const
+    {
+        return variables.empty();
+    }
+
+    const std::string toString() const
+    {
+        std::string str = "";
+        bool removeLastComma = false;
+
+        for (auto &pair : variables)
+        {
+            const std::string &key = pair.first;
+            const Value &value = pair.second;
+
+            str += "\n  " + key + ": \"" + value.toString() + "\",";
+            removeLastComma = true;
+        }
+
+        if (removeLastComma)
+        {
+            str.pop_back();
+            str += "\n";
+        }
+
+        return str;
+    }
+
 private:
     std::unordered_map<std::string, Value> variables;
 };

@@ -80,6 +80,7 @@ public:
      * it, causing the program to act.
      */
     void execute(const std::unique_ptr<Stmt> &stmt);
+    void execute(const std::shared_ptr<Stmt> &stmt);
     inline void loves(const std::unique_ptr<Stmt> &stmt) { execute(stmt); }
 
 private:
