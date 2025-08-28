@@ -64,6 +64,8 @@ public:
             return "BE";
         case TokenType::HAJA:
             return "HAJA";
+        case TokenType::PURPOSE:
+            return "PURPOSE";
         case TokenType::Note:
             return "NOTE";
         case TokenType::Todo:
@@ -116,6 +118,10 @@ public:
             return "MINUS";
         case TokenType::COLON:
             return "COLON";
+        case TokenType::SEMICOLON:
+            return "SEMICOLON";
+        case TokenType::COMMA:
+            return "COMMA";
 
         case TokenType::INT:
             return "INT(" + lexeme + ")";

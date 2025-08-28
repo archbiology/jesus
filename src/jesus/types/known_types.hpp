@@ -11,7 +11,7 @@ public:
 
     static void registerType(std::shared_ptr<CreationType> type);
 
-    static const CreationType *resolve(const std::string &name, const std::string &module = "core");
+    static const std::shared_ptr<CreationType> resolve(const std::string &name, const std::string &module = "core");
     static const CreationType *getById(int id);
 
     static bool isValid(const CreationType *type, const Value &value);

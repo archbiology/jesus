@@ -224,6 +224,9 @@ TokenType recognize_token_type(const std::string &word)
     if (word == "otherwise" || word == "senão")
         return TokenType::OTHERWISE;
 
+    if (word == "purpose" || word == "propósito")
+        return TokenType::PURPOSE;
+
     return TokenType::IDENTIFIER;
 }
 
@@ -302,6 +305,20 @@ std::vector<Token> lex(const std::string &raw_input)
         if (c == ":")
         {
             tokens.emplace_back(TokenType::COLON, ":", Value(":"));
+            i++;
+            continue;
+        }
+
+        if (c == ";")
+        {
+            tokens.emplace_back(TokenType::SEMICOLON, ";", Value(";"));
+            i++;
+            continue;
+        }
+
+        if (c == ",")
+        {
+            tokens.emplace_back(TokenType::COMMA, ",", Value(","));
             i++;
             continue;
         }

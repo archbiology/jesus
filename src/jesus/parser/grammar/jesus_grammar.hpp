@@ -81,8 +81,9 @@ namespace grammar
     // ----------
     inline auto CreateVarType = std::make_shared<CreateVarTypeStmtRule>();
     inline auto CreateVar = std::make_shared<CreateVarStmtRule>(Expression, Ask);
-    inline auto CreateClass = std::make_shared<CreateClassStmtRule>(CreateVar);
     inline auto UpdateVar = std::make_shared<UpdateVarStmtRule>(Expression, Ask);
+    inline auto CreateMethod = std::make_shared<CreateMethodStmtRule>(CreateVar, UpdateVar);
+    inline auto CreateClass = std::make_shared<CreateClassStmtRule>(CreateVar, CreateMethod);
 
     /**
      * @brief Set the Expression rule to something (for now just Primary)

@@ -4,6 +4,8 @@
 #include "../ast/expr/expr.hpp"
 #include "constraints/constraint.hpp"
 
+class Method; // Forward declaration
+
 enum class PrimitiveType
 {
     Class,
@@ -35,6 +37,7 @@ public:
     const PrimitiveType primitive_type;
 
     Heart class_attributes;
+    std::unordered_map<std::string, std::shared_ptr<Method>> methods;
 
     CreationType(PrimitiveType primitive_type, std::string name, std::string module = "core",
                  std::vector<std::shared_ptr<IConstraint>> constraints = {})
@@ -111,6 +114,14 @@ public:
         return class_attributes.getVar(name);
     }
 
+    void addMethod(const std::string &name, std::shared_ptr<Method> method)
+    {
+        if (primitive_type != PrimitiveType::Class)
+            throw std::runtime_error("Only class types can have methods.");
+
+        methods[name] = std::move(method);
+    }
+
     const bool isClass() const
     {
         return primitive_type == PrimitiveType::Class;
@@ -118,7 +129,7 @@ public:
 
     const std::string toString()
     {
-        return "<class '" + name + "'>\n";
+        return "{class: \"" + name + "\"}";
     }
 
 private:

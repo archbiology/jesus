@@ -215,9 +215,14 @@ let there be Person:
     create text name = "Adam"
     create text wife = "Eve"
     create number age = 930
+
+    purpose bless(): amen
+    propósito sejaUmaBenção(): amém
+    purpose testing(text what): create text var = "inside function" amen
 amen
 say wife
 create Person adam = 1
 say adam name
 say adam wife
 say adam age
+say adam

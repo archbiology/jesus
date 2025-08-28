@@ -21,7 +21,7 @@ std::unique_ptr<Stmt> CreateVarStmtRule::parse(ParserContext &ctx)
 
     std::string varName = ctx.previous().lexeme;
 
-    auto *creationType = KnownTypes::resolve(varType, "core");
+    auto creationType = KnownTypes::resolve(varType, "core");
     if (!creationType)
     {
         throw std::runtime_error("Unknown variable type: '" + varType + "'");
@@ -60,7 +60,7 @@ std::unique_ptr<Stmt> CreateVarStmtRule::parse(ParserContext &ctx)
 
         if (creationType->isClass())
         {
-            auto instance = std::make_shared<Instance>(*creationType);
+            auto instance = std::make_shared<Instance>(creationType);
             evaluated = Value(instance);
             value = std::make_unique<LiteralExpr>(evaluated); // TODO: Consider constructor and 'if' expression
         }

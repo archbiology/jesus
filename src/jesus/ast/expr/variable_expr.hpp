@@ -5,6 +5,7 @@
 
 /**
  * @brief Represents a variable reference like "age" or "name".
+ * It also represents class attributes, and function params.
  *
  * A variable expression retrieves the value associated with a name.
  * Just as names in the Bible often reflect identity and calling,
