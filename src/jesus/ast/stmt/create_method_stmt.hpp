@@ -35,16 +35,16 @@ public:
     };
 
     std::string name;
-    Heart params;
+    std::shared_ptr<Heart> params;
     std::vector<std::shared_ptr<Stmt>> body;
     bool isGenesis; ///< true if this is the special constructor "genesis"
 
     CreateMethodStmt(const std::string &name,
                      //  const std::vector<Param> &params,
-                     const Heart &params,
+                     const std::shared_ptr<Heart> &params,
                      const std::vector<std::shared_ptr<Stmt>> &body,
                      bool isGenesis = false)
-        : name(name), params(params), body(body), isGenesis(isGenesis)
+        : name(name), params(std::move(params)), body(body), isGenesis(isGenesis)
     {
     }
 
@@ -53,7 +53,7 @@ public:
      */
     std::string toString() const override
     {
-        return "CreateMethodStmt( " + name + " (\n" + params.toString() + "))";
+        return "CreateMethodStmt( " + name + " (\n" + params->toString() + "))";
     }
 
     void accept(StmtVisitor &visitor) const override {};

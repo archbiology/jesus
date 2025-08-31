@@ -2,6 +2,8 @@
 
 #include "../../types/creation_type.hpp"
 
+static unsigned long long int InstanceID = 0; // FIXME: Vars created inside loop will blow this up
+
 /**
  * @class Instance
  * @brief Represents a living object (an instance) created from a defined spirit (class).
@@ -44,7 +46,7 @@ public:
      * @brief Instance attributes.
      * Starts with a copy of the class's default attributes.
      */
-    Heart attributes;
+    std::shared_ptr<Heart> attributes;
 
     /**
      * @brief Construct a new Instance with a given spirit (class).
@@ -54,25 +56,25 @@ public:
         : spirit(std::move(klass))
     {
         // Copy default class attributes into the instance's heart
-        attributes = spirit->class_attributes;
+        attributes = spirit->class_attributes->clone("i-" + std::to_string(InstanceID++));
     }
 
     const Value getAttribute(const std::string &name) const
     {
-        return attributes.getVar(name);
+        return attributes->getVar(name);
     }
 
     void setAttribute(const std::string &name, const Value &value)
     {
-        attributes.updateVar(name, value);
+        attributes->updateVar(name, value);
     }
 
     std::string toString()
     {
         std::string str = "{type: \"instance\",\n class: \"" + spirit->name + "\",\n attributes: {";
-        if (!attributes.isEmpty())
+        if (!attributes->isEmpty())
         {
-            str += attributes.toString();
+            str += attributes->toString();
         }
         str += " }\n}";
         return str;

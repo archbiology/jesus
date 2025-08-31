@@ -219,6 +219,10 @@ let there be Person:
     purpose bless(): amen
     propósito sejaUmaBenção(): amém
     purpose testing(text what): create text var = "inside function" amen
+    purpose testTheSpirits(text a; number b): create text reference = "1 John 4:1" amen
+    purpose aToB(number a; number b):
+        a = b
+    amen
 amen
 say wife
 create Person adam = 1

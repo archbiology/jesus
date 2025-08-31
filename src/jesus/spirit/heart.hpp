@@ -1,5 +1,7 @@
 #pragma once
 
+#include "spirit_of_the_lord.hpp"
+#include "spirit_of_understanding.hpp"
 #include <string>
 #include <unordered_map>
 #include "value.hpp"
@@ -18,8 +20,32 @@
  *
  * Heart holds what the program “believes” or “remembers”.
  */
-class Heart
+class Heart : JesusProgrammingLanguage
 {
+
+public:
+    const std::string scope_name;
+
+    /**
+     * @brief Default constructor
+     *
+     * @param scope_name the scope name. E.g.: global, className, methodName
+     */
+    explicit Heart(std::string scope_name) : scope_name(std::move(scope_name)), semantics_analyzer(std::make_shared<SpiritOfUnderstanding>()) {}
+
+    /**
+     * @brief Construct a new Heart object
+     *
+     * @param scope_name The scope name of the final copy
+     * @param other The original that will be used as a copy
+     */
+    std::shared_ptr<Heart> clone(const std::string &new_scope_name) const
+    {
+        auto copy = std::make_shared<Heart>(scope_name);
+        copy->variables = variables;
+        copy->semantics_analyzer = semantics_analyzer;
+        return copy;
+    }
 
     /**
      * @brief Checks whether a variable with the given name already exists.
@@ -31,7 +57,6 @@ class Heart
      */
     bool varExists(const std::string &name) const;
 
-public:
     /**
      * @brief Create a variable with the given name and value.
      * If the variable already exists, it will raise an exception.
@@ -39,10 +64,11 @@ public:
      * "And God called the light Day, and the darkness he called Night." - Genesis 1:5
      * Just as God gave names and meaning, this method gives values to variables
      *
+     * @param type The name of the variable type (e.g., "int")
      * @param name The name of the variable (e.g., "age")
      * @param value The value to assign (e.g., "33")
      */
-    void createVar(const std::string &name, const Value &value);
+    void createVar(const std::string &type, const std::string &name, const Value &value);
 
     /**
      * @brief Retrieves the value of a variable.
@@ -74,6 +100,22 @@ public:
         return variables.empty();
     }
 
+    void registerVarType(const std::string &type, const std::string &name)
+    {
+        semantics_analyzer->registerVarType(type, name);
+    }
+
+    void registerClassName(const std::string &className)
+    {
+        semantics_analyzer->registerClassName(className);
+    }
+
+    const std::shared_ptr<CreationType> getVarType(const std::string &varName)
+    {
+        auto type = semantics_analyzer->getVarType(varName);
+        return type;
+    }
+
     const std::string toString() const
     {
         std::string str = "";
@@ -99,4 +141,5 @@ public:
 
 private:
     std::unordered_map<std::string, Value> variables;
+    std::shared_ptr<SpiritOfUnderstanding> semantics_analyzer;
 };

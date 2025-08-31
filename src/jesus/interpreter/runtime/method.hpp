@@ -13,13 +13,13 @@ class Method
 {
 public:
     const std::string name;
-    const Heart params;
+    const std::shared_ptr<Heart> params;
     const std::vector<std::shared_ptr<Stmt>> body;
 
     const std::shared_ptr<CreationType> klass;
 
     Method(std::string name,
-           Heart params,
+           std::shared_ptr<Heart> params,
            std::vector<std::shared_ptr<Stmt>> body,
            std::shared_ptr<CreationType> klass)
         : name(std::move(name)), params(std::move(params)), body(std::move(body)), klass(std::move(klass)) {}

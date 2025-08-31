@@ -2,13 +2,13 @@
 
 #include "../lexer/token.hpp"
 #include "../lexer/token_type.hpp"
-#include "../semantic/semantic_analyser.hpp"
-
 #include <string>
 #include <vector>
 #include <stdexcept>
 
 class Interpreter; // Forward declaration
+class CreationType; // Forward declaration
+class Heart; // Forward declaration
 
 /**
  * @brief The context passed around during parsing, holding tokens and parsing position.
@@ -159,20 +159,15 @@ public:
         current = snapshot;
     }
 
-    void registerVarType(const std::string &varName, const std::string &typeName)
-    {
-        SemanticAnalyzer::registerVarType(varName, typeName);
-    }
+    void registerVarType(const std::string &type, const std::string &name);
 
-    void registerClassName(const std::string &className)
-    {
-        SemanticAnalyzer::registerClassName(className);
-    }
+    void registerClassName(const std::string &className);
 
-    const std::shared_ptr<CreationType> getVarType(const std::string &varName)
-    {
-        return SemanticAnalyzer::getVarType(varName);
-    }
+    const std::shared_ptr<CreationType> getVarType(const std::string &varName);
+
+    void addScope(std::shared_ptr<Heart> scope);
+
+    void popScope();
 
     std::string toString()
     {

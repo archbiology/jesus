@@ -36,12 +36,19 @@ public:
 
     const PrimitiveType primitive_type;
 
-    Heart class_attributes;
+    std::shared_ptr<Heart> class_attributes = nullptr;
     std::unordered_map<std::string, std::shared_ptr<Method>> methods;
 
     CreationType(PrimitiveType primitive_type, std::string name, std::string module = "core",
                  std::vector<std::shared_ptr<IConstraint>> constraints = {})
-        : primitive_type(primitive_type), name(name), module_name(module), constraints(std::move(constraints)), id(lastId++) {}
+        : primitive_type(primitive_type), name(name), module_name(module), constraints(std::move(constraints)), id(lastId++)
+    {
+
+        if (primitive_type == PrimitiveType::Class)
+        {
+            class_attributes = std::make_shared<Heart>(name);
+        }
+    }
 
     virtual Value parseFromString(const std::string &raw) const
     {
@@ -94,7 +101,7 @@ public:
         return true;
     }
 
-    void addAttribute(const std::string &name, std::unique_ptr<Expr> initializer, Heart *heart)
+    void addAttribute(const std::string &type, const std::string &name, std::unique_ptr<Expr> initializer, std::shared_ptr<Heart> heart)
     {
         if (primitive_type != PrimitiveType::Class)
             throw std::runtime_error("Only class types can have attributes.");
@@ -106,12 +113,12 @@ public:
             initVal = initializer->evaluate(heart);
         }
 
-        class_attributes.createVar(name, initVal);
+        class_attributes->createVar(type, name, initVal);
     }
 
     const Value getAttribute(const std::string &name) const
     {
-        return class_attributes.getVar(name);
+        return class_attributes->getVar(name);
     }
 
     void addMethod(const std::string &name, std::shared_ptr<Method> method)

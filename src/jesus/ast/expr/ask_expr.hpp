@@ -32,7 +32,7 @@ public:
      *
      * @return The string representing the question.
      */
-    Value evaluate(Heart *heart) const override;
+    Value evaluate(std::shared_ptr<Heart> heart) const override;
 
     /**
      * @brief Gets the answer from the user.

@@ -11,7 +11,7 @@ public:
     GetAttributeExpr(std::unique_ptr<Expr> object, std::string attribute)
         : object(std::move(object)), attribute(std::move(attribute)) {}
 
-    Value evaluate(Heart *heart) const override
+    Value evaluate(std::shared_ptr<Heart> heart) const override
     {
         return object->evaluate(heart);
     }
