@@ -253,8 +253,15 @@ std::vector<Token> lex(const std::string &raw_input)
     while (i < utf8_input.size())
     {
         c = utf8_input[i];
-        if (c == space || c == tab || c == newline || c == carriage)
+        if (c == space || c == tab)
         {
+            i++;
+            continue;
+        }
+
+        if (c == newline || c == carriage)
+        {
+            tokens.emplace_back(TokenType::NEWLINE, "\n", Value("\n"));
             i++;
             continue;
         }

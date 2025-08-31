@@ -33,7 +33,7 @@ enum class TokenType
     INT,            // 19
     DOUBLE,         // 20
     STRING,         // 21
-    IDENTIFIER,     // varname
+    IDENTIFIER,     // varname, attribute
     LEFT_PAREN,     // (
     RIGHT_PAREN,    // )
 
@@ -77,5 +77,6 @@ enum class TokenType
     OTHERWISE,
 
     AMEN,           // amen (end of blocks in Jesus lang; '}' in other langs)
+    NEWLINE,        // \n
     END_OF_FILE
 };

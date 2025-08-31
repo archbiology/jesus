@@ -64,6 +64,8 @@ public:
             return "BE";
         case TokenType::HAJA:
             return "HAJA";
+        case TokenType::CREATE:
+            return "CREATE";
         case TokenType::PURPOSE:
             return "PURPOSE";
         case TokenType::Note:
@@ -148,6 +150,9 @@ public:
 
         case TokenType::AMEN:
             return "AMEN";
+
+        case TokenType::NEWLINE:
+            return "NEWLINE";
 
         case TokenType::END_OF_FILE:
             return "EOF";
