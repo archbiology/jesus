@@ -14,7 +14,7 @@
 #include "../ast/stmt/create_var_type_stmt.hpp"
 #include "../ast/stmt/create_var_stmt.hpp"
 #include "../ast/stmt/update_var_stmt.hpp"
-#include "../ast/stmt/output_statement.hpp"
+#include "../ast/stmt/print_stmt.hpp"
 #include "../ast/stmt/repeat_while_stmt.hpp"
 #include "../ast/stmt/repeat_times_stmt.hpp"
 #include "../ast/stmt/for_each_stmt.hpp"
@@ -241,7 +241,7 @@ private:
      */
     void visitUpdateVarWithAsk(const UpdateVarWithAskStmt &stmt) override;
 
-    void visitOutput(const OutputStmt &stmt) override;
+    void visitPrintStmt(const PrintStmt &stmt) override;
 
     /**
      * repeat while condition:

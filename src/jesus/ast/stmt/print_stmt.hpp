@@ -3,7 +3,7 @@
 #include "../expr/expr.hpp"
 #include <memory>
 
-enum class OutputType
+enum class StmtType
 {
     SAY,
     WARN,
@@ -11,26 +11,26 @@ enum class OutputType
 
 /// Statement for printing output: say, praise, rebuke
 /**
- * @brief The OutputStmt class represents the `say` and `warn` commands.
+ * @brief The PrintStmt class represents the `say` and `warn` commands.
  *
  * It is responsible for displaying text to the screen.
  *
  * "He reveals deep and hidden things; He knows what is in the darkness, and light dwells with Him."
  * — Daniel 2:22
  */
-class OutputStmt : public Stmt
+class PrintStmt : public Stmt
 {
 public:
-    OutputType type;
+    StmtType type;
     std::unique_ptr<Expr> message;
 
     /**
-     * @brief Construct a new Output Stmt object for printing text to screen.
+     * @brief Construct a new Print Stmt object for printing text to screen.
      *
      * "Call to me and I will answer you and tell you great and unsearchable things you do not know."
      * — Jeremiah 33:3
      */
-    OutputStmt(OutputType type, std::unique_ptr<Expr> message)
+    PrintStmt(StmtType type, std::unique_ptr<Expr> message)
         : type(type), message(std::move(message)) {}
 
     /**
@@ -41,9 +41,9 @@ public:
      */
     std::string toString() const override
     {
-        std::string str = "OutputStmt(";
+        std::string str = "PrintStmt(";
 
-        str += (type == OutputType::SAY ? "SAY:" : "WARN: ");
+        str += (type == StmtType::SAY ? "SAY: " : "WARN: ");
 
         if (message)
             str += message->toString();

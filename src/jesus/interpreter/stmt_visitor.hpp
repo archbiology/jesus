@@ -6,7 +6,7 @@
 #include "../ast/stmt/update_var_stmt.hpp"
 #include "../ast/stmt/create_var_with_ask_stmt.hpp"
 #include "../ast/stmt/update_var_with_ask_stmt.hpp"
-#include "../ast/stmt/output_statement.hpp"
+#include "../ast/stmt/print_stmt.hpp"
 #include "../ast/stmt/repeat_while_stmt.hpp"
 #include "../ast/stmt/repeat_times_stmt.hpp"
 #include "../ast/stmt/for_each_stmt.hpp"
@@ -54,7 +54,7 @@ public:
     virtual void visitCreateVarWithAsk(const CreateVarWithAskStmt &stmt) = 0;
     virtual void visitUpdateVar(const UpdateVarStmt &stmt) = 0;
     virtual void visitUpdateVarWithAsk(const UpdateVarWithAskStmt &stmt) = 0;
-    virtual void visitOutput(const OutputStmt &stmt) = 0;
+    virtual void visitPrintStmt(const PrintStmt &stmt) = 0;
     virtual void visitRepeatWhile(const RepeatWhileStmt &stmt) = 0;
     virtual void visitRepeatTimes(const RepeatTimesStmt &stmt) = 0;
     virtual void visitForEach(const ForEachStmt &stmt) = 0;

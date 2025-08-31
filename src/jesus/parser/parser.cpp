@@ -1,9 +1,8 @@
 #include "parser.hpp"
 #include "grammar/jesus_grammar.hpp"
 #include "parser_context.hpp"
-#include "../ast/expr/variable_expr.hpp"
 #include "../ast/stmt/repeat_times_stmt.hpp"
-#include "../ast/stmt/output_statement.hpp"
+#include "../ast/stmt/print_stmt.hpp"
 #include <bits/stdc++.h> // for std::find_if and std::distance
 #include <string>
 #include <memory>
@@ -13,12 +12,6 @@ std::unique_ptr<Stmt> parse(const std::vector<Token> &tokens, ParserContext &con
     const int tokens_count = tokens.size();
     if (!tokens_count)
         return nullptr;
-
-    if (tokens_count == 1 && tokens[0].type == TokenType::IDENTIFIER)
-    {
-        // WARN because the person didn't use 'say'
-        return std::make_unique<OutputStmt>(OutputType::WARN, std::make_unique<VariableExpr>(tokens[1].lexeme));
-    }
 
     // repeat n times
     if (tokens_count >= 4 &&
@@ -40,18 +33,12 @@ std::unique_ptr<Stmt> parse(const std::vector<Token> &tokens, ParserContext &con
         return std::make_unique<RepeatTimesStmt>(repeatCount, std::move(innerStmt));
     }
 
-    if ((tokens[0].type == TokenType::SAY || tokens[0].type == TokenType::WARN) && tokens_count >= 2)
-    {
-        std::vector<Token> expressionTokens(tokens.begin() + 1, tokens.end());
-        ParserContext sub_context(expressionTokens, context.interpreter);
-        auto expr = grammar::Expression->parse(sub_context);
-        if (expr)
-            return std::make_unique<OutputStmt>(
-                tokens[0].type == TokenType::SAY ? OutputType::SAY : OutputType::WARN,
-                std::move(expr));
-    }
-
     int snapshot = context.snapshot();
+    auto outputStmt = grammar::Print->parse(context);
+    if (outputStmt)
+        return outputStmt;
+
+    context.restore(snapshot);
     auto createClassStmt = grammar::CreateClass->parse(context);
     if (createClassStmt)
         return createClassStmt;
@@ -78,5 +65,5 @@ std::unique_ptr<Stmt> parse(const std::vector<Token> &tokens, ParserContext &con
     }
 
     // Using WARN because the person didn't call 'say'
-    return std::make_unique<OutputStmt>(OutputType::WARN, std::move(expr));
+    return std::make_unique<PrintStmt>(StmtType::WARN, std::move(expr));
 }

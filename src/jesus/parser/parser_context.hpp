@@ -6,9 +6,9 @@
 #include <vector>
 #include <stdexcept>
 
-class Interpreter; // Forward declaration
+class Interpreter;  // Forward declaration
 class CreationType; // Forward declaration
-class Heart; // Forward declaration
+class Heart;        // Forward declaration
 
 /**
  * @brief The context passed around during parsing, holding tokens and parsing position.
@@ -168,6 +168,13 @@ public:
     void addScope(std::shared_ptr<Heart> scope);
 
     void popScope();
+
+    void consumeAllNewLines()
+    {
+        while (match(TokenType::NEWLINE))
+        {
+        }
+    }
 
     std::string toString()
     {
