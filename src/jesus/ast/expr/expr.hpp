@@ -24,7 +24,7 @@ public:
      *
      * "But the one who looks into the perfect law... will be blessed." — James 1:25
      */
-    virtual Value evaluate(Heart *heart) const = 0;
+    virtual Value evaluate(std::shared_ptr<Heart> heart) const = 0;
 
     virtual Value accept(ExprVisitor &visitor) const = 0;
 

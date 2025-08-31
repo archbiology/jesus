@@ -32,10 +32,10 @@ public:
      *
      * @param name The name of the variable being referenced (e.g., prophet).
      */
-    explicit VariableExpr(std::string name)
+    explicit VariableExpr(const std::string &name)
         : name(name) {}
 
-    Value evaluate(Heart *heart) const override
+    Value evaluate(std::shared_ptr<Heart> heart) const override
     {
         return heart->getVar(name);
     }

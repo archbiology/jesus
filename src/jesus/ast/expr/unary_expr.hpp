@@ -38,7 +38,7 @@ public:
     UnaryExpr(Token op, std::unique_ptr<Expr> right)
         : op(op), right(std::move(right)) {}
 
-    Value evaluate(Heart *heart) const override
+    Value evaluate(std::shared_ptr<Heart> heart) const override
     {
         Value rightVal = right->evaluate(heart);
 

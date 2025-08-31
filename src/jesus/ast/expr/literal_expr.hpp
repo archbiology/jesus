@@ -29,7 +29,7 @@ public:
      */
     explicit LiteralExpr(Value value) : value(value) {}
 
-    Value evaluate(Heart *heart) const override
+    Value evaluate(std::shared_ptr<Heart> heart) const override
     {
         return value;
     }

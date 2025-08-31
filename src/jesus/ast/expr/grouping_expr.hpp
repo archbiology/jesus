@@ -36,7 +36,7 @@ public:
     explicit GroupingExpr(std::unique_ptr<Expr> expression)
         : expression(std::move(expression)) {}
 
-    Value evaluate(Heart *heart) const override
+    Value evaluate(std::shared_ptr<Heart> heart) const override
     {
         return expression->evaluate(heart);
     }

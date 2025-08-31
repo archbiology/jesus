@@ -1,7 +1,7 @@
 #include "ask_expr.hpp"
 #include "../../interpreter/expr_visitor.hpp"
 
-Value AskExpr::evaluate(Heart *heart) const
+Value AskExpr::evaluate(std::shared_ptr<Heart> heart) const
 {
     auto question = prompt->evaluate(heart);
     return question;

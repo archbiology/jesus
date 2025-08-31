@@ -53,7 +53,7 @@ public:
    * @param heart The "Symbol table"
    * @return std::optional<std::string>
    */
-  Value evaluate(Heart *heart) const override
+  Value evaluate(std::shared_ptr<Heart> heart) const override
   {
     Value result = condition->evaluate(heart);
 

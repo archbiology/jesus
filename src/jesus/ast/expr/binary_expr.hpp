@@ -10,6 +10,10 @@
  * A binary expression combines two operands using an operator. It is
  * the core of many logical and arithmetic operations within the language.
  *
+ * This node performs a comparison between the evaluated values of two
+ * child nodes (`left` and `right`) using a specified operator such as:
+ * `>=`, `<=`, `==`, `!=`, `>`, or `<`.
+ *
  * "Two are better than one, because they have a good reward for their labor."
  * — Ecclesiastes 4:9
  */
@@ -35,7 +39,7 @@ public:
     BinaryExpr(std::unique_ptr<Expr> left, Token op, std::unique_ptr<Expr> right)
         : left(std::move(left)), op(op), right(std::move(right)) {}
 
-    Value evaluate(Heart *heart) const override
+    Value evaluate(std::shared_ptr<Heart> heart) const override
     {
 
         Value leftVal = left->evaluate(heart);
