@@ -58,6 +58,8 @@ std::unique_ptr<Stmt> CreateMethodStmtRule::parse(ParserContext &ctx)
 
     std::vector<std::shared_ptr<Stmt>> body;
 
+    ctx.consumeAllNewLines();
+
     while (!ctx.check(TokenType::AMEN) && !ctx.isAtEnd())
     {
         if (auto stmt = updateVar->parse(ctx))
@@ -68,10 +70,16 @@ std::unique_ptr<Stmt> CreateMethodStmtRule::parse(ParserContext &ctx)
         {
             body.push_back(std::move(attr));
         }
+        else if (auto print = printStmt->parse(ctx))
+        {
+            body.push_back(std::move(print));
+        }
         else
         {
             throw std::runtime_error("Unexpected statement inside method body.");
         }
+
+        ctx.consumeAllNewLines();
     }
     ctx.popScope(); // </🟢️>
 

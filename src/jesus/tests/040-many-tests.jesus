@@ -221,7 +221,13 @@ let there be Person:
     purpose testing(text what): create text var = "inside function" amen
     purpose testTheSpirits(text a; number b): create text reference = "1 John 4:1" amen
     purpose aToB(number a; number b):
+        say "a before"
+        say a
+        say "b before"
+        say b
+        b = 99
         a = b
+        say a
     amen
 amen
 say wife

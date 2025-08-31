@@ -32,6 +32,8 @@ std::unique_ptr<Stmt> CreateClassStmtRule::parse(ParserContext &ctx)
     std::vector<std::shared_ptr<Stmt>> body;
     std::string module_name = "core"; // FIXME: consider user modules.
 
+    ctx.consumeAllNewLines();
+
     if (ctx.isAtEnd())
     {
         // Allowing 'empty-bodied' classes without ': amen'.
@@ -42,6 +44,8 @@ std::unique_ptr<Stmt> CreateClassStmtRule::parse(ParserContext &ctx)
 
     if (!ctx.match(TokenType::COLON))
         throw std::runtime_error("Expected ':' after class name in '" + stmt + "' statement.");
+
+    ctx.consumeAllNewLines();
 
     auto attributes = std::make_shared<Heart>(className);
     ctx.addScope(attributes); // <🟢️>
@@ -60,6 +64,8 @@ std::unique_ptr<Stmt> CreateClassStmtRule::parse(ParserContext &ctx)
         {
             throw std::runtime_error("Unexpected statement inside class body.");
         }
+
+        ctx.consumeAllNewLines();
     }
     ctx.popScope(); // </🟢️>
 
