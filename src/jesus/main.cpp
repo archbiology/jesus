@@ -25,8 +25,10 @@ int main(int argc, char **argv)
 
     grammar::initializeGrammar(); // Sets the Expression rule target to Primary
 
-    Heart heart;
-    Interpreter jesus(&heart);
+    auto global_scope = std::make_shared<Heart>("global");
+    SymbolTable symbol_table(global_scope);
+    Interpreter jesus(symbol_table);
+
     std::string buffer;
     std::string line;
 

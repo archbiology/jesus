@@ -32,24 +32,24 @@ void Interpreter::execute(const std::shared_ptr<Stmt> &stmt)
     stmt->accept(*this);
 }
 
-void Interpreter::createVariable(const std::string &name, const Value &value)
+void Interpreter::createVariable(const std::string &type, const std::string &name, const Value &value)
 {
-    heart.createVar(name, value);
+    symbol_table.createVar(type, name, value);
 }
 
 void Interpreter::updateVariable(const std::string &name, const Value &value)
 {
-    heart.updateVar(name, value);
+    symbol_table.updateVar(name, value);
 }
 
 Value Interpreter::visitBinary(const BinaryExpr &expr)
 {
-    return expr.evaluate(&heart);
+    return expr.evaluate(symbol_table.currentScope());
 }
 
 Value Interpreter::visitUnary(const UnaryExpr &expr)
 {
-    return expr.evaluate(&heart);
+    return expr.evaluate(symbol_table.currentScope());
 }
 
 Value Interpreter::visitLiteral(const LiteralExpr &expr)
@@ -59,7 +59,7 @@ Value Interpreter::visitLiteral(const LiteralExpr &expr)
 
 Value Interpreter::visitVariable(const VariableExpr &expr)
 {
-    return heart.getVar(expr.name);
+    return symbol_table.getVar(expr.name);
 }
 
 Value Interpreter::visitGetAttribute(const GetAttributeExpr &expr)
@@ -73,7 +73,7 @@ Value Interpreter::visitGetAttribute(const GetAttributeExpr &expr)
 
 Value Interpreter::visitAsk(const AskExpr &expr)
 {
-    auto question = expr.evaluate(&heart);
+    auto question = expr.evaluate(symbol_table.currentScope());
     return question;
 }
 
@@ -90,13 +90,13 @@ std::string Interpreter::valueToString(const Value &value)
 void Interpreter::visitCreateVar(const CreateVarStmt &stmt)
 {
     Value val = evaluate(stmt.value);
-    createVariable(stmt.name, val);
+    createVariable(stmt.base_type, stmt.name, val);
 }
 
 Value Interpreter::askAndValidate(const std::shared_ptr<Expr> ask_expr, const CreationType &var_type)
 {
     // Step 1: Evaluate the ask expression (e.g., ask "Your age?")
-    Value question = ask_expr->evaluate(&heart);
+    Value question = ask_expr->evaluate(symbol_table.currentScope());
 
     while (true)
     {
@@ -127,7 +127,7 @@ Value Interpreter::askAndValidate(const std::shared_ptr<Expr> ask_expr, const Cr
 void Interpreter::visitCreateVarWithAsk(const CreateVarWithAskStmt &stmt)
 {
     Value value = askAndValidate(stmt.ask_expr, stmt.var_type);
-    createVariable(stmt.var_name, value);
+    createVariable(stmt.var_type.name, stmt.var_name, value);
 }
 
 void Interpreter::visitUpdateVarWithAsk(const UpdateVarWithAskStmt &stmt)
@@ -153,7 +153,7 @@ void Interpreter::visitCreateClass(const CreateClassStmt &stmt)
         // -----------------
         if (auto attr = dynamic_cast<CreateVarStmt *>(member.get()))
         {
-            userClass->addAttribute(attr->name, std::move(attr->value), &heart);
+            userClass->addAttribute(attr->base_type, attr->name, std::move(attr->value), symbol_table.currentScope());
         }
         // --------------
         // handle methods
@@ -278,7 +278,7 @@ void Interpreter::visitForEach(const ForEachStmt &stmt)
     {
 
         // FIXME: Remove the line below.
-        heart.createVar(stmt.varName, *value); // like "let name = item" // TODO: Use a pointer instead of *value
+        // heart.createVar(stmt.varName, *value); // like "let name = item" // TODO: Use a pointer instead of *value
 
         try
         {

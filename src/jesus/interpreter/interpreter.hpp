@@ -21,6 +21,7 @@
 #include "../ast/stmt/break_stmt.hpp"
 #include "../ast/stmt/continue_stmt.hpp"
 #include "../spirit/heart.hpp"
+#include "../spirit/symbol_table.hpp"
 
 /**
  * @brief Interprets expressions of the language and evaluates their result.
@@ -42,7 +43,7 @@
 class Interpreter : public ExprVisitor, public StmtVisitor
 {
 public:
-    explicit Interpreter(Heart *heart) : heart(*heart) {}
+    explicit Interpreter(SymbolTable &symbol_table) : symbol_table(symbol_table) {}
     /**
      * @brief Evaluates a given expression and returns its computed value.
      *
@@ -51,7 +52,7 @@ public:
      */
     Value evaluate(const std::unique_ptr<Expr> &expr);
 
-    void createVariable(const std::string &name, const Value &value);
+    void createVariable(const std::string &type, const std::string &name, const Value &value);
     void updateVariable(const std::string &name, const Value &value);
 
     /**
@@ -83,13 +84,38 @@ public:
     void execute(const std::shared_ptr<Stmt> &stmt);
     inline void loves(const std::unique_ptr<Stmt> &stmt) { execute(stmt); }
 
+    std::shared_ptr<CreationType> getVarType(const std::string &varName)
+    {
+        return symbol_table.getVarType(varName);
+    }
+
+    void registerVarType(const std::string &type, const std::string &name)
+    {
+        symbol_table.registerVarType(type, name);
+    }
+
+    void registerClassName(const std::string &className)
+    {
+        symbol_table.registerClassName(className);
+    }
+
+    void addScope(std::shared_ptr<Heart> scope)
+    {
+        symbol_table.addScope(scope);
+    }
+
+    void popScope()
+    {
+        symbol_table.popScope();
+    }
+
 private:
     /**
      * @brief It acts like a symbol table — each variable has a name (string)
      *
      * “The good man brings good things out of the good stored up in his heart…” — Luke 6:45
      */
-    Heart heart;
+    SymbolTable symbol_table;
 
     // 🟢️🟢️🟢️🟢️🟢️🟢️🟢️🟢️🟢️🟢️🟢️🟢️🟢️🟢️
     // 🟢️ Visit expression methods 🟢️
