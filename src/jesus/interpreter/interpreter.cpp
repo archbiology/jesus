@@ -3,7 +3,7 @@
 #include "runtime/instance.hpp"
 #include "runtime/method.hpp"
 #include "../ast/stmt/create_method_stmt.hpp"
-#include "../ast/stmt/output_statement.hpp"
+#include "../ast/stmt/print_stmt.hpp"
 #include "../types/known_types.hpp"
 #include "../utils/string_utils.hpp"
 
@@ -203,11 +203,11 @@ Value Interpreter::visitConditional(const ConditionalExpr &expr)
     return evaluate(expr.elseBranch);
 }
 
-void Interpreter::visitOutput(const OutputStmt &stmt)
+void Interpreter::visitPrintStmt(const PrintStmt &stmt)
 {
     Value value = evaluate(stmt.message);
 
-    std::ostream &out = (stmt.type == OutputType::WARN) ? std::cerr : std::cout;
+    std::ostream &out = (stmt.type == StmtType::WARN) ? std::cerr : std::cout;
 
     out << value.toString() << std::endl;
 }
