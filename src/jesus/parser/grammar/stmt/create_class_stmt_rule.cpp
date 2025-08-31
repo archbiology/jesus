@@ -43,6 +43,9 @@ std::unique_ptr<Stmt> CreateClassStmtRule::parse(ParserContext &ctx)
     if (!ctx.match(TokenType::COLON))
         throw std::runtime_error("Expected ':' after class name in '" + stmt + "' statement.");
 
+    auto attributes = std::make_shared<Heart>(className);
+    ctx.addScope(attributes); // <🟢️>
+
     while (!ctx.check(TokenType::AMEN) && !ctx.isAtEnd())
     {
         if (auto method = createMethod->parse(ctx))
@@ -58,6 +61,7 @@ std::unique_ptr<Stmt> CreateClassStmtRule::parse(ParserContext &ctx)
             throw std::runtime_error("Unexpected statement inside class body.");
         }
     }
+    ctx.popScope(); // </🟢️>
 
     if (ctx.isAtEnd())
     {

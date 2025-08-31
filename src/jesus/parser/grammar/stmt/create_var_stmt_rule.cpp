@@ -40,7 +40,7 @@ std::unique_ptr<Stmt> CreateVarStmtRule::parse(ParserContext &ctx)
             if (!ask_expr)
                 throw std::runtime_error("Expected a text literal or a text-typed variable after 'ask' (e.g., ask \"What is your name?\" or ask question).");
 
-            ctx.registerVarType(varName, creationType->name);
+            ctx.registerVarType(creationType->name, varName);
 
             return std::make_unique<CreateVarWithAskStmt>(*creationType, varName, std::move(ask_expr));
         }
@@ -65,7 +65,7 @@ std::unique_ptr<Stmt> CreateVarStmtRule::parse(ParserContext &ctx)
             value = std::make_unique<LiteralExpr>(evaluated); // TODO: Consider constructor and 'if' expression
         }
 
-        ctx.registerVarType(varName, creationType->name);
+        ctx.registerVarType(creationType->name, varName);
     }
 
     return std::make_unique<CreateVarStmt>(varType, varName, std::move(value));

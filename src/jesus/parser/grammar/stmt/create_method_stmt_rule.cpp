@@ -25,7 +25,8 @@ std::unique_ptr<Stmt> CreateMethodStmtRule::parse(ParserContext &ctx)
     if (!ctx.match(TokenType::LEFT_PAREN))
         throw std::runtime_error("Expected '(' after method name in 'calling' statement.");
 
-    Heart params;
+    auto params = std::make_shared<Heart>(methodName);
+    ctx.addScope(params); // <🟢️>
 
     if (!ctx.check(TokenType::RIGHT_PAREN))
     {
@@ -41,7 +42,7 @@ std::unique_ptr<Stmt> CreateMethodStmtRule::parse(ParserContext &ctx)
 
             std::string name = ctx.previous().lexeme;
 
-            params.createVar(name, Value(1)); // FIXME: Validate `type` and allow initial values
+            params->createVar(type, name, Value(1)); // FIXME: Validate `type` and allow initial values
 
         } while (ctx.match(TokenType::SEMICOLON)); // TODO: allow more args of same type: int x, y, z; string name, surname;
     }
@@ -72,6 +73,7 @@ std::unique_ptr<Stmt> CreateMethodStmtRule::parse(ParserContext &ctx)
             throw std::runtime_error("Unexpected statement inside method body.");
         }
     }
+    ctx.popScope(); // </🟢️>
 
     if (ctx.isAtEnd())
     {
