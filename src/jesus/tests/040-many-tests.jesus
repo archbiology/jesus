@@ -229,7 +229,9 @@ let there be Person:
         b = 99
         say "before update a"
         a = b
+        say "a updated"
         say a
+        say b
     amen
     purpose functionWithoutParams():
         say "I am inside functionWithoutParams"
