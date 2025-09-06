@@ -43,6 +43,7 @@ public:
     {
         auto copy = std::make_shared<Heart>(scope_name);
         copy->variables = variables;
+        copy->variableOrder = variableOrder;
         copy->semantics_analyzer = semantics_analyzer;
         return copy;
     }
@@ -116,6 +117,11 @@ public:
         return type;
     }
 
+    const std::vector<std::string> &getVariableNames() const
+    {
+        return variableOrder;
+    }
+
     const std::string toString() const
     {
         std::string str = "";
@@ -140,6 +146,7 @@ public:
     }
 
 private:
+    std::vector<std::string> variableOrder; // insertion order
     std::unordered_map<std::string, Value> variables;
     std::shared_ptr<SpiritOfUnderstanding> semantics_analyzer;
 };

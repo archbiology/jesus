@@ -250,3 +250,6 @@ say adam functionWithoutParams
 say adam aToB
 say "The new name is: "
 say adam name
+say adam aToB 7, 49
+say "The new name v2 is: "
+say adam name
