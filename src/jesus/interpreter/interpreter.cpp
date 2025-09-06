@@ -71,6 +71,16 @@ Value Interpreter::visitGetAttribute(const GetAttributeExpr &expr)
     return instance->getAttribute(expr.attribute);
 }
 
+Value Interpreter::visitMethodCallExpr(const MethodCallExpr &expr)
+{
+    Value object = expr.object->accept(*this);
+
+    std::shared_ptr<Instance> instance = object.toInstance();
+    const std::vector<Value> args;
+
+    return expr.method->call(*this, instance, args);
+}
+
 Value Interpreter::visitAsk(const AskExpr &expr)
 {
     auto question = expr.evaluate(symbol_table.currentScope());

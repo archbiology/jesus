@@ -2,7 +2,7 @@
 #include "method.hpp"
 #include "../interpreter.hpp"
 
-Value Method::call(Interpreter &interpreter, Instance instance, const std::vector<Value> args)
+Value Method::call(Interpreter &interpreter, std::shared_ptr<Instance> instance, const std::vector<Value> args)
 {
 
     for (auto stmt : body)

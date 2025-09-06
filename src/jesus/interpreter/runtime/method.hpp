@@ -24,5 +24,16 @@ public:
            std::shared_ptr<CreationType> klass)
         : name(std::move(name)), params(std::move(params)), body(std::move(body)), klass(std::move(klass)) {}
 
-    Value call(Interpreter &interp, Instance instance, std::vector<Value> args);
+    Value call(Interpreter &interp, std::shared_ptr<Instance> instance, std::vector<Value> args);
+
+    std::string toString()
+    {
+        std::string str = "{type: \"method\",\n class: \"" + klass->name + "\",\n params: {";
+        if (!params->isEmpty())
+        {
+            str += params->toString();
+        }
+        str += " }\n}";
+        return str;
+    }
 };
