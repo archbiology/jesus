@@ -129,6 +129,24 @@ public:
         methods[name] = std::move(method);
     }
 
+    bool attributeExists(const std::string &name)
+    {
+        if (primitive_type == PrimitiveType::Class)
+        {
+            return class_attributes->varExists(name);
+        }
+        return false;
+    }
+
+    std::shared_ptr<Method> findMethod(const std::string &name) const
+    {
+        auto it = methods.find(name);
+        if (it != methods.end())
+            return it->second;
+
+        return nullptr;
+    }
+
     const bool isClass() const
     {
         return primitive_type == PrimitiveType::Class;
