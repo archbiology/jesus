@@ -9,9 +9,13 @@ class MethodCallExpr : public Expr
 public:
     std::unique_ptr<Expr> object;
     std::shared_ptr<Method> method;
+    std::vector<std::unique_ptr<Expr>> args;
 
-    MethodCallExpr(std::unique_ptr<Expr> object, std::shared_ptr<Method> method)
-        : object(std::move(object)), method(std::move(method))
+    MethodCallExpr(
+        std::unique_ptr<Expr> object,
+        std::shared_ptr<Method> method,
+        std::vector<std::unique_ptr<Expr>> args)
+        : object(std::move(object)), method(std::move(method)), args(std::move(args))
     {
         if (this->method == nullptr)
         {

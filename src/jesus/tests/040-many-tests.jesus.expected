@@ -186,10 +186,13 @@ What is your age again? (Jesus) (double) 2025.000000
 }
 (Jesus) I am inside functionWithoutParams
 null
+(Jesus) ❌ Error: Missing argument for parameter 'a'
+(Jesus) The new name is: 
+(Jesus) Adam
 (Jesus) a before
-(int) 1
+(int) 7
 b before
-(int) 1
+(int) 49
 before update b
 before update a
 a updated
@@ -198,6 +201,6 @@ a updated
 Adam
 Adopted by Jesus Christ
 null
-(Jesus) The new name is: 
+(Jesus) The new name v2 is: 
 (Jesus) Adopted by Jesus Christ
 (Jesus) 

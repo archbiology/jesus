@@ -28,7 +28,22 @@ std::unique_ptr<Expr> GetAttributeRule::parse(ParserContext &ctx)
             // If it is a method
             else if (std::shared_ptr<Method> method = klass->findMethod(member))
             {
-                expr = std::make_unique<MethodCallExpr>(std::move(expr), method);
+                std::vector<std::unique_ptr<Expr>> args;
+
+                // If the next token(s) indicate arguments, parse them
+                if (!ctx.check(TokenType::NEWLINE) && !ctx.check(TokenType::END_OF_FILE))
+                {
+                    do
+                    {
+                        auto argExpr = primary->parse(ctx); // parse any expression
+                        if (!argExpr)
+                            throw std::runtime_error("Expected argument for method " + member);
+
+                        args.push_back(std::move(argExpr));
+                    } while (ctx.match(TokenType::COMMA));
+                }
+
+                expr = std::make_unique<MethodCallExpr>(std::move(expr), method, std::move(args));
             }
             else
             {

@@ -10,6 +10,8 @@ void Heart::createVar(const std::string &type, const std::string &name, const Va
 
     variables[name] = value;
     registerVarType(type, name);
+
+    variableOrder.push_back(name); // preserve insertion order to assign 'args' to method 'params' by index.
 }
 
 Value Heart::getVar(const std::string &name) const

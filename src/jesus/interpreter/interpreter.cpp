@@ -76,9 +76,13 @@ Value Interpreter::visitMethodCallExpr(const MethodCallExpr &expr)
     Value object = expr.object->accept(*this);
 
     std::shared_ptr<Instance> instance = object.toInstance();
-    const std::vector<Value> args;
+    std::vector<Value> args;
 
-    return expr.method->call(*this, instance, args);
+    // Evaluate all arguments
+    for (auto &argExpr : expr.args)
+        args.push_back(argExpr->accept(*this));
+
+    return expr.method->call(*this, instance, std::move(args));
 }
 
 Value Interpreter::visitAsk(const AskExpr &expr)
