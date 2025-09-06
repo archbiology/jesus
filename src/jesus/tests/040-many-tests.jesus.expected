@@ -184,4 +184,10 @@ What is your age again? (Jesus) (double) 2025.000000
   name: "Adam"
  }
 }
+(Jesus) I am inside functionWithoutParams
+null
+(Jesus) a before
+(int) 7
+b before
+❌ Error: Undefined variable: b (scope: global)
 (Jesus) 

@@ -163,6 +163,8 @@ private:
      */
     Value visitGetAttribute(const GetAttributeExpr &expr) override;
 
+    Value visitMethodCallExpr(const MethodCallExpr &expr) override;
+
     /**
      * @brief Evaluates an AskExpr by evaluating its prompt expression.
      *

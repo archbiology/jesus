@@ -225,9 +225,14 @@ let there be Person:
         say a
         say "b before"
         say b
+        say "before update b"
         b = 99
+        say "before update a"
         a = b
         say a
+    amen
+    purpose functionWithoutParams():
+        say "I am inside functionWithoutParams"
     amen
 amen
 say wife
@@ -236,3 +241,5 @@ say adam name
 say adam wife
 say adam age
 say adam
+say adam functionWithoutParams
+say adam aToB
