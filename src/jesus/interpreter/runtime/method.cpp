@@ -4,11 +4,11 @@
 
 Value Method::call(Interpreter &interpreter, std::shared_ptr<Instance> instance, const std::vector<Value> args)
 {
+    // 1. Add instance attributes to the scope
+    interpreter.addScope(instance->attributes);
 
-    // 1. Create a new runtime scope (frame) for this call
+    // 2. Create and push the 'params' scope (frame) for this call
     auto paramsScope = params->clone("call-" + name);
-
-    // 2. Push scope
     interpreter.addScope(paramsScope);
 
     for (auto stmt : body)
@@ -16,7 +16,8 @@ Value Method::call(Interpreter &interpreter, std::shared_ptr<Instance> instance,
         interpreter.execute(stmt);
     }
 
-    // 3. Pop scope
+    // 3. Pop 'attributes' and 'params' scope
+    interpreter.popScope();
     interpreter.popScope();
 
     return Value::formless(); // default return
