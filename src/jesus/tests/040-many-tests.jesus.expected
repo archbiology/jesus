@@ -187,7 +187,17 @@ What is your age again? (Jesus) (double) 2025.000000
 (Jesus) I am inside functionWithoutParams
 null
 (Jesus) a before
-(int) 7
+(int) 1
 b before
-❌ Error: Undefined variable: b (scope: global)
+(int) 1
+before update b
+before update a
+a updated
+(int) 99
+(int) 99
+Adam
+Adopted by Jesus Christ
+null
+(Jesus) The new name is: 
+(Jesus) Adopted by Jesus Christ
 (Jesus) 

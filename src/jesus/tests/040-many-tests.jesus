@@ -229,7 +229,12 @@ let there be Person:
         b = 99
         say "before update a"
         a = b
+        say "a updated"
         say a
+        say b
+        say name
+        name = "Adopted by Jesus Christ"
+        say name
     amen
     purpose functionWithoutParams():
         say "I am inside functionWithoutParams"
@@ -243,3 +248,5 @@ say adam age
 say adam
 say adam functionWithoutParams
 say adam aToB
+say "The new name is: "
+say adam name

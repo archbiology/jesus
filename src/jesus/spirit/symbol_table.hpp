@@ -47,11 +47,39 @@ public:
 
     Value getVar(const std::string &name) const
     {
+        // FIXME: speed it up:
+        //  1 - Store scope level 'enum class ScopeLevel { PARAMS, INSTANCE_ATTR, GLOBAL };' at parseTime on GetParamExpr|GetAttributeExpr|GetGlobalVarExpr
+        //  2 - store an index into the Heart (like int slot) at parse time, so getVar doesn’t even need to hash the 'name' at runtime — just array access.
+
+        // Iterate over the scopes in reverse order (rbegin, rend)
+        for (auto scope = scopes.rbegin(); scope != scopes.rend(); ++scope)
+        {
+            auto isVarOnScope = (*scope)->varExists(name);
+            if (isVarOnScope)
+                return (*scope)->getVar(name);
+        }
+
         return current_scope->getVar(name);
     }
 
     void updateVar(const std::string &name, const Value &value)
     {
+        // FIXME: speed it up:
+        //  1 - Store scope level 'enum class ScopeLevel { PARAMS, INSTANCE_ATTR, GLOBAL };' at parseTime on GetParamExpr|GetAttributeExpr|GetGlobalVarExpr
+        //  2 - store an index into the Heart (like int slot) at parse time, so getVar doesn’t even need to hash the 'name' at runtime — just array access.
+
+        // Iterate over the scopes in reverse order (rbegin, rend)
+        for (auto scope = scopes.rbegin(); scope != scopes.rend(); ++scope)
+        {
+            auto isVarOnScope = (*scope)->varExists(name);
+            if (isVarOnScope)
+            {
+                (*scope)->updateVar(name, value);
+
+                return;
+            }
+        }
+
         current_scope->updateVar(name, value);
     }
 
