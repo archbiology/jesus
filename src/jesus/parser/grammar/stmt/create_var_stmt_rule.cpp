@@ -14,17 +14,17 @@ std::unique_ptr<Stmt> CreateVarStmtRule::parse(ParserContext &ctx)
     if (!ctx.match(TokenType::IDENTIFIER))
         throw std::runtime_error("Expected variable type after 'create'");
 
-    std::string varType = ctx.previous().lexeme;
+    std::string varType_ = ctx.previous().lexeme;
 
     if (!ctx.match(TokenType::IDENTIFIER))
         throw std::runtime_error("Expected variable name after 'create type'");
 
     std::string varName = ctx.previous().lexeme;
 
-    auto creationType = KnownTypes::resolve(varType, "core");
-    if (!creationType)
+    auto varType = KnownTypes::resolve(varType_, "core");
+    if (!varType)
     {
-        throw std::runtime_error("Unknown variable type: '" + varType + "'");
+        throw std::runtime_error("Unknown variable type: '" + varType_ + "'");
     }
 
     std::unique_ptr<Expr> value = nullptr;
@@ -40,33 +40,40 @@ std::unique_ptr<Stmt> CreateVarStmtRule::parse(ParserContext &ctx)
             if (!ask_expr)
                 throw std::runtime_error("Expected a text literal or a text-typed variable after 'ask' (e.g., ask \"What is your name?\" or ask question).");
 
-            ctx.registerVarType(creationType->name, varName);
+            ctx.registerVarType(varType->name, varName);
 
-            return std::make_unique<CreateVarWithAskStmt>(*creationType, varName, std::move(ask_expr));
+            return std::make_unique<CreateVarWithAskStmt>(varType, varName, std::move(ask_expr));
         }
         value = expression->parse(ctx);
         if (!value)
             throw std::runtime_error("Expected expression after '=' in create statement.");
+
+        auto valueType = value->getReturnType(ctx);
+        bool typesMatch = varType == valueType;
+        if (!typesMatch)
+        {
+            throw std::runtime_error("Invalid value type \"" + valueType->name + "\" to variable '" + varName + "' declared as type " + varType->name);
+        }
 
         // Evaluating functions that could send an 'ok' to bomb explosions is not safe.
         // Let's warn this until we can check the return type from functions
         std::cerr << "🔴️ FIXME: Should not call interpreter here. Remove this once functions and static type inference are implemented.\n";
 
         Value evaluated = ctx.interpreter->evaluate(value);
-        if (!creationType->validate(evaluated))
+        if (!varType->validate(evaluated))
         {
             throw std::runtime_error("Error: Invalid value value \"" + evaluated.toString() + "\" to variable '" + varName + "' declared as type " + creationType->name);
         }
 
-        if (creationType->isClass())
+        if (varType->isClass())
         {
-            auto instance = std::make_shared<Instance>(creationType);
+            auto instance = std::make_shared<Instance>(varType);
             evaluated = Value(instance);
-            value = std::make_unique<LiteralExpr>(evaluated); // TODO: Consider constructor and 'if' expression
+            value = std::make_unique<LiteralExpr>(evaluated, value->getReturnType(ctx)); // TODO: Consider constructor and 'if' expression
         }
 
-        ctx.registerVarType(creationType->name, varName);
+        ctx.registerVarType(varType->name, varName);
     }
 
-    return std::make_unique<CreateVarStmt>(varType, varName, std::move(value));
+    return std::make_unique<CreateVarStmt>(varType_, varName, std::move(value));
 }

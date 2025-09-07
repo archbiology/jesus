@@ -1,7 +1,6 @@
 #include "update_var_stmt_rule.hpp"
 #include "../../../ast/stmt/update_var_stmt.hpp"
 #include "../../../ast/stmt/update_var_with_ask_stmt.hpp"
-#include "../../../interpreter/interpreter.hpp"
 #include <stdexcept>
 
 std::unique_ptr<Stmt> UpdateVarStmtRule::parse(ParserContext &ctx)
@@ -14,7 +13,6 @@ std::unique_ptr<Stmt> UpdateVarStmtRule::parse(ParserContext &ctx)
     if (!ctx.match(TokenType::EQUAL))
         return nullptr;
 
-    // return KnownTypes::resolve(varName);
     auto varType = ctx.getVarType(varName);
     if (!varType)
     {
@@ -37,13 +35,11 @@ std::unique_ptr<Stmt> UpdateVarStmtRule::parse(ParserContext &ctx)
     if (!value)
         throw std::runtime_error("Expected expression after '=' in update statement.");
 
-    // Evaluating functions that could send an 'ok' to bomb explosions is not safe.
-    // Let's warn this until we can check the return type from functions
-    std::cerr << "🔴️ FIXME: Should not call interpreter here. Remove this once functions and static type inference are implemented.\n";
-    Value evaluated = ctx.interpreter->evaluate(value);
-    if (!varType->validate(evaluated))
+    auto valueType = value->getReturnType(ctx);
+    bool typesMatch = varType == valueType;
+    if (!typesMatch)
     {
-        throw std::runtime_error("Variable '" + varName+ "' expects a " + varType->name + ", but got: '" + evaluated.toString() + "'.");
+        throw std::runtime_error("Variable '" + varName + "' expects a " + varType->name + ", but got: '" + valueType->name + "'.");
     }
 
     return std::make_unique<UpdateVarStmt>(varName, std::move(value));
