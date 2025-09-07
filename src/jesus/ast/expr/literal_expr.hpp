@@ -15,6 +15,7 @@ class LiteralExpr : public Expr
 {
 public:
     Value value;
+    std::shared_ptr<CreationType> type;
 
     /**
      * @brief Construct a new LiteralExpr with a given value.
@@ -27,12 +28,23 @@ public:
      *
      * @param value  The literal value (e.g., 7, "Jesus", true, "Wisdom").
      */
-    explicit LiteralExpr(Value value) : value(value) {}
+    explicit LiteralExpr(Value value, std::shared_ptr<CreationType> type)
+        : value(value), type(std::move(type)) {}
 
     Value evaluate(std::shared_ptr<Heart> heart) const override
     {
         return value;
     }
+
+    Value accept(ExprVisitor &visitor) const override;
+
+    /**
+     * @brief Get the return type of the expression, so that variable
+     *  creation and update can be enforced at parse time.
+     *
+     * "Flesh gives birth to flesh, but the Spirit gives birth to spirit." — John 3:6
+     */
+    std::shared_ptr<CreationType> getReturnType(ParserContext &ctx) const override;
 
     /**
      * @brief Returns a string representation of the expression.
@@ -41,6 +53,4 @@ public:
      * secret that will not be known and come to light." — Luke 8:17
      */
     virtual std::string toString() const override { return "LiteralExpr(" + value.toString() + ")"; }
-
-    Value accept(ExprVisitor &visitor) const override;
 };

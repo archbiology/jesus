@@ -16,11 +16,11 @@
 class CreateVarWithAskStmt : public Stmt
 {
 public:
-    const CreationType var_type;
+    const std::shared_ptr<CreationType> var_type;
     std::string var_name;
     std::shared_ptr<Expr> ask_expr; // Type is AskExpr
 
-    CreateVarWithAskStmt(const CreationType type, std::string name, std::unique_ptr<Expr> ask_expr)
+    CreateVarWithAskStmt(const std::shared_ptr<CreationType> type, std::string name, std::unique_ptr<Expr> ask_expr)
         : var_type(type), var_name(name), ask_expr(std::move(ask_expr)) {}
 
     void accept(StmtVisitor &visitor) const override;

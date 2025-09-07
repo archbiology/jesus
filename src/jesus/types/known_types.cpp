@@ -1,4 +1,7 @@
 #include "known_types.hpp"
+#include "atomic/literals/truth.hpp"
+#include "atomic/literals/sex.hpp"
+#include "atomic/literals/weekday.hpp"
 #include "atomic/numbers/number_type.hpp"
 #include "atomic/numbers/real_type.hpp"
 #include "atomic/numbers/natural_type.hpp"
@@ -7,19 +10,48 @@
 #include "atomic/strings/text_type.hpp"
 #include "atomic/strings/word_type.hpp"
 #include "atomic/strings/phrase_type.hpp"
+#include "composite/class_type.hpp"
 #include <memory>
 
 void KnownTypes::registerBuiltInTypes()
 {
-    registerType(std::make_unique<WordType>());
-    registerType(std::make_unique<PhraseType>());
-    registerType(std::make_unique<TextType>());
+    auto truth = std::make_shared<TruthType>();
+    auto sex = std::make_shared<SexType>();
+    auto weekday = std::make_shared<WeekdayType>();
 
-    registerType(std::make_unique<RealType>());
-    registerType(std::make_unique<NumberType>());
-    registerType(std::make_unique<NaturalType>());
-    registerType(std::make_unique<PercentageType>());
-    registerType(std::make_unique<DecimalType>());
+    auto integer = std::make_shared<NumberType>();
+    auto natural = std::make_shared<NaturalType>();
+    auto floating = std::make_shared<RealType>();
+    auto text = std::make_shared<TextType>();
+
+    auto klass = std::make_shared<ClassType>();
+
+    BOOLEAN = TRUTH = truth;
+    BORN = SEX = sex;
+    WEEKDAY = weekday;
+
+    INT = integer;
+    NATURAL = natural;
+    FLOAT = floating;
+    DOUBLE = floating; // TODO: Really differentiate 'float' from 'double'
+    STRING = text;
+    CLASS = klass;
+
+    registerType(truth);
+    registerType(sex);
+    registerType(weekday);
+
+    registerType(integer);
+    registerType(natural);
+    registerType(floating);
+    registerType(std::make_shared<PercentageType>());
+    registerType(std::make_shared<DecimalType>());
+
+    registerType(text);
+    registerType(std::make_shared<WordType>());
+    registerType(std::make_shared<PhraseType>());
+
+    registerType(klass);
 }
 
 void KnownTypes::registerType(std::shared_ptr<CreationType> type)

@@ -95,21 +95,26 @@ public:
             return Value(leftVal >= rightVal);
         }
 
-        if (op.type == TokenType::OR) {
+        if (op.type == TokenType::OR)
+        {
             return leftVal.AS_BOOLEAN ? leftVal : rightVal;
         }
 
-        if (op.type == TokenType::AND) {
+        if (op.type == TokenType::AND)
+        {
             return leftVal.AS_BOOLEAN ? rightVal : leftVal;
         }
 
-        if (op.type == TokenType::VERSUS) {
-            if (leftVal.IS_BOOLEAN && rightVal.IS_BOOLEAN) {
+        if (op.type == TokenType::VERSUS)
+        {
+            if (leftVal.IS_BOOLEAN && rightVal.IS_BOOLEAN)
+            {
                 // Logical XOR
                 return Value(leftVal.AS_BOOLEAN != rightVal.AS_BOOLEAN);
             }
 
-            if (leftVal.IS_NUMBER && rightVal.IS_NUMBER) {
+            if (leftVal.IS_NUMBER && rightVal.IS_NUMBER)
+            {
                 // Bitwise XOR
                 return Value(leftVal.toInt() ^ rightVal.toInt());
             }
@@ -120,6 +125,16 @@ public:
         // TODO: Support plus, minus, multiply, divide, is, has, etc
         throw std::runtime_error("Unknown binary operator: " + op.lexeme);
     }
+
+    Value accept(ExprVisitor &visitor) const override;
+
+    /**
+     * @brief Get the return type of the expression, so that variable
+     *  creation and update can be enforced at parse time.
+     *
+     * "Flesh gives birth to flesh, but the Spirit gives birth to spirit." — John 3:6
+     */
+    std::shared_ptr<CreationType> getReturnType(ParserContext &ctx) const override;
 
     /**
      * @brief Returns a string representation of the node.
@@ -143,6 +158,4 @@ public:
 
         return str;
     }
-
-    Value accept(ExprVisitor &visitor) const override;
 };

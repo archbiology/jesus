@@ -221,7 +221,7 @@ private:
      *
      * This enables type-safe variable assignment with built-in validation.
      */
-    Value askAndValidate(const std::shared_ptr<Expr> ask_expr, const CreationType &var_type);
+    Value askAndValidate(const std::shared_ptr<Expr> ask_expr, std::shared_ptr<CreationType> var_type);
 
     /**
      * @brief Handles the creation of a variable initialized via an 'ask' expression.

@@ -107,7 +107,7 @@ void Interpreter::visitCreateVar(const CreateVarStmt &stmt)
     createVariable(stmt.base_type, stmt.name, val);
 }
 
-Value Interpreter::askAndValidate(const std::shared_ptr<Expr> ask_expr, const CreationType &var_type)
+Value Interpreter::askAndValidate(const std::shared_ptr<Expr> ask_expr, std::shared_ptr<CreationType> var_type)
 {
     // Step 1: Evaluate the ask expression (e.g., ask "Your age?")
     Value question = ask_expr->evaluate(symbol_table.currentScope());
@@ -125,8 +125,8 @@ Value Interpreter::askAndValidate(const std::shared_ptr<Expr> ask_expr, const Cr
         try
         {
             // Step 4: Validate the value according to the variable type
-            Value value = var_type.parseFromString(answer);
-            var_type.validate(value);
+            Value value = var_type->parseFromString(answer);
+            var_type->validate(value);
 
             // Step 5: return validated value
             return value;
@@ -141,7 +141,7 @@ Value Interpreter::askAndValidate(const std::shared_ptr<Expr> ask_expr, const Cr
 void Interpreter::visitCreateVarWithAsk(const CreateVarWithAskStmt &stmt)
 {
     Value value = askAndValidate(stmt.ask_expr, stmt.var_type);
-    createVariable(stmt.var_type.name, stmt.var_name, value);
+    createVariable(stmt.var_type->name, stmt.var_name, value);
 }
 
 void Interpreter::visitUpdateVarWithAsk(const UpdateVarWithAskStmt &stmt)
@@ -178,7 +178,9 @@ void Interpreter::visitCreateClass(const CreateClassStmt &stmt)
                 methodStmt->name,
                 methodStmt->params,
                 methodStmt->body,
-                userClass);
+                userClass,
+                KnownTypes::BOOLEAN // FIXME: Allow methods to define return types
+            );
 
             userClass->addMethod(methodStmt->name, method);
         }

@@ -135,19 +135,19 @@
 (Jesus) ❌ Error: Undefined variable: abc (scope: global)
 (Jesus) (Jesus) (int) 9
 (Jesus) (Jesus) (Jesus) (double) -6.000000
-(Jesus) ❌ Error: Expected value < (double) 0.000000
+(Jesus) ❌ Error: Variable 'debit' expects a Negative, but got: 'number'.
 (Jesus) (Jesus) (Jesus) (int) 7
 (Jesus) ❌ Error: Expected value >= (double) 7.000000
 (Jesus) (Jesus) (Jesus) ❌ Error: Expected value <= (double) 12.000000
 (Jesus) (int) 12
-(Jesus) (Jesus) (Jesus) ❌ Error: Value "no" does not match expected pattern.
+(Jesus) (Jesus) (Jesus) ❌ Error: Variable 'sure' expects a Confirm, but got: 'text'.
 (Jesus) Yes
 (Jesus) (Jesus) What is your age? (Jesus) (double) 18.000000
 (Jesus) Qual sua idade? Validation failed: Invalid number: 'seven'
 Qual sua idade? Validation failed: Invalid number: 'fourteen'
 Qual sua idade? (Jesus) (double) 33.000000
-(Jesus) ❌ Error: Variable 'PI' not found. Are you really sure it was declared?
-(Jesus) ❌ Error: Variable 'temperature' not found. Are you really sure it was declared?
+(Jesus) ❌ Error: Variable 'PI' not found. Are you really sure it has been declared?
+(Jesus) ❌ Error: Variable 'temperature' not found. Are you really sure it has been declared?
 (Jesus) What is your age again? Validation failed: Invalid number: 'fourty'
 What is your age again? Validation failed: Invalid number: 'eternal'
 What is your age again? (Jesus) (double) 2025.000000
@@ -197,9 +197,11 @@ before update b
 before update a
 a updated
 (int) 99
-(int) 99
+(int) 7
 Adam
 Adopted by Jesus Christ
+(int) 7
+(int) 930
 null
 (Jesus) The new name v2 is: 
 (Jesus) Adopted by Jesus Christ

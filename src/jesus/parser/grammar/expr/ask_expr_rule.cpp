@@ -2,7 +2,7 @@
 #include "../../../ast/expr/ask_expr.hpp"
 #include "../../../ast/expr/literal_expr.hpp"
 #include "../../../ast/expr/variable_expr.hpp"
-#include "../../../types/creation_type.hpp"
+#include "../../../types/known_types.hpp"
 
 #include <memory>
 
@@ -14,7 +14,7 @@ std::unique_ptr<Expr> AskExprRule::parse(ParserContext &ctx)
     if (ctx.match(TokenType::STRING))
     {
         Value prompt = ctx.previous().literal;
-        return std::make_unique<AskExpr>(std::make_unique<LiteralExpr>(prompt));
+        return std::make_unique<AskExpr>(std::make_unique<LiteralExpr>(prompt, KnownTypes::STRING));
     }
 
     if (!ctx.match(TokenType::IDENTIFIER))

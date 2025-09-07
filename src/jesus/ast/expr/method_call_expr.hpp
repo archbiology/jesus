@@ -32,4 +32,12 @@ public:
     }
 
     Value accept(ExprVisitor &visitor) const override;
+
+    /**
+     * @brief Get the method return type, so that variable
+     *  creation and update can be enforced at parse time.
+     *
+     * "Flesh gives birth to flesh, but the Spirit gives birth to spirit." — John 3:6
+     */
+    std::shared_ptr<CreationType> getReturnType(ParserContext &ctx) const override;
 };

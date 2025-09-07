@@ -43,40 +43,50 @@ public:
           thenBranch(std::move(thenBranch)),
           elseBranch(std::move(elseBranch)) {}
 
-  /**
-   * @brief  Evaluates a condition and returns the result of either the
-   * `thenBranch` or `elseBranch` branch based on the logic outcome of the condition.
-   *
-   * - If the condition evaluates to "true", it evaluates and returns the `thenBranch` branch.
-   * - If the condition evaluates to anything else (or fails), it evaluates and returns the `elseBranch` branch if available.
-   *
-   * @param heart The "Symbol table"
-   * @return std::optional<std::string>
-   */
-  Value evaluate(std::shared_ptr<Heart> heart) const override
-  {
-    Value result = condition->evaluate(heart);
-
-    if (result.AS_BOOLEAN)
+    /**
+     * @brief  Evaluates a condition and returns the result of either the
+     * `thenBranch` or `elseBranch` branch based on the logic outcome of the condition.
+     *
+     * - If the condition evaluates to "true", it evaluates and returns the `thenBranch` branch.
+     * - If the condition evaluates to anything else (or fails), it evaluates and returns the `elseBranch` branch if available.
+     *
+     * @param heart The "Symbol table"
+     * @return std::optional<std::string>
+     */
+    Value evaluate(std::shared_ptr<Heart> heart) const override
     {
-      return thenBranch->evaluate(heart);
+        Value result = condition->evaluate(heart);
+
+        if (result.AS_BOOLEAN)
+        {
+            return thenBranch->evaluate(heart);
+        }
+
+        if (elseBranch)
+        {
+            return elseBranch->evaluate(heart);
+        }
+
+        return Value::formless();
     }
 
-    if (elseBranch)
-    {
-      return elseBranch->evaluate(heart);
-    }
+    Value accept(ExprVisitor &visitor) const override;
 
-    return Value::formless();
-  }
+    /**
+     * @brief Get the return type of the expression, so that variable
+     *  creation and update can be enforced at parse time.
+     *
+     * "Flesh gives birth to flesh, but the Spirit gives birth to spirit." — John 3:6
+     */
+    std::shared_ptr<CreationType> getReturnType(ParserContext &ctx) const override;
 
-  /**
-   * @brief Returns a string representation of the expression.
-   *
-   * "For nothing is hidden that will not be made manifest, nor is anything
-   * secret that will not be known and come to light." — Luke 8:17
-   */
-  virtual std::string toString() const override
+    /**
+     * @brief Returns a string representation of the expression.
+     *
+     * "For nothing is hidden that will not be made manifest, nor is anything
+     * secret that will not be known and come to light." — Luke 8:17
+     */
+    virtual std::string toString() const override
     {
         std::string str = "ConditionalExpr";
 
@@ -91,6 +101,4 @@ public:
 
         return str;
     }
-
-  Value accept(ExprVisitor &visitor) const override;
 };

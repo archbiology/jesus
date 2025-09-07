@@ -72,6 +72,16 @@ public:
         throw std::runtime_error("Unknown unary operator: " + op.lexeme);
     }
 
+    Value accept(ExprVisitor &visitor) const override;
+
+    /**
+     * @brief Get the return type of the expression, so that variable
+     *  creation and update can be enforced at parse time.
+     *
+     * "Flesh gives birth to flesh, but the Spirit gives birth to spirit." — John 3:6
+     */
+    std::shared_ptr<CreationType> getReturnType(ParserContext &ctx) const override;
+
     /**
      * @brief Returns a string representation of the expression.
      *
@@ -79,6 +89,4 @@ public:
      * secret that will not be known and come to light." — Luke 8:17
      */
     virtual std::string toString() const override { return "UnaryExpr(" + op.lexeme + ")"; }
-
-    Value accept(ExprVisitor &visitor) const override;
 };

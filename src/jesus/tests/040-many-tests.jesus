@@ -223,6 +223,8 @@ let there be Person:
     purpose aToB(number a; number b):
         say "a before"
         say a
+        create number c = 1
+        create number d = a
         say "b before"
         say b
         say "before update b"
@@ -231,10 +233,15 @@ let there be Person:
         a = b
         say "a updated"
         say a
+        b = d
         say b
         say name
         name = "Adopted by Jesus Christ"
         say name
+        c = d
+        say c
+        c = age
+        say c
     amen
     purpose functionWithoutParams():
         say "I am inside functionWithoutParams"

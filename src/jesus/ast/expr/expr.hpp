@@ -2,7 +2,8 @@
 #include <string>
 #include "../../spirit/heart.hpp"
 
-class ExprVisitor; // Forward declaration
+class ExprVisitor;   // Forward declaration
+class ParserContext; // Forward declaration
 
 /**
  * @brief The base class for all expression types in the AST.
@@ -27,6 +28,14 @@ public:
     virtual Value evaluate(std::shared_ptr<Heart> heart) const = 0;
 
     virtual Value accept(ExprVisitor &visitor) const = 0;
+
+    /**
+     * @brief Get the return type of the expression, so that variable
+     *  creation and update can be enforced at parse time.
+     *
+     * "Flesh gives birth to flesh, but the Spirit gives birth to spirit." — John 3:6
+     */
+    virtual std::shared_ptr<CreationType> getReturnType(ParserContext &ctx) const = 0;
 
     virtual ~Expr() = default;
 
