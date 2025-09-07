@@ -93,7 +93,7 @@ public:
                 return type;
         }
 
-        return nullptr;
+        throw std::runtime_error("Variable '" + varName + "' not found. Are you really sure it has been declared?");
     }
 
     void registerVarType(const std::string &type, const std::string &name)

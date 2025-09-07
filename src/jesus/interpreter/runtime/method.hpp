@@ -17,14 +17,28 @@ public:
     const std::vector<std::shared_ptr<Stmt>> body;
 
     const std::shared_ptr<CreationType> klass;
+    const std::shared_ptr<CreationType> returnType;
 
     Method(std::string name,
            std::shared_ptr<Heart> params,
            std::vector<std::shared_ptr<Stmt>> body,
-           std::shared_ptr<CreationType> klass)
-        : name(std::move(name)), params(std::move(params)), body(std::move(body)), klass(std::move(klass)) {}
+           std::shared_ptr<CreationType> klass,
+           std::shared_ptr<CreationType> returnType)
+        : name(std::move(name)), params(std::move(params)),
+          body(std::move(body)), klass(std::move(klass)), returnType(std::move(returnType)) {}
 
     Value call(Interpreter &interp, std::shared_ptr<Instance> instance, std::vector<Value> args);
+
+    /**
+     * @brief Get the return type, so that variable
+     *  creation and update can be enforced at parse time.
+     *
+     * "Flesh gives birth to flesh, but the Spirit gives birth to spirit." — John 3:6
+     */
+    std::shared_ptr<CreationType> getReturnType(ParserContext &ctx)
+    {
+        return returnType;
+    }
 
     std::string toString()
     {

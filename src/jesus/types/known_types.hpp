@@ -33,6 +33,8 @@ public:
     inline static std::shared_ptr<CreationType> DOUBLE;
 
     inline static std::shared_ptr<CreationType> STRING;
+
+    inline static std::shared_ptr<CreationType> CLASS;
     // -------------------------------------------------------------------
 
 private:

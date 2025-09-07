@@ -10,6 +10,7 @@
 #include "atomic/strings/text_type.hpp"
 #include "atomic/strings/word_type.hpp"
 #include "atomic/strings/phrase_type.hpp"
+#include "composite/class_type.hpp"
 #include <memory>
 
 void KnownTypes::registerBuiltInTypes()
@@ -23,6 +24,8 @@ void KnownTypes::registerBuiltInTypes()
     auto floating = std::make_shared<RealType>();
     auto text = std::make_shared<TextType>();
 
+    auto klass = std::make_shared<ClassType>();
+
     BOOLEAN = TRUTH = truth;
     BORN = SEX = sex;
     WEEKDAY = weekday;
@@ -32,6 +35,7 @@ void KnownTypes::registerBuiltInTypes()
     FLOAT = floating;
     DOUBLE = floating; // TODO: Really differentiate 'float' from 'double'
     STRING = text;
+    CLASS = klass;
 
     registerType(truth);
     registerType(sex);
@@ -46,6 +50,8 @@ void KnownTypes::registerBuiltInTypes()
     registerType(text);
     registerType(std::make_shared<WordType>());
     registerType(std::make_shared<PhraseType>());
+
+    registerType(klass);
 }
 
 void KnownTypes::registerType(std::shared_ptr<CreationType> type)
