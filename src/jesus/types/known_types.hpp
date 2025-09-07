@@ -16,6 +16,25 @@ public:
 
     static bool isValid(const CreationType *type, const Value &value);
 
+    // -------------------------------------------------------------------
+    // Direct access for common types for fast type analysis at parse time
+    // -------------------------------------------------------------------
+    inline static std::shared_ptr<CreationType> SEX;
+    inline static std::shared_ptr<CreationType> BORN;
+
+    inline static std::shared_ptr<CreationType> TRUTH;
+    inline static std::shared_ptr<CreationType> BOOLEAN;
+
+    inline static std::shared_ptr<CreationType> WEEKDAY;
+
+    inline static std::shared_ptr<CreationType> INT;
+    inline static std::shared_ptr<CreationType> NATURAL; // unsigned int
+    inline static std::shared_ptr<CreationType> FLOAT;
+    inline static std::shared_ptr<CreationType> DOUBLE;
+
+    inline static std::shared_ptr<CreationType> STRING;
+    // -------------------------------------------------------------------
+
 private:
     /**
      * @brief  Joins module and type name (e.g. core.born)

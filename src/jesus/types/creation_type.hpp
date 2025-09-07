@@ -8,9 +8,10 @@ class Method; // Forward declaration
 
 enum class PrimitiveType
 {
-    Class,
+    Boolean,
     Number,
-    Text
+    Text,
+    Class
 };
 
 class CreationType
