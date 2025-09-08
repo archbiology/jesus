@@ -9,6 +9,9 @@ public:
 
     bool validate(const Value &value) const override
     {
-        return Value(0) <= value && value <= Value(100);
+        if (Value(0) <= value && value <= Value(100))
+            return true;
+
+        throw std::runtime_error("Expected a number between 0 and 100.");
     }
 };

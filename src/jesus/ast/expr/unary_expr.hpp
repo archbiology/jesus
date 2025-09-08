@@ -74,6 +74,11 @@ public:
 
     Value accept(ExprVisitor &visitor) const override;
 
+    bool canEvaluateAtParseTime() const override
+    {
+        return right->canEvaluateAtParseTime();
+    }
+
     /**
      * @brief Get the return type of the expression, so that variable
      *  creation and update can be enforced at parse time.
@@ -88,5 +93,5 @@ public:
      * "For nothing is hidden that will not be made manifest, nor is anything
      * secret that will not be known and come to light." — Luke 8:17
      */
-    virtual std::string toString() const override { return "UnaryExpr(" + op.lexeme + ")"; }
+    virtual std::string toString() const override { return "UnaryExpr(" + op.lexeme + ", " + right->toString() + ")"; }
 };

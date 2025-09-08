@@ -14,7 +14,7 @@
 class LiteralExpr : public Expr
 {
 public:
-    Value value;
+    const Value value;
     std::shared_ptr<CreationType> type;
 
     /**
@@ -28,8 +28,8 @@ public:
      *
      * @param value  The literal value (e.g., 7, "Jesus", true, "Wisdom").
      */
-    explicit LiteralExpr(Value value, std::shared_ptr<CreationType> type)
-        : value(value), type(std::move(type)) {}
+    explicit LiteralExpr(const Value value, std::shared_ptr<CreationType> type)
+        : value(value), type(std::move(type)), Expr(ExprKind::Literal) {}
 
     Value evaluate(std::shared_ptr<Heart> heart) const override
     {
