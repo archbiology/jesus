@@ -8,6 +8,7 @@
 #include "../ast/expr/variable_expr.hpp"
 #include "../ast/expr/grouping_expr.hpp"
 #include "../ast/expr/ask_expr.hpp"
+#include "../ast/expr/create_instance_expr.hpp"
 #include "../ast/expr/get_attr_expr.hpp"
 #include "../ast/expr/method_call_expr.hpp"
 
@@ -53,6 +54,7 @@ public:
     virtual Value visitConditional(const ConditionalExpr &expr) = 0;
     virtual Value visitVariable(const VariableExpr &expr) = 0;
     virtual Value visitAsk(const AskExpr &expr) = 0;
+    virtual Value visitCreateInstanceExpr(const CreateInstanceExpr &expr) = 0;
     virtual Value visitGetAttribute(const GetAttributeExpr &expr) = 0;
     virtual Value visitMethodCallExpr(const MethodCallExpr &expr) = 0;
 

@@ -1,0 +1,32 @@
+#pragma once
+
+#include "expr.hpp"
+
+class CreateInstanceExpr : public Expr
+{
+public:
+    const std::shared_ptr<CreationType> klass;
+    std::unique_ptr<Expr> constructorArgs;
+
+public:
+    explicit CreateInstanceExpr(std::shared_ptr<CreationType> klass, std::unique_ptr<Expr> constructorArgs = nullptr)
+        : klass(std::move(klass)), constructorArgs(std::move(constructorArgs)) {}
+
+    Value evaluate(std::shared_ptr<Heart> scope) const override
+    {
+        throw std::runtime_error("CreateInstanceExpr cannot be directly evaluated without a Visitor.");
+    }
+
+    Value accept(ExprVisitor &visitor) const override;
+
+    /**
+     * @brief Get the return type of the expression, so that variable
+     *  creation and update can be enforced at parse time.
+     *
+     * "Flesh gives birth to flesh, but the Spirit gives birth to spirit." — John 3:6
+     */
+    std::shared_ptr<CreationType> getReturnType(ParserContext &ctx) const override
+    {
+        return klass;
+    }
+};

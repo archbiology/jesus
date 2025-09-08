@@ -62,6 +62,11 @@ Value Interpreter::visitVariable(const VariableExpr &expr)
     return symbol_table.getVar(expr.name);
 }
 
+Value Interpreter::visitCreateInstanceExpr(const CreateInstanceExpr &expr) {
+    auto instance = std::make_shared<Instance>(expr.klass);
+    return Value(instance);
+}
+
 Value Interpreter::visitGetAttribute(const GetAttributeExpr &expr)
 {
     Value obj = expr.object->accept(*this);

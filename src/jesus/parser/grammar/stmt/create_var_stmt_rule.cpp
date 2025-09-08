@@ -1,9 +1,8 @@
 #include "create_var_stmt_rule.hpp"
 #include "../../../ast/stmt/create_var_stmt.hpp"
 #include "../../../ast/stmt/create_var_with_ask_stmt.hpp"
-#include "../../../ast/expr/literal_expr.hpp"
+#include "../../../ast/expr/create_instance_expr.hpp"
 #include "../../../types/known_types.hpp"
-#include "../../../interpreter/runtime/instance.hpp"
 #include <stdexcept>
 
 std::unique_ptr<Stmt> CreateVarStmtRule::parse(ParserContext &ctx)
@@ -51,9 +50,7 @@ std::unique_ptr<Stmt> CreateVarStmtRule::parse(ParserContext &ctx)
         std::string value_str = "";
         if (varType->isClass())
         {
-            auto instance = std::make_shared<Instance>(varType); // FIXME: Creating an instance at parse time here.
-            Value object = Value(instance);
-            value = std::make_unique<LiteralExpr>(object, KnownTypes::CLASS); // TODO: Consider constructor and 'if' expression
+            value = std::make_unique<CreateInstanceExpr>(varType);
         }
         // ------------------------------------------------------------
         // If the 'value' is a literal, validate it now, at parse time.
