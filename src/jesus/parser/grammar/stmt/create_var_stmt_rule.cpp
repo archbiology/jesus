@@ -1,9 +1,8 @@
 #include "create_var_stmt_rule.hpp"
 #include "../../../ast/stmt/create_var_stmt.hpp"
 #include "../../../ast/stmt/create_var_with_ask_stmt.hpp"
+#include "../../../ast/expr/create_instance_expr.hpp"
 #include "../../../types/known_types.hpp"
-#include "../../../interpreter/interpreter.hpp"
-#include "../../../interpreter/runtime/instance.hpp"
 #include <stdexcept>
 
 std::unique_ptr<Stmt> CreateVarStmtRule::parse(ParserContext &ctx)
@@ -48,30 +47,32 @@ std::unique_ptr<Stmt> CreateVarStmtRule::parse(ParserContext &ctx)
         if (!value)
             throw std::runtime_error("Expected expression after '=' in create statement.");
 
+        std::string value_str = "";
         if (varType->isClass())
         {
-            auto instance = std::make_shared<Instance>(varType);
-            Value object = Value(instance);
-            value = std::make_unique<LiteralExpr>(object, KnownTypes::CLASS); // TODO: Consider constructor and 'if' expression
+            value = std::make_unique<CreateInstanceExpr>(varType);
         }
-        else
+        // ------------------------------------------------------------
+        // If the 'value' is a literal, validate it now, at parse time.
+        // ------------------------------------------------------------
+        else if (value->canEvaluateAtParseTime())
         {
-            // Evaluating functions that could send an 'ok' to bomb explosions is not safe.
-            // Let's warn this until we can check the return type from functions
-            std::cerr << "🔴️ FIXME: Should not call interpreter here. Remove this once functions and static type inference are implemented.\n";
+            auto empty_scope = std::make_shared<Heart>("creating_var");
+            Value literal = value->evaluate(empty_scope);
 
-            Value evaluated = ctx.interpreter->evaluate(value);
-            if (!varType->validate(evaluated))
-            {
-                throw std::runtime_error("Error: Invalid value value \"" + evaluated.toString() + "\" to variable '" + varName + "' declared as type " + varType->name);
-            }
+            varType->validate(literal);
+
+            value_str = "'" + literal.toString() + "'";
         }
 
         auto valueType = value->getReturnType(ctx);
         bool typesMatch = varType->primitive_type == valueType->primitive_type; // FIXME: Negative and Positive would detect as same type
         if (!typesMatch)
         {
-            throw std::runtime_error("Invalid value type \"" + valueType->name + "\" to variable '" + varName + "' declared as type " + varType->name);
+            if (value_str.empty())
+                value_str = "type '" + valueType->name+"'";
+
+            throw std::runtime_error("Invalid value " + value_str + " for variable '" + varName + "' declared as type " + varType->name);
         }
 
         ctx.registerVarType(varType->name, varName);

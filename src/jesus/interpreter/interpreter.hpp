@@ -155,6 +155,8 @@ private:
      */
     Value visitVariable(const VariableExpr &expr) override;
 
+    Value visitCreateInstanceExpr(const CreateInstanceExpr &expr) override;
+
     /**
      * @brief Resolves the value of an attribute.
      *

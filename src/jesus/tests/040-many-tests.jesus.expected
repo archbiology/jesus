@@ -91,14 +91,12 @@
 (Jesus) (int) 132
 (Jesus) adult
 (Jesus) ❌ Error: Expected new type name after 'create with_no_type'
-(Jesus) ❌ Error: Error: Invalid value value "wrong value" to variable 'count' declared as type number
+(Jesus) ❌ Error: Expected an integer value.
 (Jesus) (Jesus) ❌ Error: Undefined variable: count (scope: global)
 (Jesus) (int) 1
 (Jesus) (Jesus) (int) 0
-(Jesus) ❌ Error: Error: Invalid value value "(double) 3.140000" to variable 'PI' declared as type number
-(Jesus) ❌ Error: Undefined variable: PI (scope: global)
-(Jesus) ❌ Error: Error: Invalid value value "(double) -6.000000" to variable 'temperature' declared as type number
-(Jesus) ❌ Error: Undefined variable: temperature (scope: global)
+(Jesus) (Jesus) (double) 3.140000
+(Jesus) (Jesus) (double) -6.000000
 (Jesus) ❌ Error: Unknown base type: 'positive'
 (Jesus) ❌ Error: Undefined variable: elders (scope: global)
 (Jesus) ❌ Error: Unknown base type: 'positive'
@@ -110,21 +108,21 @@
 (Jesus) ❌ Error: Unknown base type: 'negative'
 (Jesus) ❌ Error: Undefined variable: void (scope: global)
 (Jesus) (Jesus) (int) 7
-(Jesus) ❌ Error: Error: Invalid value value "(double) -13.000000" to variable 'darkness' declared as type natural
+(Jesus) ❌ Error: Expected value >= (double) 0.000000
 (Jesus) ❌ Error: Undefined variable: darkness (scope: global)
 (Jesus) (Jesus) (double) 0.333000
-(Jesus) ❌ Error: Error: Invalid value value "(double) -0.333000" to variable 'fallen_wise' declared as type percentage
+(Jesus) ❌ Error: Expected a number between 0 and 100.
 (Jesus) ❌ Error: Undefined variable: fallen_wise (scope: global)
-(Jesus) (Jesus) ❌ Error: Error: Invalid value value "(int) 101" to variable 'sheep' declared as type percentage
+(Jesus) (Jesus) ❌ Error: Expected a number between 0 and 100.
 (Jesus) (int) 100
 (Jesus) (Jesus) 
 (Jesus) (Jesus) Jesus
 (Jesus) (Jesus) Sinful wise
-(Jesus) ❌ Error: Error: Invalid value value "(int) 6" to variable 'confusion' declared as type phrase
+(Jesus) ❌ Error: Invalid value '(int) 6' for variable 'confusion' declared as type phrase
 (Jesus) ❌ Error: Undefined variable: confusion (scope: global)
 (Jesus) (Jesus) God does not see
 (Jesus) (Jesus) 
-(Jesus) ❌ Error: Error: Invalid value value "(int) 13" to variable 'rebellion' declared as type text
+(Jesus) ❌ Error: Invalid value '(int) 13' for variable 'rebellion' declared as type text
 (Jesus) ❌ Error: Undefined variable: rebellion (scope: global)
 (Jesus) ❌ Error: Unknown base type: 'car'
 (Jesus) ❌ Error: Undefined variable: hilux (scope: global)
@@ -146,8 +144,8 @@
 (Jesus) Qual sua idade? Validation failed: Invalid number: 'seven'
 Qual sua idade? Validation failed: Invalid number: 'fourteen'
 Qual sua idade? (Jesus) (double) 33.000000
-(Jesus) ❌ Error: Variable 'PI' not found. Are you really sure it has been declared?
-(Jesus) ❌ Error: Variable 'temperature' not found. Are you really sure it has been declared?
+(Jesus) ❌ Error: Error: 'ask' expects a variable of primitive type 'text' as its prompt, but received variable 'PI' of primitive type 'number'.
+(Jesus) ❌ Error: Error: 'ask' expects a variable of primitive type 'text' as its prompt, but received variable 'temperature' of primitive type 'number'.
 (Jesus) What is your age again? Validation failed: Invalid number: 'fourty'
 What is your age again? Validation failed: Invalid number: 'eternal'
 What is your age again? (Jesus) (double) 2025.000000

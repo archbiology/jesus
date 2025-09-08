@@ -9,6 +9,9 @@ public:
 
     bool validate(const Value &value) const override
     {
-        return value.IS_NUMBER;
+        if (value.IS_NUMBER)
+            return true;
+
+        throw std::runtime_error("Expected a number.");
     }
 };

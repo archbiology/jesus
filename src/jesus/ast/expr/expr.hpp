@@ -5,6 +5,12 @@
 class ExprVisitor;   // Forward declaration
 class ParserContext; // Forward declaration
 
+enum class ExprKind
+{
+    Literal,
+    Other
+};
+
 /**
  * @brief The base class for all expression types in the AST.
  *
@@ -18,8 +24,10 @@ class ParserContext; // Forward declaration
  */
 class Expr
 {
-public:
+    const ExprKind kind;
 
+public:
+    explicit Expr(ExprKind kind = ExprKind::Other) : kind(kind) {}
     /**
      * @brief Evaluates the expression and returns a Value.
      *
@@ -28,6 +36,11 @@ public:
     virtual Value evaluate(std::shared_ptr<Heart> heart) const = 0;
 
     virtual Value accept(ExprVisitor &visitor) const = 0;
+
+    virtual bool canEvaluateAtParseTime() const
+    {
+        return kind == ExprKind::Literal;
+    }
 
     /**
      * @brief Get the return type of the expression, so that variable

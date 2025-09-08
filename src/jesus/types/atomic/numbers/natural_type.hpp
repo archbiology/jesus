@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../../creation_type.hpp"
+#include "../../constraints/greater_than_or_equal_constraint.hpp"
 
 class NaturalType : public CreationType
 {
@@ -9,6 +10,8 @@ public:
 
     bool validate(const Value &value) const override
     {
-        return value >= Value(0);
+        GreaterThanOrEqualConstraint(0).validate(value);
+
+        return true;
     }
 };

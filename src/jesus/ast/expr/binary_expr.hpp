@@ -128,6 +128,11 @@ public:
 
     Value accept(ExprVisitor &visitor) const override;
 
+    bool canEvaluateAtParseTime() const override
+    {
+        return left->canEvaluateAtParseTime() && right->canEvaluateAtParseTime();
+    }
+
     /**
      * @brief Get the return type of the expression, so that variable
      *  creation and update can be enforced at parse time.
