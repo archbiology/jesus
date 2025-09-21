@@ -99,7 +99,7 @@ std::unique_ptr<Stmt> CreateVarTypeStmtRule::parse(ParserContext &ctx)
                 throw std::runtime_error("Expected a text value after 'matches' (e.g., matches \"abc\")");
 
             if (! expr->canEvaluateAtParseTime()) {
-                throw std::runtime_error("Expected a string literal after 'matches', not a formatted string. (e.g., matches \"yes\")");
+                throw std::runtime_error("Expected a string literal after 'matches', not a formatted string. (e.g., matches \"IForgive\")");
             }
 
             Value value = ctx.interpreter->evaluate(expr);

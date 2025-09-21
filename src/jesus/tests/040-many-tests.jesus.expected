@@ -138,7 +138,8 @@
 (Jesus) ❌ Error: Expected value >= (double) 7.000000
 (Jesus) (Jesus) (Jesus) ❌ Error: Expected value <= (double) 12.000000
 (Jesus) (int) 12
-(Jesus) (Jesus) (Jesus) ❌ Error: Variable 'sure' expects a Confirm, but got: 'text'.
+(Jesus) (Jesus) ❌ Error: Expected a string literal after 'matches', not a formatted string. (e.g., matches "IForgive")
+(Jesus) (Jesus) ❌ Error: Variable 'sure' expects a Confirm, but got: 'text'.
 (Jesus) Yes
 (Jesus) (Jesus) What is your age? (Jesus) (double) 18.000000
 (Jesus) Qual sua idade? Validation failed: Invalid number: 'seven'
@@ -203,4 +204,14 @@ Adopted by Jesus Christ
 null
 (Jesus) The new name v2 is: 
 (Jesus) Adopted by Jesus Christ
+(Jesus) single-quote string
+(Jesus) Hi {adam} (single-quoted)
+(Jesus) Hi, {type: "instance",
+ class: "Person",
+ attributes: {
+  age: "(int) 930",
+  wife: "Eve",
+  name: "Adopted by Jesus Christ"
+ }
+} (double-quoted)
 (Jesus) 

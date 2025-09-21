@@ -11,6 +11,7 @@
 #include "../ast/expr/create_instance_expr.hpp"
 #include "../ast/expr/get_attr_expr.hpp"
 #include "../ast/expr/method_call_expr.hpp"
+#include "../ast/expr/formatted_string_expr.hpp"
 
 /**
  * @brief Interface for visiting and evaluating expression nodes in the AST.
@@ -57,6 +58,7 @@ public:
     virtual Value visitCreateInstanceExpr(const CreateInstanceExpr &expr) = 0;
     virtual Value visitGetAttribute(const GetAttributeExpr &expr) = 0;
     virtual Value visitMethodCallExpr(const MethodCallExpr &expr) = 0;
+    virtual Value visitFormattedStringExpr(const FormattedStringExpr &expr) = 0;
 
     virtual ~ExprVisitor() = default;
 };

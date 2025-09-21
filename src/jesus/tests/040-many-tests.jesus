@@ -167,6 +167,7 @@ create Tribe israel = 12
 create Tribe israel = 13
 say israel
 create text Confirm matches "(Y|y)es"
+create text IsraelVar matches "WakeUp, {israel}"
 create Confirm sure = "Yes"
 sure = "no"
 say sure
@@ -260,3 +261,6 @@ say adam name
 say adam aToB 7, 49
 say "The new name v2 is: "
 say adam name
+say 'single-quote string'
+say 'Hi {adam} (single-quoted)'
+say "Hi, {adam} (double-quoted)"

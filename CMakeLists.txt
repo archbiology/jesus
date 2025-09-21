@@ -92,6 +92,7 @@ set(JESUS_CPP_FILES
     src/jesus/ast/expr/create_instance_expr.cpp
     src/jesus/ast/expr/get_attr_expr.cpp
     src/jesus/ast/expr/method_call_expr.cpp
+    src/jesus/ast/expr/formatted_string_expr.cpp
     src/jesus/ast/expr/grouping_expr.cpp
     src/jesus/ast/expr/conditional_expr.cpp
 
@@ -127,6 +128,7 @@ set(JESUS_CPP_FILES
 
     src/jesus/parser/grammar/expr/atomic/literals/number_rule.cpp
     src/jesus/parser/grammar/expr/atomic/literals/string_rule.cpp
+    src/jesus/parser/grammar/expr/atomic/literals/formatted_string_rule.cpp
     src/jesus/parser/grammar/expr/atomic/literals/yes_no_rule.cpp
     src/jesus/parser/grammar/expr/atomic/literals/variable_rule.cpp
     src/jesus/parser/grammar/expr/atomic/literals/born_rule.cpp

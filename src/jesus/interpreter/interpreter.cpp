@@ -62,7 +62,8 @@ Value Interpreter::visitVariable(const VariableExpr &expr)
     return symbol_table.getVar(expr.name);
 }
 
-Value Interpreter::visitCreateInstanceExpr(const CreateInstanceExpr &expr) {
+Value Interpreter::visitCreateInstanceExpr(const CreateInstanceExpr &expr)
+{
     auto instance = std::make_shared<Instance>(expr.klass);
     return Value(instance);
 }
@@ -88,6 +89,23 @@ Value Interpreter::visitMethodCallExpr(const MethodCallExpr &expr)
         args.push_back(argExpr->accept(*this));
 
     return expr.method->call(*this, instance, std::move(args));
+}
+
+Value Interpreter::visitFormattedStringExpr(const FormattedStringExpr &expr)
+{
+    std::string result;
+
+    for (size_t i = 0; i < expr.parts.size(); ++i)
+    {
+        result += expr.parts[i];
+        if (i < expr.variables.size())
+        {
+            Value val = symbol_table.getVar(expr.variables[i]);
+            result += val.toString();
+        }
+    }
+
+    return Value(result);
 }
 
 Value Interpreter::visitAsk(const AskExpr &expr)
