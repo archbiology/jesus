@@ -32,7 +32,8 @@ enum class TokenType
     NO,             // 18
     INT,            // 19
     DOUBLE,         // 20
-    STRING,         // 21
+    RAW_STRING,         // With single quotes, like in bash: 'hello world'
+    FORMATTED_STRING,   // Double quotes: "Hi, {user}"
     IDENTIFIER,     // varname, attribute
     LEFT_PAREN,     // (
     RIGHT_PAREN,    // )
