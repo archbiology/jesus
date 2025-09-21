@@ -264,3 +264,5 @@ say adam name
 say 'single-quote string'
 say 'Hi {adam} (single-quoted)'
 say "Hi, {adam} (double-quoted)"
+say "Your name is {adam name}"
+say "Forbidden:  {600 + 60 + 6}"

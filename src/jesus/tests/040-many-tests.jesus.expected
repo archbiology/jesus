@@ -214,4 +214,6 @@ null
   name: "Adopted by Jesus Christ"
  }
 } (double-quoted)
+(Jesus) Your name is Adopted by Jesus Christ
+(Jesus) ❌ Error: NasaRules: Only simple variables or attribute chains are allowed inside formatted strings. This restriction ensures code clarity and safety, following Object Calisthenics and the 10 NASA rules for maintainable software. Expression rejected: '600 + 60 + 6'.
 (Jesus) 

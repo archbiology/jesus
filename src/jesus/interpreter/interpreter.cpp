@@ -98,9 +98,9 @@ Value Interpreter::visitFormattedStringExpr(const FormattedStringExpr &expr)
     for (size_t i = 0; i < expr.parts.size(); ++i)
     {
         result += expr.parts[i];
-        if (i < expr.variables.size())
+        if (i < expr.expressions.size())
         {
-            Value val = symbol_table.getVar(expr.variables[i]);
+            Value val = expr.expressions[i]->accept(*this);
             result += val.toString();
         }
     }

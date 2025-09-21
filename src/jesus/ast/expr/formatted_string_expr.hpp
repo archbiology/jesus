@@ -31,12 +31,12 @@ class FormattedStringExpr : public Expr
 public:
     const std::string raw;              // original string e.g., "Hello {name}"
     std::vector<std::string> parts;     // literal parts
-    std::vector<std::string> variables; // variable names
+    std::vector<std::unique_ptr<Expr>> expressions;
 
     explicit FormattedStringExpr(const std::string rawStr,
                                  std::vector<std::string> parts,
-                                 std::vector<std::string> vars)
-        : raw(rawStr), parts(std::move(parts)), variables(std::move(vars)) {}
+                                 std::vector<std::unique_ptr<Expr>> expressions)
+        : raw(rawStr), parts(std::move(parts)), expressions(std::move(expressions)) {}
 
     Value evaluate(std::shared_ptr<Heart> heart) const override
     {
