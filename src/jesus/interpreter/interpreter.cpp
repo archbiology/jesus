@@ -110,7 +110,7 @@ Value Interpreter::visitFormattedStringExpr(const FormattedStringExpr &expr)
 
 Value Interpreter::visitAsk(const AskExpr &expr)
 {
-    auto question = expr.evaluate(symbol_table.currentScope());
+    Value question = expr.prompt->accept(*this);
     return question;
 }
 
@@ -133,7 +133,7 @@ void Interpreter::visitCreateVar(const CreateVarStmt &stmt)
 Value Interpreter::askAndValidate(const std::shared_ptr<Expr> ask_expr, std::shared_ptr<CreationType> var_type)
 {
     // Step 1: Evaluate the ask expression (e.g., ask "Your age?")
-    Value question = ask_expr->evaluate(symbol_table.currentScope());
+    Value question = ask_expr->accept(*this);
 
     while (true)
     {
