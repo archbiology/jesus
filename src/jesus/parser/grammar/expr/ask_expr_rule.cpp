@@ -11,7 +11,7 @@ std::unique_ptr<Expr> AskExprRule::parse(ParserContext &ctx)
     if (!ctx.match(TokenType::ASK))
         return nullptr;
 
-    if (ctx.match(TokenType::STRING))
+    if (ctx.matchAny({TokenType::RAW_STRING, TokenType::FORMATTED_STRING}))
     {
         Value prompt = ctx.previous().literal;
         return std::make_unique<AskExpr>(std::make_unique<LiteralExpr>(prompt, KnownTypes::STRING));

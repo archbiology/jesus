@@ -91,8 +91,16 @@ std::unique_ptr<Stmt> CreateVarTypeStmtRule::parse(ParserContext &ctx)
         else if (ctx.match(TokenType::MATCHES))
         {
             auto expr = grammar::String->parse(ctx);
+            if (!expr) {
+                expr = grammar::FormattedString->parse(ctx);
+            }
+
             if (!expr)
                 throw std::runtime_error("Expected a text value after 'matches' (e.g., matches \"abc\")");
+
+            if (! expr->canEvaluateAtParseTime()) {
+                throw std::runtime_error("Expected a string literal after 'matches', not a formatted string. (e.g., matches \"yes\")");
+            }
 
             Value value = ctx.interpreter->evaluate(expr);
             constraints.emplace_back(std::make_shared<MatchesRegexConstraint>(value.toString()));

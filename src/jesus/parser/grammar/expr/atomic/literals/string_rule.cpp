@@ -4,7 +4,7 @@
 
 std::unique_ptr<Expr> StringRule::parse(ParserContext &ctx)
 {
-    if (ctx.match(TokenType::STRING))
+    if (ctx.match(TokenType::RAW_STRING))
     {
         return std::make_unique<LiteralExpr>(ctx.previous().literal, KnownTypes::STRING);
     }
