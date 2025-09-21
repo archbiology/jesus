@@ -138,7 +138,8 @@
 (Jesus) ❌ Error: Expected value >= (double) 7.000000
 (Jesus) (Jesus) (Jesus) ❌ Error: Expected value <= (double) 12.000000
 (Jesus) (int) 12
-(Jesus) (Jesus) (Jesus) ❌ Error: Variable 'sure' expects a Confirm, but got: 'text'.
+(Jesus) (Jesus) ❌ Error: Expected a string literal after 'matches', not a formatted string. (e.g., matches "IForgive")
+(Jesus) (Jesus) ❌ Error: Variable 'sure' expects a Confirm, but got: 'text'.
 (Jesus) Yes
 (Jesus) (Jesus) What is your age? (Jesus) (double) 18.000000
 (Jesus) Qual sua idade? Validation failed: Invalid number: 'seven'
@@ -146,9 +147,9 @@ Qual sua idade? Validation failed: Invalid number: 'fourteen'
 Qual sua idade? (Jesus) (double) 33.000000
 (Jesus) ❌ Error: Error: 'ask' expects a variable of primitive type 'text' as its prompt, but received variable 'PI' of primitive type 'number'.
 (Jesus) ❌ Error: Error: 'ask' expects a variable of primitive type 'text' as its prompt, but received variable 'temperature' of primitive type 'number'.
-(Jesus) What is your age again? Validation failed: Invalid number: 'fourty'
-What is your age again? Validation failed: Invalid number: 'eternal'
-What is your age again? (Jesus) (double) 2025.000000
+(Jesus) What is your age again (curent: (int) 33)? Validation failed: Invalid number: 'fourty'
+What is your age again (curent: (int) 33)? Validation failed: Invalid number: 'eternal'
+What is your age again (curent: (int) 33)? (Jesus) (double) 2025.000000
 (Jesus) What is your age? (Jesus) What is the new question?
 (Jesus) (Jesus) (Jesus) {type: "instance",
  class: "User",
@@ -203,4 +204,16 @@ Adopted by Jesus Christ
 null
 (Jesus) The new name v2 is: 
 (Jesus) Adopted by Jesus Christ
+(Jesus) single-quote string
+(Jesus) Hi {adam} (single-quoted)
+(Jesus) Hi, {type: "instance",
+ class: "Person",
+ attributes: {
+  age: "(int) 930",
+  wife: "Eve",
+  name: "Adopted by Jesus Christ"
+ }
+} (double-quoted)
+(Jesus) Your name is Adopted by Jesus Christ
+(Jesus) ❌ Error: NasaRules: Only simple variables or attribute chains are allowed inside formatted strings. This restriction ensures code clarity and safety, following Object Calisthenics and the 10 NASA rules for maintainable software. Expression rejected: '600 + 60 + 6'.
 (Jesus) 

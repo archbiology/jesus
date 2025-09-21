@@ -3,7 +3,7 @@
 #include "../../../grammar_rule.hpp"
 
 /**
- * @brief Matches a string literal.
+ * @brief Matches a string literal with single quotes: 'Jesus loves you'.
  */
 class StringRule : public IGrammarRule
 {

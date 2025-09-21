@@ -9,7 +9,7 @@ public:
     std::string attribute;
 
     GetAttributeExpr(std::unique_ptr<Expr> object, std::string attribute)
-        : object(std::move(object)), attribute(std::move(attribute)) {}
+        : object(std::move(object)), attribute(std::move(attribute)), Expr(ExprKind::GetAttribute) {}
 
     Value evaluate(std::shared_ptr<Heart> heart) const override
     {

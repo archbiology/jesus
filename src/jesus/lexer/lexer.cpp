@@ -212,9 +212,6 @@ TokenType recognize_token_type(const std::string &word)
     if (isDouble(word))
         return TokenType::DOUBLE;
 
-    if (word[0] == '"')
-        return TokenType::STRING;
-
     if (word == "create" || word == "criar")
         return TokenType::CREATE;
 
@@ -244,7 +241,8 @@ std::vector<Token> lex(const std::string &raw_input)
 
     auto utf8_input = utils::to_utf8(raw_input);
 
-    const std::string quote = "\""; // single ASCII quote
+    const std::string single_quote = "'"; // single ASCII quote
+    const std::string double_quote = "\""; // double quote
     const std::string space = " ";
     const std::string tab = "\t";
     const std::string newline = "\n";
@@ -330,12 +328,13 @@ std::vector<Token> lex(const std::string &raw_input)
             continue;
         }
 
-        if (c == quote)
+        if (c == single_quote || c == double_quote)
         {
-            // Handle string literal
+            const std::string quote_char = c;
             size_t end = i + 1;
             std::string str;
-            while (end < utf8_input.size() && utf8_input[end] != quote)
+
+            while (end < utf8_input.size() && utf8_input[end] != quote_char)
             {
                 str += utf8_input[end];
                 ++end;
@@ -344,7 +343,15 @@ std::vector<Token> lex(const std::string &raw_input)
             if (end == utf8_input.size())
                 throw std::runtime_error("Unterminated string literal");
 
-            tokens.emplace_back(TokenType::STRING, "\"" + str + "\"", Value(str));
+            if (quote_char == single_quote)
+            {
+                tokens.emplace_back(TokenType::RAW_STRING, "'" + str + "'", Value(str));
+            }
+            else // double quote
+            {
+                tokens.emplace_back(TokenType::FORMATTED_STRING, "\"" + str + "\"", Value(str));
+            }
+
             i = end + 1;
             continue;
         }

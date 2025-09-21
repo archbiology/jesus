@@ -3,6 +3,7 @@
 #include "../../../ast/expr/literal_expr.hpp"
 #include "../../../ast/expr/variable_expr.hpp"
 #include "../../../types/known_types.hpp"
+#include "../jesus_grammar.hpp"
 
 #include <memory>
 
@@ -11,10 +12,21 @@ std::unique_ptr<Expr> AskExprRule::parse(ParserContext &ctx)
     if (!ctx.match(TokenType::ASK))
         return nullptr;
 
-    if (ctx.match(TokenType::STRING))
+    if (ctx.match(TokenType::RAW_STRING))
     {
         Value prompt = ctx.previous().literal;
         return std::make_unique<AskExpr>(std::make_unique<LiteralExpr>(prompt, KnownTypes::STRING));
+    }
+
+    int snapshot = ctx.snapshot();
+    if (ctx.match(TokenType::FORMATTED_STRING))
+    {
+        ctx.restore(snapshot);
+        auto formattedExpr = grammar::FormattedString->parse(ctx);
+        if (!formattedExpr)
+            throw std::runtime_error("Failed to parse formatted string for 'ask' prompt.");
+
+        return std::make_unique<AskExpr>(std::move(formattedExpr));
     }
 
     if (!ctx.match(TokenType::IDENTIFIER))

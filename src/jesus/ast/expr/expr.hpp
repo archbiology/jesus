@@ -8,6 +8,8 @@ class ParserContext; // Forward declaration
 enum class ExprKind
 {
     Literal,
+    Variable,
+    GetAttribute,
     Other
 };
 
@@ -40,6 +42,25 @@ public:
     virtual bool canEvaluateAtParseTime() const
     {
         return kind == ExprKind::Literal;
+    }
+
+    /**
+     * @brief Indicates whether the expression can be used inside a formatted string.
+     *
+     * Only certain expression types — currently variables and attribute accesses —
+     * are allowed in formatted strings. This restriction enforces clarity and
+     * predictability, following the principles of Object Calisthenics and the
+     * 10 NASA rules for safer and more maintainable code.
+     *
+     * By limiting the allowed expression types, we prevent complex or side-effecting
+     * expressions from appearing inside string interpolation, which helps avoid
+     * subtle bugs and makes the interpreter logic simpler.
+     *
+     * @return true if this expression is safe to use in a formatted string.
+     */
+    virtual bool canBeUsedInFormattedString() const
+    {
+        return kind == ExprKind::Variable || kind == ExprKind::GetAttribute;
     }
 
     /**

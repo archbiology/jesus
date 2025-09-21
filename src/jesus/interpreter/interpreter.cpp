@@ -62,7 +62,8 @@ Value Interpreter::visitVariable(const VariableExpr &expr)
     return symbol_table.getVar(expr.name);
 }
 
-Value Interpreter::visitCreateInstanceExpr(const CreateInstanceExpr &expr) {
+Value Interpreter::visitCreateInstanceExpr(const CreateInstanceExpr &expr)
+{
     auto instance = std::make_shared<Instance>(expr.klass);
     return Value(instance);
 }
@@ -90,9 +91,26 @@ Value Interpreter::visitMethodCallExpr(const MethodCallExpr &expr)
     return expr.method->call(*this, instance, std::move(args));
 }
 
+Value Interpreter::visitFormattedStringExpr(const FormattedStringExpr &expr)
+{
+    std::string result;
+
+    for (size_t i = 0; i < expr.parts.size(); ++i)
+    {
+        result += expr.parts[i];
+        if (i < expr.expressions.size())
+        {
+            Value val = expr.expressions[i]->accept(*this);
+            result += val.toString();
+        }
+    }
+
+    return Value(result);
+}
+
 Value Interpreter::visitAsk(const AskExpr &expr)
 {
-    auto question = expr.evaluate(symbol_table.currentScope());
+    Value question = expr.prompt->accept(*this);
     return question;
 }
 
@@ -115,7 +133,7 @@ void Interpreter::visitCreateVar(const CreateVarStmt &stmt)
 Value Interpreter::askAndValidate(const std::shared_ptr<Expr> ask_expr, std::shared_ptr<CreationType> var_type)
 {
     // Step 1: Evaluate the ask expression (e.g., ask "Your age?")
-    Value question = ask_expr->evaluate(symbol_table.currentScope());
+    Value question = ask_expr->accept(*this);
 
     while (true)
     {

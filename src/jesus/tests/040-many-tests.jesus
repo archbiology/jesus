@@ -167,6 +167,7 @@ create Tribe israel = 12
 create Tribe israel = 13
 say israel
 create text Confirm matches "(Y|y)es"
+create text IsraelVar matches "WakeUp, {israel}"
 create Confirm sure = "Yes"
 sure = "no"
 say sure
@@ -181,7 +182,7 @@ fourteen
 say idade
 create number year = ask PI
 create number year2 = ask temperature
-age = ask "What is your age again? "
+age = ask "What is your age again (curent: {age})? "
 fourty
 eternal
 2025
@@ -260,3 +261,8 @@ say adam name
 say adam aToB 7, 49
 say "The new name v2 is: "
 say adam name
+say 'single-quote string'
+say 'Hi {adam} (single-quoted)'
+say "Hi, {adam} (double-quoted)"
+say "Your name is {adam name}"
+say "Forbidden:  {600 + 60 + 6}"

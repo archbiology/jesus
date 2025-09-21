@@ -84,6 +84,11 @@ public:
     void execute(const std::shared_ptr<Stmt> &stmt);
     inline void loves(const std::unique_ptr<Stmt> &stmt) { execute(stmt); }
 
+    const bool variableExists(const std::string &varName)
+    {
+        return symbol_table.variableExists(varName);
+    }
+
     std::shared_ptr<CreationType> getVarType(const std::string &varName)
     {
         return symbol_table.getVarType(varName);
@@ -166,6 +171,8 @@ private:
     Value visitGetAttribute(const GetAttributeExpr &expr) override;
 
     Value visitMethodCallExpr(const MethodCallExpr &expr) override;
+
+    Value visitFormattedStringExpr(const FormattedStringExpr &expr) override;
 
     /**
      * @brief Evaluates an AskExpr by evaluating its prompt expression.
