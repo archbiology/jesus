@@ -68,6 +68,8 @@ public:
             return "CREATE";
         case TokenType::PURPOSE:
             return "PURPOSE";
+        case TokenType::RETURN:
+            return "RETURN";
         case TokenType::Note:
             return "NOTE";
         case TokenType::Todo:
@@ -124,6 +126,8 @@ public:
             return "SEMICOLON";
         case TokenType::COMMA:
             return "COMMA";
+        case TokenType::ARROW:
+            return "ARROW";
 
         case TokenType::INT:
             return "INT(" + lexeme + ")";

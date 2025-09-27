@@ -9,6 +9,15 @@
 
 class Interpreter; // Forward declaration
 
+class ReturnSignal
+{
+public:
+    Value value;
+
+public:
+    ReturnSignal(Value value) : value(std::move(value)) {}
+};
+
 class Method
 {
 public:

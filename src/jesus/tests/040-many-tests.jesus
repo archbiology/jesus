@@ -266,3 +266,30 @@ say 'Hi {adam} (single-quoted)'
 say "Hi, {adam} (double-quoted)"
 say "Your name is {adam name}"
 say "Forbidden:  {600 + 60 + 6}"
+let there be SonOfMan:
+    purpose age() -> number:
+        return 33
+    amen
+    purpose saySomething():
+        say 'I am the way, the truth, the life.'
+        return
+        say "This should not appear."
+    amen
+    purpose forgive() -> number :
+        say "forgive: seventy times seven"
+        return 70 * 7
+    amen
+amen
+create SonOfMan sonOfMan = 1
+say sonOfMan
+say sonOfMan age
+say sonOfMan saySomething
+say sonOfMan forgive
+let there be TestSpirits:
+    purpose promiseA() -> number:
+        return "lie"
+    amen
+amen
+create number edade = sonOfMan age
+say "La edad es: {edade}"
+create text ageStr = sonOfMan age

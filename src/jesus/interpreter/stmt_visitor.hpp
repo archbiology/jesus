@@ -12,6 +12,7 @@
 #include "../ast/stmt/for_each_stmt.hpp"
 #include "../ast/stmt/break_stmt.hpp"
 #include "../ast/stmt/continue_stmt.hpp"
+#include "../ast/stmt/return_stmt.hpp"
 
 /**
  * @brief Interface for visiting and executing statement nodes in the AST.
@@ -60,6 +61,7 @@ public:
     virtual void visitForEach(const ForEachStmt &stmt) = 0;
     virtual void visitBreak(const BreakStmt &stmt) = 0;
     virtual void visitContinue(const ContinueStmt &stmt) = 0;
+    virtual void visitReturnStmt(const ReturnStmt &stmt) = 0;
 
     virtual ~StmtVisitor() = default;
 };

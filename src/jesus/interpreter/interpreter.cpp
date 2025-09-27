@@ -202,8 +202,7 @@ void Interpreter::visitCreateClass(const CreateClassStmt &stmt)
                 methodStmt->params,
                 methodStmt->body,
                 userClass,
-                KnownTypes::BOOLEAN // FIXME: Allow methods to define return types
-            );
+                methodStmt->returnType);
 
             userClass->addMethod(methodStmt->name, method);
         }
@@ -345,4 +344,16 @@ void Interpreter::visitBreak(const BreakStmt &)
 void Interpreter::visitContinue(const ContinueStmt &)
 {
     throw ContinueSignal();
+}
+
+void Interpreter::visitReturnStmt(const ReturnStmt &stmt)
+{
+    Value result;
+
+    if (stmt.value)
+    {
+        result = evaluate(stmt.value);
+    }
+
+    throw ReturnSignal(result); // return execution flow to caller, Method::call.
 }

@@ -111,6 +111,7 @@ set(JESUS_CPP_FILES
     src/jesus/ast/stmt/repeat_times_stmt.cpp
     src/jesus/ast/stmt/repeat_while_stmt.cpp
     src/jesus/ast/stmt/update_var_stmt.cpp
+    src/jesus/ast/stmt/return_stmt.cpp
 
     # --------------
     # Parser classes

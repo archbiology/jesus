@@ -24,14 +24,18 @@ Value Method::call(Interpreter &interpreter, std::shared_ptr<Instance> instance,
     interpreter.addScope(paramsScope);
 
     // 3. Execute method body
-    for (auto stmt : body)
-    {
-        interpreter.execute(stmt);
+    Value returnValue = Value::formless(); // default return
+
+    try {
+        for (auto stmt : body)
+            interpreter.execute(stmt);
+    } catch (const ReturnSignal &ret) {
+        returnValue = ret.value;
     }
 
     // 4. Pop 'attributes' and 'params' scope
     interpreter.popScope();
     interpreter.popScope();
 
-    return Value::formless(); // default return
+    return returnValue;
 }

@@ -1,15 +1,19 @@
 #include "create_method_stmt_rule.hpp"
 #include "../../../ast/stmt/create_method_stmt.hpp"
 #include "../../../ast/stmt/incomplete_block_stmt.hpp"
+#include "../../../ast/stmt/return_stmt.hpp"
+#include "../../../types/creation_type.hpp"
 #include "../../parser_context.hpp"
+#include "../../../types/known_types.hpp"
+#include "../jesus_grammar.hpp"
 #include <stdexcept>
 
 std::unique_ptr<Stmt> CreateMethodStmtRule::parse(ParserContext &ctx)
 {
-    // ----------------------------------------
+    // ------------------------------------------------------
     // Grammar:
-    //  purpose <name> ( <params>? ) : ... amen
-    // ----------------------------------------
+    //  purpose <name> ( <params>? ) -> returnType? : ... amen
+    // ------------------------------------------------------
 
     if (!ctx.match(TokenType::PURPOSE))
         return nullptr;
@@ -51,6 +55,23 @@ std::unique_ptr<Stmt> CreateMethodStmtRule::parse(ParserContext &ctx)
         throw std::runtime_error("Expected ')' after parameter list in method declaration.");
 
     // -----------
+    // Return type
+    // -----------
+    std::shared_ptr<CreationType> returnType = KnownTypes::VOID; // default: nothing
+    if (ctx.match(TokenType::ARROW))
+    {
+        if (!ctx.match(TokenType::IDENTIFIER))
+            throw std::runtime_error("Expected return type after '->'.");
+
+        std::string typeName = ctx.previous().lexeme;
+        returnType = KnownTypes::resolve(typeName, "core");
+        if (!returnType)
+        {
+            throw std::runtime_error("Unknown return type: '" + typeName + "'.");
+        }
+    }
+
+    // -----------
     // Method body
     // -----------
     if (!ctx.match(TokenType::COLON))
@@ -74,6 +95,18 @@ std::unique_ptr<Stmt> CreateMethodStmtRule::parse(ParserContext &ctx)
         {
             body.push_back(std::move(print));
         }
+        else if (ctx.match(TokenType::RETURN))
+        {
+            std::unique_ptr<Expr> returnExpr = nullptr;
+
+            if (!ctx.check(TokenType::NEWLINE) && !ctx.check(TokenType::AMEN))
+            {
+                // Parse the expression after 'return'
+                returnExpr = grammar::Expression->parse(ctx);
+            }
+
+            body.push_back(std::make_shared<ReturnStmt>(std::move(returnExpr)));
+        }
         else
         {
             throw std::runtime_error("Unexpected statement inside method body.");
@@ -85,11 +118,53 @@ std::unique_ptr<Stmt> CreateMethodStmtRule::parse(ParserContext &ctx)
 
     if (ctx.isAtEnd())
     {
+        // FIXME: Each time an IncompleteBlockStmt is returned, all code is parsed again. Too expensive.
         return std::make_unique<IncompleteBlockStmt>();
     }
 
     if (!ctx.match(TokenType::AMEN))
         throw std::runtime_error("Expected 'amen' to close method body.");
 
-    return std::make_unique<CreateMethodStmt>(methodName, params, body, /*isGenesis=*/false);
+    // ---------------------------
+    // Enforce correct return type
+    // ---------------------------
+    for (const auto &stmt : body)
+    {
+        if (auto ret = dynamic_cast<ReturnStmt *>(stmt.get()))
+        {
+            auto actualType = ret->getReturnType(ctx);
+
+            if (!returnType->isCompatibleWith(actualType))
+            {
+                throw std::runtime_error(
+                    "Type mismatch in method '" + methodName +
+                    "': expected return type '" + returnType->toString() +
+                    "', but found '" + actualType->toString() + "'.");
+            }
+        }
+    }
+
+    // -----------------------------
+    // Enforce explicit return rules
+    // -----------------------------
+    if (!returnType->isVoid())
+    {
+        if (body.empty())
+        {
+            throw std::runtime_error(
+                "Method '" + methodName + "' with return type '" +
+                returnType->toString() + "' must end with an explicit return.");
+        }
+
+        auto lastStmt = body.back().get();
+        auto ret = dynamic_cast<ReturnStmt *>(lastStmt);
+        if (!ret)
+        {
+            throw std::runtime_error(
+                "Method '" + methodName + "' with return type '" +
+                returnType->toString() + "' must end with an explicit return.");
+        }
+    }
+
+    return std::make_unique<CreateMethodStmt>(methodName, params, returnType, body, /*isGenesis=*/false);
 }
