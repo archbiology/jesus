@@ -19,6 +19,9 @@ public:
     // -------------------------------------------------------------------
     // Direct access for common types for fast type analysis at parse time
     // -------------------------------------------------------------------
+    inline static std::shared_ptr<CreationType> VOID;
+    inline static std::shared_ptr<CreationType> NOTHING;
+
     inline static std::shared_ptr<CreationType> SEX;
     inline static std::shared_ptr<CreationType> BORN;
 

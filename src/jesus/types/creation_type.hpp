@@ -8,6 +8,7 @@ class Method; // Forward declaration
 
 enum class PrimitiveType
 {
+    Null,
     Boolean,
     Number,
     Text,
@@ -148,9 +149,89 @@ public:
         return nullptr;
     }
 
+    const bool isNull() const
+    {
+        return primitive_type == PrimitiveType::Null;
+    }
+
+    const bool isVoid() const
+    {
+        return isNull();
+    }
+
+    const bool isBoolean() const
+    {
+        return primitive_type == PrimitiveType::Boolean;
+    }
+
+    const bool isNumber() const
+    {
+        return primitive_type == PrimitiveType::Number;
+    }
+
+    const bool isString() const
+    {
+        return primitive_type == PrimitiveType::Text;
+    }
+
     const bool isClass() const
     {
         return primitive_type == PrimitiveType::Class;
+    }
+
+    /**
+     * @brief Checks if this CreationType can accept a value of another type.
+     *
+     * This function determines whether the current CreationType is compatible
+     * with the provided `assigningValueType`, i.e., whether a value of that
+     * type can be safely or meaningfully assigned to this one.
+     *
+     * "Can two walk together, except they be agreed?" — Amos 3:3 (KJV)
+     *
+     * @param assigningValueType A shared pointer to the CreationType that represents
+     *      the type of value being assigned.
+     * @return true if the assignment is considered valid; false otherwise.
+     */
+    bool isCompatibleWith(const std::shared_ptr<CreationType> &assigningValueType) const
+    {
+        if (!assigningValueType)
+            return false;
+
+        // -------------------------------
+        // Same exact type (by id or name)
+        // -------------------------------
+        if (this->id == assigningValueType->id)
+            return true;
+
+        if (this->name == assigningValueType->name && this->module_name == assigningValueType->module_name)
+            return true;
+
+        // ----------------------------------------------------------------------
+        // Null assignability: allow assigning "null" to any reference/class type
+        // ----------------------------------------------------------------------
+        if (this->isClass() && assigningValueType->isNull())
+            return true;
+
+        // --------------------------------
+        // Primitive compatibility (number)
+        // --------------------------------
+        if (this->isNumber() && assigningValueType->isNumber())
+            return true;
+
+        if (this->isString() && assigningValueType->isString())
+            return true;
+
+        if (this->isBoolean() && assigningValueType->isBoolean())
+            return true;
+
+        // Class assignability (TODO: add inheritance checks)
+        if (this->isClass() && assigningValueType->isClass())
+        {
+            // TODO: Add subclassing logic
+            return false;
+        }
+
+        return false;
     }
 
     const std::string toString()

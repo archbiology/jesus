@@ -1,5 +1,6 @@
 #include "known_types.hpp"
 #include "atomic/literals/truth.hpp"
+#include "atomic/literals/nothing.hpp"
 #include "atomic/literals/sex.hpp"
 #include "atomic/literals/weekday.hpp"
 #include "atomic/numbers/number_type.hpp"
@@ -16,6 +17,7 @@
 void KnownTypes::registerBuiltInTypes()
 {
     auto truth = std::make_shared<TruthType>();
+    auto nothing = std::make_shared<NothingType>();
     auto sex = std::make_shared<SexType>();
     auto weekday = std::make_shared<WeekdayType>();
 
@@ -27,6 +29,7 @@ void KnownTypes::registerBuiltInTypes()
     auto klass = std::make_shared<ClassType>();
 
     BOOLEAN = TRUTH = truth;
+    VOID = NOTHING = nothing;
     BORN = SEX = sex;
     WEEKDAY = weekday;
 
@@ -38,6 +41,7 @@ void KnownTypes::registerBuiltInTypes()
     CLASS = klass;
 
     registerType(truth);
+    registerType(nothing);
     registerType(sex);
     registerType(weekday);
 

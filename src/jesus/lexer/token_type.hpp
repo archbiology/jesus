@@ -45,12 +45,14 @@ enum class TokenType
     COLON,          // ':' (Begining of a block)
     SEMICOLON,      // ';' To separate method args by type: int x, y, z; text name, surname
     COMMA,          // ',' To separate var names: int x, y, z
+    ARROW,          // '->' To define method return types. purpose praise() -> GloryToGod: amen
 
     LET,            // let there be Person: amen (class in other langs)
     THERE,          // let there be Person: amen (class in other langs)
     BE,             // let there be Person: amen (class in other langs)
     HAJA,           // haja Luz: amén (portuguese way of creating class)
     PURPOSE,        // create method: purpose praise(): amen
+    RETURN,         // Function returns: return 144000
     CREATE,         // create days = 7
     ASK,            // create int age = ask "What is your age?"
     SAY,            // "say" prints to stdout

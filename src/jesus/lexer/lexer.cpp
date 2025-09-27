@@ -218,6 +218,9 @@ TokenType recognize_token_type(const std::string &word)
     if (word == "if" || word == "se")
         return TokenType::IF;
 
+    if (word == "return")
+        return TokenType::RETURN;
+
     if (word == "otherwise" || word == "senão")
         return TokenType::OTHERWISE;
 
@@ -288,6 +291,14 @@ std::vector<Token> lex(const std::string &raw_input)
 
         if (c == "-")
         {
+            // Lookahead for "->"
+            if (i + 1 < utf8_input.size() && utf8_input[i + 1] == ">")
+            {
+                tokens.emplace_back(TokenType::ARROW, "->", Value("->"));
+                i += 2; // consume both '-' and '>'
+                continue;
+            }
+
             tokens.emplace_back(TokenType::MINUS, "-", Value("-"));
             i++;
             continue;
