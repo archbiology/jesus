@@ -292,4 +292,6 @@ private:
      *    say name
      */
     void visitContinue(const ContinueStmt &stmt) override;
+
+    void visitReturnStmt(const ReturnStmt &stmt) override;
 };
