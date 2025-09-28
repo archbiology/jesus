@@ -153,6 +153,7 @@ set(JESUS_CPP_FILES
     src/jesus/parser/grammar/stmt/create_var_stmt_rule.cpp
     src/jesus/parser/grammar/stmt/update_var_stmt_rule.cpp
     src/jesus/parser/grammar/stmt/create_method_stmt_rule.cpp
+    src/jesus/parser/grammar/stmt/repeat_while_stmt_rule.cpp
 
     # -----------
     # Interpreter

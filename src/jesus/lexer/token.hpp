@@ -152,6 +152,15 @@ public:
         case TokenType::OTHERWISE:
             return "OTHERWISE";
 
+        case TokenType::REPEAT:
+            return "REPEAT";
+
+        case TokenType::TIMES:
+            return "TIMES";
+
+        case TokenType::WHILE:
+            return "WHILE";
+
         case TokenType::AMEN:
             return "AMEN";
 
