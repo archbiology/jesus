@@ -229,4 +229,11 @@ null
 (Jesus) ❌ Error: Unknown expression type (parser.cpp)
 (Jesus) (Jesus) La edad es: (int) 33
 (Jesus) ❌ Error: Invalid value type 'number' for variable 'ageStr' declared as type text
+(Jesus) (Jesus)  Naaman faith count: (int) 1
+ Naaman faith count: (int) 2
+ Naaman faith count: (int) 3
+ Naaman faith count: (int) 4
+ Naaman faith count: (int) 5
+ Naaman faith count: (int) 6
+ Naaman faith count: (int) 7
 (Jesus) 

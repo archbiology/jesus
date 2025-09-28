@@ -293,3 +293,8 @@ amen
 create number edade = sonOfMan age
 say "La edad es: {edade}"
 create text ageStr = sonOfMan age
+create number naaman = 1
+repeat while naaman <= 7:
+    say " Naaman faith count: {naaman}"
+    naaman = naaman + 1
+amen

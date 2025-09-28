@@ -13,26 +13,6 @@ std::unique_ptr<Stmt> parse(const std::vector<Token> &tokens, ParserContext &con
     if (!tokens_count)
         return nullptr;
 
-    // repeat n times
-    if (tokens_count >= 4 &&
-        tokens[0].type == TokenType::REPEAT &&
-        tokens[1].type == TokenType::INT &&
-        tokens[2].type == TokenType::TIMES &&
-        tokens[3].lexeme == ":")
-    {
-        int repeatCount = std::stoi(tokens[1].lexeme); // assuming it's an integer literal
-
-        std::vector<Token> innerTokens(tokens.begin() + 4, tokens.end());
-
-        std::unique_ptr<Stmt> innerStmt = parse(innerTokens, context);
-        if (!innerStmt)
-        {
-            throw std::runtime_error("Could not parse body of 'repeat N times'");
-        }
-
-        return std::make_unique<RepeatTimesStmt>(repeatCount, std::move(innerStmt));
-    }
-
     int snapshot = context.snapshot();
     auto outputStmt = grammar::Print->parse(context);
     if (outputStmt)
@@ -53,9 +33,14 @@ std::unique_ptr<Stmt> parse(const std::vector<Token> &tokens, ParserContext &con
     if (createVarStmt)
         return createVarStmt;
 
+    context.restore(snapshot);
     auto updateVarStmt = grammar::UpdateVar->parse(context);
     if (updateVarStmt)
         return updateVarStmt;
+
+    auto repeatWhileStmt = grammar::RepeatWhile->parse(context);
+    if (repeatWhileStmt)
+        return repeatWhileStmt;
 
     // If no match, fall back to expression parsing
     auto expr = grammar::Expression->parse(context);
