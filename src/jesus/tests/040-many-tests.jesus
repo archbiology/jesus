@@ -298,3 +298,14 @@ repeat while naaman <= 7:
     say " Naaman faith count: {naaman}"
     naaman = naaman + 1
 amen
+repeat 2 times:
+    say "Twice"
+amen
+create number two = 2
+repeat two times:
+    say 'two times'
+amen
+create text _two = "two"
+repeat _two times:
+    say 'This should not be printed'
+amen

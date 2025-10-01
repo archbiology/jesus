@@ -110,6 +110,7 @@ set(JESUS_CPP_FILES
     src/jesus/ast/stmt/print_stmt.cpp
     src/jesus/ast/stmt/repeat_times_stmt.cpp
     src/jesus/ast/stmt/repeat_while_stmt.cpp
+    src/jesus/ast/stmt/repeat_forever_stmt.cpp
     src/jesus/ast/stmt/update_var_stmt.cpp
     src/jesus/ast/stmt/return_stmt.cpp
 
@@ -153,7 +154,7 @@ set(JESUS_CPP_FILES
     src/jesus/parser/grammar/stmt/create_var_stmt_rule.cpp
     src/jesus/parser/grammar/stmt/update_var_stmt_rule.cpp
     src/jesus/parser/grammar/stmt/create_method_stmt_rule.cpp
-    src/jesus/parser/grammar/stmt/repeat_while_stmt_rule.cpp
+    src/jesus/parser/grammar/stmt/repeat_stmt_rule.cpp
 
     # -----------
     # Interpreter
