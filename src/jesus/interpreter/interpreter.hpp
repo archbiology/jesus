@@ -267,6 +267,12 @@ private:
     void visitRepeatTimes(const RepeatTimesStmt &stmt) override;
 
     /**
+     * repeat forever:
+     *   say 'Holy, holy, holy is the Lord God almighty, who was, and who is, and who is to come.'
+     */
+    void visitRepeatForeverStmt(const RepeatForeverStmt &stmt) override;
+
+    /**
      * set disciples to ["Peter", "James", "John"]
      * for each name in disciples:
      *    say name

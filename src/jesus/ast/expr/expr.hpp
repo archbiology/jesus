@@ -63,6 +63,10 @@ public:
         return kind == ExprKind::Variable || kind == ExprKind::GetAttribute;
     }
 
+    virtual bool canBeUsedInRepeatTimesStmt() const {
+        return this->canBeUsedInFormattedString();
+    }
+
     /**
      * @brief Get the return type of the expression, so that variable
      *  creation and update can be enforced at parse time.

@@ -76,6 +76,7 @@ enum class TokenType
     REPEAT,         // `repeat` 3 times
     WHILE,          // repeat while count < 100: ... amen
     TIMES,          // repeat 3 `times`
+    FOREVER,        // repeat forever: ... amen
 
     IF,
     OTHERWISE,

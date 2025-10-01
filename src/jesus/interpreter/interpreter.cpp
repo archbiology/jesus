@@ -302,6 +302,28 @@ void Interpreter::visitRepeatTimes(const RepeatTimesStmt &stmt)
     }
 }
 
+void Interpreter::visitRepeatForeverStmt(const RepeatForeverStmt &stmt)
+{
+    while (true)
+    {
+        try
+        {
+            for (const auto &statement : stmt.body)
+            {
+                execute(statement);
+            }
+        }
+        catch (const ContinueSignal &)
+        {
+            continue;
+        }
+        catch (const BreakSignal &)
+        {
+            break;
+        }
+    }
+}
+
 void Interpreter::visitForEach(const ForEachStmt &stmt)
 {
     Value listValue = evaluate(stmt.iterable);

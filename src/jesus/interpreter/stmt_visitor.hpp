@@ -9,6 +9,7 @@
 #include "../ast/stmt/print_stmt.hpp"
 #include "../ast/stmt/repeat_while_stmt.hpp"
 #include "../ast/stmt/repeat_times_stmt.hpp"
+#include "../ast/stmt/repeat_forever_stmt.hpp"
 #include "../ast/stmt/for_each_stmt.hpp"
 #include "../ast/stmt/break_stmt.hpp"
 #include "../ast/stmt/continue_stmt.hpp"
@@ -58,6 +59,7 @@ public:
     virtual void visitPrintStmt(const PrintStmt &stmt) = 0;
     virtual void visitRepeatWhile(const RepeatWhileStmt &stmt) = 0;
     virtual void visitRepeatTimes(const RepeatTimesStmt &stmt) = 0;
+    virtual void visitRepeatForeverStmt(const RepeatForeverStmt &stmt) = 0;
     virtual void visitForEach(const ForEachStmt &stmt) = 0;
     virtual void visitBreak(const BreakStmt &stmt) = 0;
     virtual void visitContinue(const ContinueStmt &stmt) = 0;

@@ -161,6 +161,9 @@ public:
         case TokenType::WHILE:
             return "WHILE";
 
+        case TokenType::FOREVER:
+            return "FOREVER";
+
         case TokenType::AMEN:
             return "AMEN";
 

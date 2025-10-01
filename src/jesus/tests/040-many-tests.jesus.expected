@@ -236,4 +236,11 @@ null
  Naaman faith count: (int) 5
  Naaman faith count: (int) 6
  Naaman faith count: (int) 7
+(Jesus) Twice
+Twice
+(Jesus) (Jesus) two times
+two times
+(Jesus) (Jesus) ❌ Error: NasaRule2: repeat times expects an integer variable or attribute, but '_two' is of type text
+(Jesus) This should not be printed
+(Jesus) ❌ Error: Unknown expression type (parser.cpp)
 (Jesus) 

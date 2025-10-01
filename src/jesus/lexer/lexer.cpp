@@ -218,17 +218,20 @@ TokenType recognize_token_type(const std::string &word)
     if (word == "if" || word == "se")
         return TokenType::IF;
 
-    if (word == "return")
+    if (word == "return" || word == "retornar")
         return TokenType::RETURN;
 
-    if (word == "repeat")
+    if (word == "repeat" || word == "repetir")
         return TokenType::REPEAT;
 
-    if (word == "times")
+    if (word == "times" || word == "vezes")
         return TokenType::TIMES;
 
-    if (word == "while")
+    if (word == "while" || word == "enquanto")
         return TokenType::WHILE;
+
+    if (word == "forever")
+        return TokenType::FOREVER;
 
     if (word == "otherwise" || word == "senão")
         return TokenType::OTHERWISE;
