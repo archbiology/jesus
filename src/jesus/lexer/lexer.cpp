@@ -92,6 +92,9 @@ TokenType recognize_token_type(const std::string &word)
     if (word == "end")
         return TokenType::EndNote;
 
+    if (word == "is" || word == "é")
+        return TokenType::IS;
+
     if (word == "not" || word == "não")
         return TokenType::NOT;
 
@@ -106,9 +109,6 @@ TokenType recognize_token_type(const std::string &word)
 
     if (word == "=")
         return TokenType::EQUAL;
-
-    if (word == "==")
-        return TokenType::EQUAL_EQUAL;
 
     if (word == "!=")
         return TokenType::NOT_EQUAL;
@@ -262,7 +262,7 @@ std::vector<Token> lex(const std::string &raw_input)
 
     auto utf8_input = utils::to_utf8(raw_input);
 
-    const std::string single_quote = "'"; // single ASCII quote
+    const std::string single_quote = "'";  // single ASCII quote
     const std::string double_quote = "\""; // double quote
     const std::string space = " ";
     const std::string tab = "\t";

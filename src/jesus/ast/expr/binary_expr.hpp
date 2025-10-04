@@ -45,7 +45,7 @@ public:
         Value leftVal = left->evaluate(heart);
         Value rightVal = right->evaluate(heart);
 
-        if (op.type == TokenType::EQUAL_EQUAL)
+        if (op.type == TokenType::IS)
         {
             return Value(leftVal == rightVal);
         }

@@ -7,7 +7,7 @@ std::unique_ptr<Expr> EqualityRule::parse(ParserContext &ctx)
     if (!left)
         return nullptr;
 
-    while (ctx.matchAny({TokenType::EQUAL_EQUAL, TokenType::NOT_EQUAL}))
+    while (ctx.matchAny({TokenType::IS, TokenType::NOT_EQUAL}))
     {
         Token op = ctx.previous();
         auto right = operand->parse(ctx);
