@@ -12,7 +12,7 @@
 #include "../ast/stmt/repeat_forever_stmt.hpp"
 #include "../ast/stmt/for_each_stmt.hpp"
 #include "../ast/stmt/break_stmt.hpp"
-#include "../ast/stmt/continue_stmt.hpp"
+#include "../ast/stmt/skip_stmt.hpp"
 #include "../ast/stmt/return_stmt.hpp"
 
 /**
@@ -62,7 +62,7 @@ public:
     virtual void visitRepeatForeverStmt(const RepeatForeverStmt &stmt) = 0;
     virtual void visitForEach(const ForEachStmt &stmt) = 0;
     virtual void visitBreak(const BreakStmt &stmt) = 0;
-    virtual void visitContinue(const ContinueStmt &stmt) = 0;
+    virtual void visitSkipStmt(const SkipStmt &stmt) = 0;
     virtual void visitReturnStmt(const ReturnStmt &stmt) = 0;
 
     virtual ~StmtVisitor() = default;

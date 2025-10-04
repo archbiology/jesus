@@ -243,4 +243,5 @@ two times
 (Jesus) (Jesus) ❌ Error: NasaRule2: repeat times expects an integer variable or attribute, but '_two' is of type text
 (Jesus) This should not be printed
 (Jesus) ❌ Error: Unknown expression type (parser.cpp)
+(Jesus) Forever...
 (Jesus) 

@@ -309,3 +309,7 @@ create text _two = "two"
 repeat _two times:
     say 'This should not be printed'
 amen
+repeat forever:
+ say 'Forever...'
+ break
+amen

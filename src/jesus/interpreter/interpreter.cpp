@@ -13,7 +13,7 @@
 class BreakSignal : public std::exception
 {
 };
-class ContinueSignal : public std::exception
+class SkipSignal : public std::exception
 {
 };
 
@@ -261,7 +261,7 @@ void Interpreter::visitRepeatWhile(const RepeatWhileStmt &stmt)
                 execute(statement);
             }
         }
-        catch (const ContinueSignal &)
+        catch (const SkipSignal &)
         {
             continue;
         }
@@ -291,7 +291,7 @@ void Interpreter::visitRepeatTimes(const RepeatTimesStmt &stmt)
                 execute(statement);
             }
         }
-        catch (const ContinueSignal &)
+        catch (const SkipSignal &)
         {
             continue;
         }
@@ -313,7 +313,7 @@ void Interpreter::visitRepeatForeverStmt(const RepeatForeverStmt &stmt)
                 execute(statement);
             }
         }
-        catch (const ContinueSignal &)
+        catch (const SkipSignal &)
         {
             continue;
         }
@@ -347,7 +347,7 @@ void Interpreter::visitForEach(const ForEachStmt &stmt)
                 execute(statement);
             }
         }
-        catch (const ContinueSignal &)
+        catch (const SkipSignal &)
         {
             continue;
         }
@@ -363,9 +363,9 @@ void Interpreter::visitBreak(const BreakStmt &)
     throw BreakSignal();
 }
 
-void Interpreter::visitContinue(const ContinueStmt &)
+void Interpreter::visitSkipStmt(const SkipStmt &)
 {
-    throw ContinueSignal();
+    throw SkipSignal();
 }
 
 void Interpreter::visitReturnStmt(const ReturnStmt &stmt)

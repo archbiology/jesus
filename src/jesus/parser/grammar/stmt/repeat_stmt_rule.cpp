@@ -5,6 +5,8 @@
 #include "../../../ast/stmt/repeat_while_stmt.hpp"
 #include "../../../ast/stmt/repeat_times_stmt.hpp"
 #include "../../../ast/stmt/repeat_forever_stmt.hpp"
+#include "../../../ast/stmt/skip_stmt.hpp"
+#include "../../../ast/stmt/break_stmt.hpp"
 #include "../../../ast/stmt/incomplete_block_stmt.hpp"
 #include "../jesus_grammar.hpp"
 #include <stdexcept>
@@ -131,6 +133,10 @@ std::vector<std::unique_ptr<Stmt>> RepeatStmtRule::parseBody(ParserContext &ctx)
             body.push_back(std::move(stmt));
         else if (auto stmt = grammar::UpdateVar->parse(ctx))
             body.push_back(std::move(stmt));
+        else if (ctx.match(TokenType::SKIP))
+            body.push_back(std::make_unique<SkipStmt>());
+        else if (ctx.match(TokenType::BREAK))
+            body.push_back(std::make_unique<BreakStmt>());
         else
             throw std::runtime_error("Unexpected statement inside repeat block.");
 
