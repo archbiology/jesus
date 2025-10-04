@@ -42,6 +42,10 @@ std::unique_ptr<Stmt> parse(const std::vector<Token> &tokens, ParserContext &con
     if (repeatWhileStmt)
         return repeatWhileStmt;
 
+    auto ifStmt = grammar::IfStmt->parse(context);
+    if (ifStmt)
+        return ifStmt;
+
     // If no match, fall back to expression parsing
     auto expr = grammar::Expression->parse(context);
     if (!expr)

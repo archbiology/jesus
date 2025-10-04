@@ -309,7 +309,24 @@ create text _two = "two"
 repeat _two times:
     say 'This should not be printed'
 amen
+create number limit = 3
 repeat forever:
- say 'Forever...'
- break
+  limit = limit - 1
+  say "Decreasing... {limit}"
+  if (limit == 0):
+    break
+  amen
+amen
+create truth isEven = yes
+repeat 10 times:
+  isEven = not isEven
+  limit = limit + 1
+  if limit < 4:
+    skip
+  amen
+  if isEven:
+    say "Even: {limit}"
+  otherwise:
+    say "Odd:  {limit}"
+  amen
 amen
