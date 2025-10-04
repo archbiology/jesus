@@ -14,6 +14,7 @@
 #include "../ast/stmt/break_stmt.hpp"
 #include "../ast/stmt/skip_stmt.hpp"
 #include "../ast/stmt/return_stmt.hpp"
+#include "../ast/stmt/if_stmt.hpp"
 
 /**
  * @brief Interface for visiting and executing statement nodes in the AST.
@@ -64,6 +65,7 @@ public:
     virtual void visitBreak(const BreakStmt &stmt) = 0;
     virtual void visitSkipStmt(const SkipStmt &stmt) = 0;
     virtual void visitReturnStmt(const ReturnStmt &stmt) = 0;
+    virtual void visitIfStmt(const IfStmt &stmt) = 0;
 
     virtual ~StmtVisitor() = default;
 };

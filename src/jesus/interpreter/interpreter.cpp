@@ -379,3 +379,19 @@ void Interpreter::visitReturnStmt(const ReturnStmt &stmt)
 
     throw ReturnSignal(result); // return execution flow to caller, Method::call.
 }
+
+void Interpreter::visitIfStmt(const IfStmt &stmt)
+{
+    Value conditionValue = evaluate(stmt.condition);
+
+    if (conditionValue.AS_BOOLEAN)
+    {
+        for (auto &stmt : stmt.thenBranch)
+            execute(stmt);
+    }
+    else
+    {
+        for (auto &stmt : stmt.otherwiseBranch)
+            execute(stmt);
+    }
+}
