@@ -100,7 +100,7 @@ set(JESUS_CPP_FILES
     # AST Statements
     # --------------
     src/jesus/ast/stmt/break_stmt.cpp
-    src/jesus/ast/stmt/continue_stmt.cpp
+    src/jesus/ast/stmt/skip_stmt.cpp
     src/jesus/ast/stmt/create_class_stmt.cpp
     src/jesus/ast/stmt/create_var_type_stmt.cpp
     src/jesus/ast/stmt/create_var_stmt.cpp

@@ -164,6 +164,12 @@ public:
         case TokenType::FOREVER:
             return "FOREVER";
 
+        case TokenType::SKIP:
+            return "SKIP";
+
+        case TokenType::BREAK:
+            return "BREAK";
+
         case TokenType::AMEN:
             return "AMEN";
 

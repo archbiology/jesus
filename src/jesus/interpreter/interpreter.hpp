@@ -19,7 +19,7 @@
 #include "../ast/stmt/repeat_times_stmt.hpp"
 #include "../ast/stmt/for_each_stmt.hpp"
 #include "../ast/stmt/break_stmt.hpp"
-#include "../ast/stmt/continue_stmt.hpp"
+#include "../ast/stmt/skip_stmt.hpp"
 #include "../spirit/heart.hpp"
 #include "../spirit/symbol_table.hpp"
 
@@ -292,12 +292,12 @@ private:
     /**
      * set disciples to ["Peter", "James", "John"]
      * for each name in disciples:
-     *    if name == James:
-     *      continue # or next; skip;
+     *    if name == 'James':
+     *      skip
      *
      *    say name
      */
-    void visitContinue(const ContinueStmt &stmt) override;
+    void visitSkipStmt(const SkipStmt &stmt) override;
 
     void visitReturnStmt(const ReturnStmt &stmt) override;
 };

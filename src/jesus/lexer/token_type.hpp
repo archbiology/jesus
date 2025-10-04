@@ -77,6 +77,8 @@ enum class TokenType
     WHILE,          // repeat while count < 100: ... amen
     TIMES,          // repeat 3 `times`
     FOREVER,        // repeat forever: ... amen
+    SKIP,           // 'continue' in other languages.
+    BREAK,          // loop break
 
     IF,
     OTHERWISE,

@@ -212,6 +212,12 @@ TokenType recognize_token_type(const std::string &word)
     if (isDouble(word))
         return TokenType::DOUBLE;
 
+    if (word == "skip" || word == "pular")
+        return TokenType::SKIP;
+
+    if (word == "break")
+        return TokenType::BREAK;
+
     if (word == "create" || word == "criar")
         return TokenType::CREATE;
 

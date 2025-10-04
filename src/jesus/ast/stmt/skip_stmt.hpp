@@ -1,18 +1,19 @@
 #pragma once
+
 #include "stmt.hpp"
 
 /**
  * set disciples to ["Peter", "James", "John"]
  * for each name in disciples:
- *    if name == James:
- *      continue # or next; skip;
+ *    if name == 'James':
+ *      skip
  *
  *    say name
  */
-class ContinueStmt : public Stmt
+class SkipStmt : public Stmt
 {
 public:
-  ContinueStmt() = default;
+  SkipStmt() = default;
 
   void accept(StmtVisitor &visitor) const override;
 };
