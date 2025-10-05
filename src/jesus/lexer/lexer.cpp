@@ -209,6 +209,15 @@ TokenType recognize_token_type(const std::string &word)
     if (isDouble(word))
         return TokenType::DOUBLE;
 
+    if (word == "mod")
+        return TokenType::MOD;
+
+    if (word == "odd" || word == "ímpar")
+        return TokenType::ODD;
+
+    if (word == "even" || word == "par")
+        return TokenType::EVEN;
+
     if (word == "skip" || word == "pular")
         return TokenType::SKIP;
 
@@ -458,6 +467,9 @@ std::vector<Token> lex(const std::string &raw_input)
 
             throw std::runtime_error(msg);
         }
+
+        if (c == "%")
+            throw std::runtime_error("Use 'mod' for modulo instead of '%'.");
 
         // Unexpected character
         throw std::runtime_error("Unexpected character: '" + c + "'");

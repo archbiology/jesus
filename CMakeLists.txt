@@ -91,6 +91,7 @@ set(JESUS_CPP_FILES
     src/jesus/ast/expr/variable_expr.cpp
     src/jesus/ast/expr/create_instance_expr.cpp
     src/jesus/ast/expr/get_attr_expr.cpp
+    src/jesus/ast/expr/parity_check_expr.cpp
     src/jesus/ast/expr/method_call_expr.cpp
     src/jesus/ast/expr/formatted_string_expr.cpp
     src/jesus/ast/expr/grouping_expr.cpp

@@ -1,5 +1,6 @@
 #include "equality_rule.hpp"
 #include "../../../../../ast/expr/binary_expr.hpp"
+#include "../../../../../ast/expr/parity_check_expr.hpp"
 
 std::unique_ptr<Expr> EqualityRule::parse(ParserContext &ctx)
 {
@@ -28,6 +29,18 @@ std::unique_ptr<Expr> EqualityRule::parse(ParserContext &ctx)
             // Combine tokens into a single virtual operator 'is not'
             op.lexeme = "is not";
             op.type = TokenType::NOT_EQUAL; // Treat as inequality internally
+        }
+
+        // ---------------------------------------
+        // Handle “is [not] odd/even” immediately
+        // ---------------------------------------
+        if (ctx.match(TokenType::ODD))
+        {
+            return std::make_unique<ParityCheckExpr>(std::move(left), isNegated, true);
+        }
+        else if (ctx.match(TokenType::EVEN))
+        {
+            return std::make_unique<ParityCheckExpr>(std::move(left), isNegated, false);
         }
 
         // -------------------------------

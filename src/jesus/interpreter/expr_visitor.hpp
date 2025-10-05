@@ -10,6 +10,7 @@
 #include "../ast/expr/ask_expr.hpp"
 #include "../ast/expr/create_instance_expr.hpp"
 #include "../ast/expr/get_attr_expr.hpp"
+#include "../ast/expr/parity_check_expr.hpp"
 #include "../ast/expr/method_call_expr.hpp"
 #include "../ast/expr/formatted_string_expr.hpp"
 
@@ -59,6 +60,7 @@ public:
     virtual Value visitGetAttribute(const GetAttributeExpr &expr) = 0;
     virtual Value visitMethodCallExpr(const MethodCallExpr &expr) = 0;
     virtual Value visitFormattedStringExpr(const FormattedStringExpr &expr) = 0;
+    virtual Value visitParityCheckExpr(const ParityCheckExpr &expr) = 0;
 
     virtual ~ExprVisitor() = default;
 };

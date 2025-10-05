@@ -7,7 +7,7 @@ std::unique_ptr<Expr> MultiplicationRule::parse(ParserContext &ctx)
     if (!left)
         return nullptr;
 
-    while (ctx.matchAny({TokenType::STAR, TokenType::SLASH}))
+    while (ctx.matchAny({TokenType::STAR, TokenType::SLASH, TokenType::MOD}))
     {
         Token op = ctx.previous();
         auto right = unary->parse(ctx);

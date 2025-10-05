@@ -70,6 +70,11 @@ public:
             return leftVal / rightVal;
         }
 
+        if (op.type == TokenType::MOD)
+        {
+            return leftVal % rightVal;
+        }
+
         if (op.type == TokenType::LESS)
         {
             return Value(leftVal < rightVal);

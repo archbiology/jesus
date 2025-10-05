@@ -171,6 +171,20 @@ public:
         throw std::runtime_error("Operator '/' not supported for given types");
     }
 
+    friend Value operator%(const Value &left, const Value &right)
+    {
+        if (left.IS_NUMBER && right.IS_NUMBER)
+        {
+            if (left.IS_DOUBLE || right.IS_DOUBLE)
+                throw std::runtime_error("'" + std::to_string(left.toNumber()) + " mod " + std::to_string(right.toNumber()) + "' invalid — 'mod' only supports integers.");
+
+            return Value(left.toInt() % right.toInt());
+        }
+
+        // FIXME: Detect at PARSE time if numbers are 'int'
+        throw std::runtime_error("Operator 'mod' not supported for given types");
+    }
+
     friend bool operator==(const Value &left, const Value &right)
     {
         if (left.IS_FORMLESS && right.IS_FORMLESS)

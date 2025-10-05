@@ -77,6 +77,11 @@ Value Interpreter::visitGetAttribute(const GetAttributeExpr &expr)
     return instance->getAttribute(expr.attribute);
 }
 
+Value Interpreter::visitParityCheckExpr(const ParityCheckExpr &expr)
+{
+    return expr.evaluate(symbol_table.currentScope());
+}
+
 Value Interpreter::visitMethodCallExpr(const MethodCallExpr &expr)
 {
     Value object = expr.object->accept(*this);
