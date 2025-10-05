@@ -116,6 +116,8 @@ public:
 
         case TokenType::SLASH:
             return "SLASH";
+        case TokenType::MOD:
+            return "MOD";
 
         case TokenType::PLUS:
             return "PLUS";

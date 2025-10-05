@@ -256,4 +256,7 @@ Even: (int) 10
 (Jesus) (logic) 0
 (Jesus) ❌ Error: Use 'is not' for inequality instead of '!='.
 (Jesus) (logic) 1
+(Jesus) ❌ Error: Operator 'mod' not supported for given types
+(Jesus) ❌ Error: Use 'mod' for modulo instead of '%'.
+(Jesus) (int) 1
 (Jesus) 
