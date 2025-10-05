@@ -337,3 +337,10 @@ say not 8
 'text' mod 9
 1 % 2
 1 mod 2
+1 is odd
+1 is even
+1 is not odd
+1 is not even
+'test' is even
+2 é par
+1 é ímpar

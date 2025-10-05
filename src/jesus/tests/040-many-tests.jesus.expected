@@ -259,4 +259,11 @@ Even: (int) 10
 (Jesus) ❌ Error: Operator 'mod' not supported for given types
 (Jesus) ❌ Error: Use 'mod' for modulo instead of '%'.
 (Jesus) (int) 1
+(Jesus) (logic) 1
+(Jesus) (logic) 0
+(Jesus) (logic) 0
+(Jesus) (logic) 1
+(Jesus) ❌ Error: ❌ Error: Parity checks ('odd'/'even') only support integer types.
+(Jesus) (logic) 1
+(Jesus) (logic) 1
 (Jesus) 

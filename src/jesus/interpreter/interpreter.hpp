@@ -170,6 +170,8 @@ private:
      */
     Value visitGetAttribute(const GetAttributeExpr &expr) override;
 
+    Value visitParityCheckExpr(const ParityCheckExpr &expr) override;
+
     Value visitMethodCallExpr(const MethodCallExpr &expr) override;
 
     Value visitFormattedStringExpr(const FormattedStringExpr &expr) override;

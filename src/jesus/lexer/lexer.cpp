@@ -212,6 +212,12 @@ TokenType recognize_token_type(const std::string &word)
     if (word == "mod")
         return TokenType::MOD;
 
+    if (word == "odd" || word == "ímpar")
+        return TokenType::ODD;
+
+    if (word == "even" || word == "par")
+        return TokenType::EVEN;
+
     if (word == "skip" || word == "pular")
         return TokenType::SKIP;
 

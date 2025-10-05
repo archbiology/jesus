@@ -43,6 +43,8 @@ enum class TokenType
     STAR,           // *
     SLASH,          // /
     MOD,            // mod ('%' in other languages)
+    ODD,            //
+    EVEN,           //
     COLON,          // ':' (Begining of a block)
     SEMICOLON,      // ';' To separate method args by type: int x, y, z; text name, surname
     COMMA,          // ',' To separate var names: int x, y, z

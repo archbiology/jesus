@@ -118,6 +118,10 @@ public:
             return "SLASH";
         case TokenType::MOD:
             return "MOD";
+        case TokenType::ODD:
+            return "ODD";
+        case TokenType::EVEN:
+            return "EVEN";
 
         case TokenType::PLUS:
             return "PLUS";
@@ -139,6 +143,13 @@ public:
             return "DOUBLE(" + lexeme + ")";
         case TokenType::IDENTIFIER:
             return "IDENTIFIER(" + lexeme + ")";
+
+        case TokenType::RAW_STRING:
+            return "RAW_STRING(" + lexeme + ")";
+
+        case TokenType::FORMATTED_STRING:
+            return "FORMATTED_STRING(" + lexeme + ")";
+
         case TokenType::SAY:
             return "SAY";
         case TokenType::ASK:
