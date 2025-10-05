@@ -92,6 +92,9 @@ TokenType recognize_token_type(const std::string &word)
     if (word == "end")
         return TokenType::EndNote;
 
+    if (word == "a" || word == "an" || word == "um" || word == "uma")
+        return TokenType::A;
+
     if (word == "is" || word == "é")
         return TokenType::IS;
 

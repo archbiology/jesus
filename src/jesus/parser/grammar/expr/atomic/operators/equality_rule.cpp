@@ -1,6 +1,8 @@
 #include "equality_rule.hpp"
+#include "../../../../../ast/expr/literal_expr.hpp"
 #include "../../../../../ast/expr/binary_expr.hpp"
 #include "../../../../../ast/expr/parity_check_expr.hpp"
+#include "../../../../../types/known_types.hpp"
 
 std::unique_ptr<Expr> EqualityRule::parse(ParserContext &ctx)
 {
@@ -41,6 +43,29 @@ std::unique_ptr<Expr> EqualityRule::parse(ParserContext &ctx)
         else if (ctx.match(TokenType::EVEN))
         {
             return std::make_unique<ParityCheckExpr>(std::move(left), isNegated, false);
+        }
+
+        if (ctx.match(TokenType::A))
+        {
+            if (!ctx.match(TokenType::IDENTIFIER))
+                throw std::runtime_error("Expected a type name after 'a/an'.");
+
+            std::string varType_ = ctx.previous().lexeme;
+
+            auto varType = KnownTypes::resolve(varType_, "core"); // std::shared_ptr<CreationType>
+            if (!varType)
+            {
+                throw std::runtime_error("Unknown type: '" + varType_ + "'.");
+            }
+
+            auto exprType = left->getReturnType(ctx);
+            bool result = exprType == varType;
+            if (isNegated)
+                result = !result;
+
+            // FIXME: When inheritance is supported, use TypeCheckExpr instead of LiteralExpr
+            // return std::make_unique<TypeCheckExpr>(std::move(left), varType, isNegated);
+            return std::make_unique<LiteralExpr>(Value(result), KnownTypes::TRUTH);
         }
 
         // -------------------------------

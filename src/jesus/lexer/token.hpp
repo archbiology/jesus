@@ -56,6 +56,8 @@ public:
     {
         switch (type)
         {
+        case TokenType::A:
+            return "A";
         case TokenType::LET:
             return "LET";
         case TokenType::THERE:
