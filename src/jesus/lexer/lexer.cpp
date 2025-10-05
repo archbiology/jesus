@@ -110,9 +110,6 @@ TokenType recognize_token_type(const std::string &word)
     if (word == "=")
         return TokenType::EQUAL;
 
-    if (word == "!=")
-        return TokenType::NOT_EQUAL;
-
     if (word == ">") // greater than
         return TokenType::GREATER;
 
@@ -357,6 +354,13 @@ std::vector<Token> lex(const std::string &raw_input)
             continue;
         }
 
+        if (c == "=")
+        {
+            tokens.emplace_back(TokenType::EQUAL, "=", Value("="));
+            i++;
+            continue;
+        }
+
         if (c == single_quote || c == double_quote)
         {
             const std::string quote_char = c;
@@ -432,7 +436,7 @@ std::vector<Token> lex(const std::string &raw_input)
             continue;
         }
 
-        if (c == "=" || c == "!" || c == "<" || c == ">")
+        if (c == "<" || c == ">")
         {
             // Comparison operators
             std::string op;
@@ -443,6 +447,16 @@ std::vector<Token> lex(const std::string &raw_input)
             tokens.emplace_back(recognize_token_type(op), op, Value(op));
             i++;
             continue;
+        }
+
+        if (c == "!")
+        {
+            std::string msg = "Use 'not' for negation instead of '!'.";
+
+            if (i + 1 < utf8_input.size() && utf8_input[i + 1] == "=")
+                msg = "Use 'is not' for inequality instead of '!='.";
+
+            throw std::runtime_error(msg);
         }
 
         // Unexpected character

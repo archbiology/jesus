@@ -330,3 +330,7 @@ repeat 10 times:
     say "Odd:  {limit}"
   amen
 amen
+say ! 8
+say not 8
+1 != 9
+1 is not 9
