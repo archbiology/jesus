@@ -10,13 +10,13 @@ enum class TokenType
 {
     Note,
     Todo,
-    Warn,
     Explain,
     BeginNote,
     EndNote,
     Word,        // 6
     Unknown,
 
+    A,              // Reserved for type checking: if varname is 'a' ClassName:...
     IS,             // 'is': ==
     NOT,            // not: !
     AND,            // and

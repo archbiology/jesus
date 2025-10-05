@@ -56,6 +56,8 @@ public:
     {
         switch (type)
         {
+        case TokenType::A:
+            return "A";
         case TokenType::LET:
             return "LET";
         case TokenType::THERE:
@@ -74,8 +76,6 @@ public:
             return "NOTE";
         case TokenType::Todo:
             return "TODO";
-        case TokenType::Warn:
-            return "WARN";
         case TokenType::Explain:
             return "EXPLAIN";
         case TokenType::BeginNote:
