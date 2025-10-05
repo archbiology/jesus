@@ -17,12 +17,12 @@ enum class TokenType
     Word,        // 6
     Unknown,
 
-    NOT,            // not
+    IS,             // 'is': ==
+    NOT,            // not: !
     AND,            // and
     OR,             // or
     VERSUS,         // versus or vs (it's called XOR, represented as "^" in other languages)
-    EQUAL,          // =
-    EQUAL_EQUAL,    // ==
+    EQUAL,          // '=' for variable assignments. For 'equality' comparison, we use 'is' and 'is not'
     NOT_EQUAL,      // !=
     GREATER,        // >
     GREATER_EQUAL,  // >=

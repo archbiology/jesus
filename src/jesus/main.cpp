@@ -46,14 +46,41 @@ int main(int argc, char **argv)
         {
 
             auto tokens = lex(buffer);
+
             ParserContext context(tokens, &jesus);
-            auto you = parse(tokens, context); // AST - Abstract Syntax Tree
+            std::vector<std::unique_ptr<Stmt>> statements;
+            bool waitingForMoreTokens = false;
 
-            if (you)
+            // --------------------------------
+            // Make sure all tokens are parsed
+            // Otherwise, '9 = 9' just prints 9
+            // --------------------------------
+            while (!context.isAtEnd())
             {
-                if (you->inProgress())
-                    continue;
+                auto stmt = parse(tokens, context); // AST - Abstract Syntax Tree
+                if (stmt)
+                {
+                    if (stmt->inProgress())
+                    {
+                        waitingForMoreTokens = true;
+                        break;
+                    }
 
+                    statements.push_back(std::move(stmt));
+                }
+            }
+
+            // ----------------------------------------
+            // ENTER pressed but still need more tokens
+            // ----------------------------------------
+            if (waitingForMoreTokens)
+                continue;
+
+            // ----------------------------------------
+            // Execute the statements (run the program)
+            // ----------------------------------------
+            for (auto &you : statements)
+            {
                 jesus.loves(you);
             }
         }
@@ -61,14 +88,6 @@ int main(int argc, char **argv)
         {
             std::cerr << "❌ Error: " << e.what() << "\n";
         }
-
-        // ----------------
-        // Print the tokens
-        // ----------------
-        // for (const auto &token : tokens)
-        // {
-        //     std::cout << "[" << token.type << ": " << token.value << "]\n";
-        // }
 
         buffer.clear();
         std::cout << "(Jesus) ";

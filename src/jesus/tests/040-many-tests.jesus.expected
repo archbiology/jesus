@@ -40,8 +40,7 @@
 (Jesus) (logic) 1
 (Jesus) (logic) 0
 (Jesus) (logic) 0
-(Jesus) ❌ Error: Unknown expression type (parser.cpp)
-(Jesus) ❌ Error: The variable 'age' already exists (scope: global).
+(Jesus) (Jesus) ❌ Error: The variable 'age' already exists (scope: global).
 (Jesus) adult
 (Jesus) (int) 2
 (Jesus) (int) 9
@@ -253,4 +252,8 @@ Odd:  (int) 7
 Even: (int) 8
 Odd:  (int) 9
 Even: (int) 10
+(Jesus) ❌ Error: Use 'not' for negation instead of '!'.
+(Jesus) (logic) 0
+(Jesus) ❌ Error: Use 'is not' for inequality instead of '!='.
+(Jesus) (logic) 1
 (Jesus) 

@@ -7,9 +7,37 @@ std::unique_ptr<Expr> EqualityRule::parse(ParserContext &ctx)
     if (!left)
         return nullptr;
 
-    while (ctx.matchAny({TokenType::EQUAL_EQUAL, TokenType::NOT_EQUAL}))
+    int snapshot = ctx.snapshot();
+    if (ctx.match(TokenType::EQUAL) && ctx.match(TokenType::EQUAL))
+    {
+        throw std::runtime_error("Use 'is' for equality instead of '=='.");
+    }
+
+    ctx.restore(snapshot);
+    while (ctx.match(TokenType::IS))
     {
         Token op = ctx.previous();
+
+        // ----------------------------------
+        // Handle optional 'not' for 'is not'
+        // ----------------------------------
+        bool isNegated = false;
+        if (ctx.match(TokenType::NOT))
+        {
+            isNegated = true;
+            // Combine tokens into a single virtual operator 'is not'
+            op.lexeme = "is not";
+            op.type = TokenType::NOT_EQUAL; // Treat as inequality internally
+        }
+
+        // -------------------------------
+        // Otherwise it's a plain equality
+        // -------------------------------
+        if (!isNegated)
+        {
+            op.type = TokenType::IS; // Equivalent to equality (== in other languages)
+        }
+
         auto right = operand->parse(ctx);
         if (!right)
         {

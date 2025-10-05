@@ -14,7 +14,7 @@ say "adult" if (( age >= 18 ) ) otherwise "minor"
 (age + 4)
 ((( age + 3 + age )))
 ( age/ ( 3 + 3) * 4 )
-1+2*3 == 7
+1+2*3 is 7
 (-1)
 ---++age
 not age
@@ -38,8 +38,8 @@ create text name = "Jesus"
 say name if ( 1 vs 1 ) otherwise "final"
 (age*4)
 say "adult" if ((age>=18)) otherwise "minor"
-( age == 4 )
-( age == age )
+( age is 4 )
+( age is age )
 ( age > age )
 ( age >= age )
 ( age < age )
@@ -66,7 +66,7 @@ say "adult" if ( ( age >= 18 ) ) otherwise "minor"
 ( age / 3 )
 ( age / 3 + 3 * 4 )
 ( age / ( 3 + 3 ) * 4 )
-1 + 2 * 3 == 7
+1 + 2 * 3 is 7
 (  -1 )
 - - - + + age
 not age
@@ -199,13 +199,13 @@ let there be MultiLineClass:
 amen
 create MultiLineClass multiline = 12
 say multiline
-say "igual" se 1 == 1 senão "diferente"
+say "igual" se 1 is 1 senão "diferente"
 criar text nome = "Jesus"
 say não nome
 criar number sim = 1
 criar number nao = 0
-say sim ==  1 e nao == 0
-say sim == 1 ou nao == 0
+say sim é 1 e nao é 0
+say sim é 1 ou nao é 0
 haja Luz: amém
 criar Luz dia = 1
 say dia
@@ -313,7 +313,7 @@ create number limit = 3
 repeat forever:
   limit = limit - 1
   say "Decreasing... {limit}"
-  if (limit == 0):
+  if (limit is 0):
     break
   amen
 amen
@@ -330,3 +330,7 @@ repeat 10 times:
     say "Odd:  {limit}"
   amen
 amen
+say ! 8
+say not 8
+1 != 9
+1 is not 9

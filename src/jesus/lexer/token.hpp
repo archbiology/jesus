@@ -80,6 +80,10 @@ public:
             return "EXPLAIN";
         case TokenType::BeginNote:
             return "BEGIN_NOTE";
+        case TokenType::EQUAL:
+            return "EQUAL"; // variable assignment
+        case TokenType::IS:
+            return "IS"; // equality  ('==' in other languages)
         case TokenType::NOT:
             return "NOT";
         case TokenType::AND:
@@ -88,8 +92,6 @@ public:
             return "OR";
         case TokenType::VERSUS:
             return "VERSUS";
-        case TokenType::EQUAL_EQUAL:
-            return "EQUAL_EQUAL";
         case TokenType::NOT_EQUAL:
             return "NOT_EQUAL";
         case TokenType::GREATER:
