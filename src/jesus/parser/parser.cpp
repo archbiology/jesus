@@ -13,6 +13,10 @@ std::unique_ptr<Stmt> parse(const std::vector<Token> &tokens, ParserContext &con
     if (!tokens_count)
         return nullptr;
 
+    context.consumeAllNewLines();
+    if (context.isAtEnd())
+        return nullptr;
+
     int snapshot = context.snapshot();
     auto outputStmt = grammar::Print->parse(context);
     if (outputStmt)
@@ -42,11 +46,13 @@ std::unique_ptr<Stmt> parse(const std::vector<Token> &tokens, ParserContext &con
     if (repeatWhileStmt)
         return repeatWhileStmt;
 
+    context.restore(snapshot);
     auto ifStmt = grammar::IfStmt->parse(context);
     if (ifStmt)
         return ifStmt;
 
     // If no match, fall back to expression parsing
+    context.restore(snapshot);
     auto expr = grammar::Expression->parse(context);
     if (!expr)
     {
