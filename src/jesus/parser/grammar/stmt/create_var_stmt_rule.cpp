@@ -3,6 +3,7 @@
 #include "../../../ast/stmt/create_var_with_ask_stmt.hpp"
 #include "../../../ast/expr/create_instance_expr.hpp"
 #include "../../../types/known_types.hpp"
+#include "../../../lexer/keywords.hpp"
 #include <stdexcept>
 
 std::unique_ptr<Stmt> CreateVarStmtRule::parse(ParserContext &ctx)
@@ -15,10 +16,18 @@ std::unique_ptr<Stmt> CreateVarStmtRule::parse(ParserContext &ctx)
 
     std::string varType_ = ctx.previous().lexeme;
 
-    if (!ctx.match(TokenType::IDENTIFIER))
-        throw std::runtime_error("Expected variable name after 'create type'");
-
+    Token nameToken = ctx.advance();
     std::string varName = ctx.previous().lexeme;
+
+    if (Keywords::isReserved(varName))
+    {
+        throw std::runtime_error("'" + varName + "' is a reserved word and cannot be used as a variable name.");
+    }
+
+    if (nameToken.type != TokenType::IDENTIFIER)
+    {
+        throw std::runtime_error("Expected an identifier name after 'create " + varType_ + "'.");
+    }
 
     auto varType = KnownTypes::resolve(varType_, "core");
     if (!varType)
@@ -70,7 +79,7 @@ std::unique_ptr<Stmt> CreateVarStmtRule::parse(ParserContext &ctx)
         if (!typesMatch)
         {
             if (value_str.empty())
-                value_str = "type '" + valueType->name+"'";
+                value_str = "type '" + valueType->name + "'";
 
             throw std::runtime_error("Invalid value " + value_str + " for variable '" + varName + "' declared as type " + varType->name);
         }

@@ -158,10 +158,10 @@ create number Negative < 0
 create Negative debit = -6
 say debit
 debit = 19
-create number Oter >= 7
-create Oter a = 7
-say a
-create Oter a = 6
+create number Other >= 7
+create Other ab = 7
+say ab
+create Other ab = 6
 create number Tribe <= 12
 create Tribe israel = 12
 create Tribe israel = 13
@@ -209,6 +209,7 @@ say sim é 1 ou nao é 0
 haja Luz: amém
 criar Luz dia = 1
 say dia
+dia é uma Luz
 haja Canção
 criar Canção louvor = "Me ama, Ele me ama..."
 say louvor
@@ -220,20 +221,20 @@ let there be Person:
     purpose bless(): amen
     propósito sejaUmaBenção(): amém
     purpose testing(text what): create text var = "inside function" amen
-    purpose testTheSpirits(text a; number b): create text reference = "1 John 4:1" amen
-    purpose aToB(number a; number b):
+    purpose testTheSpirits(text a_; number b): create text reference = "1 John 4:1" amen
+    purpose aToB(number a_; number b):
         say "a before"
-        say a
+        say a_
         create number c = 1
-        create number d = a
+        create number d = a_
         say "b before"
         say b
         say "before update b"
         b = 99
         say "before update a"
-        a = b
+        a_ = b
         say "a updated"
-        say a
+        say a_
         b = d
         say b
         say name
@@ -344,3 +345,8 @@ say not 8
 'test' is even
 2 é par
 1 é ímpar
+
+1 is a number
+2 is not a number
+3 is a User
+'a text' is a number

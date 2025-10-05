@@ -10,7 +10,6 @@ enum class TokenType
 {
     Note,
     Todo,
-    Warn,
     Explain,
     BeginNote,
     EndNote,

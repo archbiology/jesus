@@ -166,6 +166,7 @@ What is your age again (curent: (int) 33)? (Jesus) (double) 2025.000000
  class: "Luz",
  attributes: { }
 }
+(Jesus) (logic) 1
 (Jesus) (Jesus) (Jesus) {type: "instance",
  class: "Canção",
  attributes: { }
@@ -184,7 +185,7 @@ What is your age again (curent: (int) 33)? (Jesus) (double) 2025.000000
 }
 (Jesus) I am inside functionWithoutParams
 null
-(Jesus) ❌ Error: Missing argument for parameter 'a'
+(Jesus) ❌ Error: Missing argument for parameter 'a_'
 (Jesus) The new name is: 
 (Jesus) Adam
 (Jesus) a before
@@ -266,4 +267,8 @@ Even: (int) 10
 (Jesus) ❌ Error: ❌ Error: Parity checks ('odd'/'even') only support integer types.
 (Jesus) (logic) 1
 (Jesus) (logic) 1
+(Jesus) (Jesus) (logic) 1
+(Jesus) (logic) 0
+(Jesus) (logic) 0
+(Jesus) (logic) 0
 (Jesus) 

@@ -2,6 +2,7 @@
 #include <ostream> // For std::ostream
 #include <string>
 #include "../utils/string_utils.hpp"
+#include "keywords.hpp"
 
 /**
  * @brief Check if a string is a double
@@ -74,137 +75,6 @@ bool isIdentifierChar(const std::string &c)
 
 TokenType recognize_token_type(const std::string &word)
 {
-    if (word == "note:")
-        return TokenType::Note;
-
-    if (word == "todo:")
-        return TokenType::Todo;
-
-    if (word == "warn:")
-        return TokenType::Warn;
-
-    if (word == "explain:")
-        return TokenType::Explain;
-
-    if (word == "begin")
-        return TokenType::BeginNote;
-
-    if (word == "end")
-        return TokenType::EndNote;
-
-    if (word == "a" || word == "an" || word == "um" || word == "uma")
-        return TokenType::A;
-
-    if (word == "is" || word == "é")
-        return TokenType::IS;
-
-    if (word == "not" || word == "não")
-        return TokenType::NOT;
-
-    if (word == "and" || word == "e")
-        return TokenType::AND;
-
-    if (word == "or" || word == "ou")
-        return TokenType::OR;
-
-    if (word == "vs" || word == "versus")
-        return TokenType::VERSUS;
-
-    if (word == "=")
-        return TokenType::EQUAL;
-
-    if (word == ">") // greater than
-        return TokenType::GREATER;
-
-    if (word == ">=") // greater or equals to
-        return TokenType::GREATER_EQUAL;
-
-    if (word == "<") // less than
-        return TokenType::LESS;
-
-    if (word == "<=") // less or equal to
-        return TokenType::LESS_EQUAL;
-
-    if (word == "no")
-        return TokenType::NO;
-
-    if (word == "yes")
-        return TokenType::YES;
-
-    if (word == "male")
-        return TokenType::MALE;
-
-    if (word == "female")
-        return TokenType::FEMALE;
-
-    if (word == "lightday")
-        return TokenType::LIGHDAY;
-
-    if (word == "skyday")
-        return TokenType::SKYDAY;
-
-    if (word == "treeday")
-        return TokenType::TREEDAY;
-
-    if (word == "lampday")
-        return TokenType::LAMPDAY;
-
-    if (word == "fishday")
-        return TokenType::FISHDAY;
-
-    if (word == "walkday")
-        return TokenType::WALKDAY;
-
-    if (word == "shabbat")
-        return TokenType::SHABBAT;
-
-    if (word == "matches")
-        return TokenType::MATCHES;
-
-    if (word == "between")
-        return TokenType::BETEWEEN;
-
-    if (word == "(")
-        return TokenType::LEFT_PAREN;
-
-    if (word == ")")
-        return TokenType::RIGHT_PAREN;
-
-    if (word == "*")
-        return TokenType::STAR;
-
-    if (word == "/")
-        return TokenType::SLASH;
-
-    if (word == "+")
-        return TokenType::PLUS;
-
-    if (word == "-")
-        return TokenType::MINUS;
-
-    if (word == "ask")
-        return TokenType::ASK;
-
-    if (word == "say")
-        return TokenType::SAY;
-
-    if (word == "amen" || word == "amém")
-        return TokenType::AMEN;
-
-    if (word == "warn")
-        return TokenType::WARN;
-
-    if (word == "let")
-        return TokenType::LET;
-
-    if (word == "there")
-        return TokenType::THERE;
-
-    if (word == "be")
-        return TokenType::BE;
-
-    if (word == "haja")
-        return TokenType::HAJA;
 
     if (isInteger(word))
         return TokenType::INT;
@@ -212,49 +82,7 @@ TokenType recognize_token_type(const std::string &word)
     if (isDouble(word))
         return TokenType::DOUBLE;
 
-    if (word == "mod")
-        return TokenType::MOD;
-
-    if (word == "odd" || word == "ímpar")
-        return TokenType::ODD;
-
-    if (word == "even" || word == "par")
-        return TokenType::EVEN;
-
-    if (word == "skip" || word == "pular")
-        return TokenType::SKIP;
-
-    if (word == "break")
-        return TokenType::BREAK;
-
-    if (word == "create" || word == "criar")
-        return TokenType::CREATE;
-
-    if (word == "if" || word == "se")
-        return TokenType::IF;
-
-    if (word == "return" || word == "retornar")
-        return TokenType::RETURN;
-
-    if (word == "repeat" || word == "repetir")
-        return TokenType::REPEAT;
-
-    if (word == "times" || word == "vezes")
-        return TokenType::TIMES;
-
-    if (word == "while" || word == "enquanto")
-        return TokenType::WHILE;
-
-    if (word == "forever")
-        return TokenType::FOREVER;
-
-    if (word == "otherwise" || word == "senão")
-        return TokenType::OTHERWISE;
-
-    if (word == "purpose" || word == "propósito")
-        return TokenType::PURPOSE;
-
-    return TokenType::IDENTIFIER;
+    return Keywords::recognize(word);
 }
 
 /**
@@ -492,8 +320,8 @@ std::ostream &operator<<(std::ostream &os, const TokenType &type)
     case TokenType::Todo:
         return os << "Todo";
 
-    case TokenType::Warn:
-        return os << "Warn";
+    case TokenType::WARN:
+        return os << "WARN";
 
     case TokenType::Explain:
         return os << "Explain";

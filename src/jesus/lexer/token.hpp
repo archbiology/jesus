@@ -76,8 +76,6 @@ public:
             return "NOTE";
         case TokenType::Todo:
             return "TODO";
-        case TokenType::Warn:
-            return "WARN";
         case TokenType::Explain:
             return "EXPLAIN";
         case TokenType::BeginNote:
