@@ -3,6 +3,7 @@
 #include <string>
 #include <vector>
 #include <memory>
+#include "../../types/creation_type.hpp"
 
 /**
  * @brief Represents the 'creation' of a new class in the Jesus language.
@@ -23,11 +24,15 @@ class CreateClassStmt : public Stmt
 public:
     std::string name;
     std::string module_name;
+    const std::shared_ptr<CreationType> parent_class;
     std::vector<std::shared_ptr<Stmt>> body;
 
     CreateClassStmt(const std::string &name, const std::string &module_name,
+                    const std::shared_ptr<CreationType> &parent_class,
                     const std::vector<std::shared_ptr<Stmt>> &body)
-        : name(name), module_name(module_name), body(body) {}
+        : name(name), module_name(module_name),
+        parent_class(parent_class),
+        body(body) {}
 
     void accept(StmtVisitor &visitor) const override;
 };

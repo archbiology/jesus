@@ -66,6 +66,8 @@ public:
             return "BE";
         case TokenType::HAJA:
             return "HAJA";
+        case TokenType::FROM:
+            return "FROM";
         case TokenType::CREATE:
             return "CREATE";
         case TokenType::PURPOSE:

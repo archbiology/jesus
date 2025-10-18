@@ -76,6 +76,8 @@ namespace Keywords
         {"be", TokenType::BE},
         {"haja", TokenType::HAJA},
 
+        {"from", TokenType::FROM},
+
         {"mod", TokenType::MOD},
         {"odd", TokenType::ODD},
         {"ímpar", TokenType::ODD},

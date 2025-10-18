@@ -186,6 +186,7 @@ void Interpreter::visitCreateClass(const CreateClassStmt &stmt)
         PrimitiveType::Class,
         stmt.name,
         stmt.module_name,
+        stmt.parent_class,
         constraints);
 
     for (auto &member : stmt.body)
@@ -222,6 +223,7 @@ void Interpreter::visitCreateVarType(const CreateVarTypeStmt &stmt)
         stmt.base_type->primitive_type,
         stmt.name,
         stmt.module_name,
+        stmt.base_type,
         stmt.constraints);
 
     KnownTypes::registerType(std::move(custom_type));
