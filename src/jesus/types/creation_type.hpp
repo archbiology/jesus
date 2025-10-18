@@ -5,10 +5,12 @@
 #include "constraints/constraint.hpp"
 
 class Method; // Forward declaration
+class Member; // Forward declaration
 
 enum class PrimitiveType
 {
     Null,
+    Good, // Genesis 1:31
     Boolean,
     Number,
     Text,
@@ -37,13 +39,18 @@ public:
     const std::string module_name;
 
     const PrimitiveType primitive_type;
+    std::shared_ptr<CreationType> parent_class = nullptr;
 
     std::shared_ptr<Heart> class_attributes = nullptr;
     std::unordered_map<std::string, std::shared_ptr<Method>> methods;
 
     CreationType(PrimitiveType primitive_type, std::string name, std::string module = "core",
+                 std::shared_ptr<CreationType> parent = nullptr,
                  std::vector<std::shared_ptr<IConstraint>> constraints = {})
-        : primitive_type(primitive_type), name(name), module_name(module), constraints(std::move(constraints)), id(lastId++)
+        : primitive_type(primitive_type),
+          name(name), module_name(module),
+          parent_class(std::move(parent)),
+          constraints(std::move(constraints)), id(lastId++)
     {
 
         if (primitive_type == PrimitiveType::Class)
@@ -131,23 +138,16 @@ public:
         methods[name] = std::move(method);
     }
 
-    bool attributeExists(const std::string &name)
-    {
-        if (primitive_type == PrimitiveType::Class)
-        {
-            return class_attributes->varExists(name);
-        }
-        return false;
-    }
-
-    std::shared_ptr<Method> findMethod(const std::string &name) const
-    {
-        auto it = methods.find(name);
-        if (it != methods.end())
-            return it->second;
-
-        return nullptr;
-    }
+    /**
+     * @brief
+     * During attribute resolution, if a member is found in the instance or
+     * inherited from a parent, a shared pointer to this Member is returned.
+     * Otherwise, `nullptr` is returned to indicate the absence of a definition.
+     *
+     * @param name
+     * @return std::variant<std::shared_ptr<Method>, std::string>
+     */
+    std::shared_ptr<Member> findMember(const std::string &name, std::shared_ptr<CreationType> current_class) const;
 
     const bool isNull() const
     {
