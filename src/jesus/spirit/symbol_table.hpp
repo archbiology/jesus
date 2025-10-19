@@ -54,7 +54,7 @@ public:
         // Iterate over the scopes in reverse order (rbegin, rend)
         for (auto scope = scopes.rbegin(); scope != scopes.rend(); ++scope)
         {
-            if ((*scope)->varExists(name))
+            if ((*scope)->varExistsInHierarchy(name))
                 return true;
         }
 
@@ -70,7 +70,7 @@ public:
         // Iterate over the scopes in reverse order (rbegin, rend)
         for (auto scope = scopes.rbegin(); scope != scopes.rend(); ++scope)
         {
-            auto isVarOnScope = (*scope)->varExists(name);
+            auto isVarOnScope = (*scope)->varExistsInHierarchy(name);
             if (isVarOnScope)
                 return (*scope)->getVar(name);
         }
@@ -87,7 +87,7 @@ public:
         // Iterate over the scopes in reverse order (rbegin, rend)
         for (auto scope = scopes.rbegin(); scope != scopes.rend(); ++scope)
         {
-            auto isVarOnScope = (*scope)->varExists(name);
+            auto isVarOnScope = (*scope)->varExistsInHierarchy(name);
             if (isVarOnScope)
             {
                 (*scope)->updateVar(name, value);

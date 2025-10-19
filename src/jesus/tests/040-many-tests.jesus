@@ -350,3 +350,40 @@ say not 8
 2 is not a number
 3 is a User
 'a text' is a number
+
+let there be Parent:
+    create text name = "Abraham"
+    create text surname = "Terahson"
+
+    purpose praise():
+        say "Praise the LORD, oh my soul ({name} {surname}),"
+    amen
+amen
+
+let there be Son from Parent:
+    create text surname = "Abrahamson"
+amen
+
+let there be GrandSon from Son:
+    create text surname = "Isaacson"
+
+    purpose praise():
+        name = "Jacob"
+        say "Bethel ({name} {surname}),"
+    amen
+
+    purpose who():
+        say "I am Israel, previously named {name}."
+    amen
+amen
+
+create Parent abraham = 1
+abraham praise
+
+create Son isaac = 1
+isaac praise
+
+create GrandSon jacob = 1
+jacob praise
+say name
+jacob who

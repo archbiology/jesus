@@ -3,9 +3,9 @@
 
 void Heart::createVar(const std::string &type, const std::string &name, const Value &value)
 {
-    if (varExists(name))
+    if (localVarExists(name))
     {
-        throw std::runtime_error("The variable '" + name + "' already exists" + " (scope: " + scope_name + ").");
+        throw std::runtime_error("The variable '" + name + "' already exists in this scope (" + scope_name + ").");
     }
 
     variables[name] = value;
@@ -22,9 +22,9 @@ Value Heart::getVar(const std::string &name) const
         return it->second;
     }
 
-    if (parent_scope)
+    if (parent_attributes)
     {
-        return parent_scope->getVar(name);
+        return parent_attributes->getVar(name);
     }
 
     throw std::runtime_error("Undefined variable: " + name + " (scope: " + scope_name + ")");
@@ -32,15 +32,36 @@ Value Heart::getVar(const std::string &name) const
 
 void Heart::updateVar(const std::string &name, const Value &value)
 {
-    if (!varExists(name))
+     // If it exists locally, update here
+    auto it = variables.find(name);
+    if (it != variables.end())
     {
-        throw std::runtime_error("Cannot assign to undefined variable: " + name + " (scope: " + scope_name + ")");
+        it->second = value;
+        return;
     }
 
-    variables[name] = value;
+    // Otherwise, recurse to parent
+    if (parent_attributes)
+    {
+        parent_attributes->updateVar(name, value);
+        return;
+    }
+
+    throw std::runtime_error("Cannot assign to undefined variable: " + name + " (scope: " + scope_name + ")");
 }
 
-bool Heart::varExists(const std::string &name) const
+bool Heart::localVarExists(const std::string &name) const
 {
     return variables.find(name) != variables.end();
+}
+
+bool Heart::varExistsInHierarchy(const std::string &name) const
+{
+    if (localVarExists(name))
+        return true;
+
+    if (parent_attributes)
+        return parent_attributes->varExistsInHierarchy(name);
+
+    return false;
 }

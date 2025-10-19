@@ -10,7 +10,7 @@ std::shared_ptr<Member> CreationType::findMember(const std::string &name, std::s
         // ----------------
         // Attribute lookup
         // ----------------
-        if (klass->class_attributes && klass->class_attributes->varExists(name))
+        if (klass->class_attributes && klass->class_attributes->localVarExists(name))
             return std::make_shared<Member>(name, klass);
 
         // -------------
