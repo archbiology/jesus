@@ -40,7 +40,7 @@
 (Jesus) (logic) 1
 (Jesus) (logic) 0
 (Jesus) (logic) 0
-(Jesus) (Jesus) ❌ Error: The variable 'age' already exists (scope: global).
+(Jesus) (Jesus) ❌ Error: The variable 'age' already exists in this scope (global).
 (Jesus) adult
 (Jesus) (int) 2
 (Jesus) (int) 9
@@ -83,7 +83,7 @@
 (Jesus) (int) 6
 (Jesus) (int) 6
 (Jesus) (int) 6
-(Jesus) ❌ Error: The variable 'name' already exists (scope: global).
+(Jesus) ❌ Error: The variable 'name' already exists in this scope (global).
 (Jesus) null
 (Jesus) (int) 8
 (Jesus) final
@@ -127,7 +127,7 @@
 (Jesus) ❌ Error: Undefined variable: hilux (scope: global)
 (Jesus) (Jesus) (int) 490
 (Jesus) (Jesus) Jesus loves YOU
-(Jesus) ❌ Error: The variable 'age' already exists (scope: global).
+(Jesus) ❌ Error: The variable 'age' already exists in this scope (global).
 (Jesus) (Jesus) ❌ Error: Expected value > (double) 0.000000
 (Jesus) ❌ Error: Undefined variable: abc (scope: global)
 (Jesus) (Jesus) (int) 9
@@ -271,4 +271,13 @@ Even: (int) 10
 (Jesus) (logic) 0
 (Jesus) (logic) 0
 (Jesus) (logic) 0
+(Jesus) (Jesus) (Jesus) (Jesus) (Jesus) (Jesus) (Jesus) (Jesus) (Jesus) Praise the LORD, oh my soul (Abraham Terahson),
+null
+(Jesus) (Jesus) (Jesus) Praise the LORD, oh my soul (Abraham Abrahamson),
+null
+(Jesus) (Jesus) (Jesus) Bethel (Jacob Isaacson),
+null
+(Jesus) Jesus
+(Jesus) I am Israel, previously named Jacob.
+null
 (Jesus) 

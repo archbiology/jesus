@@ -79,6 +79,7 @@ set(JESUS_CPP_FILES
     # ----------------------
     # Initial variable types
     # ----------------------
+    src/jesus/types/creation_type.cpp
     src/jesus/types/known_types.cpp
 
     # ---------------

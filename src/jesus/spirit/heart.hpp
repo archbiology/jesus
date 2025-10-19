@@ -31,7 +31,10 @@ public:
      *
      * @param scope_name the scope name. E.g.: global, className, methodName
      */
-    explicit Heart(std::string scope_name) : scope_name(std::move(scope_name)), semantics_analyzer(std::make_shared<SpiritOfUnderstanding>()) {}
+    explicit Heart(std::string scope_name, std::shared_ptr<Heart> parent = nullptr)
+        : scope_name(std::move(scope_name)),
+          parent_attributes(std::move(parent)),
+          semantics_analyzer(std::make_shared<SpiritOfUnderstanding>()) {}
 
     /**
      * @brief Construct a new Heart object
@@ -39,24 +42,45 @@ public:
      * @param scope_name The scope name of the final copy
      * @param other The original that will be used as a copy
      */
-    std::shared_ptr<Heart> clone(const std::string &new_scope_name) const
+    std::shared_ptr<Heart> clone(const std::string &new_scope_name, std::shared_ptr<Heart> parent_attributes_override = nullptr) const
     {
         auto copy = std::make_shared<Heart>(scope_name);
         copy->variables = variables;
         copy->variableOrder = variableOrder;
         copy->semantics_analyzer = semantics_analyzer;
+
+        if (parent_attributes_override)
+            copy->parent_attributes = parent_attributes_override;
+        else
+            copy->parent_attributes = parent_attributes;
+
         return copy;
     }
 
     /**
-     * @brief Checks whether a variable with the given name already exists.
+     * @brief Checks whether a variable with the given name exists in the current local scope.
+     *
+     * It does not search in parent or global scopes.
+     *
+     * "Each one should test their own actions, then they can rejoice in themselves alone,
+     * without comparing themselves to someone else." — Galatians 6:4
+     */
+    bool localVarExists(const std::string &name) const;
+
+    /**
+     * @brief Checks whether a variable or attribute with the given name exists
+     * in the current scope or any parent class (inherited attributes).
+     *
+     * This function searches for the variable name first in the current context, and
+     * then recursively in parent class attributes. It does *not* check any global or
+     * external scope beyond the inheritance chain.
      *
      * 📖 "Be sure you know the condition of your flocks, give careful attention to your herds." — Proverbs 27:23
      *
      * @param name The name of the variable to check.
      * @return true if the variable is already defined, false otherwise.
      */
-    bool varExists(const std::string &name) const;
+    bool varExistsInHierarchy(const std::string &name) const;
 
     /**
      * @brief Create a variable with the given name and value.
@@ -127,6 +151,9 @@ public:
         std::string str = "";
         bool removeLastComma = false;
 
+        if (parent_attributes)
+            str = parent_attributes->toString();
+
         for (auto &pair : variables)
         {
             const std::string &key = pair.first;
@@ -146,6 +173,7 @@ public:
     }
 
 private:
+    std::shared_ptr<Heart> parent_attributes = nullptr;
     std::vector<std::string> variableOrder; // insertion order
     std::unordered_map<std::string, Value> variables;
     std::shared_ptr<SpiritOfUnderstanding> semantics_analyzer;

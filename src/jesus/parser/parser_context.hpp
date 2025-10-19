@@ -180,11 +180,12 @@ public:
 
     std::string toString()
     {
-        std::string str = "ParserContext(current: " + std::to_string(current) + ", tokens: ";
+        std::string str = "ParserContext(current: " + std::to_string(current) + ", tokens: \n";
 
+        int count = 0;
         for (auto token : tokens)
         {
-            str += token.toString() + ", ";
+            str += std::to_string(count++) + ": " + token.toString() + ",\n";
         }
 
         str += ")";

@@ -54,6 +54,7 @@ enum class TokenType
     THERE,          // let there be Person: amen (class in other langs)
     BE,             // let there be Person: amen (class in other langs)
     HAJA,           // haja Luz: amén (portuguese way of creating class)
+    FROM,           // let there be SonClass from ParentClass: amen
     PURPOSE,        // create method: purpose praise(): amen
     RETURN,         // Function returns: return 144000
     CREATE,         // create days = 7

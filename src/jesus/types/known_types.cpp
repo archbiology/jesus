@@ -17,6 +17,7 @@
 void KnownTypes::registerBuiltInTypes()
 {
     auto truth = std::make_shared<TruthType>();
+    auto creation = std::make_shared<CreationType>(PrimitiveType::Good, "creation", "core");
     auto nothing = std::make_shared<NothingType>();
     auto sex = std::make_shared<SexType>();
     auto weekday = std::make_shared<WeekdayType>();
@@ -41,6 +42,7 @@ void KnownTypes::registerBuiltInTypes()
     CLASS = klass;
 
     registerType(truth);
+    registerType(creation);
     registerType(nothing);
     registerType(sex);
     registerType(weekday);

@@ -1,6 +1,7 @@
 #include "create_class_stmt_rule.hpp"
 #include "../../../ast/stmt/create_class_stmt.hpp"
 #include "../../../ast/stmt/incomplete_block_stmt.hpp"
+#include "../../../types/known_types.hpp"
 #include <stdexcept>
 
 std::unique_ptr<Stmt> CreateClassStmtRule::parse(ParserContext &ctx)
@@ -28,7 +29,28 @@ std::unique_ptr<Stmt> CreateClassStmtRule::parse(ParserContext &ctx)
 
     std::string className = ctx.previous().lexeme;
 
-    // (MVP: no parsing body for the moment; only spirit for now)
+    // -----------------
+    // Class inheritance
+    // -----------------
+    std::string parentClassName = "";
+    std::shared_ptr<CreationType> baseClassType = KnownTypes::resolve("creation", "core");
+    if (ctx.match(TokenType::FROM))
+    {
+        if (!ctx.match(TokenType::IDENTIFIER))
+            throw std::runtime_error("Expected base class name after 'from' in class declaration.");
+
+        parentClassName = ctx.previous().lexeme;
+
+        baseClassType = KnownTypes::resolve(parentClassName, "core");
+        if (!baseClassType)
+        {
+            throw std::runtime_error("Unknown class type: '" + parentClassName + "'");
+        }
+    }
+
+    // ---------------------------
+    // The class may not have body
+    // ---------------------------
     std::vector<std::shared_ptr<Stmt>> body;
     std::string module_name = "core"; // FIXME: consider user modules.
 
@@ -39,14 +61,17 @@ std::unique_ptr<Stmt> CreateClassStmtRule::parse(ParserContext &ctx)
         // Allowing 'empty-bodied' classes without ': amen'.
         // Just: let there be Light
         ctx.registerClassName(className);
-        return std::make_unique<CreateClassStmt>(className, module_name, body);
+        return std::make_unique<CreateClassStmt>(className, module_name, baseClassType, body);
     }
 
     if (!ctx.match(TokenType::COLON))
-        throw std::runtime_error("Expected ':' after class name in '" + stmt + "' statement.");
+        throw std::runtime_error("Expected ':' after class name " + parentClassName + " in '" + stmt + "' statement.");
 
     ctx.consumeAllNewLines();
 
+    // ----------
+    // Class body
+    // ----------
     auto attributes = std::make_shared<Heart>(className);
     ctx.addScope(attributes); // <🟢️>
 
@@ -78,5 +103,5 @@ std::unique_ptr<Stmt> CreateClassStmtRule::parse(ParserContext &ctx)
         throw std::runtime_error("Expected 'amen' after ':' in '" + stmt + "' to close class body.");
 
     ctx.registerClassName(className);
-    return std::make_unique<CreateClassStmt>(className, module_name, body);
+    return std::make_unique<CreateClassStmt>(className, module_name, baseClassType, body);
 }
