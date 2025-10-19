@@ -3,6 +3,7 @@
 #include "../../../../ast/expr/variable_expr.hpp"
 #include "../../../../ast/expr/method_call_expr.hpp"
 #include "../../../../types/creation_type.hpp"
+#include "../../../helpers/member.hpp"
 #include <memory>
 
 std::unique_ptr<Expr> GetAttributeRule::parse(ParserContext &ctx)
@@ -18,15 +19,19 @@ std::unique_ptr<Expr> GetAttributeRule::parse(ParserContext &ctx)
         if (auto varExpr = dynamic_cast<VariableExpr *>(expr.get()))
         {
             std::shared_ptr<CreationType> klass = ctx.getVarType(varExpr->name);
-            std::string member = ctx.previous().lexeme;
+            std::string name = ctx.previous().lexeme;
 
-            // If it is an attribute
-            if (klass->attributeExists(member))
+            auto member = klass->findMember(name, klass);
+            if (!member)
             {
-                expr = std::make_unique<GetAttributeExpr>(std::move(expr), member);
+                throw std::runtime_error("Unknown member '" + name + "' in class " + klass->name);
             }
-            // If it is a method
-            else if (std::shared_ptr<Method> method = klass->findMethod(member))
+
+            if (member->isAttribute())
+            {
+                expr = std::make_unique<GetAttributeExpr>(std::move(expr), name);
+            }
+            else if (member->isMethod())
             {
                 std::vector<std::unique_ptr<Expr>> args;
 
@@ -37,17 +42,17 @@ std::unique_ptr<Expr> GetAttributeRule::parse(ParserContext &ctx)
                     {
                         auto argExpr = primary->parse(ctx); // parse any expression
                         if (!argExpr)
-                            throw std::runtime_error("Expected argument for method " + member);
+                            throw std::runtime_error("Expected argument for method " + name);
 
                         args.push_back(std::move(argExpr));
                     } while (ctx.match(TokenType::COMMA));
                 }
 
-                expr = std::make_unique<MethodCallExpr>(std::move(expr), method, std::move(args));
+                expr = std::make_unique<MethodCallExpr>(std::move(expr), member->method, std::move(args));
             }
             else
             {
-                throw std::runtime_error("Unknown member '" + member + "' in class " + klass->name);
+                throw std::runtime_error("Unknown member '" + name + "' in class " + klass->name);
             }
         }
         else

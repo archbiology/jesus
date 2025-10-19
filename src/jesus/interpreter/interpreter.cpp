@@ -207,7 +207,6 @@ void Interpreter::visitCreateClass(const CreateClassStmt &stmt)
                 methodStmt->name,
                 methodStmt->params,
                 methodStmt->body,
-                userClass,
                 methodStmt->returnType);
 
             userClass->addMethod(methodStmt->name, method);

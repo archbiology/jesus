@@ -55,7 +55,11 @@ public:
 
         if (primitive_type == PrimitiveType::Class)
         {
-            class_attributes = std::make_shared<Heart>(name);
+            std::shared_ptr<Heart> parent_attributes = nullptr;
+            if (parent_class)
+                parent_attributes = parent_class->class_attributes;
+
+            class_attributes = std::make_shared<Heart>(name, parent_attributes);
         }
     }
 

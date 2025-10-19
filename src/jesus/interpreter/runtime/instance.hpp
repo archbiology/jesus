@@ -69,11 +69,6 @@ public:
         attributes->updateVar(name, value);
     }
 
-    std::shared_ptr<Method> findMethod(const std::string &name)
-    {
-        return spirit->findMethod(name);
-    }
-
     std::string toString()
     {
         std::string str = "{type: \"instance\",\n class: \"" + spirit->name + "\",\n attributes: {";

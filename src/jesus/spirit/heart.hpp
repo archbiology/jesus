@@ -31,7 +31,10 @@ public:
      *
      * @param scope_name the scope name. E.g.: global, className, methodName
      */
-    explicit Heart(std::string scope_name) : scope_name(std::move(scope_name)), semantics_analyzer(std::make_shared<SpiritOfUnderstanding>()) {}
+    explicit Heart(std::string scope_name, std::shared_ptr<Heart> parent = nullptr)
+        : scope_name(std::move(scope_name)),
+          parent_scope(std::move(parent)),
+          semantics_analyzer(std::make_shared<SpiritOfUnderstanding>()) {}
 
     /**
      * @brief Construct a new Heart object
@@ -39,12 +42,18 @@ public:
      * @param scope_name The scope name of the final copy
      * @param other The original that will be used as a copy
      */
-    std::shared_ptr<Heart> clone(const std::string &new_scope_name) const
+    std::shared_ptr<Heart> clone(const std::string &new_scope_name, std::shared_ptr<Heart> parent_scope_override = nullptr) const
     {
         auto copy = std::make_shared<Heart>(scope_name);
         copy->variables = variables;
         copy->variableOrder = variableOrder;
         copy->semantics_analyzer = semantics_analyzer;
+
+        if (parent_scope_override)
+            copy->parent_scope = parent_scope_override;
+        else
+            copy->parent_scope = parent_scope;
+
         return copy;
     }
 
@@ -127,6 +136,9 @@ public:
         std::string str = "";
         bool removeLastComma = false;
 
+        if (parent_scope)
+            str = parent_scope->toString();
+
         for (auto &pair : variables)
         {
             const std::string &key = pair.first;
@@ -146,7 +158,8 @@ public:
     }
 
 private:
-    std::vector<std::string> variableOrder; // insertion order
+    std::shared_ptr<Heart> parent_scope = nullptr; // For inheritance
+    std::vector<std::string> variableOrder;        // insertion order
     std::unordered_map<std::string, Value> variables;
     std::shared_ptr<SpiritOfUnderstanding> semantics_analyzer;
 };

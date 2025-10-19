@@ -17,12 +17,17 @@ void Heart::createVar(const std::string &type, const std::string &name, const Va
 Value Heart::getVar(const std::string &name) const
 {
     auto it = variables.find(name);
-    if (it == variables.end())
+    if (it != variables.end())
     {
-        throw std::runtime_error("Undefined variable: " + name + " (scope: " + scope_name + ")");
+        return it->second;
     }
 
-    return it->second;
+    if (parent_scope)
+    {
+        return parent_scope->getVar(name);
+    }
+
+    throw std::runtime_error("Undefined variable: " + name + " (scope: " + scope_name + ")");
 }
 
 void Heart::updateVar(const std::string &name, const Value &value)

@@ -24,17 +24,14 @@ public:
     const std::string name;
     const std::shared_ptr<Heart> params;
     const std::vector<std::shared_ptr<Stmt>> body;
-
-    const std::shared_ptr<CreationType> klass;
     const std::shared_ptr<CreationType> returnType;
 
     Method(std::string name,
            std::shared_ptr<Heart> params,
            std::vector<std::shared_ptr<Stmt>> body,
-           std::shared_ptr<CreationType> klass,
            std::shared_ptr<CreationType> returnType)
         : name(std::move(name)), params(std::move(params)),
-          body(std::move(body)), klass(std::move(klass)), returnType(std::move(returnType)) {}
+          body(std::move(body)), returnType(std::move(returnType)) {}
 
     Value call(Interpreter &interp, std::shared_ptr<Instance> instance, std::vector<Value> args);
 
@@ -51,7 +48,7 @@ public:
 
     std::string toString()
     {
-        std::string str = "{type: \"method\",\n class: \"" + klass->name + "\",\n params: {";
+        std::string str = "{type: \"method\",\n params: {";
         if (!params->isEmpty())
         {
             str += params->toString();

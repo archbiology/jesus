@@ -8,7 +8,7 @@ Value Method::call(Interpreter &interpreter, std::shared_ptr<Instance> instance,
     interpreter.addScope(instance->attributes);
 
     // 2. Create the method 'params' scope for this call
-    auto paramsScope = params->clone("call-" + name);
+    auto paramsScope = params->clone("call-" + name, instance->attributes); 
 
     // Bind the actual 'arguments' to the 'param' names
     int index = 0;
