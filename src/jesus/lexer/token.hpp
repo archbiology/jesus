@@ -92,6 +92,8 @@ public:
             return "AND";
         case TokenType::OR:
             return "OR";
+        case TokenType::TO:
+            return "TO";
         case TokenType::VERSUS:
             return "VERSUS";
         case TokenType::NOT_EQUAL:

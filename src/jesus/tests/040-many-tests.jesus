@@ -375,6 +375,10 @@ let there be GrandSon from Son:
     purpose who():
         say "I am Israel, previously named {name}."
     amen
+
+    purpose generateJudah():
+        say "Judah is my lion, and my name is {name}."
+    amen
 amen
 
 create Parent abraham = 1
@@ -387,3 +391,9 @@ create GrandSon jacob = 1
 jacob praise
 say name
 jacob who
+
+abraham = jacob
+abraham generateJudah
+create GrandSon other = 1
+other = abraham to GrandSon
+other generateJudah
