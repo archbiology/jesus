@@ -17,7 +17,8 @@
 class ClassType : public CreationType
 {
 public:
-    ClassType() : CreationType(PrimitiveType::Class, "class", "core") {}
+    ClassType(std::shared_ptr<CreationType> parent)
+        : CreationType(PrimitiveType::Class, "class", "core", parent) {}
 
     bool validate(const Value &value) const override
     {

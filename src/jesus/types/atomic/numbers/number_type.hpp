@@ -5,7 +5,8 @@
 class NumberType : public CreationType
 {
 public:
-    NumberType() : CreationType(PrimitiveType::Number, "number", "core") {}
+    NumberType(std::shared_ptr<CreationType> parent)
+        : CreationType(PrimitiveType::Number, "number", "core", parent) {}
 
     bool validate(const Value &value) const override
     {

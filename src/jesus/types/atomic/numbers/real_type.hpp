@@ -5,7 +5,8 @@
 class RealType : public CreationType
 {
 public:
-    RealType() : CreationType(PrimitiveType::Number, "real", "core") {}
+    RealType(std::shared_ptr<CreationType> parent)
+        : CreationType(PrimitiveType::Number, "real", "core", parent) {}
 
     bool validate(const Value &value) const override
     {

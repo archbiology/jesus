@@ -6,7 +6,8 @@
 class NaturalType : public CreationType
 {
 public:
-    NaturalType() : CreationType(PrimitiveType::Number, "natural", "core") {}
+    NaturalType(std::shared_ptr<CreationType> parent)
+        : CreationType(PrimitiveType::Number, "natural", "core", parent) {}
 
     bool validate(const Value &value) const override
     {

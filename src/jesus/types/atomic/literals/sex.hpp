@@ -12,7 +12,8 @@
 class SexType : public CreationType
 {
 public:
-    SexType() : CreationType(PrimitiveType::Boolean, "sex", "core") {}
+    SexType(std::shared_ptr<CreationType> parent)
+        : CreationType(PrimitiveType::Boolean, "sex", "core", parent) {}
 
     bool validate(const Value &value) const override
     {
