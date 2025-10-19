@@ -36,7 +36,7 @@ std::unique_ptr<Stmt> UpdateVarStmtRule::parse(ParserContext &ctx)
         throw std::runtime_error("Expected expression after '=' in update statement.");
 
     auto valueType = value->getReturnType(ctx);
-    bool typesMatch = varType == valueType;
+    bool typesMatch = valueType->isA(varType);
     if (!typesMatch)
     {
         throw std::runtime_error("Variable '" + varName + "' expects a " + varType->name + ", but got: '" + valueType->name + "'.");

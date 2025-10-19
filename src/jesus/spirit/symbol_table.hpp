@@ -45,22 +45,6 @@ public:
         current_scope->createVar(type, name, value);
     }
 
-    bool variableExists(const std::string &name) const
-    {
-        // FIXME: speed it up:
-        //  1 - Store scope level 'enum class ScopeLevel { PARAMS, INSTANCE_ATTR, GLOBAL };' at parseTime on GetParamExpr|GetAttributeExpr|GetGlobalVarExpr
-        //  2 - store an index into the Heart (like int slot) at parse time, so getVar doesn’t even need to hash the 'name' at runtime — just array access.
-
-        // Iterate over the scopes in reverse order (rbegin, rend)
-        for (auto scope = scopes.rbegin(); scope != scopes.rend(); ++scope)
-        {
-            if ((*scope)->varExistsInHierarchy(name))
-                return true;
-        }
-
-        return false;
-    }
-
     Value getVar(const std::string &name) const
     {
         // FIXME: speed it up:

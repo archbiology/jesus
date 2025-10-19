@@ -163,8 +163,6 @@ public:
 
     void registerClassName(const std::string &className);
 
-    const bool variableExists(const std::string &varName);
-
     const std::shared_ptr<CreationType> getVarType(const std::string &varName);
 
     void addScope(std::shared_ptr<Heart> scope);
