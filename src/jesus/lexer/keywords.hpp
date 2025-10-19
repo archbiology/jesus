@@ -31,6 +31,7 @@ namespace Keywords
 
         {"or", TokenType::OR},
         {"ou", TokenType::OR},
+        {"to", TokenType::TO},
 
         {"vs", TokenType::VERSUS},
         {"versus", TokenType::VERSUS},

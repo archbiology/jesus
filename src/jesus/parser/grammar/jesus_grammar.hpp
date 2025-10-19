@@ -11,6 +11,7 @@
 #include "expr/atomic/operators/logical_or_rule.hpp"
 #include "expr/atomic/operators/multiplication_rule.hpp"
 #include "expr/atomic/operators/versus_rule.hpp"
+#include "expr/atomic/operators/convert_to_rule.hpp"
 
 #include "expr/atomic/literals/number_rule.hpp"
 #include "expr/atomic/literals/string_rule.hpp"
@@ -63,7 +64,8 @@ namespace grammar
     inline auto LogicalAnd = std::make_shared<LogicalAndRule>(Equality);
     inline auto Versus = std::make_shared<VersusRule>(LogicalAnd, LogicalAnd);
     inline auto LogicalOr = std::make_shared<LogicalOrRule>(Versus);
-    inline auto Conditional = std::make_shared<ConditionalExprRule>(LogicalOr);
+    inline auto ConvertTo = std::make_shared<ConvertToRule>(LogicalOr);
+    inline auto Conditional = std::make_shared<ConditionalExprRule>(ConvertTo);
     inline auto Expression = Conditional;
 
     inline auto Number = std::make_shared<NumberRule>();

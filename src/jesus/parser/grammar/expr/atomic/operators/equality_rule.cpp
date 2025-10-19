@@ -59,7 +59,7 @@ std::unique_ptr<Expr> EqualityRule::parse(ParserContext &ctx)
             }
 
             auto exprType = left->getReturnType(ctx);
-            bool result = exprType == varType;
+            bool result = exprType->isA(varType);
             if (isNegated)
                 result = !result;
 

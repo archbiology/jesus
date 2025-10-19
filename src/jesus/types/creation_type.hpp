@@ -238,6 +238,46 @@ public:
         return false;
     }
 
+    /**
+     * @brief Checks whether this type is the same as or a child of another type.
+     *
+     * This method determines if the current type is the same as, or a subclass of,
+     * the provided `typeToCheck`. It traverses the inheritance chain, allowing
+     * polymorphic checks such as "person is a Human?".
+     *
+     * "If you were sons of Abraham, you would do the works of Abraham; ...
+     *  You belong to your father, the devil,...
+     *  He was a murderer from the beginning,
+     *  not holding to the truth, for there is no truth in him.
+     *  When he lies, he speaks his native language,
+     *  for he is a liar and the father of lies." — John 8:39-44 (paraphrased)
+     */
+    bool isA(const std::shared_ptr<CreationType> &typeToCheck) const
+    {
+        if (!typeToCheck)
+            return false;
+
+        // -----------------------------------
+        // Same exact type (by memory address)
+        // -----------------------------------
+        if (this == typeToCheck.get())
+            return true;
+
+        // ---------------------------
+        // Climb the inheritance chain
+        // ---------------------------
+        std::shared_ptr<CreationType> current = parent_class;
+        while (current)
+        {
+            if (current.get() == typeToCheck.get())
+                return true;
+
+            current = current->parent_class;
+        }
+
+        return false;
+    }
+
     const std::string toString()
     {
         return "{class: \"" + name + "\"}";

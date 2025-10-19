@@ -22,7 +22,8 @@
 class WeekdayType : public CreationType
 {
 public:
-    WeekdayType() : CreationType(PrimitiveType::Boolean, "weekday", "core") {}
+    WeekdayType(std::shared_ptr<CreationType> parent)
+        : CreationType(PrimitiveType::Boolean, "weekday", "core", parent) {}
 
     bool validate(const Value &value) const override
     {

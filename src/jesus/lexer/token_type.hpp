@@ -21,6 +21,7 @@ enum class TokenType
     NOT,            // not: !
     AND,            // and
     OR,             // or
+    TO,             // to (a to json; father to Son)
     VERSUS,         // versus or vs (it's called XOR, represented as "^" in other languages)
     EQUAL,          // '=' for variable assignments. For 'equality' comparison, we use 'is' and 'is not'
     NOT_EQUAL,      // !=

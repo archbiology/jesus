@@ -146,6 +146,7 @@ set(JESUS_CPP_FILES
     src/jesus/parser/grammar/expr/atomic/operators/logical_or_rule.cpp
     src/jesus/parser/grammar/expr/atomic/operators/logical_and_rule.cpp
     src/jesus/parser/grammar/expr/atomic/operators/multiplication_rule.cpp
+    src/jesus/parser/grammar/expr/atomic/operators/convert_to_rule.cpp
 
     src/jesus/parser/grammar/expr/postfix/get_attr_rule.cpp
 

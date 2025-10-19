@@ -19,15 +19,16 @@ void KnownTypes::registerBuiltInTypes()
     auto truth = std::make_shared<TruthType>();
     auto creation = std::make_shared<CreationType>(PrimitiveType::Good, "creation", "core");
     auto nothing = std::make_shared<NothingType>();
-    auto sex = std::make_shared<SexType>();
-    auto weekday = std::make_shared<WeekdayType>();
 
-    auto integer = std::make_shared<NumberType>();
-    auto natural = std::make_shared<NaturalType>();
-    auto floating = std::make_shared<RealType>();
-    auto text = std::make_shared<TextType>();
+    auto sex = std::make_shared<SexType>(creation);
+    auto weekday = std::make_shared<WeekdayType>(creation);
 
-    auto klass = std::make_shared<ClassType>();
+    auto integer = std::make_shared<NumberType>(creation);
+    auto natural = std::make_shared<NaturalType>(integer);
+    auto floating = std::make_shared<RealType>(integer); //?
+    auto text = std::make_shared<TextType>(creation);
+
+    auto klass = std::make_shared<ClassType>(creation);
 
     BOOLEAN = TRUTH = truth;
     VOID = NOTHING = nothing;
