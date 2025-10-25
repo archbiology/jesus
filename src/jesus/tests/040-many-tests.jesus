@@ -415,3 +415,4 @@ mult-line
 comment
 */
 say 'Comments worked'
+say 'Special \n chars \t working \\ here'

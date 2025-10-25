@@ -274,6 +274,33 @@ std::vector<Token> Lexer::tokenize(const std::string &raw_input)
 
             while (end < utf8_input.size() && utf8_input[end] != quote_char)
             {
+                if (utf8_input[end] == "\\")
+                {
+                    // ------------------------------------------
+                    // Parsing escaped characters: \n, \t, \r, \\
+                    // ------------------------------------------
+                    if (end + 1 >= utf8_input.size())
+                        throw std::runtime_error("Unterminated escape sequence in string");
+
+                    std::string next = utf8_input[end + 1];
+                    if (next == "n")
+                        str += "\n";
+                    else if (next == "t")
+                        str += "\t";
+                    else if (next == "r")
+                        str += "\r";
+                    else if (next == "\\")
+                        str += "\\";
+                    else if (next == "\"")
+                        str += '\"';
+                    else
+                        // Unknown escape, keep as-is
+                        str += next;
+
+                    end += 2;
+                    continue;
+                }
+
                 str += utf8_input[end];
                 ++end;
             }
