@@ -10,6 +10,11 @@ void ParserContext::registerVarType(const std::string &type, const std::string &
     interpreter->registerVarType(type, name);
 }
 
+void ParserContext::updatePolymorphicVarType(const std::string &name, const std::string &type)
+{
+    interpreter->updatePolymorphicVarType(name, type);
+}
+
 const std::shared_ptr<CreationType> ParserContext::getVarType(const std::string &varName)
 {
     return interpreter->getVarType(varName);

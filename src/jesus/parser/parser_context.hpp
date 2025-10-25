@@ -161,6 +161,8 @@ public:
 
     void registerVarType(const std::string &type, const std::string &name);
 
+    void updatePolymorphicVarType(const std::string &name, const std::string &type);
+
     void registerClassName(const std::string &className);
 
     const std::shared_ptr<CreationType> getVarType(const std::string &varName);

@@ -101,6 +101,11 @@ public:
         current_scope->registerVarType(type, name);
     }
 
+    void updatePolymorphicVarType(const std::string &name, const std::string &type)
+    {
+        current_scope->updatePolymorphicVarType(name, type);
+    }
+
     void registerClassName(const std::string &className)
     {
         current_scope->registerClassName(className);

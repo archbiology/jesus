@@ -31,6 +31,10 @@ public:
         variableTypes[name] = type;
     }
 
+    void updatePolymorphicVarType(const std::string& name, const std::string& newType){
+        variableTypes[name] = newType;
+    }
+
     const std::shared_ptr<CreationType> getVarType(const std::string &varName);
 
     bool isClassKnown(const std::string &className)

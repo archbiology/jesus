@@ -63,8 +63,6 @@ std::unique_ptr<Expr> EqualityRule::parse(ParserContext &ctx)
             if (isNegated)
                 result = !result;
 
-            // FIXME: When inheritance is supported, use TypeCheckExpr instead of LiteralExpr
-            // return std::make_unique<TypeCheckExpr>(std::move(left), varType, isNegated);
             return std::make_unique<LiteralExpr>(Value(result), KnownTypes::TRUTH);
         }
 
