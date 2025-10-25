@@ -132,13 +132,13 @@
 (Jesus) ❌ Error: Undefined variable: abc (scope: global)
 (Jesus) (Jesus) (int) 9
 (Jesus) (Jesus) (Jesus) (double) -6.000000
-(Jesus) ❌ Error: Variable 'debit' expects a Negative, but got: 'number'.
+(Jesus) ❌ Error: Variable 'debit' expects a 'Negative', but got: 'number'.
 (Jesus) (Jesus) (Jesus) (int) 7
 (Jesus) ❌ Error: Expected value >= (double) 7.000000
 (Jesus) (Jesus) (Jesus) ❌ Error: Expected value <= (double) 12.000000
 (Jesus) (int) 12
 (Jesus) (Jesus) ❌ Error: Expected a string literal after 'matches', not a formatted string. (e.g., matches "IForgive")
-(Jesus) (Jesus) ❌ Error: Variable 'sure' expects a Confirm, but got: 'text'.
+(Jesus) (Jesus) ❌ Error: Variable 'sure' expects a 'Confirm', but got: 'text'.
 (Jesus) Yes
 (Jesus) (Jesus) What is your age? (Jesus) (double) 18.000000
 (Jesus) Qual sua idade? Validation failed: Invalid number: 'seven'
@@ -271,16 +271,19 @@ Even: (int) 10
 (Jesus) (logic) 0
 (Jesus) (logic) 0
 (Jesus) (logic) 0
-(Jesus) (Jesus) (Jesus) (Jesus) (Jesus) (Jesus) (Jesus) (Jesus) (Jesus) Praise the LORD, oh my soul (Abraham Terahson),
+(Jesus) (Jesus) (Jesus) (Jesus) (Jesus) (Jesus) (Jesus) (Jesus) (Jesus) (Jesus) (Jesus) Praise the LORD, oh my soul (Abraham Terahson),
 null
-(Jesus) (Jesus) (Jesus) Praise the LORD, oh my soul (Abraham Abrahamson),
+(Jesus) (Jesus) (Jesus) (Jesus) (Jesus) Praise the LORD, oh my soul (Abraham Abrahamson),
 null
+(Jesus) ❌ Error: Cannot convert from 'Son' to 'Ishmael' since they share no inheritance.
 (Jesus) (Jesus) (Jesus) Bethel (Jacob Isaacson),
 null
 (Jesus) Jesus
 (Jesus) I am Israel, previously named Jacob.
 null
-(Jesus) (Jesus) (Jesus) ❌ Error: Unknown member 'generateJudah' in class Parent
 (Jesus) (Jesus) (Jesus) Judah is my lion, and my name is Jacob.
 null
+(Jesus) (Jesus) (Jesus) Judah is my lion, and my name is Jacob.
+null
+(Jesus) ❌ Error: Cannot convert from 'Parent -> GrandSon' to 'Ishmael' since they share no inheritance.
 (Jesus) 

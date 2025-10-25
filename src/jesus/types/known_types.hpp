@@ -11,6 +11,10 @@ public:
 
     static void registerType(std::shared_ptr<CreationType> type);
 
+    static std::shared_ptr<CreationType> getOrCreatePolymorphism(
+        const std::shared_ptr<CreationType> &base,
+        const std::shared_ptr<CreationType> &runtime);
+
     static const std::shared_ptr<CreationType> resolve(const std::string &name, const std::string &module = "core");
     static const CreationType *getById(int id);
 

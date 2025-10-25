@@ -364,6 +364,10 @@ let there be Son from Parent:
     create text surname = "Abrahamson"
 amen
 
+let there be Ishmael from Parent:
+    create text surname = 'Hagarson'
+amen
+
 let there be GrandSon from Son:
     create text surname = "Isaacson"
 
@@ -384,8 +388,11 @@ amen
 create Parent abraham = 1
 abraham praise
 
+create Ishmael ishmael = 0
+
 create Son isaac = 1
 isaac praise
+isaac to Ishmael
 
 create GrandSon jacob = 1
 jacob praise
@@ -397,3 +404,4 @@ abraham generateJudah
 create GrandSon other = 1
 other = abraham to GrandSon
 other generateJudah
+abraham to Ishmael

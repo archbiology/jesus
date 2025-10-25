@@ -1,4 +1,5 @@
 #include "known_types.hpp"
+#include "polymorphic_type.hpp"
 #include "atomic/literals/truth.hpp"
 #include "atomic/literals/nothing.hpp"
 #include "atomic/literals/sex.hpp"
@@ -81,6 +82,36 @@ const std::shared_ptr<CreationType> KnownTypes::resolve(const std::string &name,
         return it->second;
 
     return nullptr;
+}
+
+std::shared_ptr<CreationType> KnownTypes::getOrCreatePolymorphism(
+    const std::shared_ptr<CreationType> &base,
+    const std::shared_ptr<CreationType> &runtime)
+{
+    if (!base || !runtime)
+        return base;
+
+    if (base->id == runtime->id)
+        return base;
+
+    // -------------------------------------------
+    // Create a composite key and a synthetic name
+    // -------------------------------------------
+    auto base_class = base->isPolymorphic() ? base->parent_class : base;
+    const std::string module = base_class->module_name;
+    const std::string polyName = base_class->name + "<" + runtime->module_name + "." + runtime->name + ">";
+    const std::string fullKey = makeKey(module, polyName);
+
+    // -------------------------------------------
+    // See if this polymorphic type already exists
+    // -------------------------------------------
+    auto it = typesByName.find(fullKey);
+    if (it != typesByName.end())
+        return it->second;
+
+    auto newType = std::make_shared<PolymorphicType>(base_class, runtime);
+    registerType(newType);
+    return newType;
 }
 
 const CreationType *KnownTypes::getById(int id) // TODO: return smart pointer
