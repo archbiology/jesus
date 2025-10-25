@@ -91,7 +91,7 @@ TokenType recognize_token_type(const std::string &word)
  * @param input
  * @return std::vector<Token>
  */
-std::vector<Token> lex(const std::string &raw_input)
+std::vector<Token> Lexer::tokenize(const std::string &raw_input)
 {
     std::vector<Token> tokens;
     size_t i = 0;
@@ -109,6 +109,78 @@ std::vector<Token> lex(const std::string &raw_input)
     while (i < utf8_input.size())
     {
         c = utf8_input[i];
+
+        // ------------------------------------
+        // If we are inside a multiline comment
+        // ------------------------------------
+        if (isParsingMultilineComment)
+        {
+            // Look for closing '*/'
+            if (c == "*" && i + 1 < utf8_input.size() && utf8_input[i + 1] == "/")
+            {
+                isParsingMultilineComment = false; // multi-line comment ended
+                i += 2;
+            }
+            else
+            {
+                i++; // keep skipping everything
+            }
+            continue; // skip rest of lexing
+        }
+
+        if (c == "/")
+        {
+            // ----------------------------------------
+            // Check for comment forms: // or /* ... */
+            // ----------------------------------------
+            if (i + 1 < utf8_input.size())
+            {
+                const std::string next = utf8_input[i + 1];
+
+                // -----------------------
+                // Single-line comment: //
+                // -----------------------
+                if (next == "/")
+                {
+                    // Skip until newline or end of input
+                    i += 2;
+                    while (i < utf8_input.size() && utf8_input[i] != "\n" && utf8_input[i] != "\r")
+                        i++;
+
+                    continue; // skip comment entirely
+                }
+
+                // ----------------------------
+                // Multiline comment: /* ... */
+                // ----------------------------
+                if (next == "*")
+                {
+                    i += 2;
+                    isParsingMultilineComment = true;
+                    continue; // skip comment entirely
+                }
+            }
+
+            // -------------------------------------------------
+            // If not a comment, treat it as a division operator
+            // -------------------------------------------------
+            tokens.emplace_back(TokenType::SLASH, "/", Value("/"));
+            i++;
+            continue;
+        }
+
+        // ----------------------
+        // Linux-style comment: #
+        // ----------------------
+        if (c == "#")
+        {
+            // Skip until newline or end of input
+            i++;
+            while (i < utf8_input.size() && utf8_input[i] != "\n" && utf8_input[i] != "\r")
+                i++;
+            continue; // skip comment entirely
+        }
+
         if (c == space || c == tab)
         {
             i++;
@@ -162,13 +234,6 @@ std::vector<Token> lex(const std::string &raw_input)
         if (c == "*")
         {
             tokens.emplace_back(TokenType::STAR, "*", Value("*"));
-            i++;
-            continue;
-        }
-
-        if (c == "/")
-        {
-            tokens.emplace_back(TokenType::SLASH, "/", Value("/"));
             i++;
             continue;
         }
