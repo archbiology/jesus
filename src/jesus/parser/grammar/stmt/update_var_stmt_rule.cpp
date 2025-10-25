@@ -1,7 +1,7 @@
 #include "update_var_stmt_rule.hpp"
 #include "../../../ast/stmt/update_var_stmt.hpp"
 #include "../../../ast/stmt/update_var_with_ask_stmt.hpp"
-#include "../../../ast/expr/polimorfism_expr.hpp"
+#include "../../../types/known_types.hpp"
 #include <stdexcept>
 
 std::unique_ptr<Stmt> UpdateVarStmtRule::parse(ParserContext &ctx)
@@ -40,13 +40,17 @@ std::unique_ptr<Stmt> UpdateVarStmtRule::parse(ParserContext &ctx)
     bool typesMatch = valueType->isA(varType);
     if (!typesMatch)
     {
-        throw std::runtime_error("Variable '" + varName + "' expects a " + varType->name + ", but got: '" + valueType->name + "'.");
+        if (! (valueType->isPolymorphic() && valueType->parent_class->isA(varType)))
+        {
+            throw std::runtime_error("Variable '" + varName + "' expects a '" + varType->name + "', but got: '" + valueType->name + "'.");
+        }
     }
 
-    // If assigning a child instance to a parent variable, wrap in PolymorphismExpr
+    // If assigning a child instance to a parent variable, we have polymorphism
     if (valueType != varType)
     {
-        value = std::make_unique<PolymorphismExpr>(std::move(value));
+        auto polymorphicType = KnownTypes::getOrCreatePolymorphism(varType, valueType);
+        ctx.updatePolymorphicVarType(varName, polymorphicType->name);
     }
 
     return std::make_unique<UpdateVarStmt>(varName, std::move(value));

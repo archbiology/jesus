@@ -94,6 +94,10 @@ public:
         symbol_table.registerVarType(type, name);
     }
 
+    void updatePolymorphicVarType(const std::string &name, const std::string &type) {
+        symbol_table.updatePolymorphicVarType(name, type);
+    }
+
     void registerClassName(const std::string &className)
     {
         symbol_table.registerClassName(className);

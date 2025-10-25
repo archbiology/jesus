@@ -130,6 +130,11 @@ public:
         semantics_analyzer->registerVarType(type, name);
     }
 
+    void updatePolymorphicVarType(const std::string &name, const std::string &type)
+    {
+        semantics_analyzer->updatePolymorphicVarType(name, type);
+    }
+
     void registerClassName(const std::string &className)
     {
         semantics_analyzer->registerClassName(className);

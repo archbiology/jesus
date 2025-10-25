@@ -1,6 +1,5 @@
 #include "convert_to_rule.hpp"
 #include "../../../../../ast/expr/convert_to_expr.hpp"
-#include "../../../../../ast/expr/polimorfism_expr.hpp"
 #include "../../../../../types/known_types.hpp"
 
 std::unique_ptr<Expr> ConvertToRule::parse(ParserContext &ctx)
@@ -31,7 +30,7 @@ std::unique_ptr<Expr> ConvertToRule::parse(ParserContext &ctx)
         if (sourceType->isA(targetType))
         {
             // child -> parent (upcast)
-            return std::make_unique<PolymorphismExpr>(std::move(left));
+            return left;
         }
 
         if (targetType->isA(sourceType))
@@ -41,7 +40,7 @@ std::unique_ptr<Expr> ConvertToRule::parse(ParserContext &ctx)
         }
 
         // Otherwise — unrelated types
-        throw std::runtime_error("Cannot convert from '" + sourceType->name + "' to unrelated type '" + targetType->name + "'.");
+        throw std::runtime_error("Cannot convert from '" + sourceType->name + "' to '" + targetType->name + "' since they share no inheritance.");
     }
 
     return left;

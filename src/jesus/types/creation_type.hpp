@@ -14,7 +14,8 @@ enum class PrimitiveType
     Boolean,
     Number,
     Text,
-    Class
+    Class,
+    Polymorphic,
 };
 
 class CreationType
@@ -151,7 +152,7 @@ public:
      * @param name
      * @return std::variant<std::shared_ptr<Method>, std::string>
      */
-    std::shared_ptr<Member> findMember(const std::string &name, std::shared_ptr<CreationType> current_class) const;
+    virtual std::shared_ptr<Member> findMember(const std::string &name, std::shared_ptr<CreationType> current_class) const;
 
     const bool isNull() const
     {
@@ -181,6 +182,11 @@ public:
     const bool isClass() const
     {
         return primitive_type == PrimitiveType::Class;
+    }
+
+    const bool isPolymorphic() const
+    {
+        return primitive_type == PrimitiveType::Polymorphic;
     }
 
     /**
@@ -252,7 +258,7 @@ public:
      *  When he lies, he speaks his native language,
      *  for he is a liar and the father of lies." — John 8:39-44 (paraphrased)
      */
-    bool isA(const std::shared_ptr<CreationType> &typeToCheck) const
+    virtual bool isA(const std::shared_ptr<CreationType> &typeToCheck) const
     {
         if (!typeToCheck)
             return false;
