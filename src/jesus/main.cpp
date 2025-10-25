@@ -28,6 +28,7 @@ int main(int argc, char **argv)
     auto global_scope = std::make_shared<Heart>("global");
     SymbolTable symbol_table(global_scope);
     Interpreter jesus(symbol_table);
+    Lexer lexer;
 
     std::string buffer;
     std::string line;
@@ -45,7 +46,9 @@ int main(int argc, char **argv)
         try
         {
 
-            auto tokens = lex(buffer);
+            auto tokens = lexer.tokenize(buffer);
+            if (lexer.insideMultilineComment())
+                continue;
 
             ParserContext context(tokens, &jesus);
             std::vector<std::unique_ptr<Stmt>> statements;

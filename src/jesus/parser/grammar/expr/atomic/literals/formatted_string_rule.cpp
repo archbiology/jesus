@@ -39,7 +39,8 @@ std::unique_ptr<Expr> FormattedStringRule::parse(ParserContext &ctx)
         std::string exprText = raw.substr(open + 1, close - open - 1);
 
         // Parse it as a full expression
-        auto tokens = lex(exprText);
+        Lexer lexer;
+        auto tokens = lexer.tokenize(exprText);
         ParserContext subCtx(tokens, ctx.interpreter);
         auto expr = grammar::GetAttribute->parse(subCtx);
         if (!expr)

@@ -394,7 +394,7 @@ create Son isaac = 1
 isaac praise
 isaac to Ishmael
 
-create GrandSon jacob = 1
+create GrandSon /* Jacob is the grandson of Abraham */ jacob = 1
 jacob praise
 say name
 jacob who
@@ -405,3 +405,13 @@ create GrandSon other = 1
 other = abraham to GrandSon
 other generateJudah
 abraham to Ishmael
+// C-style comment
+# Linux-style comment
+/*
+This
+is
+a
+mult-line
+comment
+*/
+say 'Comments worked'
