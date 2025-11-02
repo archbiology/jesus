@@ -189,6 +189,11 @@ public:
         return primitive_type == PrimitiveType::Polymorphic;
     }
 
+    virtual const bool isException() const
+    {
+        return false;
+    }
+
     /**
      * @brief Checks if this CreationType can accept a value of another type.
      *

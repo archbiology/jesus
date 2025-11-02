@@ -303,4 +303,8 @@ private:
     void visitReturnStmt(const ReturnStmt &stmt) override;
 
     void visitIfStmt(const IfStmt &stmt) override;
+
+    void visitTryStmt(const TryStmt &stmt) override;
+
+    void visitResistStmt(const ResistStmt &stmt) override;
 };

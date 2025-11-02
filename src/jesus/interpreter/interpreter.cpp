@@ -5,6 +5,7 @@
 #include "../ast/stmt/create_method_stmt.hpp"
 #include "../ast/stmt/print_stmt.hpp"
 #include "../types/known_types.hpp"
+#include "../types/composite/its_written_exception_type.hpp"
 #include "../utils/string_utils.hpp"
 
 #include <iostream>
@@ -400,4 +401,51 @@ void Interpreter::visitIfStmt(const IfStmt &stmt)
         for (auto &stmt : stmt.otherwiseBranch)
             execute(stmt);
     }
+}
+
+void Interpreter::visitTryStmt(const TryStmt &stmt)
+{
+
+    try
+    {
+        symbol_table.addScope(std::make_shared<Heart>("try"));
+        for (auto &stmt : stmt.tryBody)
+            execute(stmt);
+    }
+    catch (ItsWritten &s)
+    {
+        symbol_table.popScope();
+
+        bool handled = false;
+        for (auto &[type, body] : stmt.catchClauses)
+        {
+            // if (s.type == type)
+            // {
+
+            symbol_table.addScope(std::make_shared<Heart>(type));
+            for (auto &stmt : body)
+                execute(stmt);
+            symbol_table.popScope();
+
+            handled = true;
+            break;
+            // }
+        }
+        if (!handled)
+            throw;
+    }
+
+    symbol_table.addScope(std::make_shared<Heart>("always"));
+    for (auto &stmt : stmt.alwaysBody)
+    {
+        execute(stmt);
+    }
+    symbol_table.popScope();
+}
+
+void Interpreter::visitResistStmt(const ResistStmt &stmt)
+{
+    std::string message = evaluate(stmt.messageExpr).toString();
+
+    throw ItsWritten(message);
 }

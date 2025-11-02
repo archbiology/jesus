@@ -115,6 +115,18 @@ public:
         return peek().type == type;
     }
 
+    bool checkAny(const std::initializer_list<TokenType> &types)
+    {
+        for (auto type : types)
+        {
+            if (check(type))
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
     /**
      * @brief Check if all tokens have been consumed
      *

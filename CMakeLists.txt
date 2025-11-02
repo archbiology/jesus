@@ -116,6 +116,8 @@ set(JESUS_CPP_FILES
     src/jesus/ast/stmt/update_var_stmt.cpp
     src/jesus/ast/stmt/return_stmt.cpp
     src/jesus/ast/stmt/if_stmt.cpp
+    src/jesus/ast/stmt/try_stmt.cpp
+    src/jesus/ast/stmt/resist_stmt.cpp
 
     # --------------
     # Parser classes
@@ -160,6 +162,8 @@ set(JESUS_CPP_FILES
     src/jesus/parser/grammar/stmt/create_method_stmt_rule.cpp
     src/jesus/parser/grammar/stmt/repeat_stmt_rule.cpp
     src/jesus/parser/grammar/stmt/if_stmt_rule.cpp
+    src/jesus/parser/grammar/stmt/resist_stmt_rule.cpp
+    src/jesus/parser/grammar/stmt/try_stmt_rule.cpp
 
     # -----------
     # Interpreter

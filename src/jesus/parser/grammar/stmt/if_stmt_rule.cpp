@@ -56,6 +56,8 @@ std::unique_ptr<Stmt> IfStmtRule::parse(ParserContext &ctx)
             thenBranch.push_back(std::move(stmt));
         else if (auto stmt = grammar::RepeatWhile->parse(ctx))
             thenBranch.push_back(std::move(stmt));
+        else if (auto stmt = grammar::ResistStmt->parse(ctx))
+            thenBranch.push_back(std::move(stmt));
         else if (ctx.match(TokenType::SKIP))
             thenBranch.push_back(std::make_unique<SkipStmt>());
         else if (ctx.match(TokenType::BREAK))
@@ -85,6 +87,8 @@ std::unique_ptr<Stmt> IfStmtRule::parse(ParserContext &ctx)
             else if (auto stmt = grammar::UpdateVar->parse(ctx))
                 otherwiseBranch.push_back(std::move(stmt));
             else if (auto stmt = grammar::RepeatWhile->parse(ctx))
+                otherwiseBranch.push_back(std::move(stmt));
+            else if (auto stmt = grammar::ResistStmt->parse(ctx))
                 otherwiseBranch.push_back(std::move(stmt));
             else if (ctx.match(TokenType::SKIP))
                 otherwiseBranch.push_back(std::make_unique<SkipStmt>());
