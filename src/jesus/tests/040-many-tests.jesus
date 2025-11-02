@@ -416,3 +416,13 @@ comment
 */
 say 'Comments worked'
 say 'Special \n chars \t working \\ here'
+
+try:
+    say 'Inside try-repent.'
+    resist 'Its written: Resist the devil...'
+    say 'After resisting the devil.'
+repent ItsWritten as error:
+    say "Pleas forgive my sins, Oh God Almighty."
+always:
+    say 'God always wins.'
+amen

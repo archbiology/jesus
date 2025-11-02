@@ -32,6 +32,8 @@
 #include "stmt/update_var_stmt_rule.hpp"
 #include "stmt/repeat_stmt_rule.hpp"
 #include "stmt/if_stmt_rule.hpp"
+#include "stmt/try_stmt_rule.hpp"
+#include "stmt/resist_stmt_rule.hpp"
 #include "unary_rule.hpp"
 
 /**
@@ -94,6 +96,8 @@ namespace grammar
     inline auto CreateClass = std::make_shared<CreateClassStmtRule>(CreateVar, CreateMethod);
     inline auto RepeatWhile = std::make_shared<RepeatStmtRule>();
     inline auto IfStmt = std::make_shared<IfStmtRule>();
+    inline auto TryStmt = std::make_shared<TryStmtRule>();
+    inline auto ResistStmt = std::make_shared<ResistStmtRule>();
 
     /**
      * @brief Set the Expression rule to something (for now just Primary)

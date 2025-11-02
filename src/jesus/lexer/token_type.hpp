@@ -88,6 +88,12 @@ enum class TokenType
     IF,
     OTHERWISE,
 
+    TRY,
+    RESIST,
+    REPENT,
+    AS,
+    ALWAYS,
+
     AMEN,           // amen (end of blocks in Jesus lang; '}' in other langs)
     NEWLINE,        // \n
     END_OF_FILE

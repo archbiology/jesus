@@ -96,6 +96,12 @@ namespace Keywords
         {"if", TokenType::IF},
         {"se", TokenType::IF},
 
+        {"try", TokenType::TRY},
+        {"resist", TokenType::RESIST},
+        {"repent", TokenType::REPENT},
+        {"as", TokenType::AS},
+        {"always", TokenType::ALWAYS},
+
         {"return", TokenType::RETURN},
         {"retornar", TokenType::RETURN},
 
