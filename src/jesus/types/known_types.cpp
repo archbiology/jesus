@@ -13,6 +13,7 @@
 #include "atomic/strings/word_type.hpp"
 #include "atomic/strings/phrase_type.hpp"
 #include "composite/class_type.hpp"
+#include "composite/its_written_exception_type.hpp"
 #include <memory>
 
 void KnownTypes::registerBuiltInTypes()
@@ -30,6 +31,7 @@ void KnownTypes::registerBuiltInTypes()
     auto text = std::make_shared<TextType>(creation);
 
     auto klass = std::make_shared<ClassType>(creation);
+    auto exception = std::make_shared<ItsWritten>(klass);
 
     BOOLEAN = TRUTH = truth;
     VOID = NOTHING = nothing;
@@ -42,6 +44,7 @@ void KnownTypes::registerBuiltInTypes()
     DOUBLE = floating; // TODO: Really differentiate 'float' from 'double'
     STRING = text;
     CLASS = klass;
+    EXCEPTION = exception;
 
     registerType(truth);
     registerType(creation);
@@ -60,6 +63,7 @@ void KnownTypes::registerBuiltInTypes()
     registerType(std::make_shared<PhraseType>());
 
     registerType(klass);
+    registerType(exception);
 }
 
 void KnownTypes::registerType(std::shared_ptr<CreationType> type)
