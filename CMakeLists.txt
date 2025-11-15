@@ -10,7 +10,7 @@ include_directories(src/jesus)
 # --------------------
 # Set the C++ standard
 # --------------------
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
 # ------------------------------------------------------------------------------
@@ -171,6 +171,12 @@ set(JESUS_CPP_FILES
     src/jesus/interpreter/interpreter.cpp
     src/jesus/interpreter/runtime/method.cpp
 
+    # ---
+    # CLI
+    # ---
+    src/jesus/cli/cli_parser.cpp    # Parser
+    src/jesus/cli/disciple.cpp      # REPL
+    src/jesus/cli/faith.cpp         # Michael, to read and execute files.jesus
 )
 
 # --------------------------
