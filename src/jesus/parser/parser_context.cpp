@@ -2,8 +2,10 @@
 #include "parser_context.hpp"
 #include "../interpreter/interpreter.hpp"
 
-ParserContext::ParserContext(std::vector<Token> tokens, Interpreter *interpreter, int current)
-    : tokens(tokens), interpreter(interpreter), current(current) {}
+ParserContext::ParserContext(
+    std::vector<Token> tokens, Interpreter *interpreter,
+    const std::string &moduleName, int current)
+    : tokens(tokens), interpreter(interpreter), moduleName(moduleName), current(current) {}
 
 void ParserContext::registerVarType(const std::string &type, const std::string &name)
 {

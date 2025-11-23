@@ -23,8 +23,9 @@ class ParserContext
 {
 public:
     Interpreter *interpreter = nullptr;
+    const std::string moduleName;
 
-    explicit ParserContext(std::vector<Token> tokens, Interpreter *interpreter, int current = 0);
+    explicit ParserContext(std::vector<Token> tokens, Interpreter *interpreter, const std::string& moduleName = "core", int current = 0);
 
     /**
      * @brief Returns the current token without advancing.
