@@ -34,6 +34,7 @@
 #include "stmt/if_stmt_rule.hpp"
 #include "stmt/try_stmt_rule.hpp"
 #include "stmt/resist_stmt_rule.hpp"
+#include "stmt/import_module_stmt_rule.hpp"
 #include "unary_rule.hpp"
 
 /**
@@ -98,6 +99,7 @@ namespace grammar
     inline auto IfStmt = std::make_shared<IfStmtRule>();
     inline auto TryStmt = std::make_shared<TryStmtRule>();
     inline auto ResistStmt = std::make_shared<ResistStmtRule>();
+    inline auto ImportModuleStmt = std::make_shared<ImportModuleStmtRule>();
 
     /**
      * @brief Set the Expression rule to something (for now just Primary)

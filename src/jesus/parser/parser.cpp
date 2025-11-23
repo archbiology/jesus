@@ -61,6 +61,11 @@ std::unique_ptr<Stmt> parse(const std::vector<Token> &tokens, ParserContext &con
     if (resistStmt)
         return resistStmt;
 
+    context.restore(snapshot);
+    auto importModuleStmt = grammar::ImportModuleStmt->parse(context);
+    if (importModuleStmt)
+        return importModuleStmt;
+
     // If no match, fall back to expression parsing
     context.restore(snapshot);
     auto expr = grammar::Expression->parse(context);
