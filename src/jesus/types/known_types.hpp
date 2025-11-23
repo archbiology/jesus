@@ -45,6 +45,8 @@ public:
     inline static std::shared_ptr<CreationType> EXCEPTION;
     // -------------------------------------------------------------------
 
+    static std::string toString();
+
 private:
     /**
      * @brief  Joins module and type name (e.g. core.born)

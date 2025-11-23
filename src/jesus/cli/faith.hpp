@@ -36,7 +36,7 @@ private:
      *
      * “By faith we understand…” (Hebrews 11:3)
      */
-    void interpret(const std::string &source); // executes raw text
+    void interpret(const std::string &source, const std::string &moduleName); // executes raw text
 
     Interpreter &jesus;
 };

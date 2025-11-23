@@ -122,6 +122,8 @@ namespace Keywords
 
         {"purpose", TokenType::PURPOSE},
         {"propósito", TokenType::PURPOSE},
+
+        {"come", TokenType::COME},
     };
 
     inline bool isReserved(const std::string &word)

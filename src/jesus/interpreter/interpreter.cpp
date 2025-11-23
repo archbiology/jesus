@@ -1,5 +1,6 @@
 #include "interpreter.hpp"
 #include <stdexcept>
+#include <filesystem>
 #include "runtime/instance.hpp"
 #include "runtime/method.hpp"
 #include "../ast/stmt/create_method_stmt.hpp"
@@ -7,8 +8,14 @@
 #include "../types/known_types.hpp"
 #include "../types/composite/its_written_exception_type.hpp"
 #include "../utils/string_utils.hpp"
+#include "../utils/file_utils.hpp"
+#include "../cli/faith.hpp"
 
-#include <iostream>
+// -------------
+// Static fields
+// -------------
+std::unordered_map<std::string, std::shared_ptr<Module>> Interpreter::modules{};
+std::unordered_set<std::string> Interpreter::loadedModules{};
 
 // Custom control-flow exceptions
 class BreakSignal : public std::exception
@@ -214,7 +221,7 @@ void Interpreter::visitCreateClass(const CreateClassStmt &stmt)
         }
     }
 
-    KnownTypes::registerType(std::move(userClass));
+    KnownTypes::registerType(userClass);
 }
 
 void Interpreter::visitCreateVarType(const CreateVarTypeStmt &stmt)
@@ -448,4 +455,65 @@ void Interpreter::visitResistStmt(const ResistStmt &stmt)
     std::string message = evaluate(stmt.messageExpr).toString();
 
     throw ItsWritten(message);
+}
+
+std::string Interpreter::resolveModuleToPath(const std::string &name)
+{
+    std::vector<std::filesystem::path> searchPaths = {
+        std::filesystem::current_path(),                              // ./<name>.jesus
+        std::filesystem::current_path() / "modules",                  // ./modules/<name>.jesus
+        std::filesystem::path(getenv("HOME")) / ".jesus" / "modules", // ~/.jesus/modules/<name>.jesus
+        "/usr/lib/jesus/modules"                                      // /usr/lib/jesus/modules/<name>.jesus
+    };
+
+    for (const auto &base : searchPaths)
+    {
+        auto candidate = base / (name + ".jesus");
+        if (std::filesystem::exists(candidate))
+            return candidate.string();
+    }
+
+    throw std::runtime_error("Module not found: " + name);
+}
+
+void Interpreter::visitImportModuleStmt(const ImportModuleStmt &stmt)
+{
+    std::string fullpath = resolveModuleToPath(stmt.moduleName);
+
+    // ----------------------
+    // avoid circular imports
+    // ----------------------
+    if (!Interpreter::loadedModules.contains(fullpath))
+    {
+        Interpreter::loadedModules.insert(fullpath);
+
+        // --------------------------------------
+        // Create a separate scope for the module
+        // --------------------------------------
+        auto moduleScope = std::make_shared<Heart>("module-" + stmt.moduleName);
+
+        // ----------------------
+        // Register module object
+        // ----------------------
+
+        Interpreter::modules[stmt.moduleName] = std::make_shared<Module>(stmt.moduleName, fullpath, moduleScope);
+
+        // --------------------
+        // Interpret the module
+        // --------------------
+        SymbolTable moduleSymbolTable(moduleScope);
+        Interpreter jesus(moduleSymbolTable);
+        Faith michael(jesus);
+        michael.execute(fullpath); // Declare classes, methods, etc.
+    }
+    auto importedModule = Interpreter::modules[stmt.moduleName];
+
+    // -----------------
+    // come <moduleName>
+    // -----------------
+    if (stmt.alias.empty())
+    {
+        // Bind module object to its name
+        symbol_table.createVar("module", stmt.moduleName, Value(importedModule));
+    }
 }

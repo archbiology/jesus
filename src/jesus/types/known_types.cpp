@@ -15,6 +15,7 @@
 #include "composite/class_type.hpp"
 #include "composite/its_written_exception_type.hpp"
 #include <memory>
+#include <sstream>
 
 void KnownTypes::registerBuiltInTypes()
 {
@@ -134,4 +135,16 @@ bool KnownTypes::isValid(const CreationType *type, const Value &value)
 std::string KnownTypes::makeKey(const std::string &module_name, const std::string &name)
 {
     return module_name + "." + name;
+}
+
+std::string KnownTypes::toString()
+{
+    std::ostringstream out;
+    out << "{KnownTypes:\n";
+    for (auto &p : typesByName)
+    {
+        out << "  " << p.first << " -> " << p.second->toString() << "\n";
+    }
+    out << "}";
+    return out.str();
 }

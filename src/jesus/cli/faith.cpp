@@ -1,18 +1,16 @@
 #include "faith.hpp"
 #include "lexer/lexer.hpp"
 #include "parser/parser.hpp"
-
-#include <fstream>
-#include <sstream>
+#include "../utils/file_utils.hpp"
 
 Faith::Faith(Interpreter &jesus) : jesus(jesus) {}
 
-void Faith::interpret(const std::string &source)
+void Faith::interpret(const std::string &source, const std::string &moduleName)
 {
     Lexer lexer;
     auto tokens = lexer.tokenize(source);
 
-    ParserContext context(tokens, &jesus);
+    ParserContext context(tokens, &jesus, moduleName);
     std::vector<std::unique_ptr<Stmt>> statements;
 
     while (!context.isAtEnd())
@@ -28,16 +26,16 @@ void Faith::interpret(const std::string &source)
 
 int Faith::execute(const std::string &filename)
 {
-    std::ifstream file(filename);
-    if (!file)
+    try
     {
-        std::cerr << "Could not open file: " + filename << "\n";
+        std::string source = utils::readFile(filename);
+        std::string moduleName = utils::basenameWithoutExtension(filename);
+        interpret(source, moduleName);
+        return 0;
+    }
+    catch (const std::exception &e)
+    {
+        std::cerr << e.what() << "\n";
         return 1;
     }
-
-    std::stringstream buffer;
-    buffer << file.rdbuf();
-
-    interpret(buffer.str());
-    return 0;
 }

@@ -94,6 +94,7 @@ enum class TokenType
     AS,
     ALWAYS,
 
+    COME,           // come module; from module come ClassName
     AMEN,           // amen (end of blocks in Jesus lang; '}' in other langs)
     NEWLINE,        // \n
     END_OF_FILE
