@@ -17,6 +17,7 @@
 #include "../ast/stmt/if_stmt.hpp"
 #include "../ast/stmt/try_stmt.hpp"
 #include "../ast/stmt/resist_stmt.hpp"
+#include "../ast/stmt/import_module_stmt.hpp"
 
 /**
  * @brief Interface for visiting and executing statement nodes in the AST.
@@ -70,6 +71,7 @@ public:
     virtual void visitIfStmt(const IfStmt &stmt) = 0;
     virtual void visitTryStmt(const TryStmt &stmt) = 0;
     virtual void visitResistStmt(const ResistStmt &stmt) = 0;
+    virtual void visitImportModuleStmt(const ImportModuleStmt &stmt) = 0;
 
     virtual ~StmtVisitor() = default;
 };

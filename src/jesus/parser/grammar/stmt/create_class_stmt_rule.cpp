@@ -52,7 +52,7 @@ std::unique_ptr<Stmt> CreateClassStmtRule::parse(ParserContext &ctx)
     // The class may not have body
     // ---------------------------
     std::vector<std::shared_ptr<Stmt>> body;
-    std::string module_name = "core"; // FIXME: consider user modules.
+    std::string module_name = ctx.moduleName;
 
     ctx.consumeAllNewLines();
 

@@ -3,6 +3,7 @@
 
 #include "expr_visitor.hpp"
 #include "stmt_visitor.hpp"
+#include "runtime/module.hpp"
 #include "../ast/expr/expr.hpp"
 #include "../ast/expr/binary_expr.hpp"
 #include "../ast/expr/conditional_expr.hpp"
@@ -94,7 +95,8 @@ public:
         symbol_table.registerVarType(type, name);
     }
 
-    void updatePolymorphicVarType(const std::string &name, const std::string &type) {
+    void updatePolymorphicVarType(const std::string &name, const std::string &type)
+    {
         symbol_table.updatePolymorphicVarType(name, type);
     }
 
@@ -112,6 +114,12 @@ public:
     {
         symbol_table.popScope();
     }
+
+    /**
+     * @brief Prevent re-imports / circular imports
+     */
+    static std::unordered_set<std::string> loadedModules;
+    static std::unordered_map<std::string, std::shared_ptr<Module>> modules;
 
 private:
     /**
@@ -307,4 +315,7 @@ private:
     void visitTryStmt(const TryStmt &stmt) override;
 
     void visitResistStmt(const ResistStmt &stmt) override;
+
+    std::string resolveModuleToPath(const std::string &moduleName);
+    void visitImportModuleStmt(const ImportModuleStmt &stmt) override;
 };

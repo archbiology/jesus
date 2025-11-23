@@ -41,7 +41,7 @@ void Disciple::processBuffer(std::string &buffer)
     if (lexer.insideMultilineComment())
         return;
 
-    ParserContext context(tokens, &jesus);
+    ParserContext context(tokens, &jesus, "core"); // TODO: Use __jesus__ instead of 'core'
     std::vector<std::unique_ptr<Stmt>> statements;
     bool waitingForMoreTokens = false;
 
