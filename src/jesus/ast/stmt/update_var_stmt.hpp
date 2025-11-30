@@ -5,6 +5,11 @@
 #include <string>
 #include <memory>
 
+REGISTER_FOR_UML(
+    UpdateVarStmt,
+    .packageName("ast.stmt")
+        .parentsList({"Stmt"})
+        .fieldsList({"name", "value"}));
 /**
  * @brief Represents the update of an existing variable with a new value.
  *

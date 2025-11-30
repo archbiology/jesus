@@ -5,6 +5,11 @@
 class ExprVisitor;   // Forward declaration
 class ParserContext; // Forward declaration
 
+REGISTER_FOR_UML(
+    Expr,
+    .packageName("ast.expr")
+        .methodsList({"evaluate", "accept", "canEvaluateAtParseTime", "getReturnType"}));
+
 enum class ExprKind
 {
     Literal,

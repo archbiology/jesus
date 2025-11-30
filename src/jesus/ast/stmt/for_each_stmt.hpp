@@ -5,6 +5,12 @@
 #include <memory>
 #include <vector>
 
+REGISTER_FOR_UML(
+    ForEachStmt,
+    .packageName("ast.stmt")
+        .parentsList({"Stmt"})
+        .fieldsList({"varName", "body"}));
+
 /**
  * set disciples to ["Peter", "James", "John"]
  * for each name in disciples:

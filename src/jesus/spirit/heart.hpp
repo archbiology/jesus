@@ -5,8 +5,16 @@
 #include <string>
 #include <unordered_map>
 #include "value.hpp"
+#include "../understanding/core/REGISTER_FOR_UML.hpp"
 
 #define STRINGIFY(x) #x
+
+REGISTER_FOR_UML(
+    Heart,
+    .fieldsList({"variables", "semantics_analyzer"})
+        .methodsList({"clone", "createVar", "getVar", "updateVar",
+                      "registerVarType", "updatePolymorphicVarType",
+                      "registerClassName"}));
 
 /**
  * @brief The Heart class stores variables declared during execution.

@@ -3,3 +3,4 @@ ignore-this-folder
 build
 src/jesus/utils/version.hpp
 test_runner
+uml-jesus

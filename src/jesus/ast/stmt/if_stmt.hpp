@@ -2,6 +2,12 @@
 #include "stmt.hpp"
 #include "../expr/expr.hpp"
 
+REGISTER_FOR_UML(
+    IfStmt,
+    .packageName("ast.stmt")
+        .parentsList({"Stmt"})
+        .fieldsList({"condition", "thenBranch", "otherwiseBranch"}));
+
 /**
  * if name == 'Jesus Christ':
  *    say 'Lamb of God'

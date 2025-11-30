@@ -2,6 +2,12 @@
 
 #include "expr.hpp"
 
+REGISTER_FOR_UML(
+    CreateInstanceExpr,
+    .packageName("ast.expr")
+        .parentsList({"Expr"})
+        .fieldsList({"klass", "constructorArgs"}));
+
 class CreateInstanceExpr : public Expr
 {
 public:

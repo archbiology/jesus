@@ -1,6 +1,13 @@
 #pragma once
 #include "stmt.hpp"
 
+REGISTER_FOR_UML(
+    TryStmt,
+    .packageName("ast.stmt")
+        .parentsList({"Stmt"})
+        .fieldsList({"tryBody", "catchClauses", "alwaysBody"})
+        .methodsList({"accept"}));
+
 /**
  * @brief try-repent block (try-catch / try-except in other languages)
  */

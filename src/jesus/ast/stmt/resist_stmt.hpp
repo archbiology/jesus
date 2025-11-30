@@ -2,6 +2,12 @@
 #include "stmt.hpp"
 #include "../expr/expr.hpp"
 
+REGISTER_FOR_UML(
+    ResistStmt,
+    .packageName("ast.stmt")
+        .parentsList({"Stmt"})
+        .fieldsList({"exceptionType", "messageExpr"}));
+
 /**
  * @brief 'resist' is used to throw/raise exceptions in Jesus Programming Language.
  *

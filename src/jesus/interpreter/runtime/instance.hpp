@@ -4,6 +4,11 @@
 
 static unsigned long long int InstanceID = 0; // FIXME: Vars created inside loop will blow this up
 
+REGISTER_FOR_UML(
+    Instance,
+    .packageName("interpreter.runtime")
+        .fieldsList({"spirit", "attributes"}));
+
 /**
  * @class Instance
  * @brief Represents a living object (an instance) created from a defined spirit (class).

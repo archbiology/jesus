@@ -3,6 +3,12 @@
 #include "../expr/expr.hpp"
 #include <memory>
 
+REGISTER_FOR_UML(
+    PrintStmt,
+    .packageName("ast.stmt")
+        .parentsList({"Stmt"})
+        .fieldsList({"type", "message"}));
+
 enum class StmtType
 {
     SAY,

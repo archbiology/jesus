@@ -6,6 +6,12 @@
 #include <string>
 #include <memory>
 
+REGISTER_FOR_UML(
+    CreateVarTypeStmt,
+    .packageName("ast.stmt")
+        .parentsList({"Stmt"})
+        .fieldsList({"base_type", "module_name", "name", "constraints"}));
+
 /**
  * @brief Represents the creation of a new variable type with a given value.
  * E.g:

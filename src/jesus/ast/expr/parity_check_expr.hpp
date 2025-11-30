@@ -3,6 +3,11 @@
 #include "expr.hpp"
 #include <memory>
 
+REGISTER_FOR_UML(
+    ParityCheckExpr,
+    .packageName("ast.expr")
+        .parentsList({"Expr"}));
+
 /**
  * @brief Represents expressions like `x is odd` or `y is not even`.
  *

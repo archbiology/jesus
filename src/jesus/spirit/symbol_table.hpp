@@ -3,6 +3,14 @@
 #include <memory>
 #include "heart.hpp"
 
+REGISTER_FOR_UML(
+    SymbolTable,
+    .fieldsList({"scopes: Heart"})
+        .methodsList({"addScope", "popScope",
+                      "createVar", "getVar", "updateVar",
+                      "registerVarType", "updatePolymorphicVarType",
+                      "registerClassName"}));
+
 class SymbolTable
 {
     std::vector<std::shared_ptr<Heart>> scopes;

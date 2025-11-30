@@ -4,6 +4,12 @@
 
 class Method; // Forward declaration
 
+REGISTER_FOR_UML(
+    MethodCallExpr,
+    .packageName("ast.expr")
+        .parentsList({"Expr"})
+        .fieldsList({"object", "method", "args"}));
+
 class MethodCallExpr : public Expr
 {
 public:

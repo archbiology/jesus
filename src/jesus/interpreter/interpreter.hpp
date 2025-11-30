@@ -24,6 +24,13 @@
 #include "../spirit/heart.hpp"
 #include "../spirit/symbol_table.hpp"
 
+REGISTER_FOR_UML(
+    Interpreter,
+    .parentsList({"ExprVisitor", "StmtVisitor"})
+        .fieldsList({"symbol_table: SymbolTable", "modules: Module"})
+        .methodsList({"execute", "addScope", "popScope",
+                      "askAndValidate", "resolveModuleToPath"}));
+
 /**
  * @brief Interprets expressions of the language and evaluates their result.
  *

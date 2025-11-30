@@ -9,6 +9,11 @@
 
 class Interpreter; // Forward declaration
 
+REGISTER_FOR_UML(
+    Method,
+    .packageName("interpreter.runtime")
+        .fieldsList({"name", "params", "body", "returnType"}));
+
 class ReturnSignal
 {
 public:

@@ -6,6 +6,11 @@
 #include <string>
 #include <memory>
 
+REGISTER_FOR_UML(
+    UpdateVarWithAskStmt,
+    .packageName("ast.stmt")
+        .parentsList({"Stmt"})
+        .fieldsList({"type", "name", "ask_expr"}));
 /**
  * @brief Represents the update of an existing variable using 'ask'.
  *

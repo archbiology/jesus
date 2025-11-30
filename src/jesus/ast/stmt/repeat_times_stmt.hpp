@@ -5,6 +5,13 @@
 #include <memory>
 #include <vector>
 
+
+REGISTER_FOR_UML(
+    RepeatTimesStmt,
+    .packageName("ast.stmt")
+        .parentsList({"Stmt"})
+        .fieldsList({"countExpr", "body"}));
+
 /**
  * repeat 3 times:
  *   say "Holy!"

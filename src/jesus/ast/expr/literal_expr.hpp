@@ -2,6 +2,12 @@
 
 #include "expr.hpp"
 
+REGISTER_FOR_UML(
+    LiteralExpr,
+    .packageName("ast.expr")
+        .parentsList({"Expr"})
+        .fieldsList({"value", "type"}));
+
 /**
  * @brief Represents a literal value like a number, string, or boolean.
  *

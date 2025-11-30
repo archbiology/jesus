@@ -12,6 +12,8 @@ ParsedCLI CLIParser::parse(int argc, char **argv)
         {
             if (arg == "--quiet")
                 out.quiet = true;
+            else if (arg == "--export-uml")
+                out.export_language_uml = true;
             else if (arg.starts_with("-"))
                 continue; // skip other global flags for the moment
             else

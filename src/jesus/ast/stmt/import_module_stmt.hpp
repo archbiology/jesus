@@ -1,6 +1,12 @@
 #pragma once
 #include "stmt.hpp"
 
+REGISTER_FOR_UML(
+    ImportModuleStmt,
+    .packageName("ast.stmt")
+        .parentsList({"Stmt"})
+        .fieldsList({"moduleName"}));
+
 class ImportModuleStmt : public Stmt
 {
 public:

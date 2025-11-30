@@ -4,6 +4,11 @@
 #include <memory>
 #include "../../spirit/heart.hpp"
 
+REGISTER_FOR_UML(
+    Module,
+    .fieldsList({"name", "file_path", "scope: Heart"})
+        .methodsList({"createVar", "getVar"}));
+
 class Module
 {
 public:

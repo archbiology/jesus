@@ -6,6 +6,12 @@
 #include <vector>
 #include <memory>
 
+REGISTER_FOR_UML(
+    CreateMethodStmt,
+    .packageName("ast.stmt")
+        .parentsList({"Stmt"})
+        .fieldsList({"name", "params", "returnType", "body"}));
+
 /**
  * @brief Represents a method declaration inside a class.
  *

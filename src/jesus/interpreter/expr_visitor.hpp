@@ -14,6 +14,14 @@
 #include "../ast/expr/method_call_expr.hpp"
 #include "../ast/expr/formatted_string_expr.hpp"
 
+REGISTER_FOR_UML(
+    ExprVisitor,
+    .methodsList({"visitBinary", "visitLiteral",
+                  "visitGrouping", "visitUnary", "visitConditional",
+                  "visitVariable", "visitAsk", "visitCreateInstanceExpr",
+                  "visitGetAttribute", "visitMethodCallExpr",
+                  "visitFormattedStringExpr", "visitParityCheckExpr"}));
+
 /**
  * @brief Interface for visiting and evaluating expression nodes in the AST.
  *

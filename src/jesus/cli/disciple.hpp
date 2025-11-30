@@ -4,6 +4,11 @@
 #include "../interpreter/interpreter.hpp"
 #include "../lexer/lexer.hpp"
 
+REGISTER_FOR_UML(
+    Disciple,
+    .usesList({"Interpreter"})
+        .methodsList({"repl", "walk"}));
+
 /**
  * @brief REPL -> Read, Evaluate, Print, Loop
  *
