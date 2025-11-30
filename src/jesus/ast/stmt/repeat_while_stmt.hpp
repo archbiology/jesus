@@ -4,6 +4,12 @@
 #include <memory>
 #include <vector>
 
+REGISTER_FOR_UML(
+    RepeatWhileStmt,
+    .packageName("ast.stmt")
+        .parentsList({"Stmt"})
+        .fieldsList({"condition", "body"}));
+
 /**
  * @brief
  *

@@ -3,6 +3,12 @@
 #include "expr.hpp"
 #include <memory>
 
+REGISTER_FOR_UML(
+    ConditionalExpr,
+    .packageName("ast.expr")
+        .parentsList({"Expr"})
+        .fieldsList({"thenBranch", "elseBranch"}));
+
 /**
  * @brief Represents conditional expressions like the following:
  *   say "adult" if age >= 18 otherwise "young"

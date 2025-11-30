@@ -5,6 +5,12 @@
 #include <memory>
 #include "../../types/creation_type.hpp"
 
+REGISTER_FOR_UML(
+    CreateClassStmt,
+    .packageName("ast.stmt")
+        .parentsList({"Stmt"})
+        .fieldsList({"name", "module_name", "parent_class", "body"}));
+
 /**
  * @brief Represents the 'creation' of a new class in the Jesus language.
  *

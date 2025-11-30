@@ -2,8 +2,13 @@
 
 #include <iostream>
 #include "../spirit/value.hpp"
+#include "../understanding/core/REGISTER_FOR_UML.hpp"
 
 struct Heart; // forward declaration
+
+REGISTER_FOR_UML(
+    ASTNode,
+    .methodsList({"evaluate"}));
 
 /**
  * @brief Abstract base class for all nodes in the Abstract Syntax Tree (AST).
@@ -46,7 +51,7 @@ public:
      * "For nothing is hidden that will not be made manifest, nor is anything
      * secret that will not be known and come to light." — Luke 8:17
      */
-    virtual std::string toString() const { return  typeid(*this).name(); }
+    virtual std::string toString() const { return typeid(*this).name(); }
 };
 
 /**

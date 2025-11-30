@@ -19,6 +19,18 @@
 #include "../ast/stmt/resist_stmt.hpp"
 #include "../ast/stmt/import_module_stmt.hpp"
 
+REGISTER_FOR_UML(
+    StmtVisitor,
+    .methodsList({"visitCreateClass", "visitCreateVarType",
+                  "visitCreateVar", "visitCreateVarWithAsk", "visitUpdateVar",
+                  "visitUpdateVarWithAsk", "visitPrintStmt", "visitRepeatWhile",
+                  "visitRepeatTimes", "visitRepeatForeverStmt",
+                  "visitForEach", "visitBreak", "visitSkipStmt",
+                  "visitReturnStmt", "visitTryStmt",
+                  "visitResistStmt", "visitImportModuleStmt"
+
+    }));
+
 /**
  * @brief Interface for visiting and executing statement nodes in the AST.
  *

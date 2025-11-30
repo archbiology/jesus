@@ -4,6 +4,12 @@
 #include "../../lexer/token.hpp"
 #include <memory>
 
+REGISTER_FOR_UML(
+    UnaryExpr,
+    .packageName("ast.expr")
+        .parentsList({"Expr"})
+        .fieldsList({"op", "right"}));
+
 /**
  * @brief Represents a unary operation like `not lie` or `-problems`.
  *

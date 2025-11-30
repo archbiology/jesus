@@ -2,6 +2,12 @@
 #include "stmt.hpp"
 #include "../expr/expr.hpp"
 
+REGISTER_FOR_UML(
+    ReturnStmt,
+    .packageName("ast.stmt")
+        .parentsList({"Stmt"})
+        .fieldsList({"value"}));
+
 /**
  * @brief Represents a `return` statement in the Jesus Programming Language.
  *

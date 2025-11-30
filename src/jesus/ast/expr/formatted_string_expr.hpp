@@ -2,6 +2,12 @@
 
 #include "expr.hpp"
 
+REGISTER_FOR_UML(
+    FormattedStringExpr,
+    .packageName("ast.expr")
+        .parentsList({"Expr"})
+        .fieldsList({"raw", "parts"}));
+
 /**
  * @brief AST node representing a formatted string literal.
  *

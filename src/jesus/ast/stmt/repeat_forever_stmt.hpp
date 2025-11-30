@@ -4,6 +4,12 @@
 #include <memory>
 #include <vector>
 
+REGISTER_FOR_UML(
+    RepeatForeverStmt,
+    .packageName("ast.stmt")
+        .parentsList({"Stmt"})
+        .fieldsList({"body"}));
+
 /**
  * repeat forever:
  *   say 'Holy, holy, holy is the Lord God almighty, who was, and who is, and who is to come.'

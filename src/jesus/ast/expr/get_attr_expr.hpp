@@ -2,6 +2,12 @@
 
 #include "expr.hpp"
 
+REGISTER_FOR_UML(
+    GetAttributeExpr,
+    .packageName("ast.expr")
+        .parentsList({"Expr"})
+        .fieldsList({"object", "attribute"}));
+
 class GetAttributeExpr : public Expr
 {
 public:

@@ -4,6 +4,11 @@
 #include "interpreter/interpreter.hpp"
 #include "../lexer/lexer.hpp"
 
+REGISTER_FOR_UML(
+    Faith,
+    .usesList({"Interpreter"})
+        .methodsList({"execute"}));
+
 /**
  * @brief The executor of what is written in a file.jesus
  *

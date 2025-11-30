@@ -4,6 +4,12 @@
 #include <memory>
 #include "../../spirit/value.hpp"
 
+REGISTER_FOR_UML(
+    GroupingExpr,
+    .packageName("ast.expr")
+        .parentsList({"Expr"})
+        .fieldsList({"expression"}));
+
 /**
  * @brief Represents a parenthesized expression: (a + b)
  *

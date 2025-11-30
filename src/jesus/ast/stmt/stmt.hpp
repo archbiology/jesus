@@ -3,6 +3,15 @@
 
 class StmtVisitor; // Forward declaration
 
+REGISTER_FOR_UML(
+    Stmt,
+    .parentsList({"ASTNode"})
+        .packageName("ast.stmt")
+        .methodsList({
+            "accept",
+            "inProgress",
+        }));
+
 /**
  * @brief Statements represent actions or commands (create variable, print, loops, etc).
  *

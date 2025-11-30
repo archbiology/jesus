@@ -1,6 +1,11 @@
 #pragma once
 #include "stmt.hpp"
 
+REGISTER_FOR_UML(
+    BreakStmt,
+    .packageName("ast.stmt")
+        .parentsList({"Stmt"}));
+
 /**
  * set disciples to ["Peter", "James", "John"]
  * for each name in disciples:

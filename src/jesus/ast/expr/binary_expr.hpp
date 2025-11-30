@@ -4,6 +4,12 @@
 #include "../../lexer/token.hpp"
 #include <memory>
 
+REGISTER_FOR_UML(
+    BinaryExpr,
+    .packageName("ast.expr")
+        .parentsList({"Expr"})
+        .fieldsList({"left", "op", "right"}));
+
 /**
  * @brief Represents a binary operation like `a + b` or `a and b`.
  *

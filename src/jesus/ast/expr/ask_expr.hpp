@@ -2,6 +2,12 @@
 
 #include "expr.hpp"
 
+REGISTER_FOR_UML(
+    AskExpr,
+    .packageName("ast.expr")
+        .parentsList({"Expr"})
+        .fieldsList({"prompt"}));
+
 /**
  * @brief Represents an 'ask' expression in the Jesus language.
  *

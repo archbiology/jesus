@@ -5,6 +5,12 @@
 #include <string>
 #include <memory>
 
+REGISTER_FOR_UML(
+    CreateVarStmt,
+    .packageName("ast.stmt")
+        .parentsList({"Stmt"})
+        .fieldsList({"base_type", "name", "value"}));
+
 /**
  * @brief Represents the creation of a new variable with a given value.
  *

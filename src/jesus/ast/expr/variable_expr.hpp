@@ -3,6 +3,12 @@
 #include "expr.hpp"
 #include <string>
 
+REGISTER_FOR_UML(
+    VariableExpr,
+    .packageName("ast.expr")
+        .parentsList({"Expr"})
+        .fieldsList({"name"}));
+
 /**
  * @brief Represents a variable reference like "age" or "name".
  * It also represents class attributes, and function params.
