@@ -12,6 +12,7 @@
 #include "cli/cli_parser.hpp"
 #include "cli/disciple.hpp"
 #include "cli/faith.hpp"
+#include "cli/uml_exporter.hpp"
 
 int main(int argc, char **argv)
 {
@@ -25,6 +26,12 @@ int main(int argc, char **argv)
 
     grammar::initializeGrammar();
     KnownTypes::registerBuiltInTypes();
+
+    if (cli.export_language_uml)
+    {
+        UmlExporter::exportPlantUml(std::cout);
+        return 0;
+    }
 
     // ----------------------
     // Run a file if provided
