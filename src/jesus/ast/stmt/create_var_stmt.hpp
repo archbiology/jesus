@@ -19,11 +19,11 @@ REGISTER_FOR_UML(
 class CreateVarStmt : public Stmt
 {
 public:
-    std::string base_type;
+    std::shared_ptr<CreationType> base_type;
     std::string name;
     std::unique_ptr<Expr> value;
 
-    CreateVarStmt(std::string type, std::string name, std::unique_ptr<Expr> value)
+    CreateVarStmt(std::shared_ptr<CreationType> type, std::string name, std::unique_ptr<Expr> value)
         : base_type(type), name(name), value(std::move(value)) {}
 
     /**

@@ -2,6 +2,7 @@
 #include "../jesus_grammar.hpp"
 #include "../../../ast/stmt/incomplete_block_stmt.hpp"
 #include "../../../ast/stmt/try_stmt.hpp"
+#include "../../../types/known_types.hpp"
 
 std::unique_ptr<Stmt> TryStmtRule::parse(ParserContext &ctx)
 {
@@ -34,14 +35,17 @@ std::unique_ptr<Stmt> TryStmtRule::parse(ParserContext &ctx)
     // -----------------
     while (ctx.match(TokenType::REPENT))
     {
-        std::string exceptionType = "ItsWritten";
+        auto ItsWritten = KnownTypes::EXCEPTION;
+        auto exceptionType = ItsWritten;
+        std::string exceptionTypeStr = exceptionType->name;
         std::string varName;
-        ctx.addScope(std::make_shared<Heart>(exceptionType)); // <🟢️>
+        ctx.addScope(std::make_shared<Heart>(exceptionTypeStr)); // <🟢️>
+
 
         // Optional: 'repent Type'
         if (ctx.match(TokenType::IDENTIFIER))
         {
-            exceptionType = ctx.previous().lexeme;
+            exceptionTypeStr = ctx.previous().lexeme;
 
             if (ctx.match(TokenType::AS))
             {
@@ -49,6 +53,7 @@ std::unique_ptr<Stmt> TryStmtRule::parse(ParserContext &ctx)
                     throw std::runtime_error("Expected variable name after 'as' in 'repent' clause");
 
                 varName = ctx.previous().lexeme;
+                exceptionType = KnownTypes::resolve(exceptionTypeStr, "core"); // FIXME: not always 'core'. User define their own exceptions.
                 ctx.registerVarType(exceptionType, varName);
             }
         }
@@ -58,7 +63,7 @@ std::unique_ptr<Stmt> TryStmtRule::parse(ParserContext &ctx)
 
         ctx.consumeAllNewLines();
         std::vector<std::shared_ptr<Stmt>> catchBody;
-        blockName = exceptionType;
+        blockName = exceptionType->name;
 
         while (!ctx.checkAny({TokenType::REPENT, TokenType::ALWAYS, TokenType::AMEN}) && !ctx.isAtEnd())
         {
@@ -66,7 +71,7 @@ std::unique_ptr<Stmt> TryStmtRule::parse(ParserContext &ctx)
             ctx.consumeAllNewLines();
         }
         ctx.popScope(); // </🟢️>
-        catchClauses.emplace_back(exceptionType, catchBody);
+        catchClauses.emplace_back(exceptionTypeStr, catchBody);
     }
 
     // ----------------------

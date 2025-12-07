@@ -172,9 +172,11 @@ public:
         current = snapshot;
     }
 
-    void registerVarType(const std::string &type, const std::string &name);
+    bool varExistsInHierarchy(const std::string &name);
 
-    void updatePolymorphicVarType(const std::string &name, const std::string &type);
+    void registerVarType(const std::shared_ptr<CreationType> &type, const std::string &name);
+
+    void updatePolymorphicVarType(const std::string &name, const std::shared_ptr<CreationType> &type);
 
     void registerClassName(const std::string &className);
 

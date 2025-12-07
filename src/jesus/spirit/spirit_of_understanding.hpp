@@ -8,6 +8,7 @@
 
 class CreationType; // Forward declaration
 
+using VarType = std::shared_ptr<CreationType>;
 /**
  * @brief Understanding/Faith brings Discernment
  *
@@ -26,12 +27,12 @@ public:
         classNames.insert(className);
     }
 
-    void registerVarType(const std::string &type, const std::string &name)
+    void registerVarType(const VarType &type, const std::string &name)
     {
         variableTypes[name] = type;
     }
 
-    void updatePolymorphicVarType(const std::string& name, const std::string& newType){
+    void updatePolymorphicVarType(const std::string& name, const VarType &newType){
         variableTypes[name] = newType;
     }
 
@@ -42,7 +43,9 @@ public:
         return classNames.find(className) != classNames.end();
     }
 
+    std::string toString();
+
 private:
-    std::unordered_map<std::string, std::string> variableTypes; // varName: typeName
+    std::unordered_map<std::string, VarType> variableTypes; // varName: varType
     std::unordered_set<std::string> classNames;
 };

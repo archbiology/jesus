@@ -50,7 +50,7 @@ std::unique_ptr<Stmt> UpdateVarStmtRule::parse(ParserContext &ctx)
     if (valueType != varType)
     {
         auto polymorphicType = KnownTypes::getOrCreatePolymorphism(varType, valueType);
-        ctx.updatePolymorphicVarType(varName, polymorphicType->name);
+        ctx.updatePolymorphicVarType(varName, polymorphicType);
     }
 
     return std::make_unique<UpdateVarStmt>(varName, std::move(value));

@@ -18,11 +18,11 @@ REGISTER_FOR_UML(
 class ResistStmt : public Stmt
 {
 public:
-    std::string exceptionType;
+    std::shared_ptr<CreationType> exceptionType;
     std::unique_ptr<Expr> messageExpr;
 
 public:
-    ResistStmt(const std::string &type, std::unique_ptr<Expr> msg)
+    ResistStmt(const std::shared_ptr<CreationType> &type, std::unique_ptr<Expr> msg)
         : exceptionType(type), messageExpr(std::move(msg)) {}
 
     void accept(StmtVisitor &visitor) const override;

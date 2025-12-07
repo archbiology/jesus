@@ -29,10 +29,19 @@ std::unique_ptr<Stmt> CreateVarStmtRule::parse(ParserContext &ctx)
         throw std::runtime_error("Expected an identifier name after 'create " + varType_ + "'.");
     }
 
-    auto varType = KnownTypes::resolve(varType_, "core");
+    bool typeExistsLocally = ctx.varExistsInHierarchy(varType_);
+    std::shared_ptr<CreationType> varType = nullptr;
+
+    if (typeExistsLocally ) {
+        auto localType = ctx.getVarType(varType_);
+        if (localType->isClass())
+            varType = localType;
+    }
     if (!varType)
     {
-        throw std::runtime_error("Unknown variable type: '" + varType_ + "'");
+        varType = KnownTypes::resolve(varType_, "core");
+        if (!varType)
+            throw std::runtime_error("Unknown variable type: '" + varType_ + "'");
     }
 
     std::unique_ptr<Expr> value = nullptr;
@@ -48,7 +57,7 @@ std::unique_ptr<Stmt> CreateVarStmtRule::parse(ParserContext &ctx)
             if (!ask_expr)
                 throw std::runtime_error("Expected a text literal or a text-typed variable after 'ask' (e.g., ask \"What is your name?\" or ask question).");
 
-            ctx.registerVarType(varType->name, varName);
+            ctx.registerVarType(varType, varName);
 
             return std::make_unique<CreateVarWithAskStmt>(varType, varName, std::move(ask_expr));
         }
@@ -84,8 +93,8 @@ std::unique_ptr<Stmt> CreateVarStmtRule::parse(ParserContext &ctx)
             throw std::runtime_error("Invalid value " + value_str + " for variable '" + varName + "' declared as type " + varType->name);
         }
 
-        ctx.registerVarType(varType->name, varName);
+        ctx.registerVarType(varType, varName);
     }
 
-    return std::make_unique<CreateVarStmt>(varType_, varName, std::move(value));
+    return std::make_unique<CreateVarStmt>(varType, varName, std::move(value));
 }
