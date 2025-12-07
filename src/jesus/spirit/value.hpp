@@ -47,8 +47,8 @@ public:
     explicit Value(const std::string &v) : value(v), IS_STRING(true), AS_BOOLEAN(v != "") {}
     explicit Value(const char *v) : value(std::string(v)), IS_STRING(true), AS_BOOLEAN(std::string(v) != "") {}
     explicit Value(const std::vector<std::shared_ptr<Value>> &v) : value(v), IS_LIST(true), AS_BOOLEAN(!v.empty()) {}
-    explicit Value(const std::shared_ptr<Module> &v) : value(std::move(v)), IS_MODULE(true), AS_BOOLEAN(true) {}
-    explicit Value(const std::shared_ptr<CreationType> &v): value(std::move(v)), IS_CLASS(true), AS_BOOLEAN(true) {}
+    explicit Value(const std::shared_ptr<Module> &v) : value(v), IS_MODULE(true), AS_BOOLEAN(true) {}
+    explicit Value(const std::shared_ptr<CreationType> &v): value(v), IS_CLASS(true), AS_BOOLEAN(true) {}
     explicit Value(const std::shared_ptr<Instance> &v) : value(v), IS_INSTANCE(true), AS_BOOLEAN(static_cast<bool>(v)) {}
 
     /**

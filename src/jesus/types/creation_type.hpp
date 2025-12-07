@@ -14,6 +14,7 @@ enum class PrimitiveType
     Boolean,
     Number,
     Text,
+    Module,
     Class,
     Polymorphic,
 };
@@ -115,7 +116,7 @@ public:
         return true;
     }
 
-    void addAttribute(const std::string &type, const std::string &name, std::unique_ptr<Expr> initializer, std::shared_ptr<Heart> heart)
+    void addAttribute(const VarType &type, const std::string &name, std::unique_ptr<Expr> initializer, std::shared_ptr<Heart> heart)
     {
         if (primitive_type != PrimitiveType::Class)
             throw std::runtime_error("Only class types can have attributes.");
@@ -292,6 +293,19 @@ public:
     const std::string toString()
     {
         return "{class: \"" + name + "\"}";
+    }
+
+    const std::string methodsToString()
+    {
+        std::string str;
+        if (!methods.empty())
+        {
+            for (auto &p : methods)
+            {
+                str += p.first + "\n";
+            }
+        }
+        return str;
     }
 
 private:

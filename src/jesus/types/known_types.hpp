@@ -41,6 +41,7 @@ public:
 
     inline static std::shared_ptr<CreationType> STRING;
 
+    inline static std::shared_ptr<CreationType> MODULE;
     inline static std::shared_ptr<CreationType> CLASS;
     inline static std::shared_ptr<CreationType> EXCEPTION;
     // -------------------------------------------------------------------

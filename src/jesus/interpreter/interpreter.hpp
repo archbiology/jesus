@@ -51,7 +51,7 @@ REGISTER_FOR_UML(
 class Interpreter : public ExprVisitor, public StmtVisitor
 {
 public:
-    explicit Interpreter(SymbolTable &symbol_table) : symbol_table(symbol_table) {}
+    explicit Interpreter(std::shared_ptr<Module> module) : currentModule(module) {}
     /**
      * @brief Evaluates a given expression and returns its computed value.
      *
@@ -60,7 +60,7 @@ public:
      */
     Value evaluate(const std::unique_ptr<Expr> &expr);
 
-    void createVariable(const std::string &type, const std::string &name, const Value &value);
+    void createVariable(const VarType &type, const std::string &name, const Value &value);
     void updateVariable(const std::string &name, const Value &value);
 
     /**
@@ -94,47 +94,64 @@ public:
 
     std::shared_ptr<CreationType> getVarType(const std::string &varName)
     {
-        return symbol_table.getVarType(varName);
+        return currentModule->symbol_table->getVarType(varName);
     }
 
-    void registerVarType(const std::string &type, const std::string &name)
-    {
-        symbol_table.registerVarType(type, name);
+    bool varExistsInHierarchy(const std::string &name) {
+        return currentModule->symbol_table->varExistsInHierarchy(name);
     }
 
-    void updatePolymorphicVarType(const std::string &name, const std::string &type)
+    void registerVarType(const VarType &type, const std::string &name)
     {
-        symbol_table.updatePolymorphicVarType(name, type);
+        currentModule->symbol_table->registerVarType(type, name);
+    }
+
+    void updatePolymorphicVarType(const std::string &name, const VarType &type)
+    {
+        currentModule->symbol_table->updatePolymorphicVarType(name, type);
     }
 
     void registerClassName(const std::string &className)
     {
-        symbol_table.registerClassName(className);
+        currentModule->symbol_table->registerClassName(className);
     }
 
     void addScope(std::shared_ptr<Heart> scope)
     {
-        symbol_table.addScope(scope);
+        currentModule->symbol_table->addScope(scope);
     }
 
     void popScope()
     {
-        symbol_table.popScope();
+        currentModule->symbol_table->popScope();
     }
 
+    static std::shared_ptr<Module> createModule(std::string name, std::string fullpath)
+    {
+        if (!Interpreter::moduleRegistered(fullpath))
+        {
+            auto scope = std::make_shared<Heart>(name);
+            auto symbolTable = std::make_shared<SymbolTable>(scope);
+            auto newModule = std::make_shared<Module>(name, fullpath, symbolTable);
+            Interpreter::addModule(fullpath, newModule);
+        }
+
+        return Interpreter::getModule(fullpath);
+    }
+
+    static void addModule(const std::string &name, std::shared_ptr<Module> module);
+    static std::shared_ptr<Module> getModule(const std::string &name);
+    static bool moduleRegistered(const std::string &name);
+    static void listModules();
+    std::string currentModuleName() {
+        return currentModule->name;
+    };
+private:
     /**
      * @brief Prevent re-imports / circular imports
      */
-    static std::unordered_set<std::string> loadedModules;
+    std::shared_ptr<Module> currentModule;
     static std::unordered_map<std::string, std::shared_ptr<Module>> modules;
-
-private:
-    /**
-     * @brief It acts like a symbol table — each variable has a name (string)
-     *
-     * “The good man brings good things out of the good stored up in his heart…” — Luke 6:45
-     */
-    SymbolTable symbol_table;
 
     // 🟢️🟢️🟢️🟢️🟢️🟢️🟢️🟢️🟢️🟢️🟢️🟢️🟢️🟢️
     // 🟢️ Visit expression methods 🟢️

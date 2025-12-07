@@ -15,7 +15,6 @@
 // Static fields
 // -------------
 std::unordered_map<std::string, std::shared_ptr<Module>> Interpreter::modules{};
-std::unordered_set<std::string> Interpreter::loadedModules{};
 
 // Custom control-flow exceptions
 class BreakSignal : public std::exception
@@ -40,24 +39,24 @@ void Interpreter::execute(const std::shared_ptr<Stmt> &stmt)
     stmt->accept(*this);
 }
 
-void Interpreter::createVariable(const std::string &type, const std::string &name, const Value &value)
+void Interpreter::createVariable(const VarType &type, const std::string &name, const Value &value)
 {
-    symbol_table.createVar(type, name, value);
+    currentModule->symbol_table->createVar(type, name, value);
 }
 
 void Interpreter::updateVariable(const std::string &name, const Value &value)
 {
-    symbol_table.updateVar(name, value);
+    currentModule->symbol_table->updateVar(name, value);
 }
 
 Value Interpreter::visitBinary(const BinaryExpr &expr)
 {
-    return expr.evaluate(symbol_table.currentScope());
+    return expr.evaluate(currentModule->symbol_table->currentScope());
 }
 
 Value Interpreter::visitUnary(const UnaryExpr &expr)
 {
-    return expr.evaluate(symbol_table.currentScope());
+    return expr.evaluate(currentModule->symbol_table->currentScope());
 }
 
 Value Interpreter::visitLiteral(const LiteralExpr &expr)
@@ -67,7 +66,7 @@ Value Interpreter::visitLiteral(const LiteralExpr &expr)
 
 Value Interpreter::visitVariable(const VariableExpr &expr)
 {
-    return symbol_table.getVar(expr.name);
+    return currentModule->symbol_table->getVar(expr.name);
 }
 
 Value Interpreter::visitCreateInstanceExpr(const CreateInstanceExpr &expr)
@@ -87,7 +86,7 @@ Value Interpreter::visitGetAttribute(const GetAttributeExpr &expr)
 
 Value Interpreter::visitParityCheckExpr(const ParityCheckExpr &expr)
 {
-    return expr.evaluate(symbol_table.currentScope());
+    return expr.evaluate(currentModule->symbol_table->currentScope());
 }
 
 Value Interpreter::visitMethodCallExpr(const MethodCallExpr &expr)
@@ -177,7 +176,7 @@ Value Interpreter::askAndValidate(const std::shared_ptr<Expr> ask_expr, std::sha
 void Interpreter::visitCreateVarWithAsk(const CreateVarWithAskStmt &stmt)
 {
     Value value = askAndValidate(stmt.ask_expr, stmt.var_type);
-    createVariable(stmt.var_type->name, stmt.var_name, value);
+    createVariable(stmt.var_type, stmt.var_name, value);
 }
 
 void Interpreter::visitUpdateVarWithAsk(const UpdateVarWithAskStmt &stmt)
@@ -204,7 +203,7 @@ void Interpreter::visitCreateClass(const CreateClassStmt &stmt)
         // -----------------
         if (auto attr = dynamic_cast<CreateVarStmt *>(member.get()))
         {
-            userClass->addAttribute(attr->base_type, attr->name, std::move(attr->value), symbol_table.currentScope());
+            userClass->addAttribute(attr->base_type, attr->name, std::move(attr->value), currentModule->symbol_table->currentScope());
         }
         // --------------
         // handle methods
@@ -222,6 +221,7 @@ void Interpreter::visitCreateClass(const CreateClassStmt &stmt)
     }
 
     KnownTypes::registerType(userClass);
+    currentModule->symbol_table->createVar(userClass, userClass->name, Value(userClass));
 }
 
 void Interpreter::visitCreateVarType(const CreateVarTypeStmt &stmt)
@@ -415,13 +415,13 @@ void Interpreter::visitTryStmt(const TryStmt &stmt)
 
     try
     {
-        symbol_table.addScope(std::make_shared<Heart>("try"));
+        currentModule->symbol_table->addScope(std::make_shared<Heart>("try"));
         for (auto &stmt : stmt.tryBody)
             execute(stmt);
     }
     catch (ItsWritten &s)
     {
-        symbol_table.popScope();
+        currentModule->symbol_table->popScope();
 
         bool handled = false;
         for (auto &[type, body] : stmt.catchClauses)
@@ -429,10 +429,10 @@ void Interpreter::visitTryStmt(const TryStmt &stmt)
             // if (s.type == type)
             // {
 
-            symbol_table.addScope(std::make_shared<Heart>(type));
+            currentModule->symbol_table->addScope(std::make_shared<Heart>(type));
             for (auto &stmt : body)
                 execute(stmt);
-            symbol_table.popScope();
+            currentModule->symbol_table->popScope();
 
             handled = true;
             break;
@@ -442,12 +442,12 @@ void Interpreter::visitTryStmt(const TryStmt &stmt)
             throw;
     }
 
-    symbol_table.addScope(std::make_shared<Heart>("always"));
+    currentModule->symbol_table->addScope(std::make_shared<Heart>("always"));
     for (auto &stmt : stmt.alwaysBody)
     {
         execute(stmt);
     }
-    symbol_table.popScope();
+    currentModule->symbol_table->popScope();
 }
 
 void Interpreter::visitResistStmt(const ResistStmt &stmt)
@@ -483,30 +483,15 @@ void Interpreter::visitImportModuleStmt(const ImportModuleStmt &stmt)
     // ----------------------
     // avoid circular imports
     // ----------------------
-    if (!Interpreter::loadedModules.contains(fullpath))
+    if (!Interpreter::moduleRegistered(fullpath))
     {
-        Interpreter::loadedModules.insert(fullpath);
-
-        // --------------------------------------
-        // Create a separate scope for the module
-        // --------------------------------------
-        auto moduleScope = std::make_shared<Heart>("module-" + stmt.moduleName);
-
-        // ----------------------
-        // Register module object
-        // ----------------------
-
-        Interpreter::modules[stmt.moduleName] = std::make_shared<Module>(stmt.moduleName, fullpath, moduleScope);
-
         // --------------------
         // Interpret the module
         // --------------------
-        SymbolTable moduleSymbolTable(moduleScope);
-        Interpreter jesus(moduleSymbolTable);
-        Faith michael(jesus);
+        Faith michael;
         michael.execute(fullpath); // Declare classes, methods, etc.
     }
-    auto importedModule = Interpreter::modules[stmt.moduleName];
+    auto importedModule = Interpreter::getModule(fullpath);
 
     // -----------------
     // come <moduleName>
@@ -514,6 +499,69 @@ void Interpreter::visitImportModuleStmt(const ImportModuleStmt &stmt)
     if (stmt.alias.empty())
     {
         // Bind module object to its name
-        symbol_table.createVar("module", stmt.moduleName, Value(importedModule));
+        currentModule->symbol_table->createVar(KnownTypes::MODULE, stmt.moduleName, Value(importedModule));
+        return;
     }
+
+    // -------------------------------
+    // from moduleName come MemberName
+    // -------------------------------
+    std::string memberName = stmt.alias;
+    Value member = importedModule->getVar(memberName);
+    auto memberType = importedModule->getVarType(memberName);
+
+    currentModule->symbol_table->createVar(memberType, memberName, member);
+}
+
+void Interpreter::addModule(const std::string &path, std::shared_ptr<Module> module)
+{
+    if (moduleRegistered(path))
+        throw std::runtime_error("Module already registered: " + path);
+
+    modules[path] = module;
+}
+
+std::shared_ptr<Module> Interpreter::getModule(const std::string &path)
+{
+    auto it = modules.find(path);
+
+    if (it == modules.end())
+    {
+        std::cerr << "[Interpreter] ERROR: Module '" << path << "' not found.\n";
+        listModules(); // show available modules
+        return nullptr;
+    }
+
+    if (!it->second)
+    {
+        std::cerr << "[Interpreter] ERROR: Module '" << path
+                  << "' exists but is NULL!\n";
+        listModules();
+        return nullptr;
+    }
+
+    return it->second;
+}
+
+void Interpreter::listModules()
+{ return;
+    std::cerr << "[Interpreter] Registered modules:\n";
+    std::cout << "--------------------------\n";
+    for (const auto &[k, v] : modules)
+    {
+        if (v)
+        {
+            std::cerr << "  " << k << " -> OK (" << v.get() << ")\n";
+        }
+        else
+        {
+            std::cerr << "  " << k << " -> NULL\n";
+        }
+    }
+    std::cout << "==========================\n";
+}
+
+bool Interpreter::moduleRegistered(const std::string &path)
+{
+    return Interpreter::modules.contains(path);
 }

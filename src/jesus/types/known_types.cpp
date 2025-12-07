@@ -13,6 +13,7 @@
 #include "atomic/strings/word_type.hpp"
 #include "atomic/strings/phrase_type.hpp"
 #include "composite/class_type.hpp"
+#include "composite/module_type.hpp"
 #include "composite/its_written_exception_type.hpp"
 #include <memory>
 #include <sstream>
@@ -32,6 +33,7 @@ void KnownTypes::registerBuiltInTypes()
     auto text = std::make_shared<TextType>(creation);
 
     auto klass = std::make_shared<ClassType>(creation);
+    auto module = std::make_shared<ModuleType>(creation);
     auto exception = std::make_shared<ItsWritten>(klass);
 
     BOOLEAN = TRUTH = truth;
@@ -44,6 +46,7 @@ void KnownTypes::registerBuiltInTypes()
     FLOAT = floating;
     DOUBLE = floating; // TODO: Really differentiate 'float' from 'double'
     STRING = text;
+    MODULE = module;
     CLASS = klass;
     EXCEPTION = exception;
 
@@ -64,6 +67,7 @@ void KnownTypes::registerBuiltInTypes()
     registerType(std::make_shared<PhraseType>());
 
     registerType(klass);
+    registerType(module);
     registerType(exception);
 }
 
@@ -76,7 +80,7 @@ void KnownTypes::registerType(std::shared_ptr<CreationType> type)
         typesById.resize(id + 50);
 
     typesById[id] = type.get();
-    typesByName[fullname] = std::move(type);
+    typesByName[fullname] = type;
 }
 
 const std::shared_ptr<CreationType> KnownTypes::resolve(const std::string &name, const std::string &module)

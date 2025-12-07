@@ -75,7 +75,7 @@ public:
                const std::string &verseRef,
                const std::string &verseText,
                std::shared_ptr<CreationType> parent = nullptr)
-        : ClassType(parent),
+        : ClassType(parent, "ItsWritten"),
           code(code), message(message),
           verseRef(verseRef), verseText(verseText)
     {
