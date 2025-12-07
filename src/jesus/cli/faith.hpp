@@ -26,14 +26,14 @@ REGISTER_FOR_UML(
 class Faith
 {
 public:
-    explicit Faith(Interpreter &jesus);
+    explicit Faith(){};
 
     /**
      * @brief Loads a file and execute it.
      *
      * "Faith without works is dead.” (James 2:26)
      */
-    int execute(const std::string &filename);
+    int execute(std::string filename);
 
 private:
     /**
@@ -41,7 +41,5 @@ private:
      *
      * “By faith we understand…” (Hebrews 11:3)
      */
-    void interpret(const std::string &source, const std::string &moduleName); // executes raw text
-
-    Interpreter &jesus;
+    void interpret(Interpreter &jesus, const std::string &source, const std::string &moduleName); // executes raw text
 };
