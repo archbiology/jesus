@@ -39,10 +39,16 @@ std::unique_ptr<Stmt> CreateMethodStmtRule::parse(ParserContext &ctx)
             if (!ctx.match(TokenType::IDENTIFIER))
                 throw std::runtime_error("Expected parameter type in method declaration.");
 
-            std::string type = ctx.previous().lexeme;
+            std::string typeStr = ctx.previous().lexeme;
 
             if (!ctx.match(TokenType::IDENTIFIER))
-                throw std::runtime_error("Expected parameter name after type '" + type + "'.");
+                throw std::runtime_error("Expected parameter name after type '" + typeStr + "'.");
+
+            auto type = KnownTypes::resolve(typeStr, "core");
+            if (!type)
+            {
+                throw std::runtime_error("Unknown param type: '" + typeStr + "'.");
+            }
 
             std::string name = ctx.previous().lexeme;
 

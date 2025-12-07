@@ -3,9 +3,8 @@
 #include "parser/parser.hpp"
 #include "../utils/file_utils.hpp"
 
-Faith::Faith(Interpreter &jesus) : jesus(jesus) {}
 
-void Faith::interpret(const std::string &source, const std::string &moduleName)
+void Faith::interpret(Interpreter &jesus, const std::string &source, const std::string &moduleName)
 {
     Lexer lexer;
     auto tokens = lexer.tokenize(source);
@@ -24,13 +23,17 @@ void Faith::interpret(const std::string &source, const std::string &moduleName)
         jesus.loves(you);
 }
 
-int Faith::execute(const std::string &filename)
+int Faith::execute(std::string filename)
 {
     try
     {
         std::string source = utils::readFile(filename);
         std::string moduleName = utils::basenameWithoutExtension(filename);
-        interpret(source, moduleName);
+
+        auto newModule = Interpreter::createModule(moduleName, filename);
+        Interpreter jesus(newModule);
+
+        interpret(jesus, source, moduleName);
         return 0;
     }
     catch (const std::exception &e)

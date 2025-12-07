@@ -1,0 +1,12 @@
+
+warn '👉 Inside routes.jesus'
+
+let there be Route53:
+
+  purpose createRecord(text name):
+    say "inside -> Route53::createRecord({name})"
+  amen
+
+amen
+
+say '👉 At end of routes.jesus'

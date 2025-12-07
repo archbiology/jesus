@@ -20,6 +20,9 @@ public:
     ClassType(std::shared_ptr<CreationType> parent)
         : CreationType(PrimitiveType::Class, "class", "core", parent) {}
 
+    ClassType(std::shared_ptr<CreationType> parent, std::string exceptionName)
+        : CreationType(PrimitiveType::Class, exceptionName, "core", parent) {}
+
     bool validate(const Value &value) const override
     {
         return value.IS_INSTANCE;

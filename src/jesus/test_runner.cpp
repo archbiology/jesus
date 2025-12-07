@@ -58,7 +58,7 @@ int main()
     std::string testDir = "tests";
     bool allPassed = true;
 
-    for (const auto &entry : std::filesystem::directory_iterator(testDir))
+    for (const auto &entry : std::filesystem::recursive_directory_iterator(testDir))
     {
         if (entry.path().extension() == ".jesus")
         {

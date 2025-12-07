@@ -1,7 +1,7 @@
 #include "heart.hpp"
 #include <stdexcept>
 
-void Heart::createVar(const std::string &type, const std::string &name, const Value &value)
+void Heart::createVar(const VarType &type, const std::string &name, const Value &value)
 {
     if (localVarExists(name))
     {

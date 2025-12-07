@@ -11,7 +11,7 @@
 
 REGISTER_FOR_UML(
     Heart,
-    .fieldsList({"variables", "semantics_analyzer"})
+    .fieldsList({"variables", "semantics_analyzer: SpiritOfUnderstanding"})
         .methodsList({"clone", "createVar", "getVar", "updateVar",
                       "registerVarType", "updatePolymorphicVarType",
                       "registerClassName"}));
@@ -40,7 +40,7 @@ public:
      * @param scope_name the scope name. E.g.: global, className, methodName
      */
     explicit Heart(std::string scope_name, std::shared_ptr<Heart> parent = nullptr)
-        : scope_name(std::move(scope_name)),
+        : scope_name(scope_name),
           parent_attributes(std::move(parent)),
           semantics_analyzer(std::make_shared<SpiritOfUnderstanding>()) {}
 
@@ -97,11 +97,11 @@ public:
      * "And God called the light Day, and the darkness he called Night." - Genesis 1:5
      * Just as God gave names and meaning, this method gives values to variables
      *
-     * @param type The name of the variable type (e.g., "int")
+     * @param type The name of the variable type
      * @param name The name of the variable (e.g., "age")
      * @param value The value to assign (e.g., "33")
      */
-    void createVar(const std::string &type, const std::string &name, const Value &value);
+    void createVar(const VarType &type, const std::string &name, const Value &value);
 
     /**
      * @brief Retrieves the value of a variable.
@@ -133,12 +133,12 @@ public:
         return variables.empty();
     }
 
-    void registerVarType(const std::string &type, const std::string &name)
+    void registerVarType(const VarType &type, const std::string &name)
     {
         semantics_analyzer->registerVarType(type, name);
     }
 
-    void updatePolymorphicVarType(const std::string &name, const std::string &type)
+    void updatePolymorphicVarType(const std::string &name, const VarType &type)
     {
         semantics_analyzer->updatePolymorphicVarType(name, type);
     }

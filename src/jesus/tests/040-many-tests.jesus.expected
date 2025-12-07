@@ -40,7 +40,7 @@
 (Jesus) (logic) 1
 (Jesus) (logic) 0
 (Jesus) (logic) 0
-(Jesus) (Jesus) ❌ Error: The variable 'age' already exists in this scope (global).
+(Jesus) (Jesus) ❌ Error: The variable 'age' already exists in this scope (__jesus__).
 (Jesus) adult
 (Jesus) (int) 2
 (Jesus) (int) 9
@@ -83,7 +83,7 @@
 (Jesus) (int) 6
 (Jesus) (int) 6
 (Jesus) (int) 6
-(Jesus) ❌ Error: The variable 'name' already exists in this scope (global).
+(Jesus) ❌ Error: The variable 'name' already exists in this scope (__jesus__).
 (Jesus) null
 (Jesus) (int) 8
 (Jesus) final
@@ -91,45 +91,45 @@
 (Jesus) adult
 (Jesus) ❌ Error: Expected new type name after 'create with_no_type'
 (Jesus) ❌ Error: Expected an integer value.
-(Jesus) (Jesus) ❌ Error: Undefined variable: count (scope: global)
+(Jesus) (Jesus) ❌ Error: Undefined variable: count (scope: __jesus__)
 (Jesus) (int) 1
 (Jesus) (Jesus) (int) 0
 (Jesus) (Jesus) (double) 3.140000
 (Jesus) (Jesus) (double) -6.000000
 (Jesus) ❌ Error: Unknown base type: 'positive'
-(Jesus) ❌ Error: Undefined variable: elders (scope: global)
+(Jesus) ❌ Error: Undefined variable: elders (scope: __jesus__)
 (Jesus) ❌ Error: Unknown base type: 'positive'
-(Jesus) ❌ Error: Undefined variable: sinful (scope: global)
+(Jesus) ❌ Error: Undefined variable: sinful (scope: __jesus__)
 (Jesus) ❌ Error: Unknown base type: 'negative'
-(Jesus) ❌ Error: Undefined variable: debt (scope: global)
+(Jesus) ❌ Error: Undefined variable: debt (scope: __jesus__)
 (Jesus) ❌ Error: Unknown base type: 'negative'
-(Jesus) ❌ Error: Undefined variable: credit (scope: global)
+(Jesus) ❌ Error: Undefined variable: credit (scope: __jesus__)
 (Jesus) ❌ Error: Unknown base type: 'negative'
-(Jesus) ❌ Error: Undefined variable: void (scope: global)
+(Jesus) ❌ Error: Undefined variable: void (scope: __jesus__)
 (Jesus) (Jesus) (int) 7
 (Jesus) ❌ Error: Expected value >= (double) 0.000000
-(Jesus) ❌ Error: Undefined variable: darkness (scope: global)
+(Jesus) ❌ Error: Undefined variable: darkness (scope: __jesus__)
 (Jesus) (Jesus) (double) 0.333000
 (Jesus) ❌ Error: Expected a number between 0 and 100.
-(Jesus) ❌ Error: Undefined variable: fallen_wise (scope: global)
+(Jesus) ❌ Error: Undefined variable: fallen_wise (scope: __jesus__)
 (Jesus) (Jesus) ❌ Error: Expected a number between 0 and 100.
 (Jesus) (int) 100
 (Jesus) (Jesus) 
 (Jesus) (Jesus) Jesus
 (Jesus) (Jesus) Sinful wise
 (Jesus) ❌ Error: Invalid value '(int) 6' for variable 'confusion' declared as type phrase
-(Jesus) ❌ Error: Undefined variable: confusion (scope: global)
+(Jesus) ❌ Error: Undefined variable: confusion (scope: __jesus__)
 (Jesus) (Jesus) God does not see
 (Jesus) (Jesus) 
 (Jesus) ❌ Error: Invalid value '(int) 13' for variable 'rebellion' declared as type text
-(Jesus) ❌ Error: Undefined variable: rebellion (scope: global)
+(Jesus) ❌ Error: Undefined variable: rebellion (scope: __jesus__)
 (Jesus) ❌ Error: Unknown base type: 'car'
-(Jesus) ❌ Error: Undefined variable: hilux (scope: global)
+(Jesus) ❌ Error: Undefined variable: hilux (scope: __jesus__)
 (Jesus) (Jesus) (int) 490
 (Jesus) (Jesus) Jesus loves YOU
-(Jesus) ❌ Error: The variable 'age' already exists in this scope (global).
+(Jesus) ❌ Error: The variable 'age' already exists in this scope (__jesus__).
 (Jesus) (Jesus) ❌ Error: Expected value > (double) 0.000000
-(Jesus) ❌ Error: Undefined variable: abc (scope: global)
+(Jesus) ❌ Error: Undefined variable: abc (scope: __jesus__)
 (Jesus) (Jesus) (int) 9
 (Jesus) (Jesus) (Jesus) (double) -6.000000
 (Jesus) ❌ Error: Variable 'debit' expects a 'Negative', but got: 'number'.
@@ -171,7 +171,7 @@ What is your age again (curent: (int) 33)? (Jesus) (double) 2025.000000
  class: "Canção",
  attributes: { }
 }
-(Jesus) (Jesus) ❌ Error: Undefined variable: wife (scope: global)
+(Jesus) (Jesus) ❌ Error: Undefined variable: wife (scope: __jesus__)
 (Jesus) (Jesus) Adam
 (Jesus) Eve
 (Jesus) (int) 930

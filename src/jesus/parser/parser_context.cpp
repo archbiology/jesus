@@ -7,12 +7,17 @@ ParserContext::ParserContext(
     const std::string &moduleName, int current)
     : tokens(tokens), interpreter(interpreter), moduleName(moduleName), current(current) {}
 
-void ParserContext::registerVarType(const std::string &type, const std::string &name)
+bool ParserContext::varExistsInHierarchy(const std::string &name)
+{
+    return interpreter->varExistsInHierarchy(name);
+}
+
+void ParserContext::registerVarType(const VarType &type, const std::string &name)
 {
     interpreter->registerVarType(type, name);
 }
 
-void ParserContext::updatePolymorphicVarType(const std::string &name, const std::string &type)
+void ParserContext::updatePolymorphicVarType(const std::string &name, const VarType &type)
 {
     interpreter->updatePolymorphicVarType(name, type);
 }

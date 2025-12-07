@@ -48,7 +48,7 @@ public:
         }
     }
 
-    void createVar(const std::string &type, const std::string &name, const Value &value)
+    void createVar(const VarType &type, const std::string &name, const Value &value)
     {
         current_scope->createVar(type, name, value);
     }
@@ -104,12 +104,12 @@ public:
         throw std::runtime_error("Variable '" + varName + "' not found. Are you really sure it has been declared?");
     }
 
-    void registerVarType(const std::string &type, const std::string &name)
+    void registerVarType(const VarType &type, const std::string &name)
     {
         current_scope->registerVarType(type, name);
     }
 
-    void updatePolymorphicVarType(const std::string &name, const std::string &type)
+    void updatePolymorphicVarType(const std::string &name, const VarType &type)
     {
         current_scope->updatePolymorphicVarType(name, type);
     }
@@ -117,5 +117,9 @@ public:
     void registerClassName(const std::string &className)
     {
         current_scope->registerClassName(className);
+    }
+
+    bool varExistsInHierarchy(const std::string &name) {
+        return current_scope->varExistsInHierarchy(name);
     }
 };

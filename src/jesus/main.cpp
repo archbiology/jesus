@@ -8,6 +8,7 @@
 #include "types/known_types.hpp"
 #include "utils/banner.hpp"
 #include "utils/version.hpp"
+#include "utils/file_utils.hpp"
 
 #include "cli/cli_parser.hpp"
 #include "cli/disciple.hpp"
@@ -18,11 +19,6 @@ int main(int argc, char **argv)
 {
     CLIParser parser;
     ParsedCLI cli = parser.parse(argc, argv);
-
-    auto global_scope = std::make_shared<Heart>("global");
-    SymbolTable symbol_table(global_scope);
-    Interpreter jesus(symbol_table);
-    Faith michael(jesus);
 
     grammar::initializeGrammar();
     KnownTypes::registerBuiltInTypes();
@@ -38,6 +34,7 @@ int main(int argc, char **argv)
     // ----------------------
     if (!cli.filename.empty())
     {
+        Faith michael;
         return michael.execute(cli.filename);
     }
 
@@ -47,6 +44,12 @@ int main(int argc, char **argv)
     const std::string version = JESUS_VERSION;
     const std::string commit = JESUS_COMMIT;
     Banner::show(version, commit, cli.quiet);
+
+    std::string replName = "__jesus__";
+    auto scope = std::make_shared<Heart>(replName);
+    auto symbol_table = std::make_shared<SymbolTable>(scope);
+    auto repl = std::make_shared<Module>(replName, replName, symbol_table);
+    Interpreter jesus(repl);
 
     Disciple follower(jesus);
     follower.walk();
