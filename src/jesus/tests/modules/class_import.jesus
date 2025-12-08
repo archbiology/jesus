@@ -1,0 +1,6 @@
+
+from routes come Route53
+
+create Route53 dns = 1
+
+dns createRecord 'www.mylovelyjesusministry.com'

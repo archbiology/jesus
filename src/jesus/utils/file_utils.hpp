@@ -23,4 +23,18 @@ namespace utils
         std::filesystem::path p(filename);
         return p.stem().string();
     }
+
+    inline bool changeWorkingDirectory(const std::filesystem::path &path)
+    {
+        try
+        {
+            std::filesystem::current_path(path);
+            return true;
+        }
+        catch (const std::filesystem::filesystem_error &e)
+        {
+            std::cerr << "Error changing directory: " << e.what() << "\n";
+            return false;
+        }
+    }
 }

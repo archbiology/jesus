@@ -30,18 +30,18 @@ std::unique_ptr<Stmt> CreateVarTypeStmtRule::parse(ParserContext &ctx)
     std::string typeName = ctx.previous().lexeme;
 
 
-    bool typeExistsLocally = ctx.interpreter->varExistsInHierarchy(baseTypeStr);
+    bool typeExistsLocally = ctx.varExistsInHierarchy(baseTypeStr);
     std::shared_ptr<CreationType> baseType = nullptr;
 
     if (typeExistsLocally ) {
-        auto localType = ctx.interpreter->getVarType(baseTypeStr);
+        auto localType = ctx.getVarType(baseTypeStr);
         if (localType->isClass())
             baseType = localType;
     }
 
-    baseType = KnownTypes::resolve(baseTypeStr, "core");
     if (!baseType)
     {
+        baseType = KnownTypes::resolve(baseTypeStr, "core");
         if (!baseType)
             throw std::runtime_error("Unknown base type: '" + baseTypeStr + "'");
     }
