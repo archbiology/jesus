@@ -459,7 +459,10 @@ void Interpreter::visitResistStmt(const ResistStmt &stmt)
 
 std::string Interpreter::resolveModuleToPath(const std::string &name)
 {
+    std::filesystem::path moduleDir = std::filesystem::path(currentModule->file_path).parent_path();
+
     std::vector<std::filesystem::path> searchPaths = {
+        moduleDir,                                                    // <module_dir>/<name>.jesus
         std::filesystem::current_path(),                              // ./<name>.jesus
         std::filesystem::current_path() / "modules",                  // ./modules/<name>.jesus
         std::filesystem::path(getenv("HOME")) / ".jesus" / "modules", // ~/.jesus/modules/<name>.jesus

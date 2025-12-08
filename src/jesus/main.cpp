@@ -46,9 +46,10 @@ int main(int argc, char **argv)
     Banner::show(version, commit, cli.quiet);
 
     std::string replName = "__jesus__";
+    std::string replPath = std::filesystem::current_path() / (replName + ".jesus");
     auto scope = std::make_shared<Heart>(replName);
     auto symbol_table = std::make_shared<SymbolTable>(scope);
-    auto repl = std::make_shared<Module>(replName, replName, symbol_table);
+    auto repl = std::make_shared<Module>(replName, replPath, symbol_table);
     Interpreter jesus(repl);
 
     Disciple follower(jesus);

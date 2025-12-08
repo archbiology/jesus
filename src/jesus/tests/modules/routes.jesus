@@ -4,7 +4,9 @@ warn '👉 Inside routes.jesus'
 let there be Route53:
 
   purpose createRecord(text name):
-    say "inside -> Route53::createRecord({name})"
+    say "Creating DNS record: {name}"
+    say "Created DNS record: {name}"
+    say "Ctrl+Click to open: https://{name}/"
   amen
 
 amen

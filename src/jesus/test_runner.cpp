@@ -2,10 +2,15 @@
 #include <filesystem>
 #include <iostream>
 #include <fstream>
+#include "utils/file_utils.hpp"
 
-std::string runJesusInterpreter(const std::string &inputFile)
+std::string runJesusInterpreter(const std::string &inputFile, bool useRepl)
 {
-    std::string command = "./jesus --quiet < " + inputFile + " 2>&1";
+    std::string command = "jesus " + inputFile + " 2>&1";
+
+    if (useRepl)
+        command = "jesus --quiet < " + inputFile + " 2>&1";
+
     std::string result;
 
     FILE *pipe = popen(command.c_str(), "r");
@@ -20,6 +25,14 @@ std::string runJesusInterpreter(const std::string &inputFile)
     pclose(pipe);
 
     return result;
+}
+
+bool shouldUseRepl(const std::filesystem::path &path)
+{
+    if (path.string().find("tests/repl/") != std::string::npos)
+        return true;
+
+    return false;
 }
 
 std::string loadFile(const std::string &path)
@@ -57,15 +70,24 @@ int main()
 {
     std::string testDir = "tests";
     bool allPassed = true;
+    std::string replPath = std::filesystem::current_path();
 
     for (const auto &entry : std::filesystem::recursive_directory_iterator(testDir))
     {
+        utils::changeWorkingDirectory(replPath);
+
         if (entry.path().extension() == ".jesus")
         {
             std::string inputFile = entry.path();
             std::string expectedFile = inputFile + ".expected";
 
-            std::string output = runJesusInterpreter(inputFile);
+            bool useRepl = shouldUseRepl(entry.path());
+            if (!useRepl) {
+                utils::changeWorkingDirectory(entry.path().parent_path());
+                inputFile = entry.path().filename();
+            }
+
+            std::string output = runJesusInterpreter(inputFile, useRepl);
             std::string expected = loadFile(expectedFile);
 
             if (output == expected)
