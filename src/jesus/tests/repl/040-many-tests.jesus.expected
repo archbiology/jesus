@@ -1,4 +1,10 @@
 (Jesus) (Jesus) (Jesus) (Jesus) (Jesus) (Jesus) (int) 33
+(Jesus) CreateVarStmt(light, LiteralExpr(Day))
+CreateVarStmt(messiah, LiteralExpr(Jesus))
+CreateVarStmt(age, LiteralExpr((int) 33))
+CreateVarStmt(priest, LiteralExpr(me))
+CreateVarStmt(average, LiteralExpr((double) 2.300000))
+PrintStmt(SAY: VariableExpr(age))
 (Jesus) Jesus
 (Jesus) me
 (Jesus) (int) 33
@@ -292,4 +298,5 @@ null
 (Jesus) (Jesus) Inside try-repent.
 Pleas forgive my sins, Oh God Almighty.
 God always wins.
+(Jesus) (Jesus) 15CreateClassStmt
 (Jesus) 

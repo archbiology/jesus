@@ -97,7 +97,8 @@ public:
         return currentModule->symbol_table->getVarType(varName);
     }
 
-    bool varExistsInHierarchy(const std::string &name) {
+    bool varExistsInHierarchy(const std::string &name)
+    {
         return currentModule->symbol_table->varExistsInHierarchy(name);
     }
 
@@ -143,9 +144,29 @@ public:
     static std::shared_ptr<Module> getModule(const std::string &name);
     static bool moduleRegistered(const std::string &name);
     static void listModules();
-    std::string currentModuleName() {
+    std::string currentModuleName()
+    {
         return currentModule->name;
     };
+
+    std::unordered_map<std::string, const Stmt *> astDebugIndex;
+    void registerAstNodeForInspection(const std::string &name, const Stmt *node)
+    {
+        astDebugIndex[name] = node;
+    }
+
+    const Stmt *lookupAST(const std::string &name) const
+    {
+        auto it = astDebugIndex.find(name);
+        return it == astDebugIndex.end() ? nullptr : it->second;
+    }
+
+    std::vector<std::unique_ptr<Stmt>> persistedAST;
+    void persistAST(std::unique_ptr<Stmt> node)
+    {
+        persistedAST.push_back(std::move(node));
+    }
+
 private:
     /**
      * @brief Prevent re-imports / circular imports
@@ -345,4 +366,6 @@ private:
     std::string resolveModuleToPath(int relativeDepth, const std::vector<std::string> &modules);
 
     void visitImportModuleStmt(const ImportModuleStmt &stmt) override;
+
+    void visitAstInspectStmt(const AstInspectStmt &stmt);
 };

@@ -17,6 +17,7 @@ enum class TokenType
     Unknown,
 
     A,              // Reserved for type checking: if varname is 'a' ClassName:...
+    AST,            // ast SymbolName (to print the AST)
     IS,             // 'is': ==
     NOT,            // not: !
     AND,            // and
