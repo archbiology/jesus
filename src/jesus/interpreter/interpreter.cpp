@@ -10,6 +10,7 @@
 #include "../utils/string_utils.hpp"
 #include "../utils/file_utils.hpp"
 #include "../cli/faith.hpp"
+#include <format>
 
 // -------------
 // Static fields
@@ -457,6 +458,53 @@ void Interpreter::visitResistStmt(const ResistStmt &stmt)
     throw ItsWritten(message);
 }
 
+bool isValidPackageDirectory(const std::filesystem::path &dir)
+{
+    return std::filesystem::is_regular_file(dir / "__genesis__.jesus");
+}
+
+std::string tryResolveModule(const std::filesystem::path &candidatePath)
+{
+
+    // 1) Try file: path/to/module.jesus
+    std::filesystem::path filePath = candidatePath;
+    filePath += ".jesus";
+
+    if (std::filesystem::is_regular_file(filePath))
+        return filePath.string();
+
+    // 2) Try package: path/to/module/__genesis__.jesus
+    std::filesystem::path genesisPath = candidatePath / "__genesis__.jesus";
+    if (std::filesystem::is_regular_file(genesisPath))
+        return genesisPath.string();
+
+    static constexpr std::string_view msg =
+        "Invalid module: '{}' is a directory.\n"
+        "A '*.jesus' module must be a file.\n"
+        "If this is meant to be a package, remove the '.jesus' suffix\n"
+        "and add '__genesis__.jesus' to the directory.";
+
+    static constexpr std::string_view dirMsg =
+        "Invalid module import: '{}' is a directory but not a package.\n"
+        "Packages must contain a '__genesis__.jesus' file.\n\n"
+        "Matthew 7:21 — Not everyone who says to me, ‘Lord, Lord,’ will enter the kingdom of heaven,\n"
+        "but only the one who does the will of my Father who is in heaven.\n\n"
+        "Tip: Add '__genesis__.jesus' to this folder to allow imports from it, and confess Jesus Christ as Lord.\n";
+
+    if (std::filesystem::exists(filePath))
+        throw std::runtime_error(std::format(msg, filePath.string()));
+
+    if (std::filesystem::exists(genesisPath))
+        throw std::runtime_error(std::format(msg, genesisPath.string()));
+
+    if (std::filesystem::exists(candidatePath))
+    {
+        throw std::runtime_error(std::format(dirMsg, candidatePath.string()));
+    }
+
+    return "";
+}
+
 std::string Interpreter::resolveRelativeModulePath(int relativeDepth, const std::vector<std::string> &modules)
 {
     // 1 - Start from current module directory
@@ -464,17 +512,47 @@ std::string Interpreter::resolveRelativeModulePath(int relativeDepth, const std:
 
     // 2 - Go up relativeDepth times
     for (int i = 0; i < relativeDepth; i++)
+    {
         base = base.parent_path();
+
+        if (!isValidPackageDirectory(base))
+        {
+            // ------------------------------------
+            // Build readable module name for debug
+            // ------------------------------------
+            std::string joined = std::string(relativeDepth + 1, '.');
+            for (size_t i = 0; i < modules.size(); i++)
+            {
+                if (i > 0)
+                    joined += "/";
+
+                joined += modules[i];
+            }
+
+            throw std::runtime_error(
+                "PathTraversalNotAllowedError:\n"
+                " Invalid relative import while importing '" + joined + "'.\n\n"
+
+                " The parent folder '" + base.string() + "' is not a package.\n"
+                " A package must contain a file named '__genesis__.jesus'.\n\n"
+
+                " For safety, the Jesus language forbids crossing directory boundaries\n"
+                " using '..' unless every parent directory is an explicit package.\n\n"
+
+                " Proverbs 22:28 — Do not move an ancient boundary stone"
+                " set up by your ancestors."
+            );
+        }
+    }
 
     // 3 - Append module segments
     for (const auto &part : modules)
         base /= part;
 
-    // 4 - Add file extension
-    base += ".jesus";
-
-    if (std::filesystem::exists(base))
-        return base.string();
+    // 4 - try <module>.jesus or <module>/__genesis__.jesus
+    auto result = tryResolveModule(base);
+    if (!result.empty())
+        return result;
 
     throw std::runtime_error("Module not found: " + base.string());
 }
@@ -504,13 +582,12 @@ std::string Interpreter::resolveAbsoluteModulePath(const std::vector<std::string
         for (const auto &part : modules)
             candidate /= part;
 
-        // -------------------------
-        // Add extension: rest.jesus
-        // -------------------------
-        candidate += ".jesus";
-
-        if (std::filesystem::exists(candidate))
-            return candidate.string();
+        // ------------------------------------------------
+        // try <module>.jesus or <module>/__genesis__.jesus
+        // ------------------------------------------------
+        auto result = tryResolveModule(candidate);
+        if (!result.empty())
+            return result;
     }
 
     // ------------------------------------
@@ -608,7 +685,8 @@ std::shared_ptr<Module> Interpreter::getModule(const std::string &path)
 }
 
 void Interpreter::listModules()
-{ return;
+{
+    return;
     std::cerr << "[Interpreter] Registered modules:\n";
     std::cout << "--------------------------\n";
     for (const auto &[k, v] : modules)
