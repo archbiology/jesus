@@ -340,6 +340,9 @@ private:
 
     void visitResistStmt(const ResistStmt &stmt) override;
 
-    std::string resolveModuleToPath(const std::string &moduleName);
+    std::string resolveRelativeModulePath(int relativeDepth, const std::vector<std::string> &modules);
+    std::string resolveAbsoluteModulePath(const std::vector<std::string> &modules);
+    std::string resolveModuleToPath(int relativeDepth, const std::vector<std::string> &modules);
+
     void visitImportModuleStmt(const ImportModuleStmt &stmt) override;
 };

@@ -457,8 +457,33 @@ void Interpreter::visitResistStmt(const ResistStmt &stmt)
     throw ItsWritten(message);
 }
 
-std::string Interpreter::resolveModuleToPath(const std::string &name)
+std::string Interpreter::resolveRelativeModulePath(int relativeDepth, const std::vector<std::string> &modules)
 {
+    // 1 - Start from current module directory
+    std::filesystem::path base = std::filesystem::path(currentModule->file_path).parent_path();
+
+    // 2 - Go up relativeDepth times
+    for (int i = 0; i < relativeDepth; i++)
+        base = base.parent_path();
+
+    // 3 - Append module segments
+    for (const auto &part : modules)
+        base /= part;
+
+    // 4 - Add file extension
+    base += ".jesus";
+
+    if (std::filesystem::exists(base))
+        return base.string();
+
+    throw std::runtime_error("Module not found: " + base.string());
+}
+
+std::string Interpreter::resolveAbsoluteModulePath(const std::vector<std::string> &modules)
+{
+    if (modules.empty())
+        throw std::runtime_error("Internal error: empty module path.");
+
     std::filesystem::path moduleDir = std::filesystem::path(currentModule->file_path).parent_path();
 
     std::vector<std::filesystem::path> searchPaths = {
@@ -471,17 +496,48 @@ std::string Interpreter::resolveModuleToPath(const std::string &name)
 
     for (const auto &base : searchPaths)
     {
-        auto candidate = base / (name + ".jesus");
+        std::filesystem::path candidate = base;
+
+        // ---------------------------------
+        // Append segments: server/http/rest
+        // ---------------------------------
+        for (const auto &part : modules)
+            candidate /= part;
+
+        // -------------------------
+        // Add extension: rest.jesus
+        // -------------------------
+        candidate += ".jesus";
+
         if (std::filesystem::exists(candidate))
             return candidate.string();
     }
 
-    throw std::runtime_error("Module not found: " + name);
+    // ------------------------------------
+    // Build readable module name for debug
+    // ------------------------------------
+    std::string joined;
+    for (size_t i = 0; i < modules.size(); i++)
+    {
+        if (i > 0)
+            joined += "/";
+        joined += modules[i];
+    }
+
+    throw std::runtime_error("Module not found (absolute): " + joined);
+}
+
+std::string Interpreter::resolveModuleToPath(int relativeDepth, const std::vector<std::string> &modules)
+{
+    if (relativeDepth > 0)
+        return resolveRelativeModulePath(relativeDepth - 1, modules);
+
+    return resolveAbsoluteModulePath(modules);
 }
 
 void Interpreter::visitImportModuleStmt(const ImportModuleStmt &stmt)
 {
-    std::string fullpath = resolveModuleToPath(stmt.moduleName);
+    std::string fullpath = resolveModuleToPath(stmt.relativeDepth, stmt.modules);
 
     // ----------------------
     // avoid circular imports
@@ -499,21 +555,26 @@ void Interpreter::visitImportModuleStmt(const ImportModuleStmt &stmt)
     // -----------------
     // come <moduleName>
     // -----------------
-    if (stmt.alias.empty())
+    if (stmt.importedSymbols.empty())
     {
+        std::string name = stmt.moduleAlias.empty() ? importedModule->name : stmt.moduleAlias;
+
         // Bind module object to its name
-        currentModule->symbol_table->createVar(KnownTypes::MODULE, stmt.moduleName, Value(importedModule));
+        currentModule->symbol_table->createVar(KnownTypes::MODULE, name, Value(importedModule));
         return;
     }
 
     // -------------------------------
     // from moduleName come MemberName
     // -------------------------------
-    std::string memberName = stmt.alias;
-    Value member = importedModule->getVar(memberName);
-    auto memberType = importedModule->getVarType(memberName);
+    for (const auto& symbol : stmt.importedSymbols)
+    {
+        std::string symbolToExpose = symbol.alias.empty() ? symbol.originalName : symbol.alias;
+        Value member = importedModule->getVar(symbol.originalName);
+        auto memberType = importedModule->getVarType(symbol.originalName);
 
-    currentModule->symbol_table->createVar(memberType, memberName, member);
+        currentModule->symbol_table->createVar(memberType, symbolToExpose, member);
+    }
 }
 
 void Interpreter::addModule(const std::string &path, std::shared_ptr<Module> module)
