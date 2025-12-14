@@ -141,6 +141,7 @@ void Interpreter::visitCreateVar(const CreateVarStmt &stmt)
 {
     Value val = evaluate(stmt.value);
     createVariable(stmt.base_type, stmt.name, val);
+    registerAstNodeForInspection(stmt.name, &stmt);
 }
 
 Value Interpreter::askAndValidate(const std::shared_ptr<Expr> ask_expr, std::shared_ptr<CreationType> var_type)
@@ -178,6 +179,7 @@ void Interpreter::visitCreateVarWithAsk(const CreateVarWithAskStmt &stmt)
 {
     Value value = askAndValidate(stmt.ask_expr, stmt.var_type);
     createVariable(stmt.var_type, stmt.var_name, value);
+    registerAstNodeForInspection(stmt.var_name, &stmt);
 }
 
 void Interpreter::visitUpdateVarWithAsk(const UpdateVarWithAskStmt &stmt)
@@ -223,6 +225,7 @@ void Interpreter::visitCreateClass(const CreateClassStmt &stmt)
 
     KnownTypes::registerType(userClass);
     currentModule->symbol_table->createVar(userClass, userClass->name, Value(userClass));
+    registerAstNodeForInspection(userClass->name, &stmt);
 }
 
 void Interpreter::visitCreateVarType(const CreateVarTypeStmt &stmt)
@@ -235,6 +238,7 @@ void Interpreter::visitCreateVarType(const CreateVarTypeStmt &stmt)
         stmt.constraints);
 
     KnownTypes::registerType(std::move(custom_type));
+    registerAstNodeForInspection(stmt.name, &stmt);
 }
 
 void Interpreter::visitUpdateVar(const UpdateVarStmt &stmt)
@@ -638,6 +642,7 @@ void Interpreter::visitImportModuleStmt(const ImportModuleStmt &stmt)
 
         // Bind module object to its name
         currentModule->symbol_table->createVar(KnownTypes::MODULE, name, Value(importedModule));
+        registerAstNodeForInspection(name, &stmt);
         return;
     }
 
@@ -651,6 +656,7 @@ void Interpreter::visitImportModuleStmt(const ImportModuleStmt &stmt)
         auto memberType = importedModule->getVarType(symbol.originalName);
 
         currentModule->symbol_table->createVar(memberType, symbolToExpose, member);
+        registerAstNodeForInspection(symbolToExpose, &stmt);
     }
 }
 
@@ -706,4 +712,72 @@ void Interpreter::listModules()
 bool Interpreter::moduleRegistered(const std::string &path)
 {
     return Interpreter::modules.contains(path);
+}
+
+void Interpreter::visitAstInspectStmt(const AstInspectStmt &stmt){
+
+    if(stmt.symbolName.empty()) {
+        for (auto &stmt: persistedAST) {
+            std::cout<<stmt->toString()<<"\n";
+        }
+        return;
+    }
+
+    // Case 2 - print the whole AST.
+    auto node = lookupAST(stmt.symbolName);
+
+    if (!node)
+    {
+        std::cout << "⚠️ No such symbol: " << stmt.symbolName << "\n";
+        return;
+    }
+
+    std::cout << node->toString() << "\n";
+    std::cout << "AST Memory: " << node->approxSize() << " bytes\n";
+}
+
+size_t getPSS_KB() // PSS memory - Proportional Set Size
+{
+    std::ifstream smaps("/proc/self/smaps");
+    if (!smaps.is_open()) return 0;
+
+    std::string line;
+    size_t pssKB = 0;
+
+    while (std::getline(smaps, line)) {
+        if (line.rfind("Pss:", 0) == 0) {
+            // line is like: "Pss:     142 kB"
+            std::istringstream iss(line.substr(4));
+            size_t value;
+            iss >> value;
+            pssKB += value;
+        }
+    }
+
+    return pssKB;
+}
+
+std::string formatMemory(size_t kb)
+{
+    double value = static_cast<double>(kb);
+    const char* unit = "KB";
+
+    if (value > 1024) {
+        value /= 1024.0;
+        unit = "MB";
+    }
+    if (value > 1024) {
+        value /= 1024.0;
+        unit = "GB";
+    }
+
+    std::ostringstream oss;
+    oss << std::fixed << std::setprecision(2) << value << " " << unit;
+    return oss.str();
+}
+
+void Interpreter::visitMemoryInspectStmt(const MemoryInspectStmt &stmt)
+{
+    size_t kb = getPSS_KB();
+    std::cout << "Memory Used: " << formatMemory(kb) << "\n";
 }

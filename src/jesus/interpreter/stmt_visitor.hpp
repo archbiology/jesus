@@ -18,6 +18,8 @@
 #include "../ast/stmt/try_stmt.hpp"
 #include "../ast/stmt/resist_stmt.hpp"
 #include "../ast/stmt/import_module_stmt.hpp"
+#include "../ast/stmt/ast_inspect_stmt.hpp"
+#include "../ast/stmt/memory_inspect_stmt.hpp"
 
 REGISTER_FOR_UML(
     StmtVisitor,
@@ -27,7 +29,8 @@ REGISTER_FOR_UML(
                   "visitRepeatTimes", "visitRepeatForeverStmt",
                   "visitForEach", "visitBreak", "visitSkipStmt",
                   "visitReturnStmt", "visitTryStmt",
-                  "visitResistStmt", "visitImportModuleStmt"
+                  "visitResistStmt", "visitImportModuleStmt",
+                  "visitAstInspectStmt", "visitMemoryInspectStmt"
 
     }));
 
@@ -84,6 +87,8 @@ public:
     virtual void visitTryStmt(const TryStmt &stmt) = 0;
     virtual void visitResistStmt(const ResistStmt &stmt) = 0;
     virtual void visitImportModuleStmt(const ImportModuleStmt &stmt) = 0;
+    virtual void visitAstInspectStmt(const AstInspectStmt &stmt) = 0;
+    virtual void visitMemoryInspectStmt(const MemoryInspectStmt &stmt) = 0;
 
     virtual ~StmtVisitor() = default;
 };

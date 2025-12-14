@@ -125,6 +125,9 @@ namespace Keywords
 
         {"come", TokenType::COME},
         {"dots", TokenType::DOTS},
+
+        {"ast", TokenType::AST},
+        {"memory", TokenType::MEMORY},
     };
 
     inline bool isReserved(const std::string &word)

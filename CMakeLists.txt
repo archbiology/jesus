@@ -119,6 +119,8 @@ set(JESUS_CPP_FILES
     src/jesus/ast/stmt/try_stmt.cpp
     src/jesus/ast/stmt/resist_stmt.cpp
     src/jesus/ast/stmt/import_module_stmt.cpp
+    src/jesus/ast/stmt/ast_inspect_stmt.cpp
+    src/jesus/ast/stmt/memory_inspect_stmt.cpp
 
     # --------------
     # Parser classes
@@ -166,6 +168,8 @@ set(JESUS_CPP_FILES
     src/jesus/parser/grammar/stmt/resist_stmt_rule.cpp
     src/jesus/parser/grammar/stmt/try_stmt_rule.cpp
     src/jesus/parser/grammar/stmt/import_module_stmt_rule.cpp
+    src/jesus/parser/grammar/stmt/ast_inspect_stmt_rule.cpp
+    src/jesus/parser/grammar/stmt/memory_inspect_stmt_rule.cpp
 
     # -----------
     # Interpreter

@@ -17,6 +17,7 @@ enum class TokenType
     Unknown,
 
     A,              // Reserved for type checking: if varname is 'a' ClassName:...
+    AST,            // ast SymbolName (to print the AST)
     IS,             // 'is': ==
     NOT,            // not: !
     AND,            // and
@@ -98,5 +99,7 @@ enum class TokenType
     COME,           // come module; from module come ClassName
     AMEN,           // amen (end of blocks in Jesus lang; '}' in other langs)
     NEWLINE,        // \n
+
+    MEMORY,         // memory (to inspect memory usage)
     END_OF_FILE
 };

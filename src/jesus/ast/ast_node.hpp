@@ -45,6 +45,8 @@ public:
         return Value::formless();
     }
 
+    virtual size_t approxSize() const { return sizeof(*this); }
+
     /**
      * @brief Returns a string representation of the node.
      *

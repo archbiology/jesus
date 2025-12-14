@@ -4,6 +4,7 @@ create number age = 33
 create text priest = "me"
 create real average = 2.3
 say age
+ast
 say messiah
 say priest
 warn age
@@ -426,3 +427,5 @@ repent ItsWritten as error:
 always:
     say 'God always wins.'
 amen
+
+ast GrandSon
