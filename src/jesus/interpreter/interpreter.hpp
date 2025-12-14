@@ -368,4 +368,5 @@ private:
     void visitImportModuleStmt(const ImportModuleStmt &stmt) override;
 
     void visitAstInspectStmt(const AstInspectStmt &stmt);
+    void visitMemoryInspectStmt(const MemoryInspectStmt &stmt);
 };

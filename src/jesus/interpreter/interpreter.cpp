@@ -733,4 +733,51 @@ void Interpreter::visitAstInspectStmt(const AstInspectStmt &stmt){
     }
 
     std::cout << node->toString() << "\n";
+    std::cout << "AST Memory: " << node->approxSize() << " bytes\n";
+}
+
+size_t getPSS_KB() // PSS memory - Proportional Set Size
+{
+    std::ifstream smaps("/proc/self/smaps");
+    if (!smaps.is_open()) return 0;
+
+    std::string line;
+    size_t pssKB = 0;
+
+    while (std::getline(smaps, line)) {
+        if (line.rfind("Pss:", 0) == 0) {
+            // line is like: "Pss:     142 kB"
+            std::istringstream iss(line.substr(4));
+            size_t value;
+            iss >> value;
+            pssKB += value;
+        }
+    }
+
+    return pssKB;
+}
+
+std::string formatMemory(size_t kb)
+{
+    double value = static_cast<double>(kb);
+    const char* unit = "KB";
+
+    if (value > 1024) {
+        value /= 1024.0;
+        unit = "MB";
+    }
+    if (value > 1024) {
+        value /= 1024.0;
+        unit = "GB";
+    }
+
+    std::ostringstream oss;
+    oss << std::fixed << std::setprecision(2) << value << " " << unit;
+    return oss.str();
+}
+
+void Interpreter::visitMemoryInspectStmt(const MemoryInspectStmt &stmt)
+{
+    size_t kb = getPSS_KB();
+    std::cout << "Memory Used: " << formatMemory(kb) << "\n";
 }
