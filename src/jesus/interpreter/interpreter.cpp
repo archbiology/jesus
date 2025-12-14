@@ -530,7 +530,7 @@ std::string Interpreter::resolveAbsoluteModulePath(const std::vector<std::string
 std::string Interpreter::resolveModuleToPath(int relativeDepth, const std::vector<std::string> &modules)
 {
     if (relativeDepth > 0)
-        return resolveRelativeModulePath(relativeDepth -1, modules);
+        return resolveRelativeModulePath(relativeDepth - 1, modules);
 
     return resolveAbsoluteModulePath(modules);
 }
@@ -555,7 +555,7 @@ void Interpreter::visitImportModuleStmt(const ImportModuleStmt &stmt)
     // -----------------
     // come <moduleName>
     // -----------------
-    if (stmt.alias.empty())
+    if (stmt.importedSymbols.empty())
     {
         // Bind module object to its name
         currentModule->symbol_table->createVar(KnownTypes::MODULE, importedModule->name, Value(importedModule));
@@ -565,11 +565,13 @@ void Interpreter::visitImportModuleStmt(const ImportModuleStmt &stmt)
     // -------------------------------
     // from moduleName come MemberName
     // -------------------------------
-    std::string memberName = stmt.alias;
-    Value member = importedModule->getVar(memberName);
-    auto memberType = importedModule->getVarType(memberName);
+    for (auto symbolName : stmt.importedSymbols)
+    {
+        Value member = importedModule->getVar(symbolName);
+        auto memberType = importedModule->getVarType(symbolName);
 
-    currentModule->symbol_table->createVar(memberType, memberName, member);
+        currentModule->symbol_table->createVar(memberType, symbolName, member);
+    }
 }
 
 void Interpreter::addModule(const std::string &path, std::shared_ptr<Module> module)

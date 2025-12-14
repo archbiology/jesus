@@ -10,12 +10,12 @@ REGISTER_FOR_UML(
 class ImportModuleStmt : public Stmt
 {
 public:
-  int relativeDepth;                // 0 = absolute
-  std::vector<std::string> modules; // module path segments
-  std::string alias;                // null if simple import
+  int relativeDepth;                        // 0 = absolute
+  std::vector<std::string> modules;         // module path segments
+  std::vector<std::string> importedSymbols; // ["Class1", "Class2"]
 
-  ImportModuleStmt(int depth, std::vector<std::string> modules, std::string alias)
-      : relativeDepth(depth), modules(std::move(modules)), alias(std::move(alias)) {}
+  ImportModuleStmt(int depth, std::vector<std::string> modules, std::vector<std::string> importedSymbols)
+      : relativeDepth(depth), modules(std::move(modules)), importedSymbols(std::move(importedSymbols)) {}
 
   void accept(StmtVisitor &visitor) const override;
 };

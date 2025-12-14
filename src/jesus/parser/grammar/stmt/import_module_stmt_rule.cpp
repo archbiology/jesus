@@ -20,7 +20,8 @@ std::unique_ptr<Stmt> ImportModuleStmtRule::parseComeModule(ParserContext &ctx)
 
     auto path = parseModulePath(ctx);
 
-    return std::make_unique<ImportModuleStmt>(path.depth, path.parts, "");
+    std::vector<std::string> importedSymbols;
+    return std::make_unique<ImportModuleStmt>(path.depth, path.parts, importedSymbols);
 }
 
 std::unique_ptr<Stmt> ImportModuleStmtRule::parseFromModuleComeMember(ParserContext &ctx)
@@ -35,8 +36,18 @@ std::unique_ptr<Stmt> ImportModuleStmtRule::parseFromModuleComeMember(ParserCont
     if (!ctx.match(TokenType::IDENTIFIER))
         throw std::runtime_error("Expected import name after 'come'.");
 
-    std::string alias = ctx.previous().lexeme;
-    return std::make_unique<ImportModuleStmt>(path.depth, path.parts, alias);
+    std::vector<std::string> importedSymbols;
+    importedSymbols.push_back(ctx.previous().lexeme);
+
+    while (ctx.match(TokenType::COMMA))
+    {
+        if (!ctx.match(TokenType::IDENTIFIER))
+            throw std::runtime_error("Expected symbol after ','");
+
+        importedSymbols.push_back(ctx.previous().lexeme);
+    }
+
+    return std::make_unique<ImportModuleStmt>(path.depth, path.parts, importedSymbols);
 }
 
 ParsedModulePath ImportModuleStmtRule::parseModulePath(ParserContext &ctx)
