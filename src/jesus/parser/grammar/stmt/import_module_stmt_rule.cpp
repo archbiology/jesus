@@ -20,8 +20,18 @@ std::unique_ptr<Stmt> ImportModuleStmtRule::parseComeModule(ParserContext &ctx)
 
     auto path = parseModulePath(ctx);
 
-    std::vector<ImportItem> importedSymbols;
-    return std::make_unique<ImportModuleStmt>(path.depth, path.parts, importedSymbols);
+    std::string moduleAlias = "";
+    std::vector<ImportItem> noSymbols;
+
+    if (ctx.match(TokenType::AS))
+    {
+        if (!ctx.match(TokenType::IDENTIFIER))
+            throw std::runtime_error("Expected alias after 'as'.");
+
+        moduleAlias = ctx.previous().lexeme;
+    }
+
+    return std::make_unique<ImportModuleStmt>(path.depth, path.parts, moduleAlias, noSymbols);
 }
 
 std::unique_ptr<Stmt> ImportModuleStmtRule::parseFromModuleComeMember(ParserContext &ctx)
@@ -44,7 +54,8 @@ std::unique_ptr<Stmt> ImportModuleStmtRule::parseFromModuleComeMember(ParserCont
         importedSymbols.push_back(parseImportItem(ctx));
     }
 
-    return std::make_unique<ImportModuleStmt>(path.depth, path.parts, importedSymbols);
+    std::string moduleAlias = "";
+    return std::make_unique<ImportModuleStmt>(path.depth, path.parts, moduleAlias, importedSymbols);
 }
 
 ParsedModulePath ImportModuleStmtRule::parseModulePath(ParserContext &ctx)

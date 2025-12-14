@@ -557,8 +557,10 @@ void Interpreter::visitImportModuleStmt(const ImportModuleStmt &stmt)
     // -----------------
     if (stmt.importedSymbols.empty())
     {
+        std::string name = stmt.moduleAlias.empty() ? importedModule->name : stmt.moduleAlias;
+
         // Bind module object to its name
-        currentModule->symbol_table->createVar(KnownTypes::MODULE, importedModule->name, Value(importedModule));
+        currentModule->symbol_table->createVar(KnownTypes::MODULE, name, Value(importedModule));
         return;
     }
 
