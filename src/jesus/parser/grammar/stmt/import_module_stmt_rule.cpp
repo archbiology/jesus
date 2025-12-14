@@ -16,25 +16,18 @@ std::unique_ptr<Stmt> ImportModuleStmtRule::parse(ParserContext &ctx)
 
 std::unique_ptr<Stmt> ImportModuleStmtRule::parseComeModule(ParserContext &ctx)
 {
-    if (!ctx.match(TokenType::COME))
-        return nullptr;
+    ctx.match(TokenType::COME);
 
-    if (!ctx.match(TokenType::IDENTIFIER))
-        throw std::runtime_error("Expected module name after 'come'.");
+    auto path = parseModulePath(ctx);
 
-    std::string module = ctx.previous().lexeme;
-    return std::make_unique<ImportModuleStmt>(module, "");
+    return std::make_unique<ImportModuleStmt>(path.depth, path.parts, "");
 }
 
 std::unique_ptr<Stmt> ImportModuleStmtRule::parseFromModuleComeMember(ParserContext &ctx)
 {
-    if (!ctx.match(TokenType::FROM))
-        return nullptr;
+    ctx.match(TokenType::FROM);
 
-    if (!ctx.match(TokenType::IDENTIFIER))
-        throw std::runtime_error("Expected module name after 'from'.");
-
-    std::string module = ctx.previous().lexeme;
+    auto path = parseModulePath(ctx);
 
     if (!ctx.match(TokenType::COME))
         throw std::runtime_error("Expected 'come' after module name.");
@@ -43,5 +36,30 @@ std::unique_ptr<Stmt> ImportModuleStmtRule::parseFromModuleComeMember(ParserCont
         throw std::runtime_error("Expected import name after 'come'.");
 
     std::string alias = ctx.previous().lexeme;
-    return std::make_unique<ImportModuleStmt>(module, alias);
+    return std::make_unique<ImportModuleStmt>(path.depth, path.parts, alias);
+}
+
+ParsedModulePath ImportModuleStmtRule::parseModulePath(ParserContext &ctx)
+{
+    ParsedModulePath result{0, {}};
+
+    // optionally parse relative prefix (.. ... ....)
+    if (ctx.check(TokenType::DOTS))
+    {
+        auto token = ctx.advance();
+        result.depth = token.lexeme.size() - 1; // ".." → depth 1, "..." → 2
+    }
+
+    // parse one or more identifiers
+    if (!ctx.match(TokenType::IDENTIFIER))
+        throw std::runtime_error("Expected module name.");
+
+    result.parts.push_back(ctx.previous().lexeme);
+
+    while (ctx.match(TokenType::IDENTIFIER))
+    {
+        result.parts.push_back(ctx.previous().lexeme);
+    }
+
+    return result;
 }

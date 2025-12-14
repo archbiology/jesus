@@ -352,6 +352,29 @@ std::vector<Token> Lexer::tokenize(const std::string &raw_input)
             continue;
         }
 
+        // -----------------------------------------
+        // Parent module reference: ., .., ..., etc.
+        // -----------------------------------------
+        if (c == ".")
+        {
+            size_t start = i;
+            size_t count = 1;
+
+            while (i < utf8_input.size() && utf8_input[i] == ".")
+            {
+                count++;
+                i++;
+            }
+
+            // Allow:
+            // "."      → DOTS token with count=1
+            // ".."     → DOTS token with count=2
+            // "..."    → count=3
+            // etc.
+            tokens.emplace_back(TokenType::DOTS, std::string(count, '.'), Value(std::string(count, '.')));
+            continue;
+        }
+
         if (isIdentifierStart(c))
         {
             // Keyword or identifier
