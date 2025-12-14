@@ -458,6 +458,11 @@ void Interpreter::visitResistStmt(const ResistStmt &stmt)
     throw ItsWritten(message);
 }
 
+bool isValidPackageDirectory(const std::filesystem::path &dir)
+{
+    return std::filesystem::is_regular_file(dir / "__genesis__.jesus");
+}
+
 std::string tryResolveModule(const std::filesystem::path &candidatePath)
 {
 
@@ -492,7 +497,8 @@ std::string tryResolveModule(const std::filesystem::path &candidatePath)
     if (std::filesystem::exists(genesisPath))
         throw std::runtime_error(std::format(msg, genesisPath.string()));
 
-    if (std::filesystem::exists(candidatePath)) {
+    if (std::filesystem::exists(candidatePath))
+    {
         throw std::runtime_error(std::format(dirMsg, candidatePath.string()));
     }
 
@@ -506,7 +512,38 @@ std::string Interpreter::resolveRelativeModulePath(int relativeDepth, const std:
 
     // 2 - Go up relativeDepth times
     for (int i = 0; i < relativeDepth; i++)
+    {
         base = base.parent_path();
+
+        if (!isValidPackageDirectory(base))
+        {
+            // ------------------------------------
+            // Build readable module name for debug
+            // ------------------------------------
+            std::string joined = std::string(relativeDepth + 1, '.');
+            for (size_t i = 0; i < modules.size(); i++)
+            {
+                if (i > 0)
+                    joined += "/";
+
+                joined += modules[i];
+            }
+
+            throw std::runtime_error(
+                "PathTraversalNotAllowedError:\n"
+                " Invalid relative import while importing '" + joined + "'.\n\n"
+
+                " The parent folder '" + base.string() + "' is not a package.\n"
+                " A package must contain a file named '__genesis__.jesus'.\n\n"
+
+                " For safety, the Jesus language forbids crossing directory boundaries\n"
+                " using '..' unless every parent directory is an explicit package.\n\n"
+
+                " Proverbs 22:28 — Do not move an ancient boundary stone"
+                " set up by your ancestors."
+            );
+        }
+    }
 
     // 3 - Append module segments
     for (const auto &part : modules)
@@ -648,7 +685,8 @@ std::shared_ptr<Module> Interpreter::getModule(const std::string &path)
 }
 
 void Interpreter::listModules()
-{ return;
+{
+    return;
     std::cerr << "[Interpreter] Registered modules:\n";
     std::cout << "--------------------------\n";
     for (const auto &[k, v] : modules)
