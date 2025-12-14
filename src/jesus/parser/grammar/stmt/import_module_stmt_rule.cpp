@@ -20,7 +20,7 @@ std::unique_ptr<Stmt> ImportModuleStmtRule::parseComeModule(ParserContext &ctx)
 
     auto path = parseModulePath(ctx);
 
-    std::vector<std::string> importedSymbols;
+    std::vector<ImportItem> importedSymbols;
     return std::make_unique<ImportModuleStmt>(path.depth, path.parts, importedSymbols);
 }
 
@@ -33,18 +33,15 @@ std::unique_ptr<Stmt> ImportModuleStmtRule::parseFromModuleComeMember(ParserCont
     if (!ctx.match(TokenType::COME))
         throw std::runtime_error("Expected 'come' after module name.");
 
-    if (!ctx.match(TokenType::IDENTIFIER))
-        throw std::runtime_error("Expected import name after 'come'.");
-
-    std::vector<std::string> importedSymbols;
-    importedSymbols.push_back(ctx.previous().lexeme);
+    std::vector<ImportItem> importedSymbols;
+    importedSymbols.push_back(parseImportItem(ctx));
 
     while (ctx.match(TokenType::COMMA))
     {
         if (!ctx.match(TokenType::IDENTIFIER))
             throw std::runtime_error("Expected symbol after ','");
 
-        importedSymbols.push_back(ctx.previous().lexeme);
+        importedSymbols.push_back(parseImportItem(ctx));
     }
 
     return std::make_unique<ImportModuleStmt>(path.depth, path.parts, importedSymbols);
@@ -63,7 +60,7 @@ ParsedModulePath ImportModuleStmtRule::parseModulePath(ParserContext &ctx)
 
     // parse one or more identifiers
     if (!ctx.match(TokenType::IDENTIFIER))
-        throw std::runtime_error("Expected module name.");
+        throw std::runtime_error("Expected import name after 'come'.");
 
     result.parts.push_back(ctx.previous().lexeme);
 
@@ -73,4 +70,23 @@ ParsedModulePath ImportModuleStmtRule::parseModulePath(ParserContext &ctx)
     }
 
     return result;
+}
+
+ImportItem ImportModuleStmtRule::parseImportItem(ParserContext &ctx)
+{
+    if (!ctx.match(TokenType::IDENTIFIER))
+        throw std::runtime_error("Expected symbol name.");
+
+    ImportItem item;
+    item.originalName = ctx.previous().lexeme;
+
+    if (ctx.match(TokenType::AS))
+    {
+        if (!ctx.match(TokenType::IDENTIFIER))
+            throw std::runtime_error("Expected alias after 'as'.");
+
+        item.alias = ctx.previous().lexeme;
+    }
+
+    return item;
 }

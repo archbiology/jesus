@@ -565,12 +565,13 @@ void Interpreter::visitImportModuleStmt(const ImportModuleStmt &stmt)
     // -------------------------------
     // from moduleName come MemberName
     // -------------------------------
-    for (auto symbolName : stmt.importedSymbols)
+    for (const auto& symbol : stmt.importedSymbols)
     {
-        Value member = importedModule->getVar(symbolName);
-        auto memberType = importedModule->getVarType(symbolName);
+        std::string symbolToExpose = symbol.alias.empty() ? symbol.originalName : symbol.alias;
+        Value member = importedModule->getVar(symbol.originalName);
+        auto memberType = importedModule->getVarType(symbol.originalName);
 
-        currentModule->symbol_table->createVar(memberType, symbolName, member);
+        currentModule->symbol_table->createVar(memberType, symbolToExpose, member);
     }
 }
 

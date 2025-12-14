@@ -3,6 +3,8 @@
 #include "../../parser_context.hpp"
 #include "../../../ast/stmt/stmt.hpp"
 
+class ImportItem; // forward declaration
+
 struct ParsedModulePath
 {
     int depth;
@@ -25,4 +27,6 @@ public:
     std::unique_ptr<Stmt> parseFromModuleComeMember(ParserContext &ctx);
 
     ParsedModulePath parseModulePath(ParserContext &ctx);
+
+    ImportItem parseImportItem(ParserContext &ctx);
 };
