@@ -5,6 +5,7 @@
 #include "../../../types/creation_type.hpp"
 #include "../../parser_context.hpp"
 #include "../../../types/known_types.hpp"
+#include "../../../understanding/doctrine/law/ungodly_naming.hpp"
 #include "../jesus_grammar.hpp"
 #include <stdexcept>
 
@@ -12,8 +13,9 @@ std::unique_ptr<Stmt> CreateMethodStmtRule::parse(ParserContext &ctx)
 {
     // ------------------------------------------------------
     // Grammar:
-    //  purpose <name> ( <params>? ) -> returnType? : ... amen
+    //  [ungodly] purpose <name> ( <params>? ) -> returnType? : ... amen
     // ------------------------------------------------------
+    bool isUngodlyDeclared = ctx.match(TokenType::UNGODLY);
 
     if (!ctx.match(TokenType::PURPOSE))
         return nullptr;
@@ -22,6 +24,23 @@ std::unique_ptr<Stmt> CreateMethodStmtRule::parse(ParserContext &ctx)
         throw std::runtime_error("Expected method name after 'calling'");
 
     std::string methodName = ctx.previous().lexeme;
+
+    // -----------------------------------
+    // Ungodly semantic validation
+    // -----------------------------------
+    std::string bibleReference;
+    bool nameIsUngodly = doctrine::law::isUngodlyName(methodName, bibleReference);
+
+    if (nameIsUngodly && !isUngodlyDeclared)
+    {
+        doctrine::law::handleUngodlyNaming(
+            "Method name '" + methodName + "' does not appear to reflect God's standards.\n"
+            "To hide this warning, declare the method explicitly as 'ungodly'.\n\n"
+            "Example:\n"
+            "   ungodly purpose " + methodName + "():\n   amen\n\n"
+            + bibleReference
+        );
+    }
 
     // ----------
     // Parameters

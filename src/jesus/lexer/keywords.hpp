@@ -126,6 +126,8 @@ namespace Keywords
         {"come", TokenType::COME},
         {"dots", TokenType::DOTS},
 
+        {"ungodly", TokenType::UNGODLY},
+
         {"ast", TokenType::AST},
         {"memory", TokenType::MEMORY},
     };

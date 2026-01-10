@@ -2,6 +2,7 @@
 #include "../../../ast/stmt/create_class_stmt.hpp"
 #include "../../../ast/stmt/incomplete_block_stmt.hpp"
 #include "../../../types/known_types.hpp"
+#include "../../../understanding/doctrine/law/ungodly_naming.hpp"
 #include <stdexcept>
 
 std::unique_ptr<Stmt> CreateClassStmtRule::parse(ParserContext &ctx)
@@ -24,10 +25,25 @@ std::unique_ptr<Stmt> CreateClassStmtRule::parse(ParserContext &ctx)
             throw std::runtime_error("Expected 'be' after 'let there'");
     }
 
+    bool isUngodlyDeclared = ctx.match(TokenType::UNGODLY);
+
     if (!ctx.match(TokenType::IDENTIFIER))
         throw std::runtime_error("Expected class name after '" + stmt + "'");
 
     std::string className = ctx.previous().lexeme;
+
+    std::string bibleReference;
+    bool nameIsUngodly = doctrine::law::isUngodlyName(className, bibleReference);
+    if (nameIsUngodly && !isUngodlyDeclared)
+    {
+        doctrine::law::handleUngodlyNaming(
+            "Class name '" + className + "' does not appear to reflect God's standards.\n"
+            "To hide this warning, declare the class explicitly as 'ungodly'.\n\n"
+            "Example:\n"
+            "   let there be ungodly " + className + ":\n   amen\n\n"
+            + bibleReference
+        );
+    }
 
     // -----------------
     // Class inheritance
