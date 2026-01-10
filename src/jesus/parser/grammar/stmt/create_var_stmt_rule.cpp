@@ -4,6 +4,7 @@
 #include "../../../ast/expr/create_instance_expr.hpp"
 #include "../../../types/known_types.hpp"
 #include "../../../lexer/keywords.hpp"
+#include "../../../understanding/doctrine/law/ungodly_naming.hpp"
 #include <stdexcept>
 
 std::unique_ptr<Stmt> CreateVarStmtRule::parse(ParserContext &ctx)
@@ -11,28 +12,58 @@ std::unique_ptr<Stmt> CreateVarStmtRule::parse(ParserContext &ctx)
     if (!ctx.match(TokenType::CREATE))
         return nullptr;
 
+    // ---------------------------
+    // Optional 'ungodly' modifier
+    // ---------------------------
+    bool isUngodlyDeclared = ctx.match(TokenType::UNGODLY);
+
+    // -------------
+    // Variable type
+    // -------------
     if (!ctx.match(TokenType::IDENTIFIER))
         throw std::runtime_error("Expected variable type after 'create'");
 
     std::string varType_ = ctx.previous().lexeme;
 
+    // -------------
+    // Variable name
+    // -------------
     Token nameToken = ctx.advance();
-    std::string varName = ctx.previous().lexeme;
+    if (nameToken.type != TokenType::IDENTIFIER)
+        throw std::runtime_error("Expected an identifier name after 'create " + varType_ + "'.");
+
+    std::string varName = nameToken.lexeme;
 
     if (Keywords::isReserved(varName))
     {
         throw std::runtime_error("'" + varName + "' is a reserved word and cannot be used as a variable name.");
     }
 
-    if (nameToken.type != TokenType::IDENTIFIER)
+    // -----------------------------------
+    // Ungodly semantic validation
+    // -----------------------------------
+    std::string bibleReference;
+    bool nameIsUngodly =  doctrine::law::isUngodlyName(varName, bibleReference);
+
+    if (nameIsUngodly && !isUngodlyDeclared)
     {
-        throw std::runtime_error("Expected an identifier name after 'create " + varType_ + "'.");
+        doctrine::law::handleUngodlyNaming(
+            "Variable name '" + varName + "' does not appear to reflect God's standards.\n" +
+            "To hide this warning, declare the symbol explicitly as 'ungodly'.\n\n"
+            "Example:\n"
+            "   create ungodly " + varType_ + " " + varName+" = ...\n\n"
+            + bibleReference
+        );
     }
 
+    // ---------------------
+    // Resolve variable type
+    // ---------------------
     bool typeExistsLocally = ctx.varExistsInHierarchy(varType_);
     std::shared_ptr<CreationType> varType = nullptr;
 
-    if (typeExistsLocally ) {
+    if (typeExistsLocally)
+    {
         auto localType = ctx.getVarType(varType_);
         if (localType->isClass())
             varType = localType;
@@ -44,6 +75,9 @@ std::unique_ptr<Stmt> CreateVarStmtRule::parse(ParserContext &ctx)
             throw std::runtime_error("Unknown variable type: '" + varType_ + "'");
     }
 
+    // -----------------------
+    // Optional initialization
+    // -----------------------
     std::unique_ptr<Expr> value = nullptr;
 
     if (ctx.match(TokenType::EQUAL))

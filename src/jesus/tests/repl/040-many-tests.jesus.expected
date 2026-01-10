@@ -127,7 +127,15 @@ PrintStmt(SAY: VariableExpr(age))
 (Jesus) ❌ Error: Undefined variable: confusion (scope: __jesus__)
 (Jesus) (Jesus) God does not see
 (Jesus) (Jesus) 
-(Jesus) ❌ Error: Invalid value '(int) 13' for variable 'rebellion' declared as type text
+(Jesus) Variable name 'rebellion' does not appear to reflect God's standards.
+To hide this warning, declare the symbol explicitly as 'ungodly'.
+
+Example:
+   create ungodly text rebellion = ...
+
+1 Samuel 15:23 — For rebellion is as the sin of divination, and presumption is as iniquity and idolatry. Because you have rejected the word of the Lord, he has also rejected you from being king.
+1 John 1:9 — If we confess our sins (to Jesus Christ, not to man), he is faithful and just and will forgive us our sins and purify us from all unrighteousness.
+❌ Error: Invalid value '(int) 13' for variable 'rebellion' declared as type text
 (Jesus) ❌ Error: Undefined variable: rebellion (scope: __jesus__)
 (Jesus) ❌ Error: Unknown base type: 'car'
 (Jesus) ❌ Error: Undefined variable: hilux (scope: __jesus__)
@@ -300,4 +308,22 @@ Pleas forgive my sins, Oh God Almighty.
 God always wins.
 (Jesus) (Jesus) 15CreateClassStmt
 AST Memory: 8 bytes
+(Jesus) (Jesus) Class name 'Alien' does not appear to reflect God's standards.
+To hide this warning, declare the class explicitly as 'ungodly'.
+
+Example:
+   let there be ungodly Alien:
+   amen
+
+Matthew 6:22-23 — The eye is the lamp of the body... So if the light within you is darkness — how deep is that darkness!
+1 John 4:2-3 — This is how you can recognize the Spirit of God: Every spirit that acknowledges that Jesus Christ has come in the flesh is from God, but every spirit that does not acknowledge Jesus is not from God. This is the spirit of the antichrist, which you have heard is coming and even now is already in the world.
+(Jesus) Method name 'kill' does not appear to reflect God's standards.
+To hide this warning, declare the method explicitly as 'ungodly'.
+
+Example:
+   ungodly purpose kill():
+   amen
+
+Exodus 20:13 — You shall not murder. 1 Corinthians 3:17 — If anyone destroys God’s temple, God will destroy that person; for God’s temple is sacred, and you together are that temple.
+1 John 1:9 — If we confess our sins (to Jesus Christ, not to man), he is faithful and just and will forgive us our sins and purify us from all unrighteousness.
 (Jesus) 

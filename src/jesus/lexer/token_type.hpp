@@ -100,6 +100,8 @@ enum class TokenType
     AMEN,           // amen (end of blocks in Jesus lang; '}' in other langs)
     NEWLINE,        // \n
 
+    UNGODLY,
+
     MEMORY,         // memory (to inspect memory usage)
     END_OF_FILE
 };
