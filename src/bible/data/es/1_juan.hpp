@@ -1,11 +1,11 @@
 #ifndef SPANISH_1JOHN
 #define SPANISH_1JOHN
 
-#include <book/book.h>
+#include <bible/book.hpp>
 
 namespace Spanish
 {
-    class FirstJohn : public Book
+    class FirstJohn : public HolyBible::Book
     {
     public:
         FirstJohn()

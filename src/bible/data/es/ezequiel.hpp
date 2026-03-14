@@ -1,11 +1,11 @@
 #ifndef SPANISH_EZEKIEL
 #define SPANISH_EZEKIEL
 
-#include <book/book.h>
+#include <bible/book.hpp>
 
 namespace Spanish
 {
-    class Ezekiel : public Book
+    class Ezekiel : public HolyBible::Book
     {
     public:
         Ezekiel()

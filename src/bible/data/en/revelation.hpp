@@ -1,11 +1,11 @@
 #ifndef ENGLISH_REVELATION
 #define ENGLISH_REVELATION
 
-#include <book/book.h>
+#include <bible/book.hpp>
 
 namespace English
 {
-    class Revelation : public Book
+    class Revelation : public HolyBible::Book
     {
     public:
         Revelation()

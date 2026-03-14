@@ -1,11 +1,11 @@
 #ifndef SPANISH_3JOHN
 #define SPANISH_3JOHN
 
-#include <book/book.h>
+#include <bible/book.hpp>
 
 namespace Spanish
 {
-    class ThirdJohn : public Book
+    class ThirdJohn : public HolyBible::Book
     {
     public:
         ThirdJohn()

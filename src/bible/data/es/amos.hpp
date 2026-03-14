@@ -1,11 +1,11 @@
 #ifndef SPANISH_AMOS
 #define SPANISH_AMOS
 
-#include <book/book.h>
+#include <bible/book.hpp>
 
 namespace Spanish
 {
-    class Amos : public Book
+    class Amos : public HolyBible::Book
     {
     public:
         Amos()

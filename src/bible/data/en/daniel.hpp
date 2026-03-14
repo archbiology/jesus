@@ -1,11 +1,11 @@
 #ifndef ENGLISH_DANIEL
 #define ENGLISH_DANIEL
 
-#include <book/book.h>
+#include <bible/book.hpp>
 
 namespace English
 {
-    class Daniel : public Book
+    class Daniel : public HolyBible::Book
     {
     public:
         Daniel()

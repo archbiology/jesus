@@ -1,11 +1,11 @@
 #ifndef SPANISH_ISAIAH
 #define SPANISH_ISAIAH
 
-#include <book/book.h>
+#include <bible/book.hpp>
 
 namespace Spanish
 {
-    class Isaiah : public Book
+    class Isaiah : public HolyBible::Book
     {
     public:
         Isaiah()

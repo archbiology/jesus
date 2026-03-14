@@ -1,11 +1,11 @@
 #ifndef ENGLISH_HAGGAI
 #define ENGLISH_HAGGAI
 
-#include <book/book.h>
+#include <bible/book.hpp>
 
 namespace English
 {
-    class Haggai : public Book
+    class Haggai : public HolyBible::Book
     {
     public:
         Haggai()

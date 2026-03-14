@@ -1,11 +1,11 @@
 #ifndef ENGLISH_LEVITICUS
 #define ENGLISH_LEVITICUS
 
-#include <book/book.h>
+#include <bible/book.hpp>
 
 namespace English
 {
-    class Leviticus : public Book
+    class Leviticus : public HolyBible::Book
     {
     public:
         Leviticus()

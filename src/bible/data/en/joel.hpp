@@ -1,11 +1,11 @@
 #ifndef ENGLISH_JOEL
 #define ENGLISH_JOEL
 
-#include <book/book.h>
+#include <bible/book.hpp>
 
 namespace English
 {
-    class Joel : public Book
+    class Joel : public HolyBible::Book
     {
     public:
         Joel()

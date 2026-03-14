@@ -1,11 +1,11 @@
 #ifndef SPANISH_1THESSALONIANS
 #define SPANISH_1THESSALONIANS
 
-#include <book/book.h>
+#include <bible/book.hpp>
 
 namespace Spanish
 {
-    class FirstThessalonians : public Book
+    class FirstThessalonians : public HolyBible::Book
     {
     public:
         FirstThessalonians()

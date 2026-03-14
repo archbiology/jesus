@@ -1,11 +1,11 @@
 #ifndef SPANISH_MARK
 #define SPANISH_MARK
 
-#include <book/book.h>
+#include <bible/book.hpp>
 
 namespace Spanish
 {
-    class Mark : public Book
+    class Mark : public HolyBible::Book
     {
     public:
         Mark()

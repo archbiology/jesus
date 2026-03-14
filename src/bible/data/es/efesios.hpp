@@ -1,11 +1,11 @@
 #ifndef SPANISH_EPHESIANS
 #define SPANISH_EPHESIANS
 
-#include <book/book.h>
+#include <bible/book.hpp>
 
 namespace Spanish
 {
-    class Ephesians : public Book
+    class Ephesians : public HolyBible::Book
     {
     public:
         Ephesians()

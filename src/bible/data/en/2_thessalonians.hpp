@@ -1,11 +1,11 @@
 #ifndef ENGLISH_2THESSALONIANS
 #define ENGLISH_2THESSALONIANS
 
-#include <book/book.h>
+#include <bible/book.hpp>
 
 namespace English
 {
-    class SecondThessalonians : public Book
+    class SecondThessalonians : public HolyBible::Book
     {
     public:
         SecondThessalonians()

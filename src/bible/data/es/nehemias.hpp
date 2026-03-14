@@ -1,11 +1,11 @@
 #ifndef SPANISH_NEHEMIAH
 #define SPANISH_NEHEMIAH
 
-#include <book/book.h>
+#include <bible/book.hpp>
 
 namespace Spanish
 {
-    class Nehemiah : public Book
+    class Nehemiah : public HolyBible::Book
     {
     public:
         Nehemiah()

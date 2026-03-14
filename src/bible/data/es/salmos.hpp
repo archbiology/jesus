@@ -1,11 +1,11 @@
 #ifndef SPANISH_PSALMS
 #define SPANISH_PSALMS
 
-#include <book/book.h>
+#include <bible/book.hpp>
 
 namespace Spanish
 {
-    class Psalms : public Book
+    class Psalms : public HolyBible::Book
     {
     public:
         Psalms()

@@ -1,11 +1,11 @@
 #ifndef SPANISH_PHILEMON
 #define SPANISH_PHILEMON
 
-#include <book/book.h>
+#include <bible/book.hpp>
 
 namespace Spanish
 {
-    class Philemon : public Book
+    class Philemon : public HolyBible::Book
     {
     public:
         Philemon()

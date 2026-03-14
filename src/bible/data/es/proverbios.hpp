@@ -1,11 +1,11 @@
 #ifndef SPANISH_PROVERBS
 #define SPANISH_PROVERBS
 
-#include <book/book.h>
+#include <bible/book.hpp>
 
 namespace Spanish
 {
-    class Proverbs : public Book
+    class Proverbs : public HolyBible::Book
     {
     public:
         Proverbs()

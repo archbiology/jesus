@@ -1,11 +1,11 @@
 #ifndef ENGLISH_HOSEA
 #define ENGLISH_HOSEA
 
-#include <book/book.h>
+#include <bible/book.hpp>
 
 namespace English
 {
-    class Hosea : public Book
+    class Hosea : public HolyBible::Book
     {
     public:
         Hosea()

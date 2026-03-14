@@ -1,11 +1,11 @@
 #ifndef SPANISH_1CHRONICLES
 #define SPANISH_1CHRONICLES
 
-#include <book/book.h>
+#include <bible/book.hpp>
 
 namespace Spanish
 {
-    class FirstChronicles : public Book
+    class FirstChronicles : public HolyBible::Book
     {
     public:
         FirstChronicles()

@@ -1,11 +1,11 @@
 #ifndef ENGLISH_OBADIAH
 #define ENGLISH_OBADIAH
 
-#include <book/book.h>
+#include <bible/book.hpp>
 
 namespace English
 {
-    class Obadiah : public Book
+    class Obadiah : public HolyBible::Book
     {
     public:
         Obadiah()

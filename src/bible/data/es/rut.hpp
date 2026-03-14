@@ -1,11 +1,11 @@
 #ifndef SPANISH_RUTH
 #define SPANISH_RUTH
 
-#include <book/book.h>
+#include <bible/book.hpp>
 
 namespace Spanish
 {
-    class Ruth : public Book
+    class Ruth : public HolyBible::Book
     {
     public:
         Ruth()

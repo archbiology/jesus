@@ -1,11 +1,11 @@
 #ifndef SPANISH_MATTHEW
 #define SPANISH_MATTHEW
 
-#include <book/book.h>
+#include <bible/book.hpp>
 
 namespace Spanish
 {
-    class Matthew : public Book
+    class Matthew : public HolyBible::Book
     {
     public:
         Matthew()

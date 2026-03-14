@@ -1,11 +1,11 @@
 #ifndef ENGLISH_ESTHER
 #define ENGLISH_ESTHER
 
-#include <book/book.h>
+#include <bible/book.hpp>
 
 namespace English
 {
-    class Esther : public Book
+    class Esther : public HolyBible::Book
     {
     public:
         Esther()

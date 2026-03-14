@@ -1,11 +1,11 @@
 #ifndef SPANISH_EXODUS
 #define SPANISH_EXODUS
 
-#include <book/book.h>
+#include <bible/book.hpp>
 
 namespace Spanish
 {
-    class Exodus : public Book
+    class Exodus : public HolyBible::Book
     {
     public:
         Exodus()

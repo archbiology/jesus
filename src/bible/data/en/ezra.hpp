@@ -1,11 +1,11 @@
 #ifndef ENGLISH_EZRA
 #define ENGLISH_EZRA
 
-#include <book/book.h>
+#include <bible/book.hpp>
 
 namespace English
 {
-    class Ezra : public Book
+    class Ezra : public HolyBible::Book
     {
     public:
         Ezra()

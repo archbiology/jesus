@@ -1,11 +1,11 @@
 #ifndef SPANISH_JONAH
 #define SPANISH_JONAH
 
-#include <book/book.h>
+#include <bible/book.hpp>
 
 namespace Spanish
 {
-    class Jonah : public Book
+    class Jonah : public HolyBible::Book
     {
     public:
         Jonah()

@@ -1,11 +1,11 @@
 #ifndef SPANISH_ZEPHANIAH
 #define SPANISH_ZEPHANIAH
 
-#include <book/book.h>
+#include <bible/book.hpp>
 
 namespace Spanish
 {
-    class Zephaniah : public Book
+    class Zephaniah : public HolyBible::Book
     {
     public:
         Zephaniah()

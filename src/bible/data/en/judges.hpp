@@ -1,11 +1,11 @@
 #ifndef ENGLISH_JUDGES
 #define ENGLISH_JUDGES
 
-#include <book/book.h>
+#include <bible/book.hpp>
 
 namespace English
 {
-    class Judges : public Book
+    class Judges : public HolyBible::Book
     {
     public:
         Judges()

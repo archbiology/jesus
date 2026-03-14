@@ -1,11 +1,11 @@
 #ifndef SPANISH_MICAH
 #define SPANISH_MICAH
 
-#include <book/book.h>
+#include <bible/book.hpp>
 
 namespace Spanish
 {
-    class Micah : public Book
+    class Micah : public HolyBible::Book
     {
     public:
         Micah()

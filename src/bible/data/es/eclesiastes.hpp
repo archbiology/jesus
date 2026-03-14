@@ -1,11 +1,11 @@
 #ifndef SPANISH_ECCLESIASTES
 #define SPANISH_ECCLESIASTES
 
-#include <book/book.h>
+#include <bible/book.hpp>
 
 namespace Spanish
 {
-    class Ecclesiastes : public Book
+    class Ecclesiastes : public HolyBible::Book
     {
     public:
         Ecclesiastes()

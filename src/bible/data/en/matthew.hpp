@@ -1,11 +1,11 @@
 #ifndef ENGLISH_MATTHEW
 #define ENGLISH_MATTHEW
 
-#include <book/book.h>
+#include <bible/book.hpp>
 
 namespace English
 {
-    class Matthew : public Book
+    class Matthew : public HolyBible::Book
     {
     public:
         Matthew()

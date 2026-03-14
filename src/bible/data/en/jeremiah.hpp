@@ -1,11 +1,11 @@
 #ifndef ENGLISH_JEREMIAH
 #define ENGLISH_JEREMIAH
 
-#include <book/book.h>
+#include <bible/book.hpp>
 
 namespace English
 {
-    class Jeremiah : public Book
+    class Jeremiah : public HolyBible::Book
     {
     public:
         Jeremiah()

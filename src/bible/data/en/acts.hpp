@@ -1,11 +1,11 @@
 #ifndef ENGLISH_ACTS
 #define ENGLISH_ACTS
 
-#include <book/book.h>
+#include <bible/book.hpp>
 
 namespace English
 {
-    class Acts : public Book
+    class Acts : public HolyBible::Book
     {
     public:
         Acts()

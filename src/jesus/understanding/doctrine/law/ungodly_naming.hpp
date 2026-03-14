@@ -24,6 +24,8 @@ namespace doctrine::law
     static const std::string mark16_17 = "Mark 16:17 — And these signs will accompany those who believe: In my name they will drive out demons; they will speak in new tongues;";
     static const std::string gen6_4 = "Genesis 6:4 — The Nephilim were on the earth in those days — and also afterward — when the sons of God went to the daughters of humans and had children by them. They were the heroes of old, men of renown.";
     static const std::string _1John4_23 = "1 John 4:2-3 — This is how you can recognize the Spirit of God: Every spirit that acknowledges that Jesus Christ has come in the flesh is from God, but every spirit that does not acknowledge Jesus is not from God. This is the spirit of the antichrist, which you have heard is coming and even now is already in the world.";
+    static const std::string john24_23_25 = "John 24:23-25 — Then if any man tells you, ‘Look, here is the Messiah!’ or, ‘There he is!’ don’t believe it.\nFor false christs/messiahs and false prophets will arise, and they will perform great signs and wonders, so as to lead astray, if possible, even the chosen ones.\nBehold, I have told you beforehand.";
+    static const std::string rev_13_3 = "Revelation 13:3 —  One of the heads of the beast seemed to have had a fatal wound, but the fatal wound had been healed (a clone). The whole world was filled with wonder and followed the beast.";
     static const std::string dark_eyes = "Matthew 6:22-23 — The eye is the lamp of the body... So if the light within you is darkness — how deep is that darkness!";
     static const std::string gen3_14 = "Genesis 3:14 — So the Lord God said to the serpent, “Because you have done this, “Cursed are you above all livestock and all wild animals! You will crawl on your belly and you will eat dust all the days of your life.";
     static const std::string rev9_11 = "Revelation 9:11 — They had as king over them the angel of the Abyss, whose name in Hebrew is Abaddon and in Greek is Apollyon (that is, Destroyer).";
@@ -101,8 +103,8 @@ namespace doctrine::law
 
         {"pope", matthew23_9 + "\n" + exodus_20_4_6},  // The Holy War - John Bunyan
         {"papa", matthew23_9 + "\n" + exodus_20_4_6},
-        {"macron", _1John4_23},  // https://www.mylovelyjesusministry.com/
-        {"obama", matthew7_15},  // https://www.mylovelyjesusministry.com/
+        {"macron", _1John4_23 + "\n" + john24_23_25 + "\n" + rev_13_3},  // https://www.mylovelyjesusministry.com/
+        {"obama", matthew7_15 + "\n" + john24_23_25},  // https://www.mylovelyjesusministry.com/
         {"musk", _1John4_23},    // https://www.mylovelyjesusministry.com/
         {"neuralink", daniel2_43},
         {"cyborg", daniel2_43},
@@ -235,6 +237,7 @@ namespace doctrine::law
         {"threesome", gen_2_24 + "\n" + confess},
         {"throuple", gen_2_24 + "\n" + confess},
         {"trisal", gen_2_24 + "\n" + confess},
+        {"lgbt", gen_2_24 + "\n" + confess},
 
         {"buddha", _1John4_23 + "\n" + confess},
         {"buda", _1John4_23 + "\n" + confess},

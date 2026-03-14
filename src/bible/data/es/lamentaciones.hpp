@@ -1,11 +1,11 @@
 #ifndef SPANISH_LAMENTATIONS
 #define SPANISH_LAMENTATIONS
 
-#include <book/book.h>
+#include <bible/book.hpp>
 
 namespace Spanish
 {
-    class Lamentations : public Book
+    class Lamentations : public HolyBible::Book
     {
     public:
         Lamentations()
