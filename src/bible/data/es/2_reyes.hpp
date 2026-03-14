@@ -1,11 +1,11 @@
 #ifndef SPANISH_2KINGS
 #define SPANISH_2KINGS
 
-#include <book/book.h>
+#include <bible/book.hpp>
 
 namespace Spanish
 {
-    class SecondKings : public Book
+    class SecondKings : public HolyBible::Book
     {
     public:
         SecondKings()

@@ -1,11 +1,11 @@
 #ifndef SPANISH_HABAKKUK
 #define SPANISH_HABAKKUK
 
-#include <book/book.h>
+#include <bible/book.hpp>
 
 namespace Spanish
 {
-    class Habakkuk : public Book
+    class Habakkuk : public HolyBible::Book
     {
     public:
         Habakkuk()

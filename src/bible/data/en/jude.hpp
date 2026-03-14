@@ -1,11 +1,11 @@
 #ifndef ENGLISH_JUDE
 #define ENGLISH_JUDE
 
-#include <book/book.h>
+#include <bible/book.hpp>
 
 namespace English
 {
-    class Jude : public Book
+    class Jude : public HolyBible::Book
     {
     public:
         Jude()

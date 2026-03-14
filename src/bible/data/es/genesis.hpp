@@ -1,11 +1,11 @@
 #ifndef SPANISH_GENESIS
 #define SPANISH_GENESIS
 
-#include <book/book.h>
+#include <bible/book.hpp>
 
 namespace Spanish
 {
-    class Genesis : public Book
+    class Genesis : public HolyBible::Book
     {
     public:
         Genesis()

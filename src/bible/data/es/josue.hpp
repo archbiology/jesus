@@ -1,11 +1,11 @@
 #ifndef SPANISH_JOSHUA
 #define SPANISH_JOSHUA
 
-#include <book/book.h>
+#include <bible/book.hpp>
 
 namespace Spanish
 {
-    class Joshua : public Book
+    class Joshua : public HolyBible::Book
     {
     public:
         Joshua()

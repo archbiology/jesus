@@ -102,10 +102,10 @@ def generate_cpp_class(number, name, filename, namespace):
     print(f'#ifndef {define_name}')
     print(f'#define {define_name}\n')
 
-    print('#include <book/book.hpp>\n')
+    print('#include <bible/book.hpp>\n')
 
     print(f'namespace {namespace}\n' + '{')
-    print(f'    class {className} : public Book')
+    print(f'    class {className} : public HolyBible::Book')
     print('    {')
     print('    public:')
     print(f'        {className}()')

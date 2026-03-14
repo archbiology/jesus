@@ -1,11 +1,11 @@
 #ifndef SPANISH_1TIMOTHY
 #define SPANISH_1TIMOTHY
 
-#include <book/book.h>
+#include <bible/book.hpp>
 
 namespace Spanish
 {
-    class FirstTimothy : public Book
+    class FirstTimothy : public HolyBible::Book
     {
     public:
         FirstTimothy()

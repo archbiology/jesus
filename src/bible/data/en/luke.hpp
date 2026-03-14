@@ -1,11 +1,11 @@
 #ifndef ENGLISH_LUKE
 #define ENGLISH_LUKE
 
-#include <book/book.h>
+#include <bible/book.hpp>
 
 namespace English
 {
-    class Luke : public Book
+    class Luke : public HolyBible::Book
     {
     public:
         Luke()

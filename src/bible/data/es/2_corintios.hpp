@@ -1,11 +1,11 @@
 #ifndef SPANISH_2CORINTHIANS
 #define SPANISH_2CORINTHIANS
 
-#include <book/book.h>
+#include <bible/book.hpp>
 
 namespace Spanish
 {
-    class SecondCorinthians : public Book
+    class SecondCorinthians : public HolyBible::Book
     {
     public:
         SecondCorinthians()

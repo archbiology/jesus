@@ -1,11 +1,11 @@
 #ifndef SPANISH_PHILIPPIANS
 #define SPANISH_PHILIPPIANS
 
-#include <book/book.h>
+#include <bible/book.hpp>
 
 namespace Spanish
 {
-    class Philippians : public Book
+    class Philippians : public HolyBible::Book
     {
     public:
         Philippians()

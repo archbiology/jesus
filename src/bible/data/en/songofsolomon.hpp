@@ -1,11 +1,11 @@
 #ifndef ENGLISH_SONGOFSOLOMON
 #define ENGLISH_SONGOFSOLOMON
 
-#include <book/book.h>
+#include <bible/book.hpp>
 
 namespace English
 {
-    class SongofSolomon : public Book
+    class SongofSolomon : public HolyBible::Book
     {
     public:
         SongofSolomon()

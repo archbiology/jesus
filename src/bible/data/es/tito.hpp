@@ -1,11 +1,11 @@
 #ifndef SPANISH_TITUS
 #define SPANISH_TITUS
 
-#include <book/book.h>
+#include <bible/book.hpp>
 
 namespace Spanish
 {
-    class Titus : public Book
+    class Titus : public HolyBible::Book
     {
     public:
         Titus()

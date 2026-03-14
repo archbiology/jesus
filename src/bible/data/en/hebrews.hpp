@@ -1,11 +1,11 @@
 #ifndef ENGLISH_HEBREWS
 #define ENGLISH_HEBREWS
 
-#include <book/book.h>
+#include <bible/book.hpp>
 
 namespace English
 {
-    class Hebrews : public Book
+    class Hebrews : public HolyBible::Book
     {
     public:
         Hebrews()

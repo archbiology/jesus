@@ -1,11 +1,11 @@
 #ifndef SPANISH_GALATIANS
 #define SPANISH_GALATIANS
 
-#include <book/book.h>
+#include <bible/book.hpp>
 
 namespace Spanish
 {
-    class Galatians : public Book
+    class Galatians : public HolyBible::Book
     {
     public:
         Galatians()

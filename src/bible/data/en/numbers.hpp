@@ -1,11 +1,11 @@
 #ifndef ENGLISH_NUMBERS
 #define ENGLISH_NUMBERS
 
-#include <book/book.h>
+#include <bible/book.hpp>
 
 namespace English
 {
-    class Numbers : public Book
+    class Numbers : public HolyBible::Book
     {
     public:
         Numbers()

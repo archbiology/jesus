@@ -1,11 +1,11 @@
 #ifndef ENGLISH_COLOSSIANS
 #define ENGLISH_COLOSSIANS
 
-#include <book/book.h>
+#include <bible/book.hpp>
 
 namespace English
 {
-    class Colossians : public Book
+    class Colossians : public HolyBible::Book
     {
     public:
         Colossians()

@@ -1,11 +1,11 @@
 #ifndef ENGLISH_2SAMUEL
 #define ENGLISH_2SAMUEL
 
-#include <book/book.h>
+#include <bible/book.hpp>
 
 namespace English
 {
-    class SecondSamuel : public Book
+    class SecondSamuel : public HolyBible::Book
     {
     public:
         SecondSamuel()

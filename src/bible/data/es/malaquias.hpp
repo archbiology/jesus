@@ -1,11 +1,11 @@
 #ifndef SPANISH_MALACHI
 #define SPANISH_MALACHI
 
-#include <book/book.h>
+#include <bible/book.hpp>
 
 namespace Spanish
 {
-    class Malachi : public Book
+    class Malachi : public HolyBible::Book
     {
     public:
         Malachi()

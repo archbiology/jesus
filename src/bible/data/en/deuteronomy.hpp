@@ -1,11 +1,11 @@
 #ifndef ENGLISH_DEUTERONOMY
 #define ENGLISH_DEUTERONOMY
 
-#include <book/book.h>
+#include <bible/book.hpp>
 
 namespace English
 {
-    class Deuteronomy : public Book
+    class Deuteronomy : public HolyBible::Book
     {
     public:
         Deuteronomy()

@@ -1,11 +1,11 @@
 #ifndef SPANISH_NUMBERS
 #define SPANISH_NUMBERS
 
-#include <book/book.h>
+#include <bible/book.hpp>
 
 namespace Spanish
 {
-    class Numbers : public Book
+    class Numbers : public HolyBible::Book
     {
     public:
         Numbers()

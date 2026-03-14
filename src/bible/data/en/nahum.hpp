@@ -1,11 +1,11 @@
 #ifndef ENGLISH_NAHUM
 #define ENGLISH_NAHUM
 
-#include <book/book.h>
+#include <bible/book.hpp>
 
 namespace English
 {
-    class Nahum : public Book
+    class Nahum : public HolyBible::Book
     {
     public:
         Nahum()

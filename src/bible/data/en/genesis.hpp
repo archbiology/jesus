@@ -1,11 +1,11 @@
 #ifndef ENGLISH_GENESIS
 #define ENGLISH_GENESIS
 
-#include <book/book.h>
+#include <bible/book.hpp>
 
 namespace English
 {
-    class Genesis : public Book
+    class Genesis : public HolyBible::Book
     {
     public:
         Genesis()

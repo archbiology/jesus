@@ -1,11 +1,11 @@
 #ifndef ENGLISH_ZECHARIAH
 #define ENGLISH_ZECHARIAH
 
-#include <book/book.h>
+#include <bible/book.hpp>
 
 namespace English
 {
-    class Zechariah : public Book
+    class Zechariah : public HolyBible::Book
     {
     public:
         Zechariah()

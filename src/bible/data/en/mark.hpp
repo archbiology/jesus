@@ -1,11 +1,11 @@
 #ifndef ENGLISH_MARK
 #define ENGLISH_MARK
 
-#include <book/book.h>
+#include <bible/book.hpp>
 
 namespace English
 {
-    class Mark : public Book
+    class Mark : public HolyBible::Book
     {
     public:
         Mark()

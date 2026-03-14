@@ -1,11 +1,11 @@
 #ifndef ENGLISH_JOB
 #define ENGLISH_JOB
 
-#include <book/book.h>
+#include <bible/book.hpp>
 
 namespace English
 {
-    class Job : public Book
+    class Job : public HolyBible::Book
     {
     public:
         Job()

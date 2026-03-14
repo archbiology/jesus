@@ -1,11 +1,11 @@
 #ifndef ENGLISH_ROMANS
 #define ENGLISH_ROMANS
 
-#include <book/book.h>
+#include <bible/book.hpp>
 
 namespace English
 {
-    class Romans : public Book
+    class Romans : public HolyBible::Book
     {
     public:
         Romans()
