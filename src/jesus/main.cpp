@@ -14,11 +14,19 @@
 #include "cli/disciple.hpp"
 #include "cli/faith.hpp"
 #include "cli/uml_exporter.hpp"
+#include "cli/bible.hpp"
 
 int main(int argc, char **argv)
 {
     CLIParser parser;
     ParsedCLI cli = parser.parse(argc, argv);
+
+    if (cli.isScripture)
+    {
+        auto ref = BibleCLI::parseScripture(cli.scriptureText, cli.language);
+        std::cout << BibleCLI::readScripture(ref);
+        return 0;
+    }
 
     grammar::initializeGrammar();
     KnownTypes::registerBuiltInTypes();

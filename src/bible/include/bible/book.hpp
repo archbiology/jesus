@@ -1,5 +1,4 @@
-#ifndef HOLYBIBLE_BOOK_HPP
-#define HOLYBIBLE_BOOK_HPP
+#pragma once
 
 #include <string>
 #include <map>
@@ -21,6 +20,4 @@ namespace HolyBible
             : number(number), name(name), chapters(chapters) {}
     };
 
-} // namespace word
-
-#endif // WORD_BOOK_HPP
+}

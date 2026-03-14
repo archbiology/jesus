@@ -5,7 +5,7 @@ cmake_minimum_required(VERSION 3.10)
 # --------------------
 project(Jesus)
 
-include_directories(src/jesus)
+include_directories(src/jesus src/bible/include)
 
 # --------------------
 # Set the C++ standard
@@ -184,8 +184,12 @@ set(JESUS_CPP_FILES
     src/jesus/cli/cli_parser.cpp    # Parser
     src/jesus/cli/disciple.cpp      # REPL
     src/jesus/cli/faith.cpp         # Michael, to read and execute files.jesus
+    src/jesus/cli/bible.cpp         # Bible CLI parser: jesus john 3:16 --spanish
     src/jesus/cli/uml_exporter.cpp
     src/jesus/understanding/shared/uml_graph.cpp
+
+    src/jesus/understanding/scripture/book_aliases.cpp
+    src/jesus/understanding/scripture/book_registry.cpp
 )
 
 # --------------------------
