@@ -138,6 +138,20 @@ This project is not just about building a programming language — it's about cr
 
 Feel free to build, experiment, and expand. May this be a small tool used for a greater purpose.
 
+
+## 📖 Bible Engine Documentation
+
+The Jesus language includes a custom-built Bible engine that uses:
+
+- Dictionary-based compression
+- Bit-packed token streams
+- O(1) verse lookup via precomputed indices
+
+For full details, see:
+
+- [Bible Engine Design](docs/bible_engine.md)
+
+
 ## 🕊️ A Note on the Embedded Bible Files
 
 The *Jesus Programming Language* was created to glorify Jesus Christ, the Word of God.

@@ -63,8 +63,7 @@ configure_file(
     ${CMAKE_SOURCE_DIR}/src/jesus/utils/version.hpp
     @ONLY
 )
-message(STATUS "Build date (Jerusalem Scriptural Time / UTC+9): ${JESUS_BUILD_DATE} ${JESUS_BUILD_TIME}")
-
+message(STATUS "\n   Build date (Jerusalem Scriptural Time / UTC+9): ${JESUS_BUILD_DATE} ${JESUS_BUILD_TIME}\n")
 
 # -------------------
 # Define source files
@@ -187,12 +186,35 @@ set(JESUS_CPP_FILES
     src/jesus/cli/bible.cpp         # Bible CLI parser: jesus john 3:16 --spanish
     src/jesus/cli/uml_exporter.cpp
     src/jesus/understanding/shared/uml_graph.cpp
-
     src/jesus/understanding/scripture/book_aliases.cpp
-    src/jesus/understanding/scripture/book_registry.cpp
 )
 
 # --------------------------
 # Add the `jesus` executable
 # --------------------------
 add_executable(jesus src/jesus/main.cpp ${JESUS_CPP_FILES})
+
+# ------------------------------------------------------------------------
+# Ensure the compressed Bible header is generated before building `jesus`.
+#
+# Build flow:
+#   jesus (executable)
+#     → depends on `compressed_bible` (custom target)
+#         → depends on generated file: compressed_bible.hpp
+#             → produced by `bible_compressor` via add_custom_command
+#                 → re-runs when:
+#                     - bible_compressor changes
+#                     - any src/bible/data/en/*.hpp changes
+# ------------------------------------------------------------------------
+set(COMPRESSED_BIBLE_HPP ${CMAKE_SOURCE_DIR}/src/bible/include/bible/compressed_bible.hpp)
+add_executable(bible_compressor ${CMAKE_SOURCE_DIR}/src/bible/tools/bible_compressor.cpp)
+file(GLOB BIBLE_SRC_FILES CONFIGURE_DEPENDS ${CMAKE_SOURCE_DIR}/src/bible/data/en/*.hpp)
+add_custom_command(
+    OUTPUT ${COMPRESSED_BIBLE_HPP}
+    COMMAND bible_compressor ${COMPRESSED_BIBLE_HPP}
+    DEPENDS bible_compressor ${BIBLE_SRC_FILES}
+    COMMENT "\nGenerating compressed_bible.hpp from src/bible/data/en/ files."
+    VERBATIM
+)
+add_custom_target(generate_compressed_bible DEPENDS ${COMPRESSED_BIBLE_HPP})
+add_dependencies(jesus generate_compressed_bible)

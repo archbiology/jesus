@@ -3,9 +3,7 @@
 #include <vector>
 #include <string>
 
-#include <bible/book.hpp>
 #include "../understanding/scripture/book_id.hpp"
-#include "../understanding/scripture/language.hpp"
 
 namespace BibleCLI
 {
@@ -24,7 +22,7 @@ namespace BibleCLI
 
     struct ScriptureReference
     {
-        const HolyBible::Book *book;
+        HolyBible::BookId bookId;
         std::vector<ChapterReference> chapters;
     };
 
@@ -36,7 +34,7 @@ namespace BibleCLI
 
     std::vector<std::string> splitTokens(const std::string &input);
 
-    ScriptureReference parseScripture(const std::string &input, HolyBible::Language language);
+    ScriptureReference parseScripture(const std::string &input);
 
     std::string readScripture(const ScriptureReference &ref);
 
