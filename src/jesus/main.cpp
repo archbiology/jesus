@@ -23,7 +23,7 @@ int main(int argc, char **argv)
 
     if (cli.isScripture)
     {
-        auto ref = BibleCLI::parseScripture(cli.scriptureText, cli.language);
+        auto ref = BibleCLI::parseScripture(cli.scriptureText);
         std::cout << BibleCLI::readScripture(ref);
         return 0;
     }

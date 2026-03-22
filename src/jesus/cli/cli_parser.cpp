@@ -21,12 +21,6 @@ ParsedCLI CLIParser::parse(int argc, char **argv)
             continue;
         }
 
-        if (arg == "--spanish" || arg == "--es")
-        {
-            out.language = HolyBible::Language::Spanish;
-            continue;
-        }
-
         if (arg.starts_with("-"))
             continue; // skip other global flags for the moment
 

@@ -3,7 +3,6 @@
 #include <string>
 #include <vector>
 #include "../understanding/core/REGISTER_FOR_UML.hpp"
-#include "../understanding/scripture/language.hpp"
 
 REGISTER_FOR_UML(
     CLIParser,
@@ -17,8 +16,7 @@ struct ParsedCLI
     std::vector<std::string> args; // everything after the command
 
     bool isScripture = false;
-    std::string scriptureText;                                   // raw text: "john 3:16-18 4:1"
-    HolyBible::Language language = HolyBible::Language::English; // default
+    std::string scriptureText; // raw text: "john 3:16-18 4:1"
 };
 
 class CLIParser
