@@ -7,6 +7,19 @@
 
 namespace utils
 {
+    inline bool isFile(const std::string &path)
+    {
+        try
+        {
+            return std::filesystem::exists(path) &&
+                   std::filesystem::is_regular_file(path);
+        }
+        catch (const std::filesystem::filesystem_error &)
+        {
+            return false;
+        }
+    }
+
     inline std::string readFile(const std::string &path)
     {
         std::ifstream file(path);

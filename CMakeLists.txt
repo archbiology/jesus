@@ -184,6 +184,7 @@ set(JESUS_CPP_FILES
     src/jesus/cli/disciple.cpp      # REPL
     src/jesus/cli/faith.cpp         # Michael, to read and execute files.jesus
     src/jesus/cli/bible.cpp         # Bible CLI parser: jesus john 3:16 --spanish
+    src/jesus/cli/help.cpp          # HelpCLI: general help
     src/jesus/cli/uml_exporter.cpp
     src/jesus/understanding/shared/uml_graph.cpp
     src/jesus/understanding/scripture/book_aliases.cpp

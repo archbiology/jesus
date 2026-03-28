@@ -11,6 +11,9 @@ REGISTER_FOR_UML(
 struct ParsedCLI
 {
     bool quiet = false;
+    bool showHelp = false;
+    bool fileExists = false;
+    bool showBibleHelp = false;
     bool export_language_uml = false;
     std::string filename;          // ex: "serve" or serve.jesus
     std::vector<std::string> args; // everything after the command

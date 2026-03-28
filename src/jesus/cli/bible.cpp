@@ -2,6 +2,7 @@
 #include <stdexcept>
 #include <sstream>
 #include <cstdint>
+#include <iostream>
 
 #include "bible.hpp"
 #include "../understanding/scripture/book_aliases.hpp"
@@ -302,4 +303,87 @@ namespace BibleCLI
         return out.str();
     }
 
+    inline std::string formatBookName(const std::string &alias)
+    {
+        if (alias.empty())
+            return "";
+
+        if (alias == "songs")
+            return "Song of Solomon";
+
+        std::string result = alias;
+
+        // Case 1: starts with a number (e.g., "1john")
+        if (std::isdigit(result[0]))
+        {
+            // Insert space after the number
+            if (result.size() > 1)
+            {
+                result.insert(1, " ");
+                result[2] = std::toupper(result[2]); // capitalize first letter of word
+            }
+        }
+        else
+        {
+            result[0] = std::toupper(result[0]);
+        }
+
+        return result;
+    }
+
+    void printBibleHelp()
+    {
+        using namespace HolyBible;
+
+        std::cout << "Bible Command\n";
+        std::cout << "-------------\n\n";
+
+        std::cout << "Use the 'bible' command to read Bible chapters and verses directly from the CLI.\n\n";
+
+        std::cout << "Usage:\n";
+        std::cout << "  jesus <book> <reference>\n\n";
+
+        std::cout << "Examples:\n";
+        std::cout << "  jesus john 3:16\n";
+        std::cout << "  jesus john 3:16-18\n";
+        std::cout << "  jesus john 1:2,3\n";
+        std::cout << "  jesus john 1:2 3:16\n";
+        std::cout << "  jesus john 3\n";
+        // std::cout << "  jesus john 1-3\n";
+        std::cout << "  jesus psalms 23\n\n";
+        // std::cout << "  jesus genesis 1-3\n\n";
+
+        std::cout << "Reference Rules:\n";
+        std::cout << "  john 3           → chapter 3\n";
+        std::cout << "  john 3 16        → chapters 3 and 16\n";
+        // std::cout << "  john 1-3         → chapters 1 through 3\n";
+        std::cout << "  john 3:16        → chapter 3, verse 16\n";
+        std::cout << "  john 3:16-18     → verse range\n";
+        std::cout << "  john 1:2,3       → multiple verses\n";
+        std::cout << "  john 1:2 3:16    → cross-chapter references\n\n";
+
+        std::cout << "Notes:\n";
+        std::cout << "  john 3 16        → chapters (NOT verse 16)\n";
+        std::cout << "  To specify verses, always use ':' (e.g., 3:16)\n\n";
+
+        std::cout << "Book Aliases:\n";
+        std::cout << "--------------\n\n";
+
+        for (const auto &group : BOOK_ALIAS_GROUPS)
+        {
+            std::string bookName = formatBookName(group.aliases[0]);
+            std::cout << "[Book] " << bookName << "\n";
+
+            std::cout << "  Aliases: ";
+            for (size_t i = 0; i < group.aliases.size(); ++i)
+            {
+                std::cout << group.aliases[i];
+                if (i < group.aliases.size() - 1)
+                    std::cout << ", ";
+            }
+
+            std::cout << "\n";
+            std::cout << "  Example: jesus " << group.aliases[0] << " 1:1\n\n";
+        }
+    }
 };
