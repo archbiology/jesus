@@ -1,5 +1,7 @@
+#include <iostream>
 #include "cli_parser.hpp"
 #include "../understanding/scripture/book_aliases.hpp"
+#include "../utils/file_utils.hpp"
 
 ParsedCLI CLIParser::parse(int argc, char **argv)
 {
@@ -8,6 +10,18 @@ ParsedCLI CLIParser::parse(int argc, char **argv)
     for (int i = 1; i < argc; ++i)
     {
         std::string arg = argv[i];
+
+        if (arg == "--help" || arg == "-h" || arg == "/?" || arg == "help")
+        {
+            out.showHelp = true;
+            continue;
+        }
+
+        if (arg == "bible")
+        {
+            out.showBibleHelp = true;
+            continue;
+        }
 
         if (arg == "--quiet")
         {
@@ -22,7 +36,11 @@ ParsedCLI CLIParser::parse(int argc, char **argv)
         }
 
         if (arg.starts_with("-"))
-            continue; // skip other global flags for the moment
+        {
+            std::cerr << "Unknown option: " << arg << "\n";
+            out.showHelp = true;
+            return out;
+        }
 
         if (out.filename.empty() && !out.isScripture)
         {
@@ -34,6 +52,7 @@ ParsedCLI CLIParser::parse(int argc, char **argv)
             else
             {
                 out.filename = arg; // first non-flag = command
+                out.fileExists = utils::isFile(out.filename);
             }
         }
         else

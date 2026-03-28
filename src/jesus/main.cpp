@@ -15,11 +15,24 @@
 #include "cli/faith.hpp"
 #include "cli/uml_exporter.hpp"
 #include "cli/bible.hpp"
+#include "cli/help.hpp"
 
 int main(int argc, char **argv)
 {
     CLIParser parser;
     ParsedCLI cli = parser.parse(argc, argv);
+
+    if (cli.showHelp)
+    {
+        HelpCLI::printGeneralHelp();
+        return 0;
+    }
+
+    if (cli.showBibleHelp)
+    {
+        BibleCLI::printBibleHelp();
+        return 0;
+    }
 
     if (cli.isScripture)
     {
@@ -42,6 +55,20 @@ int main(int argc, char **argv)
     // ----------------------
     if (!cli.filename.empty())
     {
+        if (!cli.fileExists)
+        {
+
+            std::cerr << "Unknown command or file: " << cli.filename << "\n";
+            std::cerr << "Type 'jesus help' for usage.\n\n";
+
+            std::cerr << "Try:\n";
+            std::cerr << "  jesus help\n";
+            std::cerr << "  jesus bible\n";
+            std::cerr << "  jesus john 3:16\n";
+            std::cerr << "  jesus <file>.jesus\n\n";
+            return 1;
+        }
+
         Faith michael;
         return michael.execute(cli.filename);
     }

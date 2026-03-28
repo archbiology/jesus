@@ -38,4 +38,6 @@ namespace BibleCLI
 
     std::string readScripture(const ScriptureReference &ref);
 
+    void printBibleHelp();
+
 } // namespace BibleCLI
