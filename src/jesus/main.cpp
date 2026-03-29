@@ -28,6 +28,18 @@ int main(int argc, char **argv)
         return 0;
     }
 
+    if (cli.showConfessHelp)
+    {
+        HelpCLI::printConfessInstructions();
+        return 0;
+    }
+
+    if (cli.showWarfareHelp)
+    {
+        HelpCLI::printWarInstructions();
+        return 0;
+    }
+
     if (cli.showBibleHelp)
     {
         BibleCLI::printBibleHelp();
@@ -63,9 +75,11 @@ int main(int argc, char **argv)
 
             std::cerr << "Try:\n";
             std::cerr << "  jesus help\n";
+            std::cerr << "  jesus <file>.jesus\n";
             std::cerr << "  jesus bible\n";
-            std::cerr << "  jesus john 3:16\n";
-            std::cerr << "  jesus <file>.jesus\n\n";
+            std::cerr << "  jesus confess\n";
+            std::cerr << "  jesus giants\n";
+            std::cerr << "  jesus john 3:16\n\n";
             return 1;
         }
 
