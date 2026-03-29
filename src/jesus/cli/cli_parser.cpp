@@ -23,6 +23,18 @@ ParsedCLI CLIParser::parse(int argc, char **argv)
             continue;
         }
 
+        if (arg == "giants")
+        {
+            out.showWarfareHelp = true;
+            continue;
+        }
+
+        if (arg == "confess")
+        {
+            out.showConfessHelp = true;
+            continue;
+        }
+
         if (arg == "--quiet")
         {
             out.quiet = true;
