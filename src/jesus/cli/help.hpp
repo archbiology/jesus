@@ -3,6 +3,6 @@
 namespace HelpCLI
 {
     void printGeneralHelp();
-    void printConfessInstructions();
-    void printWarInstructions();
+    std::string getConfessInstructions();
+    std::string getWarInstructions();
 }

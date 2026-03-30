@@ -30,13 +30,13 @@ int main(int argc, char **argv)
 
     if (cli.showConfessHelp)
     {
-        HelpCLI::printConfessInstructions();
+        std::cout << HelpCLI::getConfessInstructions() << std::endl;
         return 0;
     }
 
     if (cli.showWarfareHelp)
     {
-        HelpCLI::printWarInstructions();
+        std::cout << HelpCLI::getWarInstructions() << std::endl;
         return 0;
     }
 

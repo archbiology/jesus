@@ -20,6 +20,8 @@
 #include "expr/atomic/literals/yes_no_rule.hpp"
 #include "expr/atomic/literals/born_rule.hpp"
 #include "expr/atomic/literals/weekday_rule.hpp"
+#include "expr/atomic/literals/confess_rule.hpp"
+#include "expr/atomic/literals/giants_rule.hpp"
 
 #include "expr/postfix/get_attr_rule.hpp"
 
@@ -79,13 +81,15 @@ namespace grammar
     inline auto YesNo = std::make_shared<YesNoRule>(); // yes|no
     inline auto Sex = std::make_shared<BornRule>(); // male|female
     inline auto Weekday = std::make_shared<WeekdayRule>(); // lighday|skyday|treeday|lampday|fishday|walkday|shabbat
+    inline auto Confess = std::make_shared<ConfessRule>();
+    inline auto Giants = std::make_shared<GiantsRule>();
     inline auto Variable = std::make_shared<VariableRule>();
     inline auto Ask = std::make_shared<AskExprRule>();
 
     /**
      * @brief Primary is anything that can be evaluated directly: number, string, or a grouped expression.
      */
-    inline auto Primary = Number | String | FormattedString | YesNo | Sex | Weekday | Variable | Group(Expression);
+    inline auto Primary = Number | String | FormattedString | YesNo | Sex | Weekday | Confess | Giants | Variable | Group(Expression);
     inline auto GetAttribute = std::make_shared<GetAttributeRule>(Primary);
 
     // ----------

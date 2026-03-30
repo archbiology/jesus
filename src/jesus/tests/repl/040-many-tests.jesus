@@ -432,3 +432,6 @@ ast GrandSon
 
 let there be Alien
 let there be Persona: purpose kill(): amen amen
+
+create text confession = confess
+create text warfare = giants

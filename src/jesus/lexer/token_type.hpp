@@ -102,6 +102,8 @@ enum class TokenType
 
     UNGODLY,
 
-    MEMORY,         // memory (to inspect memory usage)
+    MEMORY,         // memory   (to inspect memory usage)
+    CONFESS,        // confess  (how to confess Jesus Christ as Lord)
+    GIANTS,         // giants   (defeat sin, giants, AI)
     END_OF_FILE
 };
