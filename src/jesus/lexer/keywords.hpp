@@ -130,6 +130,9 @@ namespace Keywords
 
         {"ast", TokenType::AST},
         {"memory", TokenType::MEMORY},
+
+        {"giants", TokenType::GIANTS},
+        {"confess", TokenType::CONFESS},
     };
 
     inline bool isReserved(const std::string &word)
