@@ -435,3 +435,9 @@ let there be Persona: purpose kill(): amen amen
 
 create text confession = confess
 create text warfare = giants
+
+bible 'john 3:16'
+create text verse = bible '1thessalonians 5:16'
+say "In Christ we must: {verse}"
+create text luke1732 = "luke 17:32"
+bible luke1732

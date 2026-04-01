@@ -13,6 +13,7 @@
 #include "../ast/expr/parity_check_expr.hpp"
 #include "../ast/expr/method_call_expr.hpp"
 #include "../ast/expr/formatted_string_expr.hpp"
+#include "../ast/expr/bible_expr.hpp"
 
 REGISTER_FOR_UML(
     ExprVisitor,
@@ -69,6 +70,7 @@ public:
     virtual Value visitMethodCallExpr(const MethodCallExpr &expr) = 0;
     virtual Value visitFormattedStringExpr(const FormattedStringExpr &expr) = 0;
     virtual Value visitParityCheckExpr(const ParityCheckExpr &expr) = 0;
+    virtual Value visitBibleExpr(const BibleExpr &expr) = 0;
 
     virtual ~ExprVisitor() = default;
 };

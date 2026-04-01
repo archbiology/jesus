@@ -1,7 +1,7 @@
 #include "giants_rule.hpp"
-#include "../../../../../ast/expr/literal_expr.hpp"
-#include "../../../../../types/known_types.hpp"
-#include "../../../../../cli/help.hpp"
+#include "../../../../ast/expr/literal_expr.hpp"
+#include "../../../../types/known_types.hpp"
+#include "../../../../cli/help.hpp"
 
 std::unique_ptr<Expr> GiantsRule::parse(ParserContext &ctx)
 {

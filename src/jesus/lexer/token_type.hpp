@@ -105,5 +105,6 @@ enum class TokenType
     MEMORY,         // memory   (to inspect memory usage)
     CONFESS,        // confess  (how to confess Jesus Christ as Lord)
     GIANTS,         // giants   (defeat sin, giants, AI)
+    BIBLE,          // bible 'john 3:16'
     END_OF_FILE
 };

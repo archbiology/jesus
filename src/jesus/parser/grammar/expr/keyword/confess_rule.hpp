@@ -1,13 +1,13 @@
 #pragma once
-#include "../../../grammar_rule.hpp"
+#include "../../grammar_rule.hpp"
 
-class GiantsRule : public IGrammarRule
+class ConfessRule : public IGrammarRule
 {
 public:
     std::unique_ptr<Expr> parse(ParserContext &ctx) override;
 
     std::string toStr(GrammarRuleHashTable &visited) const override
     {
-        return "Giants";
+        return "Confess";
     }
 };
