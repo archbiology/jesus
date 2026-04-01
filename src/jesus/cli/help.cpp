@@ -55,6 +55,7 @@ namespace HelpCLI
                "Next steps:\n\n"
 
                "• Read the Bible daily (you can start with the Gospel of John)\n"
+               "• Buy a physical Holy Bible to help you study and highlight\n"
                "• Pray and speak to God daily (He hears your thoughts)\n"
                "• Look for a local Christian church to grow in community\n"
                "• Ask in the local Christian church to be baptized in water\n"

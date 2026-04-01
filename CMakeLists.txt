@@ -86,6 +86,7 @@ set(JESUS_CPP_FILES
     # AST Expressions
     # ---------------
     src/jesus/ast/expr/ask_expr.cpp
+    src/jesus/ast/expr/bible_expr.cpp
     src/jesus/ast/expr/unary_expr.cpp
     src/jesus/ast/expr/binary_expr.cpp
     src/jesus/ast/expr/literal_expr.cpp
@@ -143,8 +144,6 @@ set(JESUS_CPP_FILES
     src/jesus/parser/grammar/expr/atomic/literals/variable_rule.cpp
     src/jesus/parser/grammar/expr/atomic/literals/born_rule.cpp
     src/jesus/parser/grammar/expr/atomic/literals/weekday_rule.cpp
-    src/jesus/parser/grammar/expr/atomic/literals/confess_rule.cpp
-    src/jesus/parser/grammar/expr/atomic/literals/giants_rule.cpp
 
     src/jesus/parser/grammar/expr/atomic/operators/versus_rule.cpp
     src/jesus/parser/grammar/expr/atomic/operators/addition_rule.cpp
@@ -154,6 +153,10 @@ set(JESUS_CPP_FILES
     src/jesus/parser/grammar/expr/atomic/operators/logical_and_rule.cpp
     src/jesus/parser/grammar/expr/atomic/operators/multiplication_rule.cpp
     src/jesus/parser/grammar/expr/atomic/operators/convert_to_rule.cpp
+
+    src/jesus/parser/grammar/expr/keyword/bible_expr_rule.cpp
+    src/jesus/parser/grammar/expr/keyword/confess_rule.cpp
+    src/jesus/parser/grammar/expr/keyword/giants_rule.cpp
 
     src/jesus/parser/grammar/expr/postfix/get_attr_rule.cpp
 

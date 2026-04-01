@@ -31,6 +31,7 @@ namespace Banner
 
         std::cout << "Type 'confess' if you want to learn about following Jesus Christ, Yeshua Hamashiach.\n";
         std::cout << "Type 'giants' to know how to defeat sin, bio-enhanced soldiers, AI, and giants.\n";
+        std::cout << "Type 'bible' followed by a verse (e.g., bible 'john 3:16') to read the Word.\n";
         std::cout << std::endl;
     }
 }

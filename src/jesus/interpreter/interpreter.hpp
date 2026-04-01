@@ -258,6 +258,8 @@ private:
 
     Value visitConditional(const ConditionalExpr &expr) override;
 
+    Value visitBibleExpr(const BibleExpr &expr) override;
+
     /**
      * @brief Converts a runtime value into a string representation.
      *

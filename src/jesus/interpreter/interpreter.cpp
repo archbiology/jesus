@@ -10,6 +10,7 @@
 #include "../utils/string_utils.hpp"
 #include "../utils/file_utils.hpp"
 #include "../cli/faith.hpp"
+#include "../cli/bible.hpp"
 #include <format>
 
 // -------------
@@ -258,6 +259,26 @@ Value Interpreter::visitConditional(const ConditionalExpr &expr)
     }
 
     return evaluate(expr.elseBranch);
+}
+
+Value Interpreter::visitBibleExpr(const BibleExpr &expr)
+{
+    Value argVal = expr.reference->accept(*this);
+    std::string refStr = argVal.toString();
+    std::string verses;
+
+    try
+    {
+        auto ref = BibleCLI::parseScripture(refStr);
+        verses = BibleCLI::readScripture(ref);
+    }
+    catch (const std::exception &e)
+    {
+        verses = "Invalid Bible reference: " + refStr;
+        std::cerr << verses << std::endl;
+    }
+
+    return Value(verses);
 }
 
 void Interpreter::visitPrintStmt(const PrintStmt &stmt)
