@@ -106,5 +106,9 @@ enum class TokenType
     CONFESS,        // confess  (how to confess Jesus Christ as Lord)
     GIANTS,         // giants   (defeat sin, giants, AI)
     BIBLE,          // bible 'john 3:16'
+
+    ON,             // on http '/status': ... amen
+    SERVE,          // serve    (builtin http server)
+
     END_OF_FILE
 };

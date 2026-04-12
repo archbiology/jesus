@@ -134,6 +134,9 @@ namespace Keywords
         {"giants", TokenType::GIANTS},
         {"confess", TokenType::CONFESS},
         {"bible", TokenType::BIBLE},
+
+        {"on", TokenType::ON},
+        {"serve", TokenType::SERVE},
     };
 
     inline bool isReserved(const std::string &word)
