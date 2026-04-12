@@ -20,6 +20,8 @@
 #include "../ast/stmt/import_module_stmt.hpp"
 #include "../ast/stmt/ast_inspect_stmt.hpp"
 #include "../ast/stmt/memory_inspect_stmt.hpp"
+#include "../ast/stmt/on_stmt.hpp"
+#include "../ast/stmt/serve_stmt.hpp"
 
 REGISTER_FOR_UML(
     StmtVisitor,
@@ -89,6 +91,8 @@ public:
     virtual void visitImportModuleStmt(const ImportModuleStmt &stmt) = 0;
     virtual void visitAstInspectStmt(const AstInspectStmt &stmt) = 0;
     virtual void visitMemoryInspectStmt(const MemoryInspectStmt &stmt) = 0;
+    virtual void visitOnStmt(const OnStmt &stmt) = 0;
+    virtual void visitServeStmt(const ServeStmt &stmt) = 0;
 
     virtual ~StmtVisitor() = default;
 };

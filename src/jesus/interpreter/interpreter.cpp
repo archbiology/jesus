@@ -802,3 +802,18 @@ void Interpreter::visitMemoryInspectStmt(const MemoryInspectStmt &stmt)
     size_t kb = getPSS_KB();
     std::cout << "Memory Used: " << formatMemory(kb) << "\n";
 }
+
+void Interpreter::visitOnStmt(const OnStmt &stmt)
+{
+    HttpRoute route;
+    route.protocol = stmt.protocol;
+    route.path = stmt.path;
+    route.body = stmt.body;
+
+    httpRuntime.addRoute(route);
+}
+
+void Interpreter::visitServeStmt(const ServeStmt &stmt)
+{
+    httpRuntime.serve();
+}

@@ -122,6 +122,8 @@ set(JESUS_CPP_FILES
     src/jesus/ast/stmt/import_module_stmt.cpp
     src/jesus/ast/stmt/ast_inspect_stmt.cpp
     src/jesus/ast/stmt/memory_inspect_stmt.cpp
+    src/jesus/ast/stmt/on_stmt.cpp
+    src/jesus/ast/stmt/serve_stmt.cpp
 
     # --------------
     # Parser classes
@@ -175,12 +177,15 @@ set(JESUS_CPP_FILES
     src/jesus/parser/grammar/stmt/import_module_stmt_rule.cpp
     src/jesus/parser/grammar/stmt/ast_inspect_stmt_rule.cpp
     src/jesus/parser/grammar/stmt/memory_inspect_stmt_rule.cpp
+    src/jesus/parser/grammar/stmt/on_stmt_rule.cpp
+    src/jesus/parser/grammar/stmt/serve_stmt_rule.cpp
 
     # -----------
     # Interpreter
     # -----------
     src/jesus/interpreter/interpreter.cpp
     src/jesus/interpreter/runtime/method.cpp
+    src/jesus/interpreter/runtime/http/http_runtime.cpp
 
     # ---
     # CLI
@@ -193,6 +198,11 @@ set(JESUS_CPP_FILES
     src/jesus/cli/uml_exporter.cpp
     src/jesus/understanding/shared/uml_graph.cpp
     src/jesus/understanding/scripture/book_aliases.cpp
+
+    # --------
+    # Builtins
+    # --------
+    src/jesus/builtins/io/socket/tcpv4_socket.cpp
 )
 
 # --------------------------

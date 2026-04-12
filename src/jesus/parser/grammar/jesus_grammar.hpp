@@ -41,6 +41,8 @@
 #include "stmt/import_module_stmt_rule.hpp"
 #include "stmt/ast_inspect_stmt_rule.hpp"
 #include "stmt/memory_inspect_stmt_rule.hpp"
+#include "stmt/on_stmt_rule.hpp"
+#include "stmt/serve_stmt_rule.hpp"
 #include "unary_rule.hpp"
 
 /**
@@ -111,6 +113,8 @@ namespace grammar
     inline auto ImportModuleStmt = std::make_shared<ImportModuleStmtRule>();
     inline auto AstInspectStmt = std::make_shared<AstInspectStmtRule>();
     inline auto MemoryInspectStmt = std::make_shared<MemoryInspectStmtRule>();
+    inline auto OnStmt = std::make_shared<OnStmtRule>();
+    inline auto ServeStmt = std::make_shared<ServeStmtRule>();
 
     /**
      * @brief Set the Expression rule to something (for now just Primary)

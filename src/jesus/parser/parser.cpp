@@ -76,6 +76,16 @@ std::unique_ptr<Stmt> parse(const std::vector<Token> &tokens, ParserContext &con
     if (memoryInspectStmt)
         return memoryInspectStmt;
 
+    context.restore(snapshot);
+    auto onStmt = grammar::OnStmt->parse(context);
+    if (onStmt)
+        return onStmt;
+
+    context.restore(snapshot);
+    auto serveStmt = grammar::ServeStmt->parse(context);
+    if (serveStmt)
+        return serveStmt;
+
     // If no match, fall back to expression parsing
     context.restore(snapshot);
     auto expr = grammar::Expression->parse(context);
