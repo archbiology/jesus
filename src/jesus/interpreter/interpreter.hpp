@@ -4,6 +4,7 @@
 #include "expr_visitor.hpp"
 #include "stmt_visitor.hpp"
 #include "runtime/module.hpp"
+#include "runtime/http/http_runtime.hpp"
 #include "../ast/expr/expr.hpp"
 #include "../ast/expr/binary_expr.hpp"
 #include "../ast/expr/conditional_expr.hpp"
@@ -51,7 +52,7 @@ REGISTER_FOR_UML(
 class Interpreter : public ExprVisitor, public StmtVisitor
 {
 public:
-    explicit Interpreter(std::shared_ptr<Module> module) : currentModule(module) {}
+    explicit Interpreter(std::shared_ptr<Module> module) : currentModule(module), httpRuntime(*this) {}
     /**
      * @brief Evaluates a given expression and returns its computed value.
      *
@@ -173,6 +174,7 @@ private:
      */
     std::shared_ptr<Module> currentModule;
     static std::unordered_map<std::string, std::shared_ptr<Module>> modules;
+    HttpRuntime httpRuntime;
 
     // 🟢️🟢️🟢️🟢️🟢️🟢️🟢️🟢️🟢️🟢️🟢️🟢️🟢️🟢️
     // 🟢️ Visit expression methods 🟢️
@@ -371,4 +373,7 @@ private:
 
     void visitAstInspectStmt(const AstInspectStmt &stmt);
     void visitMemoryInspectStmt(const MemoryInspectStmt &stmt);
+
+    void visitOnStmt(const OnStmt &stmt);
+    void visitServeStmt(const ServeStmt &stmt);
 };

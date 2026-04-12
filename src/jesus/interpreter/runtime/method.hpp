@@ -4,6 +4,7 @@
 #include <vector>
 #include <memory>
 #include "../../ast/stmt/stmt.hpp"
+#include "../../spirit/return_signal.hpp"
 #include "../../types/creation_type.hpp"
 #include "instance.hpp"
 
@@ -13,15 +14,6 @@ REGISTER_FOR_UML(
     Method,
     .packageName("interpreter.runtime")
         .fieldsList({"name", "params", "body", "returnType"}));
-
-class ReturnSignal
-{
-public:
-    Value value;
-
-public:
-    ReturnSignal(Value value) : value(std::move(value)) {}
-};
 
 class Method
 {
