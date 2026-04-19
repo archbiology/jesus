@@ -8,7 +8,7 @@ void HttpRuntime::addRoute(const HttpRoute &route)
     routes.push_back(std::move(route));
 }
 
-void HttpRuntime::serve()
+void HttpRuntime::serve(int port)
 {
     auto server = std::make_shared<HttpServer>();
     bool hasRoot = false;
@@ -49,17 +49,25 @@ void HttpRuntime::serve()
         });
     }
 
-    int port = 7000;
     server->listen("0.0.0.0", port);
 
-    std::cout << "🧠 HttpServer listening on " << port << "...\n";
+    std::cout << "🧠 SonOfMan HTTP Server\n\n";
+    std::cout << "Local:\n";
+    std::cout << "  → http://127.0.0.1:" << port << "/\n";
+    std::cout << "  → http://localhost:" << port << "/\n\n";
+    std::cout << "Network:\n";
+    std::cout << "  → http://<your-ip>:" << port << "/\n\n";
+    std::cout << "Try:\n";
+    std::cout << "  curl http://localhost:"<< port << "/\n\n";
+
+    std::cout << "Press CTRL+C to stop.\n";
+
     server->run();
 }
 
 std::string HttpRuntime::defaultHomepage()
 {
-    std::string home = R"(
-<!DOCTYPE html>
+    std::string home = R"(<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">

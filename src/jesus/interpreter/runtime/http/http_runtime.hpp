@@ -11,7 +11,7 @@ public:
     explicit HttpRuntime(Interpreter &interpreter) : interpreter(interpreter) {}
 
     void addRoute(const HttpRoute &route);
-    void serve();
+    void serve(int port);
 
 private:
     std::vector<HttpRoute> routes;

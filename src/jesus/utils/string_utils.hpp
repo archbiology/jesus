@@ -100,4 +100,5 @@ namespace utils
         return (c.size() == 1 && c[0] >= '0' && c[0] <= '9');
     }
 
+    void replaceAll(std::string &text, const std::string &search, const std::string &replacement);
 }
