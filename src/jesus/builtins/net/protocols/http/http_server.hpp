@@ -173,9 +173,8 @@ protected:
             res = routes[key](req);
         else
         {
-            res.status = 404;
-            res.reason = "Not Found";
-            res.body = "404 - Not Found";
+            int code = 404;
+            renderErrorPage(code, req, res);
         }
 
         auto end = std::chrono::high_resolution_clock::now();
@@ -195,6 +194,12 @@ protected:
         unregister_fd(fd);
         ::close(fd);
     }
+
+    inline HttpError getHttpError(int code);
+    bool wantsJson(const HttpRequest& req);
+    std::string renderJsonError(const HttpError& err);
+    std::string renderErrorTemplate(HttpError &);
+    void renderErrorPage(int code, const HttpRequest& req, HttpResponse &res);
 
 private:
     std::string receive_from_fd(int fd)

@@ -36,3 +36,13 @@ struct HttpResponse
         return oss.str();
     }
 };
+
+struct HttpError
+{
+    int code;
+    std::string title;
+    std::string message;
+    std::string hint;
+    std::string actionText;
+    std::string actionLink;
+};

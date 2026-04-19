@@ -204,6 +204,7 @@ set(JESUS_CPP_FILES
     # Builtins
     # --------
     src/jesus/builtins/io/socket/tcpv4_socket.cpp
+    src/jesus/builtins/net/protocols/http/http_server.cpp
 )
 
 # --------------------------
