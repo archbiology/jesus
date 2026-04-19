@@ -72,6 +72,7 @@ set(JESUS_CPP_FILES
 
     src/jesus/lexer/lexer.cpp
     src/jesus/utils/terminal/terminal.cpp
+    src/jesus/utils/string_utils.cpp
     src/jesus/spirit/value.cpp
     src/jesus/spirit/heart.cpp
     src/jesus/spirit/spirit_of_understanding.cpp  # Semantics Analyzer

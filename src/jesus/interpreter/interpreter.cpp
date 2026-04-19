@@ -821,5 +821,21 @@ void Interpreter::visitOnStmt(const OnStmt &stmt)
 
 void Interpreter::visitServeStmt(const ServeStmt &stmt)
 {
-    httpRuntime.serve();
+    int port = 7000;
+
+    if (stmt.portExpr)
+    {
+        Value value = evaluate(stmt.portExpr);
+        port = value.toInt();
+
+        // ----------------
+        // RANGE VALIDATION
+        // ----------------
+        if (port < 1 || port > 65535)
+        {
+            throw std::runtime_error("Port must be between 1 and 65535");
+        }
+    }
+
+    httpRuntime.serve(port);
 }
