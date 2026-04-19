@@ -16,7 +16,11 @@ struct HttpResponse
 {
     int status = 200;
     std::string reason = "OK";
-    std::unordered_map<std::string, std::string> headers;
+    std::unordered_map<std::string, std::string> headers{
+        // Default headers
+        {"Server", "SonOfMan (Jesus)"},
+        {"Content-Type", "text/html; charset=utf-8"},
+    };
     std::string body;
 
     std::string to_string() const

@@ -5,6 +5,8 @@
 #include <vector>
 #include <memory>
 
+class Expr;
+
 /**
  * @brief Represents an event handler declaration in the Jesus language.
  *
@@ -31,13 +33,16 @@ class OnStmt : public Stmt
 public:
     std::string protocol;                    // "http"
     std::string path;                        // "/status"
+    std::unique_ptr<Expr> returnTypeExpr;    // 'text/html', json, varname
     std::vector<std::shared_ptr<Stmt>> body; // return {status: true}
 
     OnStmt(std::string protocol,
            std::string path,
+           std::unique_ptr<Expr> returnTypeExpr,
            std::vector<std::shared_ptr<Stmt>> body)
         : protocol(std::move(protocol)),
           path(std::move(path)),
+          returnTypeExpr(std::move(returnTypeExpr)),
           body(std::move(body)) {}
 
     void accept(StmtVisitor &visitor) const override;
