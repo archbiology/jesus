@@ -441,3 +441,17 @@ create text verse = bible '1thessalonians 5:16'
 say "In Christ we must: {verse}"
 create text luke1732 = "luke 17:32"
 bible luke1732
+
+on http '/savior':
+    return '<h1>Jesus</h1><p>Christ</p>'
+amen
+on http '/api' -> json :
+    return '{"nome": "Jesus", "surname": "Christ"}'
+amen
+create text pdf = 'application/pdf'
+on http '/pdf' -> pdf:
+    return 'A PDF file'
+amen
+on http '/plain' -> 'text/plain':
+    return 'Jesus Christ is the only way to heavens'
+amen

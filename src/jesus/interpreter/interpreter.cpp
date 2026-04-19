@@ -810,6 +810,12 @@ void Interpreter::visitOnStmt(const OnStmt &stmt)
     route.path = stmt.path;
     route.body = stmt.body;
 
+    if (stmt.returnTypeExpr)
+    {
+        auto value = evaluate(stmt.returnTypeExpr);
+        route.contentType = value.toString();
+    }
+
     httpRuntime.addRoute(route);
 }
 

@@ -19,7 +19,7 @@ struct HttpResponse
     std::unordered_map<std::string, std::string> headers{
         // Default headers
         {"Server", "SonOfMan (Jesus)"},
-        {"Content-Type", "text/html"},
+        {"Content-Type", "text/html; charset=utf-8"},
     };
     std::string body;
 
