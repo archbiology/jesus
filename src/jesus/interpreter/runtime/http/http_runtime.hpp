@@ -16,4 +16,6 @@ public:
 private:
     std::vector<HttpRoute> routes;
     Interpreter &interpreter;
+
+    std::string defaultHomepage();
 };
