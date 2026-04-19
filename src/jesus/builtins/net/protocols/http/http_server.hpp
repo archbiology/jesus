@@ -5,6 +5,7 @@
 #include <functional>
 #include <unordered_map>
 #include <iostream>
+#include <chrono>
 #include <memory>
 
 /**
@@ -90,6 +91,49 @@ public:
         routes[method_path] = handler;
     }
 
+    /**
+     * @brief Generate RFC 9110 compliant Date header
+     * @return std::ostringstream
+     */
+    inline std::string format_rfc_9110(std::chrono::system_clock::time_point &response_end_time)
+    {
+        std::time_t t = std::chrono::system_clock::to_time_t(response_end_time);
+
+        std::tm gmt{};
+        #ifdef _WIN32
+            gmtime_s(&gmt, &t); // Windows
+        #else
+            gmtime_r(&t, &gmt); // POSIX
+        #endif
+
+        std::ostringstream date_stream;
+        date_stream << std::put_time(&gmt, "%a, %d %b %Y %H:%M:%S GMT");
+        return date_stream.str();
+    }
+
+    inline std::string responseTime(int64_t &duration)
+    {
+        int64_t us = duration;
+        std::string responseTime;
+
+        if (us < 1000)
+        {
+            responseTime = std::to_string(us) + "us";
+        }
+        else if (us < 1'000'000)
+        {
+            responseTime = std::to_string(us / 1000) + "ms";
+        }
+        else
+        {
+            double s = us / 1'000'000.0;
+            std::ostringstream oss;
+            oss << std::fixed << std::setprecision(2) << s << "s";
+            responseTime = oss.str();
+        }
+        return responseTime;
+    }
+
 protected:
     void handle_event(int fd) override
     {
@@ -118,6 +162,7 @@ protected:
         // Parse HTTP request
         // ------------------
         HttpRequest req = parse_request(data);
+        auto start = std::chrono::high_resolution_clock::now();
 
         // ------------
         // Find handler
@@ -132,6 +177,11 @@ protected:
             res.reason = "Not Found";
             res.body = "404 - Not Found";
         }
+
+        auto end = std::chrono::high_resolution_clock::now();
+        auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
+        res.headers["X-Response-Time"] = responseTime(duration);
+        res.headers["Date"] = format_rfc_9110(end);
 
         // -------------
         // Send response

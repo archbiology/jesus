@@ -16,14 +16,25 @@ void HttpRuntime::serve()
     {
         std::string key = "GET " + route.path;
 
-        server->route(key, [this](const HttpRequest &req)
-                      {
+        server->route(key, [this, route](const HttpRequest &req) {
             HttpResponse res;
 
-            res.body = handleRequest(req.path);
+            try
+            {
+                for (auto stmt : route.body)
+                    interpreter.execute(stmt);
 
-            res.headers["Content-Type"] = "text/plain";
-            return res; });
+                res.body = "";
+            }
+            catch (const ReturnSignal &ret)
+            {
+                res.body = ret.value.toString();
+            }
+
+            res.headers["Content-Type"] = route.contentType;
+
+            return res;
+        });
     }
 
     int port = 7000;
@@ -31,43 +42,4 @@ void HttpRuntime::serve()
 
     std::cout << "🧠 HttpServer listening on " << port << "...\n";
     server->run();
-}
-
-HttpRoute *HttpRuntime::findRoute(const std::string &path)
-{
-    for (auto &route : routes)
-    {
-        if (route.path == path)
-            return &route;
-    }
-
-    std::cerr << "ZERO routes registered.!!!\n";
-
-    return nullptr;
-}
-
-std::string HttpRuntime::handleRequest(const std::string &path)
-{
-    auto *route = findRoute(path);
-
-    if (!route)
-    {
-        std::cerr << "404 Not Found: " << path << std::endl;
-        return "404 - Not Found";
-    }
-
-    std::cout << "Handling route: " << path << std::endl;
-
-    try
-    {
-        for (auto stmt : route->body)
-        {
-            interpreter.execute(stmt);
-        }
-        return "";
-    }
-    catch (const ReturnSignal &ret)
-    {
-        return ret.value.toString();
-    }
 }
