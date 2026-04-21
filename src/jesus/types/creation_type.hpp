@@ -17,6 +17,7 @@ enum class PrimitiveType
     Module,
     Class,
     Polymorphic,
+    Collection // list, dict
 };
 
 class CreationType

@@ -281,6 +281,24 @@ Value Interpreter::visitBibleExpr(const BibleExpr &expr)
     return Value(verses);
 }
 
+Value Interpreter::evalListExpr(const ListExpr &expr, ExprVisitor &driver)
+{
+    std::vector<std::shared_ptr<Value>> result;
+    result.reserve(expr.elements.size());
+
+    for (const auto &el : expr.elements)
+    {
+        result.push_back(std::make_shared<Value>(el->accept(driver)));
+    }
+
+    return Value(result);
+}
+
+Value Interpreter::visitListExpr(const ListExpr &expr)
+{
+    return evalListExpr(expr, *this);
+}
+
 void Interpreter::visitPrintStmt(const PrintStmt &stmt)
 {
     Value value = evaluate(stmt.message);

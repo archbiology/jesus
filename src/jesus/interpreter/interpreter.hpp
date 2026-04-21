@@ -262,6 +262,9 @@ private:
 
     Value visitBibleExpr(const BibleExpr &expr) override;
 
+    Value evalListExpr(const ListExpr &expr, ExprVisitor &driver);
+    Value visitListExpr(const ListExpr &expr) override;
+
     /**
      * @brief Converts a runtime value into a string representation.
      *

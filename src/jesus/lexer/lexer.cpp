@@ -209,6 +209,19 @@ std::vector<Token> Lexer::tokenize(const std::string &raw_input)
             continue;
         }
 
+        if (c == "[")
+        {
+            tokens.emplace_back(TokenType::LEFT_BRACKET, "[", Value("["));
+            i++;
+            continue;
+        }
+        if (c == "]")
+        {
+            tokens.emplace_back(TokenType::RIGHT_BRACKET, "]", Value("]"));
+            i++;
+            continue;
+        }
+
         if (c == "+")
         {
             tokens.emplace_back(TokenType::PLUS, "+", Value("+"));
