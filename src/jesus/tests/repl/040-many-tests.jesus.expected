@@ -333,4 +333,11 @@ Exodus 20:13 — You shall not murder. 1 Corinthians 3:17 — If anyone destroys
 (Jesus) (Jesus) Remember Lot's wife!
 
 (Jesus) (Jesus) (Jesus) (Jesus) (Jesus) (Jesus) (Jesus) (Jesus) ❌ Error: Port must be between 1 and 65535
+(Jesus) (Jesus) (Jesus) ❌ Error: Cannot access index on type 'number'. Expected a list.
+(Jesus) ❌ Error: Index -1 is not available in this list.
+It has 3 elements (valid indexes: 0 to 2).
+(Jesus) ❌ Error: Index 3 is not available in this list.
+It has 3 elements (valid indexes: 0 to 2).
+(Jesus) Luke
+(Jesus) ❌ Error: Index must be an integer. Got 'text' instead.
 (Jesus) 

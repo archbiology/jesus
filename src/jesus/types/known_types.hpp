@@ -27,6 +27,7 @@ public:
     // -------------------------------------------------------------------
     inline static std::shared_ptr<CreationType> VOID;
     inline static std::shared_ptr<CreationType> NOTHING;
+    inline static std::shared_ptr<CreationType> CREATION;
 
     inline static std::shared_ptr<CreationType> SEX;
     inline static std::shared_ptr<CreationType> BORN;

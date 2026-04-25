@@ -299,6 +299,32 @@ Value Interpreter::visitListExpr(const ListExpr &expr)
     return evalListExpr(expr, *this);
 }
 
+Value Interpreter::visitIndexExpr(const IndexExpr &expr)
+{
+    Value listVal = expr.list->accept(*this);
+    Value indexVal = expr.index->accept(*this);
+
+    auto &items = listVal.asList();
+    int size = items.size();
+
+    int index = indexVal.toInt();
+    if (size == 0)
+    {
+        throw std::runtime_error("Cannot access index " + std::to_string(index) + ". This list is empty.");
+    }
+
+    if (index >= size || index < 0)
+    {
+        std::string msg = "It has 1 element (only index 0 is valid).";
+        if (size > 1)
+            msg = "It has " + std::to_string(size) + " elements (valid indexes: 0 to " + std::to_string(size - 1) + ").";
+
+        throw std::runtime_error("Index " + std::to_string(index) + " is not available in this list.\n" + msg);
+    }
+
+    return *items[index];
+}
+
 void Interpreter::visitPrintStmt(const PrintStmt &stmt)
 {
     Value value = evaluate(stmt.message);

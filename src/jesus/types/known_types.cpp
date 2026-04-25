@@ -39,6 +39,7 @@ void KnownTypes::registerBuiltInTypes()
     auto list = std::make_shared<ListType>(creation, creation);
 
     BOOLEAN = TRUTH = truth;
+    CREATION = creation;
     VOID = NOTHING = nothing;
     BORN = SEX = sex;
     WEEKDAY = weekday;

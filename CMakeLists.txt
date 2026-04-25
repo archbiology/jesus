@@ -100,6 +100,7 @@ set(JESUS_CPP_FILES
     src/jesus/ast/expr/grouping_expr.cpp
     src/jesus/ast/expr/conditional_expr.cpp
     src/jesus/ast/expr/list_expr.cpp
+    src/jesus/ast/expr/index_expr.cpp
 
     # --------------
     # AST Statements

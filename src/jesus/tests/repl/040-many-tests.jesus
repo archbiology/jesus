@@ -457,3 +457,10 @@ on http '/plain' -> 'text/plain':
 amen
 
 serve on 123456
+
+create list l = ['Matt', 'Mark', 'Luke']
+4[0]
+l[-1]
+l[3]
+l[2]
+l['index']
