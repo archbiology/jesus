@@ -4,6 +4,8 @@
 #include "creation_type.hpp"
 #include "../spirit/value.hpp"
 
+class ListType;
+
 class KnownTypes
 {
 public:
@@ -25,6 +27,7 @@ public:
     // -------------------------------------------------------------------
     inline static std::shared_ptr<CreationType> VOID;
     inline static std::shared_ptr<CreationType> NOTHING;
+    inline static std::shared_ptr<CreationType> CREATION;
 
     inline static std::shared_ptr<CreationType> SEX;
     inline static std::shared_ptr<CreationType> BORN;
@@ -44,6 +47,8 @@ public:
     inline static std::shared_ptr<CreationType> MODULE;
     inline static std::shared_ptr<CreationType> CLASS;
     inline static std::shared_ptr<CreationType> EXCEPTION;
+
+    inline static std::shared_ptr<CreationType> LIST;
     // -------------------------------------------------------------------
 
     static std::string toString();

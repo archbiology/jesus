@@ -39,6 +39,8 @@ enum class TokenType
     IDENTIFIER,     // varname, attribute
     LEFT_PAREN,     // (
     RIGHT_PAREN,    // )
+    LEFT_BRACKET,   // [
+    RIGHT_BRACKET,  // ]
 
     PLUS,           // +
     MINUS,          // -

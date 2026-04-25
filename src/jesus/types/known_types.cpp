@@ -14,6 +14,7 @@
 #include "atomic/strings/phrase_type.hpp"
 #include "composite/class_type.hpp"
 #include "composite/module_type.hpp"
+#include "composite/list_type.hpp"
 #include "composite/its_written_exception_type.hpp"
 #include <memory>
 #include <sstream>
@@ -35,8 +36,10 @@ void KnownTypes::registerBuiltInTypes()
     auto klass = std::make_shared<ClassType>(creation);
     auto module = std::make_shared<ModuleType>(creation);
     auto exception = std::make_shared<ItsWritten>(klass);
+    auto list = std::make_shared<ListType>(creation, creation);
 
     BOOLEAN = TRUTH = truth;
+    CREATION = creation;
     VOID = NOTHING = nothing;
     BORN = SEX = sex;
     WEEKDAY = weekday;
@@ -49,6 +52,7 @@ void KnownTypes::registerBuiltInTypes()
     MODULE = module;
     CLASS = klass;
     EXCEPTION = exception;
+    LIST = list;
 
     registerType(truth);
     registerType(creation);
@@ -69,6 +73,8 @@ void KnownTypes::registerBuiltInTypes()
     registerType(klass);
     registerType(module);
     registerType(exception);
+
+    registerType(list);
 }
 
 void KnownTypes::registerType(std::shared_ptr<CreationType> type)
