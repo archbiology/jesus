@@ -42,6 +42,11 @@ std::unique_ptr<Stmt> parse(const std::vector<Token> &tokens, ParserContext &con
     if (updateVarStmt)
         return updateVarStmt;
 
+    context.restore(snapshot);
+    auto updateItem = grammar::UpdateItem->parse(context);
+    if (updateItem)
+        return updateItem;
+
     auto repeatWhileStmt = grammar::RepeatWhile->parse(context);
     if (repeatWhileStmt)
         return repeatWhileStmt;

@@ -4,6 +4,7 @@
 #include "../ast/stmt/create_var_type_stmt.hpp"
 #include "../ast/stmt/create_var_stmt.hpp"
 #include "../ast/stmt/update_var_stmt.hpp"
+#include "../ast/stmt/assign_stmt.hpp"
 #include "../ast/stmt/create_var_with_ask_stmt.hpp"
 #include "../ast/stmt/update_var_with_ask_stmt.hpp"
 #include "../ast/stmt/print_stmt.hpp"
@@ -93,6 +94,7 @@ public:
     virtual void visitMemoryInspectStmt(const MemoryInspectStmt &stmt) = 0;
     virtual void visitOnStmt(const OnStmt &stmt) = 0;
     virtual void visitServeStmt(const ServeStmt &stmt) = 0;
+    virtual void visitAssignStmt(const AssignStmt &stmt) = 0;
 
     virtual ~StmtVisitor() = default;
 };

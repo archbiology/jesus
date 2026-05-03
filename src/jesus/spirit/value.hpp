@@ -21,7 +21,16 @@ struct Instance;            // Forward declaration
  * "then the Lord God formed the man of dust from the ground and breathed into his nostrils the breath of life, and the man became a living creature."
  * — Genesis 2:7
  */
-using Dust = std::variant<std::vector<std::shared_ptr<Value>>, std::string, double, int, bool, std::monostate, std::shared_ptr<Module>, std::shared_ptr<CreationType>, std::shared_ptr<Instance>>; // or std::unique_ptr<Value>, etc.
+using Dust = std::variant<
+    bool,
+    int,
+    double,
+    std::string,
+    std::monostate,
+    std::shared_ptr<Module>,
+    std::shared_ptr<Instance>,
+    std::shared_ptr<CreationType>,
+    std::shared_ptr<std::vector<std::shared_ptr<Value>>>>;
 
 class Value
 {
@@ -46,7 +55,7 @@ public:
     explicit Value(bool v) : value(v), IS_BOOLEAN(true), AS_BOOLEAN(v) {}
     explicit Value(const std::string &v) : value(v), IS_STRING(true), AS_BOOLEAN(v != "") {}
     explicit Value(const char *v) : value(std::string(v)), IS_STRING(true), AS_BOOLEAN(std::string(v) != "") {}
-    explicit Value(const std::vector<std::shared_ptr<Value>> &v) : value(v), IS_LIST(true), AS_BOOLEAN(!v.empty()) {}
+    explicit Value(const std::shared_ptr<std::vector<std::shared_ptr<Value>>> &v) : value(std::move(v)), IS_LIST(true), AS_BOOLEAN(!v->empty()) {}
     explicit Value(const std::shared_ptr<Module> &v) : value(v), IS_MODULE(true), AS_BOOLEAN(true) {}
     explicit Value(const std::shared_ptr<CreationType> &v): value(v), IS_CLASS(true), AS_BOOLEAN(true) {}
     explicit Value(const std::shared_ptr<Instance> &v) : value(v), IS_INSTANCE(true), AS_BOOLEAN(static_cast<bool>(v)) {}
@@ -88,12 +97,20 @@ public:
 
     std::string toString() const;
 
+    std::vector<std::shared_ptr<Value>> &asList()
+    {
+        if (!IS_LIST)
+            throw std::runtime_error("This value is not a list.");
+
+        return *std::get<std::shared_ptr<std::vector<std::shared_ptr<Value>>>>(value);
+    }
+
     const std::vector<std::shared_ptr<Value>> &asList() const
     {
         if (!IS_LIST)
             throw std::runtime_error("This value is not a list.");
 
-        return std::get<std::vector<std::shared_ptr<Value>>>(value);
+        return *std::get<std::shared_ptr<std::vector<std::shared_ptr<Value>>>>(value);
     }
 
     /**
