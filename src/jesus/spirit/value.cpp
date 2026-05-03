@@ -13,12 +13,15 @@ struct make_string_functor
     std::string operator()(const std::shared_ptr<CreationType> x) const { return x->toString(); }
     std::string operator()(const std::shared_ptr<Instance> x) const { return x->toString(); }
 
-    std::string operator()(const std::vector<std::shared_ptr<Value>> &list) const
+    std::string operator()(const std::shared_ptr<std::vector<std::shared_ptr<Value>>> &list) const
     {
+        if (!list)
+            return "[]";
+
         std::string result = "[";
         bool first = true;
 
-        for (const auto &item : list)
+        for (const auto &item : *list)
         {
             if (!first)
                 result += ", ";

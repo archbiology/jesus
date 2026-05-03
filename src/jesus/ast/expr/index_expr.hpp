@@ -1,17 +1,17 @@
 #pragma once
 
-#include "expr.hpp"
+#include "assignable_expr.hpp"
 
 REGISTER_FOR_UML(
     IndexExpr,
     .packageName("ast.expr")
-        .parentsList({"Expr"})
+        .parentsList({"AssignableExpr"})
         .fieldsList({"list", "index"}));
 
 /**
  * @brief Access list indexes. E.g.: list[7]
  */
-class IndexExpr : public Expr
+class IndexExpr : public AssignableExpr
 {
 public:
     std::unique_ptr<Expr> list;
@@ -26,6 +26,8 @@ public:
     }
 
     Value accept(ExprVisitor &visitor) const override;
+
+    void assign(Interpreter &interpreter, const Value &value) const override;
 
     std::shared_ptr<CreationType> getReturnType(ParserContext &ctx) const override;
 

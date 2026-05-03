@@ -36,6 +36,7 @@
 #include "stmt/create_var_type_stmt_rule.hpp"
 #include "stmt/create_var_stmt_rule.hpp"
 #include "stmt/update_var_stmt_rule.hpp"
+#include "stmt/assign_stmt_rule.hpp"
 #include "stmt/repeat_stmt_rule.hpp"
 #include "stmt/if_stmt_rule.hpp"
 #include "stmt/try_stmt_rule.hpp"
@@ -110,6 +111,7 @@ namespace grammar
     inline auto CreateVarType = std::make_shared<CreateVarTypeStmtRule>();
     inline auto CreateVar = std::make_shared<CreateVarStmtRule>(Expression, Ask);
     inline auto UpdateVar = std::make_shared<UpdateVarStmtRule>(Expression, Ask);
+    inline auto UpdateItem = std::make_shared<AssignStmtRule>(Expression);
     inline auto CreateMethod = std::make_shared<CreateMethodStmtRule>(CreateVar, UpdateVar, Print);
     inline auto CreateClass = std::make_shared<CreateClassStmtRule>(CreateVar, CreateMethod);
     inline auto RepeatWhile = std::make_shared<RepeatStmtRule>();

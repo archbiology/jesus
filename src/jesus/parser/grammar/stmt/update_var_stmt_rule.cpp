@@ -6,13 +6,18 @@
 
 std::unique_ptr<Stmt> UpdateVarStmtRule::parse(ParserContext &ctx)
 {
+    int start = ctx.snapshot();
+
     if (!ctx.match(TokenType::IDENTIFIER))
         return nullptr;
 
     const std::string varName = ctx.previous().lexeme;
 
     if (!ctx.match(TokenType::EQUAL))
+    {
+        ctx.restore(start);
         return nullptr;
+    }
 
     auto varType = ctx.getVarType(varName);
     if (!varType)

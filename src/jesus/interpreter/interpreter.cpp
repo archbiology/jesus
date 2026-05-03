@@ -248,6 +248,13 @@ void Interpreter::visitUpdateVar(const UpdateVarStmt &stmt)
     updateVariable(stmt.name, val);
 }
 
+void Interpreter::visitAssignStmt(const AssignStmt &stmt)
+{
+    Value value = stmt.value->accept(*this);
+
+    stmt.target->assign(*this, value);
+}
+
 Value Interpreter::visitConditional(const ConditionalExpr &expr)
 {
     Value conditionValue = evaluate(expr.condition);
@@ -283,12 +290,12 @@ Value Interpreter::visitBibleExpr(const BibleExpr &expr)
 
 Value Interpreter::evalListExpr(const ListExpr &expr, ExprVisitor &driver)
 {
-    std::vector<std::shared_ptr<Value>> result;
-    result.reserve(expr.elements.size());
+    auto result = std::make_shared<std::vector<std::shared_ptr<Value>>>();
+    result->reserve(expr.elements.size());
 
     for (const auto &el : expr.elements)
     {
-        result.push_back(std::make_shared<Value>(el->accept(driver)));
+        result->push_back(std::make_shared<Value>(/* val = */ el->accept(driver)));
     }
 
     return Value(result);

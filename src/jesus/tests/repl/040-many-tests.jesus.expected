@@ -340,4 +340,5 @@ It has 3 elements (valid indexes: 0 to 2).
 It has 3 elements (valid indexes: 0 to 2).
 (Jesus) Luke
 (Jesus) ❌ Error: Index must be an integer. Got 'text' instead.
+(Jesus) (Jesus) [Matt, Marcos, Luke]
 (Jesus) 

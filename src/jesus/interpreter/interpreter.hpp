@@ -314,6 +314,14 @@ private:
      */
     void visitUpdateVarWithAsk(const UpdateVarWithAskStmt &stmt) override;
 
+    /**
+     * @brief Handle var updates.
+     *  x = 10
+     *  list[0] = 10
+     *  user.age = 33
+     */
+    void visitAssignStmt(const AssignStmt &stmt) override;
+
     void visitPrintStmt(const PrintStmt &stmt) override;
 
     /**
