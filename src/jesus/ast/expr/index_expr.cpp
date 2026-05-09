@@ -2,6 +2,7 @@
 #include "interpreter/expr_visitor.hpp"
 #include "types/known_types.hpp"
 #include "interpreter/interpreter.hpp"
+#include "types/composite/list_type.hpp"
 
 Value IndexExpr::accept(ExprVisitor &visitor) const
 {
@@ -10,6 +11,11 @@ Value IndexExpr::accept(ExprVisitor &visitor) const
 
 std::shared_ptr<CreationType> IndexExpr::getReturnType(ParserContext &ctx) const
 {
+    auto type = list->getReturnType(ctx);
+
+    if (auto listType = std::dynamic_pointer_cast<ListType>(type))
+        return listType->elementType;
+
     return KnownTypes::CREATION;
 };
 

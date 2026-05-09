@@ -15,9 +15,10 @@ class ListExpr : public Expr
 {
 public:
     std::vector<std::unique_ptr<Expr>> elements;
+    std::shared_ptr<CreationType> listType;
 
-    ListExpr(std::vector<std::unique_ptr<Expr>> elements)
-        : elements(std::move(elements)) {}
+    ListExpr(std::vector<std::unique_ptr<Expr>> elements, std::shared_ptr<CreationType> listType)
+        : elements(std::move(elements)), listType(listType) {}
 
     Value evaluate(std::shared_ptr<Heart> scope) const override
     {

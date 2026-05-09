@@ -468,3 +468,7 @@ l[2]
 l['index']
 l[1] = 'Marcos'
 l
+
+create list deep = [[isaac]]
+deep[0][0] surname = 'Hijo'
+say deep

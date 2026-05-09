@@ -51,6 +51,8 @@ public:
     inline static std::shared_ptr<CreationType> LIST;
     // -------------------------------------------------------------------
 
+    static std::shared_ptr<CreationType> makeListType(const std::shared_ptr<CreationType>& elementType);
+
     static std::string toString();
 
 private:
