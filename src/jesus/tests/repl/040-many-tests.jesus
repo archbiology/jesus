@@ -267,6 +267,8 @@ say 'single-quote string'
 say 'Hi {adam} (single-quoted)'
 say "Hi, {adam} (double-quoted)"
 say "Your name is {adam name}"
+adam name = 'Adão'
+say adam name
 say "Forbidden:  {600 + 60 + 6}"
 let there be SonOfMan:
     purpose age() -> number:

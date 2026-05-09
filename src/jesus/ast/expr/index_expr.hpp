@@ -18,7 +18,8 @@ public:
     std::unique_ptr<Expr> index;
 
     IndexExpr(std::unique_ptr<Expr> list, std::unique_ptr<Expr> index)
-        : list(std::move(list)), index(std::move(index)) {}
+        : AssignableExpr(ExprKind::Other),
+         list(std::move(list)), index(std::move(index)) {}
 
     Value evaluate(std::shared_ptr<Heart> heart) const override
     {

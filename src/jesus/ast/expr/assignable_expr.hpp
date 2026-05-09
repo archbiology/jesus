@@ -20,5 +20,7 @@ REGISTER_FOR_UML(
 class AssignableExpr : public Expr
 {
 public:
+    explicit AssignableExpr(ExprKind kind) : Expr(kind) {}
+
     virtual void assign(Interpreter &interpreter, const Value &value) const = 0;
 };
