@@ -10,8 +10,8 @@ class ListType : public CreationType
 public:
     std::shared_ptr<CreationType> elementType;
 
-    ListType(std::shared_ptr<CreationType> elementType, std::shared_ptr<CreationType> parent)
-        : CreationType(PrimitiveType::Collection, "list", "core", parent),
+    ListType(std::shared_ptr<CreationType> elementType, std::shared_ptr<CreationType> parent, std::string name = "list")
+        : CreationType(PrimitiveType::Collection, name, "core", parent),
           elementType(elementType) {}
 
     bool validate(const Value &value) const override

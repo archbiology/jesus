@@ -307,7 +307,7 @@ null
 (Jesus) (Jesus) Inside try-repent.
 Pleas forgive my sins, Oh God Almighty.
 God always wins.
-(Jesus) (Jesus) 15CreateClassStmt
+(Jesus) (Jesus) CreateClassStmt
 AST Memory: 8 bytes
 (Jesus) (Jesus) Class name 'Alien' does not appear to reflect God's standards.
 To hide this warning, declare the class explicitly as 'ungodly'.
@@ -342,4 +342,13 @@ It has 3 elements (valid indexes: 0 to 2).
 (Jesus) Luke
 (Jesus) ❌ Error: Index must be an integer. Got 'text' instead.
 (Jesus) (Jesus) [Matt, Marcos, Luke]
+(Jesus) (Jesus) (Jesus) (Jesus) [[{type: "instance",
+ class: "Son",
+ attributes: {
+  surname: "Terahson",
+  name: "Jacob"
+
+  surname: "Hijo"
+ }
+}]]
 (Jesus) 

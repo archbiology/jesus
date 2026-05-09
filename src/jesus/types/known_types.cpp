@@ -147,6 +147,21 @@ std::string KnownTypes::makeKey(const std::string &module_name, const std::strin
     return module_name + "." + name;
 }
 
+std::shared_ptr<CreationType> KnownTypes::makeListType(const std::shared_ptr<CreationType> &elementType)
+{
+    auto name = "list<" + elementType->name + ">";
+    auto listType = std::make_shared<ListType>(elementType, KnownTypes::LIST, name);
+
+    auto registeredType = KnownTypes::resolve(listType->name, listType->module_name);
+    if (!registeredType) {
+        registeredType = listType;
+        KnownTypes::registerType(listType);
+
+    }
+
+    return registeredType;
+}
+
 std::string KnownTypes::toString()
 {
     std::ostringstream out;

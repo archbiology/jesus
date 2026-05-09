@@ -127,6 +127,11 @@ std::unique_ptr<Stmt> CreateVarStmtRule::parse(ParserContext &ctx)
             throw std::runtime_error("Invalid value " + value_str + " for variable '" + varName + "' declared as type " + varType->name);
         }
 
+        if (varType->isA(KnownTypes::LIST))
+        {
+            varType = valueType;
+        }
+
         ctx.registerVarType(varType, varName);
     }
 

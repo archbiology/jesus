@@ -1,6 +1,5 @@
 #include "get_attr_rule.hpp"
 #include "ast/expr/get_attr_expr.hpp"
-#include "ast/expr/variable_expr.hpp"
 #include "ast/expr/method_call_expr.hpp"
 #include "ast/expr/index_expr.hpp"
 #include "types/creation_type.hpp"
@@ -56,9 +55,7 @@ std::unique_ptr<Expr> GetAttributeRule::parse(ParserContext &ctx)
             // ----------------------------
             // Resolve attribute or method
             // ----------------------------
-            if (auto varExpr = dynamic_cast<VariableExpr *>(expr.get()))
-            {
-                std::shared_ptr<CreationType> klass = ctx.getVarType(varExpr->name);
+                std::shared_ptr<CreationType> klass = expr->getReturnType(ctx);
                 std::string name = ctx.previous().lexeme;
 
                 auto member = klass->findMember(name, klass);
@@ -103,11 +100,6 @@ std::unique_ptr<Expr> GetAttributeRule::parse(ParserContext &ctx)
                 {
                     throw std::runtime_error("Unknown member '" + name + "' in class " + klass->name);
                 }
-            }
-            else
-            {
-                throw std::runtime_error("Cannot access member on this expression: '" + expr->toString() + "'");
-            }
 
             continue;
         }

@@ -101,4 +101,24 @@ namespace utils
     }
 
     void replaceAll(std::string &text, const std::string &search, const std::string &replacement);
+
+    /**
+     * @brief Cleans compiler RTTI names returned by `typeid(...).name()`.
+     *
+     * Example:
+     *   "8ListExpr" -> "ListExpr"
+     *   "13Route53Expr" -> "Route53Expr"
+     *
+     * "For God is not a God of confusion but of peace."
+     * — 1 Corinthians 14:33
+     */
+    inline std::string cleanTypeIdName(const std::string &name)
+    {
+        size_t pos = 0;
+
+        while (pos < name.size() && std::isdigit(static_cast<unsigned char>(name[pos])))
+            ++pos;
+
+        return name.substr(pos);
+    }
 }
