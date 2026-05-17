@@ -82,6 +82,7 @@ set(JESUS_CPP_FILES
     # ----------------------
     src/jesus/types/creation_type.cpp
     src/jesus/types/known_types.cpp
+    src/jesus/types/composite/list_type.cpp
 
     # ---------------
     # AST Expressions

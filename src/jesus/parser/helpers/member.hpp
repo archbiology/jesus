@@ -2,7 +2,7 @@
 
 #include <string>
 
-class Method;       // Forward declaration
+class IMethod;      // Forward declaration
 class CreationType; // Forward declaration
 
 /**
@@ -16,13 +16,13 @@ class Member
 {
 public:
     const std::string attr_name;                         // non-empty if it’s an attribute
-    const std::shared_ptr<Method> method;                // non-null if it’s a method
+    const std::shared_ptr<IMethod> method;               // non-null if it’s a method
     const std::shared_ptr<CreationType> declaring_class; // who declared it
 
     Member(std::string attr, std::shared_ptr<CreationType> klass)
         : attr_name(std::move(attr)), declaring_class(std::move(klass)) {}
 
-    Member(std::shared_ptr<Method> method, std::shared_ptr<CreationType> klass)
+    Member(std::shared_ptr<IMethod> method, std::shared_ptr<CreationType> klass)
         : method(std::move(method)), declaring_class(std::move(klass)) {}
 
     bool isAttribute() const { return !attr_name.empty(); }

@@ -35,6 +35,12 @@ class Expr
 
 public:
     explicit Expr(ExprKind kind = ExprKind::Other) : kind(kind) {}
+
+    virtual void validate(ParserContext &ctx) const
+    {
+        throw std::runtime_error(utils::cleanTypeIdName(typeid(*this).name()) + ".validate() not implemented.");
+    };
+
     /**
      * @brief Evaluates the expression and returns a Value.
      *

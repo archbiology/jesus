@@ -199,7 +199,11 @@ What is your age again (curent: (int) 33)? (Jesus) (double) 2025.000000
 }
 (Jesus) I am inside functionWithoutParams
 null
-(Jesus) ❌ Error: Missing argument for parameter 'a_'
+(Jesus) ❌ Error: Method 'aToB' expects 2 argument(s), but got 0.
+
+Missing parameter(s):
+ - a_: number
+ - b: number
 (Jesus) The new name is: 
 (Jesus) Adam
 (Jesus) a before

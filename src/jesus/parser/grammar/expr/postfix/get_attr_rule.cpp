@@ -95,6 +95,7 @@ std::unique_ptr<Expr> GetAttributeRule::parse(ParserContext &ctx)
                     }
 
                     expr = std::make_unique<MethodCallExpr>(std::move(expr), member->method, std::move(args));
+                    expr->validate(ctx);
                 }
                 else
                 {
