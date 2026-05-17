@@ -5,45 +5,44 @@
 #include <memory>
 #include "../../ast/stmt/stmt.hpp"
 #include "../../spirit/return_signal.hpp"
+#include "../../spirit/heart.hpp"
 #include "../../types/creation_type.hpp"
 #include "instance.hpp"
 
 class Interpreter; // Forward declaration
+class ParserContext;
+
+REGISTER_FOR_UML(
+    IMethod,
+    .packageName("interpreter.runtime")
+        .fieldsList({"name", "params", "returnType"}));
 
 REGISTER_FOR_UML(
     Method,
     .packageName("interpreter.runtime")
-        .fieldsList({"name", "params", "body", "returnType"}));
+        .parentsList({"IMethod"})
+        .fieldsList({"body"}));
 
-class Method
+class IMethod
 {
 public:
     const std::string name;
     const std::shared_ptr<Heart> params;
-    const std::vector<std::shared_ptr<Stmt>> body;
     const std::shared_ptr<CreationType> returnType;
 
-    Method(std::string name,
-           std::shared_ptr<Heart> params,
-           std::vector<std::shared_ptr<Stmt>> body,
-           std::shared_ptr<CreationType> returnType)
-        : name(std::move(name)), params(std::move(params)),
-          body(std::move(body)), returnType(std::move(returnType)) {}
+    virtual ~IMethod() = default;
 
-    Value call(Interpreter &interp, std::shared_ptr<Instance> instance, std::vector<Value> args);
+    virtual Value call(
+        Interpreter &interp,
+        Value &object,
+        const std::vector<Value> &args) = 0;
 
-    /**
-     * @brief Get the return type, so that variable
-     *  creation and update can be enforced at parse time.
-     *
-     * "Flesh gives birth to flesh, but the Spirit gives birth to spirit." — John 3:6
-     */
-    std::shared_ptr<CreationType> getReturnType(ParserContext &ctx)
+    virtual std::shared_ptr<CreationType> getReturnType(ParserContext &ctx)
     {
         return returnType;
     }
 
-    std::string toString()
+    virtual std::string toString() const
     {
         std::string str = "{type: \"method\",\n params: {";
         if (!params->isEmpty())
@@ -53,4 +52,28 @@ public:
         str += " }\n}";
         return str;
     }
+
+protected:
+    IMethod(
+        std::string name,
+        std::shared_ptr<Heart> params,
+        std::shared_ptr<CreationType> returnType)
+        : name(std::move(name)),
+          params(std::move(params)),
+          returnType(std::move(returnType)) {}
+};
+
+class Method : public IMethod
+{
+public:
+    const std::vector<std::shared_ptr<Stmt>> body;
+
+    Method(std::string name,
+           std::shared_ptr<Heart> params,
+           std::vector<std::shared_ptr<Stmt>> body,
+           std::shared_ptr<CreationType> returnType)
+        : IMethod(std::move(name), std::move(params), std::move(returnType)),
+          body(std::move(body)) {}
+
+    Value call(Interpreter &interp, Value &object, const std::vector<Value> &args) override;
 };

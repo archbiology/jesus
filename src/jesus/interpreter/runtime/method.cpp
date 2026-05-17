@@ -2,8 +2,10 @@
 #include "method.hpp"
 #include "../interpreter.hpp"
 
-Value Method::call(Interpreter &interpreter, std::shared_ptr<Instance> instance, const std::vector<Value> args)
+Value Method::call(Interpreter &interpreter, Value &object, const std::vector<Value> &args)
 {
+    std::shared_ptr<Instance> instance = object.toInstance();
+
     // 1. Create the method 'params' scope for this call,
     // passing instance attributes as the parent attributes.
     auto paramsScope = params->clone("call-" + name, instance->attributes);
@@ -11,13 +13,7 @@ Value Method::call(Interpreter &interpreter, std::shared_ptr<Instance> instance,
     // Bind the actual 'arguments' to the 'param' names
     int index = 0;
     for (const auto &name : paramsScope->getVariableNames())
-    {
-        if (index < args.size())
-            paramsScope->updateVar(name, args[index++]);
-        else
-            // FIXME: speed it up: Validate params at parse time, not at rutime
-            throw std::runtime_error("Missing argument for parameter '" + name + "'");
-    }
+        paramsScope->updateVar(name, args[index++]);
 
     interpreter.addScope(paramsScope);
 

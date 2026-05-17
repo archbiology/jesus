@@ -4,7 +4,7 @@
 #include "../ast/expr/expr.hpp"
 #include "constraints/constraint.hpp"
 
-class Method; // Forward declaration
+class IMethod; // Forward declaration
 class Member; // Forward declaration
 
 enum class PrimitiveType
@@ -45,7 +45,7 @@ public:
     std::shared_ptr<CreationType> parent_class = nullptr;
 
     std::shared_ptr<Heart> class_attributes = nullptr;
-    std::unordered_map<std::string, std::shared_ptr<Method>> methods;
+    std::unordered_map<std::string, std::shared_ptr<IMethod>> methods;
 
     CreationType(PrimitiveType primitive_type, std::string name, std::string module = "core",
                  std::shared_ptr<CreationType> parent = nullptr,
@@ -137,10 +137,11 @@ public:
         return class_attributes->getVar(name);
     }
 
-    void addMethod(const std::string &name, std::shared_ptr<Method> method)
+    void addMethod(const std::string &name, std::shared_ptr<IMethod> method)
     {
-        if (primitive_type != PrimitiveType::Class)
-            throw std::runtime_error("Only class types can have methods.");
+        if (primitive_type != PrimitiveType::Class &&
+            primitive_type != PrimitiveType::Collection)
+            throw std::runtime_error("Only class and collection types can have methods.");
 
         methods[name] = std::move(method);
     }
