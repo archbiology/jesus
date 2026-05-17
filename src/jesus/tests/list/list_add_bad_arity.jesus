@@ -1,0 +1,2 @@
+create list nums = [1]
+nums add 2, 3

@@ -2,7 +2,7 @@
 
 #include "expr.hpp"
 
-class Method; // Forward declaration
+class IMethod; // Forward declaration
 
 REGISTER_FOR_UML(
     MethodCallExpr,
@@ -14,12 +14,12 @@ class MethodCallExpr : public Expr
 {
 public:
     std::unique_ptr<Expr> object;
-    std::shared_ptr<Method> method;
+    std::shared_ptr<IMethod> method;
     std::vector<std::unique_ptr<Expr>> args;
 
     MethodCallExpr(
         std::unique_ptr<Expr> object,
-        std::shared_ptr<Method> method,
+        std::shared_ptr<IMethod> method,
         std::vector<std::unique_ptr<Expr>> args)
         : object(std::move(object)), method(std::move(method)), args(std::move(args))
     {
@@ -28,6 +28,8 @@ public:
             throw std::runtime_error("Method cannot be empty!");
         }
     }
+
+    void validate(ParserContext &ctx) const override;
 
     /**
      * @brief Return the 'object' that contains the 'method' to be called
@@ -46,4 +48,9 @@ public:
      * "Flesh gives birth to flesh, but the Spirit gives birth to spirit." — John 3:6
      */
     std::shared_ptr<CreationType> getReturnType(ParserContext &ctx) const override;
+
+private:
+    bool isArgumentAssignable(
+        const std::shared_ptr<CreationType> &paramType,
+        const std::shared_ptr<CreationType> &argType) const;
 };

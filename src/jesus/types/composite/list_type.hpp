@@ -2,6 +2,8 @@
 
 #include "../creation_type.hpp"
 
+class Interpreter; // Forward declaration
+
 /**
  * @brief Runtime representation of list<T>.
  */
@@ -12,7 +14,10 @@ public:
 
     ListType(std::shared_ptr<CreationType> elementType, std::shared_ptr<CreationType> parent, std::string name = "list")
         : CreationType(PrimitiveType::Collection, name, "core", parent),
-          elementType(elementType) {}
+          elementType(elementType)
+    {
+        registerMethods();
+    }
 
     bool validate(const Value &value) const override
     {
@@ -27,4 +32,9 @@ public:
 
         return true;
     }
+
+private:
+    void registerMethods();
+
+    static Value addItem(Interpreter &interp, Value &obj, const std::vector<Value> &args);
 };
