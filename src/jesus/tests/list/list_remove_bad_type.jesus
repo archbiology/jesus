@@ -1,0 +1,3 @@
+create list nums = [1]
+
+nums remove "hello"

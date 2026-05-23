@@ -1,0 +1,6 @@
+create list l1 = [1]
+create list l2 = [2]
+
+create list l3 = [l1, l2]
+
+l3 sort

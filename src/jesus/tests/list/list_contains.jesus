@@ -1,0 +1,4 @@
+create list nums = [1, 2]
+
+say nums contains 2
+say nums contains 5

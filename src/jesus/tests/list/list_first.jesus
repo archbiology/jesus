@@ -1,0 +1,3 @@
+create list nums = [7, 8]
+
+say nums first
