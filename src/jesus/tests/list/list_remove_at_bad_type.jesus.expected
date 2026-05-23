@@ -1,0 +1,1 @@
+Argument 'index' for method 'remove_at' expects type 'number', but got 'text'.

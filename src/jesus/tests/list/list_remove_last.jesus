@@ -1,0 +1,4 @@
+create list nums = [10, 20]
+
+say nums remove_last
+say nums

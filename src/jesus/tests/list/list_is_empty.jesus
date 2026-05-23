@@ -1,0 +1,7 @@
+create list nums = []
+
+say nums is_empty
+
+nums add 70
+
+say nums is_empty

@@ -1,0 +1,5 @@
+create list nums = [10, 20, 30]
+
+nums remove_at 1
+
+say nums

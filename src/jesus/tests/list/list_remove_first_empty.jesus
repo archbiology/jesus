@@ -1,0 +1,3 @@
+create list nums = []
+
+say nums remove_first

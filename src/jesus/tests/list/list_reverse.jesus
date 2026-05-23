@@ -1,0 +1,5 @@
+create list nums = [1, 2, 3]
+
+nums reverse
+
+say nums

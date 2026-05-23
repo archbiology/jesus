@@ -1,0 +1,4 @@
+create list nums = [90, 100]
+
+say nums remove_first
+say nums
