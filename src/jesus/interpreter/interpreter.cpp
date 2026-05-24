@@ -290,7 +290,7 @@ Value Interpreter::visitBibleExpr(const BibleExpr &expr)
 
 Value Interpreter::evalListExpr(const ListExpr &expr, ExprVisitor &driver)
 {
-    auto result = std::make_shared<std::vector<std::shared_ptr<Value>>>();
+    auto result = std::make_shared<ListValue>();
     result->reserve(expr.elements.size());
 
     for (const auto &el : expr.elements)
@@ -306,30 +306,117 @@ Value Interpreter::visitListExpr(const ListExpr &expr)
     return evalListExpr(expr, *this);
 }
 
+Value Interpreter::evalDictExpr(const DictExpr &expr, ExprVisitor &driver)
+{
+    auto result = std::make_shared<DictValue>();
+    result->reserve(expr.entries.size());
+
+    for (const auto &[keyExpr, valueExpr] : expr.entries)
+    {
+        auto key = std::make_shared<Value>(keyExpr->accept(driver));
+        auto value = std::make_shared<Value>(valueExpr->accept(driver));
+
+        /*
+         * ------------------------------------------------------------
+         * Dict duplicate-key semantics
+         * ------------------------------------------------------------
+         *
+         * Dicts preserve only one value per key.
+         *
+         * If the same key appears multiple times during dict creation,
+         * the newest value replaces the previous one.
+         *
+         * Example:
+         *  {"a": 1, "b": 2, "a": 3}
+         *
+         * becomes:
+         *  {"a": 3, "b": 2}
+         *
+         * Important:
+         *
+         * - The original insertion order of the FIRST appearance
+         *   of the key is preserved.
+         *
+         * - Replacing a value does NOT move the key to the end
+         *   of the dict.
+         *
+         * This mirrors the behavior of modern ordered dictionaries
+         * such as Python dicts.
+         * ------------------------------------------------------------
+         */
+        bool keyAlreadyExists = false;
+        for (auto &[existingKey, existingValue] : *result)
+        {
+            if (*existingKey == *key)
+            {
+                existingValue = value;
+                keyAlreadyExists = true;
+                break;
+            }
+        }
+
+        if (!keyAlreadyExists)
+        {
+            result->push_back({std::move(key), std::move(value)});
+        }
+    }
+
+    return Value(result);
+}
+
+Value Interpreter::visitDictExpr(const DictExpr &expr)
+{
+    return evalDictExpr(expr, *this);
+}
+
 Value Interpreter::visitIndexExpr(const IndexExpr &expr)
 {
-    Value listVal = expr.list->accept(*this);
-    Value indexVal = expr.index->accept(*this);
+    Value collection = expr.collection->accept(*this);
+    Value index = expr.index->accept(*this);
 
-    auto &items = listVal.asList();
-    int size = items.size();
-
-    int index = indexVal.toInt();
-    if (size == 0)
+    // --------------
+    // LIST INDEXING
+    // --------------
+    if (collection.IS_LIST)
     {
-        throw std::runtime_error("Cannot access index " + std::to_string(index) + ". This list is empty.");
+        auto &list = collection.asList();
+        int size = list.size();
+
+        int _index = index.toInt();
+        if (size == 0)
+        {
+            throw std::runtime_error("Cannot access index " + std::to_string(_index) + ". This list is empty.");
+        }
+
+        if (_index >= size || _index < 0)
+        {
+            std::string msg = "It has 1 element (only index 0 is valid).";
+            if (size > 1)
+                msg = "It has " + std::to_string(size) + " elements (valid indexes: 0 to " + std::to_string(size - 1) + ").";
+
+            throw std::runtime_error("Index " + std::to_string(_index) + " is not available in this list.\n" + msg);
+        }
+
+        return *list[_index];
     }
 
-    if (index >= size || index < 0)
+    // --------------
+    // DICT INDEXING
+    // --------------
+    if (collection.IS_DICT)
     {
-        std::string msg = "It has 1 element (only index 0 is valid).";
-        if (size > 1)
-            msg = "It has " + std::to_string(size) + " elements (valid indexes: 0 to " + std::to_string(size - 1) + ").";
+        auto &dict = collection.asDict();
 
-        throw std::runtime_error("Index " + std::to_string(index) + " is not available in this list.\n" + msg);
+        for (const auto &[key, value] : dict)
+        {
+            if (*key == index)
+                return *value;
+        }
+
+        throw std::runtime_error("Key '" + index.toString() + "' was not found in this dict.");
     }
 
-    return *items[index];
+    throw std::runtime_error("This value does not support indexing.");
 }
 
 void Interpreter::visitPrintStmt(const PrintStmt &stmt)

@@ -16,6 +16,7 @@
 #include "../ast/expr/bible_expr.hpp"
 #include "../ast/expr/list_expr.hpp"
 #include "../ast/expr/index_expr.hpp"
+#include "ast/expr/dict_expr.hpp"
 
 REGISTER_FOR_UML(
     ExprVisitor,
@@ -75,6 +76,7 @@ public:
     virtual Value visitBibleExpr(const BibleExpr &expr) = 0;
     virtual Value visitListExpr(const ListExpr &expr) = 0;
     virtual Value visitIndexExpr(const IndexExpr &expr) = 0;
+    virtual Value visitDictExpr(const DictExpr &expr) = 0;
 
     virtual ~ExprVisitor() = default;
 };

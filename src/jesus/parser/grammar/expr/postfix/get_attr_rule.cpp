@@ -4,6 +4,7 @@
 #include "ast/expr/index_expr.hpp"
 #include "types/creation_type.hpp"
 #include "types/known_types.hpp"
+#include "types/composite/dict_type.hpp"
 #include "parser/helpers/member.hpp"
 #include "parser/grammar/jesus_grammar.hpp"
 #include <memory>
@@ -29,18 +30,30 @@ std::unique_ptr<Expr> GetAttributeRule::parse(ParserContext &ctx)
             auto indexExpr = grammar::Expression->parse(ctx);
 
             if (!indexExpr)
-                throw std::runtime_error("Expected a value inside []. Example: list[0]");
+                throw std::runtime_error("Expected a value inside []. Examples: numbers[0], person['name']");
 
             if (!ctx.match(TokenType::RIGHT_BRACKET))
                 throw std::runtime_error("Expected ']' after index.");
 
-            auto type = expr->getReturnType(ctx);
-            if (!type->isA(KnownTypes::LIST))
-                throw std::runtime_error("Cannot access index on type '" + type->name + "'. Expected a list.");
+            auto collectionType = expr->getReturnType(ctx);
+            if (!collectionType->isA(KnownTypes::LIST) && !collectionType->isA(KnownTypes::DICT))
+                throw std::runtime_error("Type '" + collectionType->name + "' does not support [ ].");
 
-            type = indexExpr->getReturnType(ctx);
-            if (!(type->isA(KnownTypes::INT)))
-                throw std::runtime_error("Index must be an integer. Got '" + type->name + "' instead.");
+            auto accessType = indexExpr->getReturnType(ctx);
+
+            if (collectionType->isA(KnownTypes::LIST))
+            {
+                if (!accessType->isA(KnownTypes::INT))
+                    throw std::runtime_error("List indexes must be integers. Got '" + accessType->name + "' instead.");
+            }
+            else if (auto dictType = std::dynamic_pointer_cast<DictType>(collectionType))
+            {
+                if (!accessType->isA(dictType->keyType))
+                {
+                    throw std::runtime_error(
+                        "This dict expects keys of type '" + dictType->keyType->name + "'. Got '" + accessType->name + "' instead.");
+                }
+            }
 
             expr = std::make_unique<IndexExpr>(std::move(expr), std::move(indexExpr));
 

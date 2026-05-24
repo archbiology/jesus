@@ -6,24 +6,24 @@ REGISTER_FOR_UML(
     IndexExpr,
     .packageName("ast.expr")
         .parentsList({"AssignableExpr"})
-        .fieldsList({"list", "index"}));
+        .fieldsList({"collection", "index"}));
 
 /**
- * @brief Access list indexes. E.g.: list[7]
+ * @brief Access list and dict indexes. E.g.: list[7]; config['db']
  */
 class IndexExpr : public AssignableExpr
 {
 public:
-    std::unique_ptr<Expr> list;
+    std::unique_ptr<Expr> collection;
     std::unique_ptr<Expr> index;
 
-    IndexExpr(std::unique_ptr<Expr> list, std::unique_ptr<Expr> index)
+    IndexExpr(std::unique_ptr<Expr> collection, std::unique_ptr<Expr> index)
         : AssignableExpr(ExprKind::Other),
-         list(std::move(list)), index(std::move(index)) {}
+          collection(std::move(collection)), index(std::move(index)) {}
 
     Value evaluate(std::shared_ptr<Heart> heart) const override
     {
-        return list->evaluate(heart);
+        return collection->evaluate(heart);
     }
 
     Value accept(ExprVisitor &visitor) const override;
@@ -34,6 +34,6 @@ public:
 
     std::string toString() const override
     {
-        return list->toString() + "[" + index->toString() + "]";
+        return collection->toString() + "[" + index->toString() + "]";
     }
 };

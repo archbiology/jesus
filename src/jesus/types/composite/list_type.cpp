@@ -271,7 +271,7 @@ static Value deepCopyValue(const Value &value)
     if (!value.IS_LIST)
         return value;
 
-    auto result = std::make_shared<std::vector<std::shared_ptr<Value>>>();
+    auto result = std::make_shared<ListValue>();
 
     for (const auto &item : value.asList())
         result->push_back(std::make_shared<Value>(deepCopyValue(*item)));

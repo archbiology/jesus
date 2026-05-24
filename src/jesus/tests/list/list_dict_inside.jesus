@@ -1,0 +1,2 @@
+create list l = [{"name": "John"}]
+say l[0]["name"]
