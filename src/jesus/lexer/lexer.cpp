@@ -222,6 +222,19 @@ std::vector<Token> Lexer::tokenize(const std::string &raw_input)
             continue;
         }
 
+        if (c == "{")
+        {
+            tokens.emplace_back(TokenType::LEFT_BRACE, "{", Value("{"));
+            i++;
+            continue;
+        }
+        if (c == "}")
+        {
+            tokens.emplace_back(TokenType::RIGHT_BRACE, "}", Value("}"));
+            i++;
+            continue;
+        }
+
         if (c == "+")
         {
             tokens.emplace_back(TokenType::PLUS, "+", Value("+"));

@@ -15,6 +15,7 @@
 #include "composite/class_type.hpp"
 #include "composite/module_type.hpp"
 #include "composite/list_type.hpp"
+#include "composite/dict_type.hpp"
 #include "composite/its_written_exception_type.hpp"
 #include <memory>
 #include <sstream>
@@ -37,6 +38,7 @@ void KnownTypes::registerBuiltInTypes()
     auto module = std::make_shared<ModuleType>(creation);
     auto exception = std::make_shared<ItsWritten>(klass);
     auto list = std::make_shared<ListType>(creation, creation);
+    auto dict = std::make_shared<DictType>(creation, creation, creation);
 
     BOOLEAN = TRUTH = truth;
     CREATION = creation;
@@ -53,6 +55,7 @@ void KnownTypes::registerBuiltInTypes()
     CLASS = klass;
     EXCEPTION = exception;
     LIST = list;
+    DICT = dict;
 
     registerType(truth);
     registerType(creation);
@@ -75,6 +78,7 @@ void KnownTypes::registerBuiltInTypes()
     registerType(exception);
 
     registerType(list);
+    registerType(dict);
 }
 
 void KnownTypes::registerType(std::shared_ptr<CreationType> type)
@@ -153,10 +157,27 @@ std::shared_ptr<CreationType> KnownTypes::makeListType(const std::shared_ptr<Cre
     auto listType = std::make_shared<ListType>(elementType, KnownTypes::LIST, name);
 
     auto registeredType = KnownTypes::resolve(listType->name, listType->module_name);
-    if (!registeredType) {
+    if (!registeredType)
+    {
         registeredType = listType;
         KnownTypes::registerType(listType);
+    }
 
+    return registeredType;
+}
+
+std::shared_ptr<CreationType> KnownTypes::makeDictType(
+    const std::shared_ptr<CreationType> &keyType,
+    const std::shared_ptr<CreationType> &valueType)
+{
+    auto name = "dict<" + keyType->name + "," + valueType->name + ">";
+    auto dictType = std::make_shared<DictType>(keyType, valueType, KnownTypes::DICT, name);
+
+    auto registeredType = KnownTypes::resolve(dictType->name, dictType->module_name);
+    if (!registeredType)
+    {
+        registeredType = dictType;
+        KnownTypes::registerType(dictType);
     }
 
     return registeredType;

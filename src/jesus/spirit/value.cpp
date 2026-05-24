@@ -5,15 +5,15 @@
 struct make_string_functor
 {
     std::string operator()(const std::string &x) const { return x; }
-    std::string operator()(double x) const { return "(double) " + std::to_string(x); }
-    std::string operator()(int x) const { return "(int) " + std::to_string(x); }
-    std::string operator()(bool x) const { return "(logic) " + std::to_string(x); }
-    std::string operator()(std::monostate x) const { return "null"; }
+    std::string operator()(const double x) const { return "(double) " + std::to_string(x); }
+    std::string operator()(const int x) const { return "(int) " + std::to_string(x); }
+    std::string operator()(const bool x) const { return "(logic) " + std::to_string(x); }
+    std::string operator()(const std::monostate x) const { return "null"; }
     std::string operator()(const std::shared_ptr<Module> x) const { return x->toString(); }
     std::string operator()(const std::shared_ptr<CreationType> x) const { return x->toString(); }
     std::string operator()(const std::shared_ptr<Instance> x) const { return x->toString(); }
 
-    std::string operator()(const std::shared_ptr<std::vector<std::shared_ptr<Value>>> &list) const
+    std::string operator()(const std::shared_ptr<ListValue> &list) const
     {
         if (!list)
             return "[]";
@@ -31,6 +31,31 @@ struct make_string_functor
         }
 
         result += "]";
+        return result;
+    }
+
+    std::string operator()(const std::shared_ptr<DictValue> &dict) const
+    {
+        if (!dict)
+            return "{}";
+
+        std::string result = "{";
+        bool first = true;
+
+        for (const auto &[key, value] : *dict)
+        {
+            if (!first)
+                result += ", ";
+
+            result += (key ? key->toString() : "null");
+            result += ": ";
+            result += (value ? value->toString() : "null");
+
+            first = false;
+        }
+
+        result += "}";
+
         return result;
     }
 };

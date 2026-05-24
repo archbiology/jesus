@@ -4,8 +4,6 @@
 #include "creation_type.hpp"
 #include "../spirit/value.hpp"
 
-class ListType;
-
 class KnownTypes
 {
 public:
@@ -49,9 +47,11 @@ public:
     inline static std::shared_ptr<CreationType> EXCEPTION;
 
     inline static std::shared_ptr<CreationType> LIST;
+    inline static std::shared_ptr<CreationType> DICT;
     // -------------------------------------------------------------------
 
     static std::shared_ptr<CreationType> makeListType(const std::shared_ptr<CreationType>& elementType);
+    static std::shared_ptr<CreationType> makeDictType(const std::shared_ptr<CreationType> &keyType, const std::shared_ptr<CreationType> &valueType);
 
     static std::string toString();
 

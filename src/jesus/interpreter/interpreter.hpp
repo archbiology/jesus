@@ -265,6 +265,8 @@ private:
     Value evalListExpr(const ListExpr &expr, ExprVisitor &driver);
     Value visitListExpr(const ListExpr &expr) override;
     Value visitIndexExpr(const IndexExpr &expr) override;
+    Value evalDictExpr(const DictExpr &expr, ExprVisitor &driver);
+    Value visitDictExpr(const DictExpr &expr) override;
 
     /**
      * @brief Converts a runtime value into a string representation.

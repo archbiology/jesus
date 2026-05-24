@@ -12,6 +12,9 @@ struct Module;              // Forward declaration
 struct CreationType;        // Forward declaration
 struct Instance;            // Forward declaration
 
+using ListValue = std::vector<std::shared_ptr<Value>>;
+using DictValue = std::vector<std::pair<std::shared_ptr<Value>, std::shared_ptr<Value>>>;
+
 /**
  * @brief Represents any value in the interpreted language:
  * string, number, boolean, or null (as monostate).
@@ -30,7 +33,8 @@ using Dust = std::variant<
     std::shared_ptr<Module>,
     std::shared_ptr<Instance>,
     std::shared_ptr<CreationType>,
-    std::shared_ptr<std::vector<std::shared_ptr<Value>>>>;
+    std::shared_ptr<ListValue>,
+    std::shared_ptr<DictValue>>;
 
 class Value
 {
@@ -42,6 +46,7 @@ public:
     bool IS_BOOLEAN = false;
     bool IS_STRING = false;
     bool IS_LIST = false;
+    bool IS_DICT = false;
     bool IS_MODULE = false;
     bool IS_CLASS = false;
     bool IS_INSTANCE = false;
@@ -55,10 +60,11 @@ public:
     explicit Value(bool v) : value(v), IS_BOOLEAN(true), AS_BOOLEAN(v) {}
     explicit Value(const std::string &v) : value(v), IS_STRING(true), AS_BOOLEAN(v != "") {}
     explicit Value(const char *v) : value(std::string(v)), IS_STRING(true), AS_BOOLEAN(std::string(v) != "") {}
-    explicit Value(const std::shared_ptr<std::vector<std::shared_ptr<Value>>> &v) : value(std::move(v)), IS_LIST(true), AS_BOOLEAN(!v->empty()) {}
     explicit Value(const std::shared_ptr<Module> &v) : value(v), IS_MODULE(true), AS_BOOLEAN(true) {}
-    explicit Value(const std::shared_ptr<CreationType> &v): value(v), IS_CLASS(true), AS_BOOLEAN(true) {}
+    explicit Value(const std::shared_ptr<CreationType> &v) : value(v), IS_CLASS(true), AS_BOOLEAN(true) {}
     explicit Value(const std::shared_ptr<Instance> &v) : value(v), IS_INSTANCE(true), AS_BOOLEAN(static_cast<bool>(v)) {}
+    explicit Value(const std::shared_ptr<ListValue> &v) : value(std::move(v)), IS_LIST(true), AS_BOOLEAN(!v->empty()) {}
+    explicit Value(const std::shared_ptr<DictValue> &v) : value(std::move(v)), IS_DICT(true), AS_BOOLEAN(!v->empty()) {}
 
     /**
      * @brief Create a NONE/NULL/monostate Value.
@@ -97,20 +103,36 @@ public:
 
     std::string toString() const;
 
-    std::vector<std::shared_ptr<Value>> &asList()
+    ListValue &asList()
     {
         if (!IS_LIST)
             throw std::runtime_error("This value is not a list.");
 
-        return *std::get<std::shared_ptr<std::vector<std::shared_ptr<Value>>>>(value);
+        return *std::get<std::shared_ptr<ListValue>>(value);
     }
 
-    const std::vector<std::shared_ptr<Value>> &asList() const
+    const ListValue &asList() const
     {
         if (!IS_LIST)
             throw std::runtime_error("This value is not a list.");
 
-        return *std::get<std::shared_ptr<std::vector<std::shared_ptr<Value>>>>(value);
+        return *std::get<std::shared_ptr<ListValue>>(value);
+    }
+
+    DictValue &asDict()
+    {
+        if (!IS_DICT)
+            throw std::runtime_error("This value is not a dict.");
+
+        return *std::get<std::shared_ptr<DictValue>>(value);
+    }
+
+    const DictValue &asDict() const
+    {
+        if (!IS_DICT)
+            throw std::runtime_error("This value is not a dict.");
+
+        return *std::get<std::shared_ptr<DictValue>>(value);
     }
 
     /**

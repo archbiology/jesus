@@ -1,0 +1,2 @@
+create dict d = {"a": 1, "b": 2}
+say d["a"]
