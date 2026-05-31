@@ -2,6 +2,8 @@
 
 #include "types/creation_type.hpp"
 
+class Interpreter; // Forward declaration
+
 /**
  * @brief Runtime representation of dict<Key,Value>.
  */
@@ -41,4 +43,26 @@ public:
 
 private:
     void registerMethods();
+
+    static Value contains(Interpreter &, Value &dict, const std::vector<Value> &args);
+
+    static Value remove(Interpreter &, Value &dict, const std::vector<Value> &args);
+
+    static Value count(Interpreter &, Value &dict, const std::vector<Value> &args);
+
+    static Value isEmpty(Interpreter &, Value &dict, const std::vector<Value> &args);
+
+    static Value clear(Interpreter &, Value &dict, const std::vector<Value> &args);
+
+    static Value keys(Interpreter &, Value &dict, const std::vector<Value> &args);
+
+    static Value values(Interpreter &, Value &dict, const std::vector<Value> &args);
+
+    static Value pairs(Interpreter &, Value &dict, const std::vector<Value> &args);
+
+    static Value get(Interpreter &, Value &dict, const std::vector<Value> &args);
+
+    static Value copy(Interpreter &, Value &dict, const std::vector<Value> &args);
+
+    static Value update(Interpreter &, Value &dict, const std::vector<Value> &args);
 };

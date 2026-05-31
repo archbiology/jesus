@@ -1,0 +1,7 @@
+create dict d = {
+    "name": "Paul"
+}
+
+say d remove "name"
+say d
+say d remove "city"
