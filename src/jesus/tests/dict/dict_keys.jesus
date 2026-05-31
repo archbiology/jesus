@@ -1,0 +1,6 @@
+create dict d = {
+    "name": "Paul",
+    "city": "Jerusalem"
+}
+
+say d keys

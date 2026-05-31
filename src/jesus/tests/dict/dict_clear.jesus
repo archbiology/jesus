@@ -1,0 +1,6 @@
+create dict d = {"name": "Paul", "city": "Jerusalem"}
+
+d clear
+
+say d
+say d count

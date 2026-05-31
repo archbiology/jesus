@@ -1,0 +1,6 @@
+create dict d = {
+    "name": "Paul"
+}
+
+say d contains "name"
+say d contains "city"
