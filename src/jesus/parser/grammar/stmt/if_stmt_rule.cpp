@@ -1,13 +1,13 @@
 #include "if_stmt_rule.hpp"
-#include "../../../ast/stmt/if_stmt.hpp"
-#include "../../../ast/stmt/update_var_stmt.hpp"
-#include "../../../ast/stmt/update_var_with_ask_stmt.hpp"
-#include "../../../ast/stmt/repeat_while_stmt.hpp"
-#include "../../../ast/stmt/repeat_times_stmt.hpp"
-#include "../../../ast/stmt/repeat_forever_stmt.hpp"
-#include "../../../ast/stmt/skip_stmt.hpp"
-#include "../../../ast/stmt/break_stmt.hpp"
-#include "../../../ast/stmt/incomplete_block_stmt.hpp"
+#include "ast/stmt/if_stmt.hpp"
+#include "ast/stmt/update_var_stmt.hpp"
+#include "ast/stmt/update_var_with_ask_stmt.hpp"
+#include "ast/stmt/repeat_while_stmt.hpp"
+#include "ast/stmt/repeat_times_stmt.hpp"
+#include "ast/stmt/repeat_forever_stmt.hpp"
+#include "ast/stmt/skip_stmt.hpp"
+#include "ast/stmt/break_stmt.hpp"
+#include "ast/stmt/incomplete_block_stmt.hpp"
 #include "../jesus_grammar.hpp"
 #include <stdexcept>
 
@@ -56,6 +56,8 @@ std::unique_ptr<Stmt> IfStmtRule::parse(ParserContext &ctx)
             thenBranch.push_back(std::move(stmt));
         else if (auto stmt = grammar::RepeatWhile->parse(ctx))
             thenBranch.push_back(std::move(stmt));
+        else if (auto stmt = grammar::Foreach->parse(ctx))
+            thenBranch.push_back(std::move(stmt));
         else if (auto stmt = grammar::ResistStmt->parse(ctx))
             thenBranch.push_back(std::move(stmt));
         else if (ctx.match(TokenType::SKIP))
@@ -88,6 +90,8 @@ std::unique_ptr<Stmt> IfStmtRule::parse(ParserContext &ctx)
                 otherwiseBranch.push_back(std::move(stmt));
             else if (auto stmt = grammar::RepeatWhile->parse(ctx))
                 otherwiseBranch.push_back(std::move(stmt));
+            else if (auto stmt = grammar::Foreach->parse(ctx))
+                thenBranch.push_back(std::move(stmt));
             else if (auto stmt = grammar::ResistStmt->parse(ctx))
                 otherwiseBranch.push_back(std::move(stmt));
             else if (ctx.match(TokenType::SKIP))

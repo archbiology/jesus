@@ -51,6 +51,9 @@ std::unique_ptr<Stmt> parse(const std::vector<Token> &tokens, ParserContext &con
     if (repeatWhileStmt)
         return repeatWhileStmt;
 
+    if (auto stmt = grammar::Foreach->parse(context))
+        return stmt;
+
     context.restore(snapshot);
     auto ifStmt = grammar::IfStmt->parse(context);
     if (ifStmt)

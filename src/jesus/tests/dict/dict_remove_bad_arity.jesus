@@ -1,0 +1,3 @@
+create dict d = {"name": "Paul"}
+
+d remove

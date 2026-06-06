@@ -117,6 +117,9 @@ namespace Keywords
         {"forever", TokenType::FOREVER},
         {"sempre", TokenType::FOREVER},
 
+        {"foreach", TokenType::FOREACH},
+        {"in", TokenType::IN},
+
         {"otherwise", TokenType::OTHERWISE},
         {"senão", TokenType::OTHERWISE},
 

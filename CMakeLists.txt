@@ -182,6 +182,7 @@ set(JESUS_CPP_FILES
     src/jesus/parser/grammar/stmt/assign_stmt_rule.cpp
     src/jesus/parser/grammar/stmt/create_method_stmt_rule.cpp
     src/jesus/parser/grammar/stmt/repeat_stmt_rule.cpp
+    src/jesus/parser/grammar/stmt/foreach_stmt_rule.cpp
     src/jesus/parser/grammar/stmt/if_stmt_rule.cpp
     src/jesus/parser/grammar/stmt/resist_stmt_rule.cpp
     src/jesus/parser/grammar/stmt/try_stmt_rule.cpp

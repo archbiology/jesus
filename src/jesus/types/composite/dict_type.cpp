@@ -68,7 +68,9 @@ void DictType::registerMethods()
     // --------
     {
         auto params = std::make_shared<Heart>("dict.pairs");
-        addMethod("pairs", std::make_shared<NativeMethod>("pairs", params, KnownTypes::LIST, DictType::pairs));
+        auto keysReturnType = KnownTypes::makeListType(keyType); // FIXME: Assuming key and value has the same type. Using dict<str, int> would fail. Introduce PairType.
+        auto pairsReturnType = KnownTypes::makeListType(keysReturnType);
+        addMethod("pairs", std::make_shared<NativeMethod>("pairs", params, pairsReturnType, DictType::pairs));
     }
 
     // ------
