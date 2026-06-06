@@ -19,14 +19,15 @@ REGISTER_FOR_UML(
 class ForEachStmt : public Stmt
 {
 public:
-    std::string varName;
+    std::vector<std::string> varNames;
     std::unique_ptr<Expr> iterable;
     std::vector<std::unique_ptr<Stmt>> body;
 
-    ForEachStmt(std::string varName,
-                std::unique_ptr<Expr> iterable,
-                std::vector<std::unique_ptr<Stmt>> body)
-        : varName(std::move(varName)),
+    ForEachStmt(
+        std::vector<std::string> varNames,
+        std::unique_ptr<Expr> iterable,
+        std::vector<std::unique_ptr<Stmt>> body)
+        : varNames(std::move(varNames)),
           iterable(std::move(iterable)),
           body(std::move(body)) {}
 

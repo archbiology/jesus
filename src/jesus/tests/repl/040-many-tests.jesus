@@ -472,3 +472,14 @@ l
 create list deep = [[isaac]]
 deep[0][0] surname = 'Hijo'
 say deep
+
+foreach disciple in l:
+    say "Apostle {disciple}"
+amen
+say disciple # FIXME: should fail, since disciple is inside 'foreach' only.
+
+create dict d = {"name": "Jesus", 'surname': 'Christ', "role": "Savior"}
+foreach key, value in d pairs:
+  say "{key} -> {value}"
+amen
+say value # FIXME: should fail, since 'value' is inside 'foreach' only.

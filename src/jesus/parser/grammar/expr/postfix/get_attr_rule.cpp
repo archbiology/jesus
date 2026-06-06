@@ -7,6 +7,7 @@
 #include "types/composite/dict_type.hpp"
 #include "parser/helpers/member.hpp"
 #include "parser/grammar/jesus_grammar.hpp"
+#include "interpreter/runtime/method.hpp"
 #include <memory>
 
 std::unique_ptr<Expr> GetAttributeRule::parse(ParserContext &ctx)
@@ -95,6 +96,8 @@ std::unique_ptr<Expr> GetAttributeRule::parse(ParserContext &ctx)
                     // If the next token(s) indicate arguments, parse them
                     if (!ctx.check(TokenType::NEWLINE) && !ctx.check(TokenType::END_OF_FILE))
                     {
+                        auto expectedParams = member->method->params->size();
+                        if (expectedParams > 0)
                         do
                         {
                             auto argExpr = primary->parse(ctx); // parse any expression

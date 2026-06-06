@@ -133,6 +133,11 @@ public:
         return variables.empty();
     }
 
+    bool size() const
+    {
+        return variables.size();
+    }
+
     void registerVarType(const VarType &type, const std::string &name)
     {
         semantics_analyzer->registerVarType(type, name);

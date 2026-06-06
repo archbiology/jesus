@@ -38,7 +38,6 @@ void KnownTypes::registerBuiltInTypes()
     auto module = std::make_shared<ModuleType>(creation);
     auto exception = std::make_shared<ItsWritten>(klass);
     auto list = std::make_shared<ListType>(creation, creation);
-    auto dict = std::make_shared<DictType>(creation, creation, creation);
 
     BOOLEAN = TRUTH = truth;
     CREATION = creation;
@@ -55,6 +54,9 @@ void KnownTypes::registerBuiltInTypes()
     CLASS = klass;
     EXCEPTION = exception;
     LIST = list;
+
+    // dict refers to LIST, so, it comes AFTER 'LIST = list'
+    auto dict = std::make_shared<DictType>(creation, creation, creation);
     DICT = dict;
 
     registerType(truth);

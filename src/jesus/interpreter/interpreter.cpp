@@ -512,11 +512,38 @@ void Interpreter::visitForEach(const ForEachStmt &stmt)
 
     auto &items = listValue.asList();
 
+    currentModule->symbol_table->addScope(std::make_shared<Heart>("foreach"));
     for (const std::shared_ptr<Value> &value : items)
     {
+        // ----------------------
+        // foreach key in list...
+        // ----------------------
+        if (stmt.varNames.size() == 1)
+        {
+            updateVariable(stmt.varNames[0], *value);
+        }
+        // --------------------------------
+        // foreach key, value in dict.pairs
+        // --------------------------------
+        else if (stmt.varNames.size() == 2)
+        {
+            if (!value->IS_LIST)
+            {
+                // FIXME: Validate this at PARSE time, not runtime.
+                throw std::runtime_error("foreach key,value expects a list of pairs.");
+            }
 
-        // FIXME: Remove the line below.
-        // heart.createVar(stmt.varName, *value); // like "let name = item" // TODO: Use a pointer instead of *value
+            auto &pair = value->asList();
+
+            if (pair.size() != 2)
+            {
+                // FIXME: Validate this at PARSE time, not runtime.
+                throw std::runtime_error("foreach key,value expects pairs with exactly 2 values. Got '" +std::to_string(pair.size()) + "' values.");
+            }
+
+            updateVariable(stmt.varNames[0], *pair[0]);
+            updateVariable(stmt.varNames[1], *pair[1]);
+        }
 
         try
         {
@@ -534,6 +561,7 @@ void Interpreter::visitForEach(const ForEachStmt &stmt)
             break;
         }
     }
+    currentModule->symbol_table->popScope();
 }
 
 void Interpreter::visitBreak(const BreakStmt &)

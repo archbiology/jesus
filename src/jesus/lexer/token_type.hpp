@@ -87,6 +87,8 @@ enum class TokenType
     WHILE,          // repeat while count < 100: ... amen
     TIMES,          // repeat 3 `times`
     FOREVER,        // repeat forever: ... amen
+    FOREACH,        // foreach key in items: ... amen
+    IN,             // foreach key in items: ... amen
     SKIP,           // 'continue' in other languages.
     BREAK,          // loop break
 
