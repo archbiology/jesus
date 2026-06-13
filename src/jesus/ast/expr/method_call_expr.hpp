@@ -3,6 +3,7 @@
 #include "expr.hpp"
 
 class IMethod; // Forward declaration
+class Interpreter; // Forward declaration
 
 REGISTER_FOR_UML(
     MethodCallExpr,
@@ -16,12 +17,13 @@ public:
     std::unique_ptr<Expr> object;
     std::shared_ptr<IMethod> method;
     std::vector<std::unique_ptr<Expr>> args;
+    Interpreter *interpreter = nullptr;
 
     MethodCallExpr(
         std::unique_ptr<Expr> object,
         std::shared_ptr<IMethod> method,
-        std::vector<std::unique_ptr<Expr>> args)
-        : object(std::move(object)), method(std::move(method)), args(std::move(args))
+        std::vector<std::unique_ptr<Expr>> args, Interpreter *interpreter_)
+        : object(std::move(object)), method(std::move(method)), args(std::move(args)), interpreter(interpreter_)
     {
         if (this->method == nullptr)
         {
@@ -32,12 +34,9 @@ public:
     void validate(ParserContext &ctx) const override;
 
     /**
-     * @brief Return the 'object' that contains the 'method' to be called
+     * @brief Calls the method and returns its value: return object.method(args)
      */
-    Value evaluate(std::shared_ptr<Heart> heart) const override
-    {
-        return object->evaluate(heart);
-    }
+    Value evaluate(std::shared_ptr<Heart> heart) const override;
 
     Value accept(ExprVisitor &visitor) const override;
 

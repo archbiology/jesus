@@ -226,7 +226,9 @@ private:
 
     Value visitParityCheckExpr(const ParityCheckExpr &expr) override;
 
+    public:
     Value visitMethodCallExpr(const MethodCallExpr &expr) override;
+    private:
 
     Value visitFormattedStringExpr(const FormattedStringExpr &expr) override;
 
