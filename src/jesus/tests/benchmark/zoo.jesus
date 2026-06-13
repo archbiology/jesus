@@ -1,0 +1,61 @@
+# Benchmark: zoo.jesus
+# Workload: sum < 10000000
+# Adapted from: https://github.com/munificent/craftinginterpreters/blob/master/test/benchmark/zoo.lox
+
+# C++:              0.014823 s
+# PHP 8.3:          0.168236 s
+# Clox:             0.249795 s
+# Python 3.12.3:    0.444851 s
+#
+# Jesus
+#   AST [2a29564]:  64.455000 s
+#   VM:
+#   JIT:
+#
+# Machine:
+#   CPU: AMD Ryzen 7 5825U with Radeon Graphics
+#   Cores: 8 physical / 16 logical
+#   RAM: 32 GB
+#   OS: Ubuntu 24.04.4 LTS
+
+let there be Zoo:
+    create number aarvark = 1
+    create number baboon = 1
+    create number cat = 1
+    create number donkey = 1
+    create number elephant = 1
+    create number fox = 1
+
+    purpose ant() -> number:
+        return aarvark
+    amen
+
+    purpose banana() -> number:
+        return baboon
+    amen
+
+    purpose tuna() -> number:
+        return cat
+    amen
+
+    purpose hay() -> number:
+        return donkey
+    amen
+
+    purpose grass() -> number:
+        return elephant
+    amen
+
+    purpose mouse() -> number:
+        return fox
+    amen
+amen
+
+create Zoo zoo = 1
+create number sum = 0
+
+repeat while sum < 10000000:
+    sum = sum + zoo ant + zoo banana  + zoo tuna  + zoo hay  + zoo grass  + zoo mouse
+amen
+
+say sum
