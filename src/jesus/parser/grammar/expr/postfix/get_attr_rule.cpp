@@ -110,7 +110,7 @@ std::unique_ptr<Expr> GetAttributeRule::parse(ParserContext &ctx)
                         } while (ctx.match(TokenType::COMMA));
                     }
 
-                    expr = std::make_unique<MethodCallExpr>(std::move(expr), member->method, std::move(args));
+                    expr = std::make_unique<MethodCallExpr>(std::move(expr), member->method, std::move(args), ctx.interpreter);
                     expr->validate(ctx);
                 }
                 else
