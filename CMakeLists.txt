@@ -127,7 +127,7 @@ set(JESUS_CPP_FILES
     src/jesus/ast/stmt/try_stmt.cpp
     src/jesus/ast/stmt/resist_stmt.cpp
     src/jesus/ast/stmt/import_module_stmt.cpp
-    src/jesus/ast/stmt/ast_inspect_stmt.cpp
+    src/jesus/ast/stmt/inspect_stmt.cpp
     src/jesus/ast/stmt/memory_inspect_stmt.cpp
     src/jesus/ast/stmt/on_stmt.cpp
     src/jesus/ast/stmt/serve_stmt.cpp
@@ -187,7 +187,7 @@ set(JESUS_CPP_FILES
     src/jesus/parser/grammar/stmt/resist_stmt_rule.cpp
     src/jesus/parser/grammar/stmt/try_stmt_rule.cpp
     src/jesus/parser/grammar/stmt/import_module_stmt_rule.cpp
-    src/jesus/parser/grammar/stmt/ast_inspect_stmt_rule.cpp
+    src/jesus/parser/grammar/stmt/inspect_stmt_rule.cpp
     src/jesus/parser/grammar/stmt/memory_inspect_stmt_rule.cpp
     src/jesus/parser/grammar/stmt/on_stmt_rule.cpp
     src/jesus/parser/grammar/stmt/serve_stmt_rule.cpp
@@ -198,6 +198,7 @@ set(JESUS_CPP_FILES
     src/jesus/interpreter/interpreter.cpp
     src/jesus/interpreter/runtime/method.cpp
     src/jesus/interpreter/runtime/http/http_runtime.cpp
+    src/jesus/vm/opcode.cpp
     src/jesus/vm/compiler.cpp
     src/jesus/vm/vm.cpp
 
@@ -212,6 +213,9 @@ set(JESUS_CPP_FILES
     src/jesus/cli/uml_exporter.cpp
     src/jesus/understanding/shared/uml_graph.cpp
     src/jesus/understanding/scripture/book_aliases.cpp
+    src/jesus/understanding/inspection/ast_inspector.cpp
+    src/jesus/understanding/inspection/bytecode_inspector.cpp
+    src/jesus/understanding/inspection/vm_inspector.cpp
 
     # --------
     # Builtins

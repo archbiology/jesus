@@ -18,6 +18,8 @@ enum class TokenType
 
     A,              // Reserved for type checking: if varname is 'a' ClassName:...
     AST,            // ast SymbolName (to print the AST)
+    BYTECODE,       // bytecode (to print the compiled bytecode)
+    VM,             // vm (to print the current vm state/stack)
     IS,             // 'is': ==
     NOT,            // not: !
     AND,            // and

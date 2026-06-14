@@ -44,7 +44,7 @@
 #include "stmt/try_stmt_rule.hpp"
 #include "stmt/resist_stmt_rule.hpp"
 #include "stmt/import_module_stmt_rule.hpp"
-#include "stmt/ast_inspect_stmt_rule.hpp"
+#include "stmt/inspect_stmt_rule.hpp"
 #include "stmt/memory_inspect_stmt_rule.hpp"
 #include "stmt/on_stmt_rule.hpp"
 #include "stmt/serve_stmt_rule.hpp"
@@ -123,7 +123,7 @@ namespace grammar
     inline auto TryStmt = std::make_shared<TryStmtRule>();
     inline auto ResistStmt = std::make_shared<ResistStmtRule>();
     inline auto ImportModuleStmt = std::make_shared<ImportModuleStmtRule>();
-    inline auto AstInspectStmt = std::make_shared<AstInspectStmtRule>();
+    inline auto InspectStmt = std::make_shared<InspectStmtRule>();
     inline auto MemoryInspectStmt = std::make_shared<MemoryInspectStmtRule>();
     inline auto OnStmt = std::make_shared<OnStmtRule>();
     inline auto ServeStmt = std::make_shared<ServeStmtRule>();
