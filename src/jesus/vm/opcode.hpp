@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstdint>
+#include <string>
 
 /**
  * @brief Instructions understood by the Jesus Virtual Machine.
@@ -37,3 +38,8 @@ enum class OpCode : uint8_t
     CALL,
     RETURN
 };
+
+/**
+ * @brief Converts an opcode into a human-readable name.
+ */
+std::string opcodeToString(OpCode opcode);

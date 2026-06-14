@@ -132,6 +132,8 @@ namespace Keywords
         {"ungodly", TokenType::UNGODLY},
 
         {"ast", TokenType::AST},
+        {"bytecode", TokenType::BYTECODE},
+        {"vm", TokenType::VM},
         {"memory", TokenType::MEMORY},
 
         {"giants", TokenType::GIANTS},

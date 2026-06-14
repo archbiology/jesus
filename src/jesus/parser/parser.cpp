@@ -75,9 +75,9 @@ std::unique_ptr<Stmt> parse(const std::vector<Token> &tokens, ParserContext &con
         return importModuleStmt;
 
     context.restore(snapshot);
-    auto astInspectStmt = grammar::AstInspectStmt->parse(context);
-    if (astInspectStmt)
-        return astInspectStmt;
+    auto inspectStmt = grammar::InspectStmt->parse(context);
+    if (inspectStmt)
+        return inspectStmt;
 
     context.restore(snapshot);
     auto memoryInspectStmt = grammar::MemoryInspectStmt->parse(context);

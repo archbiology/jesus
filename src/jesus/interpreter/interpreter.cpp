@@ -11,6 +11,9 @@
 #include "../utils/file_utils.hpp"
 #include "../cli/faith.hpp"
 #include "../cli/bible.hpp"
+#include "understanding/inspection/ast_inspector.hpp"
+#include "understanding/inspection/bytecode_inspector.hpp"
+#include "understanding/inspection/vm_inspector.hpp"
 #include <format>
 
 // -------------
@@ -901,26 +904,22 @@ bool Interpreter::moduleRegistered(const std::string &path)
     return Interpreter::modules.contains(path);
 }
 
-void Interpreter::visitAstInspectStmt(const AstInspectStmt &stmt){
-
-    if(stmt.symbolName.empty()) {
-        for (auto &stmt: persistedAST) {
-            std::cout<<stmt->toString()<<"\n";
-        }
-        return;
-    }
-
-    // Case 2 - print the whole AST.
-    auto node = lookupAST(stmt.symbolName);
-
-    if (!node)
+void Interpreter::visitInspectStmt(const InspectStmt &stmt)
+{
+    switch (stmt.target)
     {
-        std::cout << "⚠️ No such symbol: " << stmt.symbolName << "\n";
-        return;
-    }
+    case InspectTarget::AST:
+        AstInspector::inspect(*this, stmt);
+        break;
 
-    std::cout << node->toString() << "\n";
-    std::cout << "AST Memory: " << node->approxSize() << " bytes\n";
+    case InspectTarget::BYTECODE:
+        BytecodeInspector::inspect(*this, stmt);
+        break;
+
+    case InspectTarget::VM:
+        VmInspector::inspect(*this, stmt);
+        break;
+    }
 }
 
 size_t getPSS_KB() // PSS memory - Proportional Set Size

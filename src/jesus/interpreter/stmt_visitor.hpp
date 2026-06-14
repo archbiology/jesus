@@ -1,28 +1,28 @@
 #pragma once
 
-#include "../ast/stmt/create_class_stmt.hpp"
-#include "../ast/stmt/create_var_type_stmt.hpp"
-#include "../ast/stmt/create_var_stmt.hpp"
-#include "../ast/stmt/update_var_stmt.hpp"
-#include "../ast/stmt/assign_stmt.hpp"
-#include "../ast/stmt/create_var_with_ask_stmt.hpp"
-#include "../ast/stmt/update_var_with_ask_stmt.hpp"
-#include "../ast/stmt/print_stmt.hpp"
-#include "../ast/stmt/repeat_while_stmt.hpp"
-#include "../ast/stmt/repeat_times_stmt.hpp"
-#include "../ast/stmt/repeat_forever_stmt.hpp"
-#include "../ast/stmt/for_each_stmt.hpp"
-#include "../ast/stmt/break_stmt.hpp"
-#include "../ast/stmt/skip_stmt.hpp"
-#include "../ast/stmt/return_stmt.hpp"
-#include "../ast/stmt/if_stmt.hpp"
-#include "../ast/stmt/try_stmt.hpp"
-#include "../ast/stmt/resist_stmt.hpp"
-#include "../ast/stmt/import_module_stmt.hpp"
-#include "../ast/stmt/ast_inspect_stmt.hpp"
-#include "../ast/stmt/memory_inspect_stmt.hpp"
-#include "../ast/stmt/on_stmt.hpp"
-#include "../ast/stmt/serve_stmt.hpp"
+#include "ast/stmt/create_class_stmt.hpp"
+#include "ast/stmt/create_var_type_stmt.hpp"
+#include "ast/stmt/create_var_stmt.hpp"
+#include "ast/stmt/update_var_stmt.hpp"
+#include "ast/stmt/assign_stmt.hpp"
+#include "ast/stmt/create_var_with_ask_stmt.hpp"
+#include "ast/stmt/update_var_with_ask_stmt.hpp"
+#include "ast/stmt/print_stmt.hpp"
+#include "ast/stmt/repeat_while_stmt.hpp"
+#include "ast/stmt/repeat_times_stmt.hpp"
+#include "ast/stmt/repeat_forever_stmt.hpp"
+#include "ast/stmt/for_each_stmt.hpp"
+#include "ast/stmt/break_stmt.hpp"
+#include "ast/stmt/skip_stmt.hpp"
+#include "ast/stmt/return_stmt.hpp"
+#include "ast/stmt/if_stmt.hpp"
+#include "ast/stmt/try_stmt.hpp"
+#include "ast/stmt/resist_stmt.hpp"
+#include "ast/stmt/import_module_stmt.hpp"
+#include "ast/stmt/inspect_stmt.hpp"
+#include "ast/stmt/memory_inspect_stmt.hpp"
+#include "ast/stmt/on_stmt.hpp"
+#include "ast/stmt/serve_stmt.hpp"
 
 REGISTER_FOR_UML(
     StmtVisitor,
@@ -33,7 +33,7 @@ REGISTER_FOR_UML(
                   "visitForEach", "visitBreak", "visitSkipStmt",
                   "visitReturnStmt", "visitTryStmt",
                   "visitResistStmt", "visitImportModuleStmt",
-                  "visitAstInspectStmt", "visitMemoryInspectStmt"
+                  "visitInspectStmt", "visitMemoryInspectStmt"
 
     }));
 
@@ -90,7 +90,7 @@ public:
     virtual void visitTryStmt(const TryStmt &stmt) = 0;
     virtual void visitResistStmt(const ResistStmt &stmt) = 0;
     virtual void visitImportModuleStmt(const ImportModuleStmt &stmt) = 0;
-    virtual void visitAstInspectStmt(const AstInspectStmt &stmt) = 0;
+    virtual void visitInspectStmt(const InspectStmt &stmt) = 0;
     virtual void visitMemoryInspectStmt(const MemoryInspectStmt &stmt) = 0;
     virtual void visitOnStmt(const OnStmt &stmt) = 0;
     virtual void visitServeStmt(const ServeStmt &stmt) = 0;

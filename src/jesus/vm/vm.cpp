@@ -40,7 +40,7 @@ void VM::run(const Chunk &chunk)
             std::stringstream error;
             error << "VM Error\n\n"
                   << "  Instruction (offset): " << offset << "\n"
-                  << "  Opcode: " << static_cast<int>(ip->opcode) << "\n"
+                  << "  Opcode: " << opcodeToString(ip->opcode) << "\n"
                   << "  Operand: " << ip->operand << "\n\n"
                   << "  Reason:\n"
                   << "    Opcode not implemented.";
