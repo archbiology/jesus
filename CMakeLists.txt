@@ -198,6 +198,8 @@ set(JESUS_CPP_FILES
     src/jesus/interpreter/interpreter.cpp
     src/jesus/interpreter/runtime/method.cpp
     src/jesus/interpreter/runtime/http/http_runtime.cpp
+    src/jesus/vm/compiler.cpp
+    src/jesus/vm/vm.cpp
 
     # ---
     # CLI

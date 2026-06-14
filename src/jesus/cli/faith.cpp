@@ -2,7 +2,8 @@
 #include "lexer/lexer.hpp"
 #include "parser/parser.hpp"
 #include "../utils/file_utils.hpp"
-
+#include "vm/compiler.hpp"
+#include "vm/vm.hpp"
 
 void Faith::interpret(Interpreter &jesus, const std::string &source, const std::string &moduleName)
 {
@@ -19,6 +20,16 @@ void Faith::interpret(Interpreter &jesus, const std::string &source, const std::
             statements.push_back(std::move(stmt));
     }
 
+    if (useVm)
+    {
+        Compiler compiler;
+        Chunk chunk = compiler.compile(statements);
+        VM vm;
+
+        vm.run(chunk);
+        return;
+    }
+
     for (auto &you : statements)
         jesus.loves(you);
 }
@@ -31,7 +42,7 @@ int Faith::execute(std::string filename)
         std::string moduleName = utils::basenameWithoutExtension(filename);
 
         auto newModule = Interpreter::createModule(moduleName, filename);
-        Interpreter jesus(newModule);
+        Interpreter jesus(newModule, useVm);
 
         interpret(jesus, source, moduleName);
         return 0;
