@@ -52,7 +52,7 @@ REGISTER_FOR_UML(
 class Interpreter : public ExprVisitor, public StmtVisitor
 {
 public:
-    explicit Interpreter(std::shared_ptr<Module> module) : currentModule(module), httpRuntime(*this) {}
+    explicit Interpreter(std::shared_ptr<Module> module, bool useVm) : currentModule(module), httpRuntime(*this), useVm(useVm) {}
     /**
      * @brief Evaluates a given expression and returns its computed value.
      *
@@ -175,6 +175,7 @@ private:
     std::shared_ptr<Module> currentModule;
     static std::unordered_map<std::string, std::shared_ptr<Module>> modules;
     HttpRuntime httpRuntime;
+    bool useVm;
 
     // 🟢️🟢️🟢️🟢️🟢️🟢️🟢️🟢️🟢️🟢️🟢️🟢️🟢️🟢️
     // 🟢️ Visit expression methods 🟢️

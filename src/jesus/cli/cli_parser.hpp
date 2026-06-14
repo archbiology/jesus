@@ -17,6 +17,9 @@ struct ParsedCLI
     bool showConfessHelp = false;
     bool showWarfareHelp = false;
     bool export_language_uml = false;
+
+    bool useVm = false;
+
     std::string filename;          // ex: "serve" or serve.jesus
     std::vector<std::string> args; // everything after the command
 

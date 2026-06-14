@@ -41,6 +41,12 @@ ParsedCLI CLIParser::parse(int argc, char **argv)
             continue;
         }
 
+        if (arg == "--vm")
+        {
+            out.useVm = true;
+            continue;
+        }
+
         if (arg == "--export-uml")
         {
             out.export_language_uml = true;
