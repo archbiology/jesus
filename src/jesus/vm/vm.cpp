@@ -12,9 +12,9 @@ void VM::run(const Chunk &chunk)
     {
         switch (ip->opcode)
         {
-        case OpCode::LOAD_CONST:
+        case OpCode::PUSH_LITERAL:
         {
-            stack.push_back(chunk.constants[ip->operand]);
+            stack.push_back(chunk.literals[ip->operand]);
 
             ++ip;
             break;
@@ -56,6 +56,22 @@ void VM::run(const Chunk &chunk)
             default:
                 break;
             }
+
+            ++ip;
+            break;
+        }
+
+        case OpCode::CREATE_GLOBAL:
+        {
+            Value value = stack.back();
+            stack.pop_back();
+
+            uint32_t index = ip->operand;
+
+            if (index >= globals.size())
+                globals.resize(index + 1);
+
+            globals[index] = value;
 
             ++ip;
             break;

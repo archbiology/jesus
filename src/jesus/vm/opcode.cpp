@@ -4,14 +4,17 @@ std::string opcodeToString(OpCode opcode)
 {
     switch (opcode)
     {
-    case OpCode::LOAD_CONST:
-        return "LOAD_CONST";
+    case OpCode::PUSH_LITERAL:
+        return "PUSH_LITERAL";
 
-    case OpCode::LOAD_GLOBAL:
-        return "LOAD_GLOBAL";
+    case OpCode::CREATE_GLOBAL:
+        return "CREATE_GLOBAL";
 
-    case OpCode::STORE_GLOBAL:
-        return "STORE_GLOBAL";
+    case OpCode::READ_GLOBAL:
+        return "READ_GLOBAL";
+
+    case OpCode::WRITE_GLOBAL:
+        return "WRITE_GLOBAL";
 
     case OpCode::ADD:
         return "ADD";

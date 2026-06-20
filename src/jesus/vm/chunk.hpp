@@ -18,25 +18,25 @@
  *
  *     say 10 + 20
  *
- * Constants table:
+ * Literals table:
  *
  *     0 -> 10
  *     1 -> 20
  *
  * Bytecode instructions:
  *
- *     LOAD_CONST 0
- *     LOAD_CONST 1
+ *     PUSH_LITERAL 0
+ *     PUSH_LITERAL 1
  *     ADD
  *     PRINT
  *     RETURN
  *
  * The VM executes instructions stored in `code`
- * and loads literal values from `constants`.
+ * and loads literal values from `literals`.
  */
 class Chunk
 {
 public:
     std::vector<Instruction> instructions;
-    std::vector<Value> constants;
+    std::vector<Value> literals;
 };

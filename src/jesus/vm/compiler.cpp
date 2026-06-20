@@ -3,7 +3,7 @@
 Chunk Compiler::compile(const std::vector<std::unique_ptr<Stmt>> &statements)
 {
     chunk.instructions.clear();
-    chunk.constants.clear();
+    chunk.literals.clear();
 
     for (const auto &stmt : statements)
     {
@@ -20,6 +20,12 @@ void Compiler::compileStmt(const Stmt &stmt)
     if (auto print = dynamic_cast<const PrintStmt *>(&stmt))
     {
         compilePrintStmt(*print);
+        return;
+    }
+
+    if (auto create_var = dynamic_cast<const CreateVarStmt *>(&stmt))
+    {
+        compileCreateVarStmt(*create_var);
         return;
     }
 
@@ -78,14 +84,14 @@ void Compiler::compileLiteralExpr(const LiteralExpr &expr)
 {
     uint32_t constantIndex = addConstant(expr.value);
 
-    emit(OpCode::LOAD_CONST, constantIndex);
+    emit(OpCode::PUSH_LITERAL, constantIndex);
 }
 
 uint32_t Compiler::addConstant(const Value &value)
 {
-    chunk.constants.push_back(value);
+    chunk.literals.push_back(value);
 
-    return static_cast<uint32_t>(chunk.constants.size() - 1);
+    return static_cast<uint32_t>(chunk.literals.size() - 1);
 }
 
 void Compiler::emit(OpCode opcode)
@@ -96,4 +102,25 @@ void Compiler::emit(OpCode opcode)
 void Compiler::emit(OpCode opcode, uint32_t operand)
 {
     chunk.instructions.push_back({opcode, operand});
+}
+
+uint32_t Compiler::registerGlobalVar(const std::string &name)
+{
+    auto it = globals.find(name);
+
+    if (it != globals.end())
+        return it->second;
+
+    uint32_t index = globals.size();
+    globals[name] = index;
+    return index;
+}
+
+void Compiler::compileCreateVarStmt(const CreateVarStmt &stmt)
+{
+    compileExpr(*stmt.value);
+
+    uint32_t index = registerGlobalVar(stmt.name);
+
+    emit(OpCode::CREATE_GLOBAL, index);
 }
