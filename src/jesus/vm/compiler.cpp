@@ -29,6 +29,12 @@ void Compiler::compileStmt(const Stmt &stmt)
         return;
     }
 
+    if (auto update_var = dynamic_cast<const UpdateVarStmt *>(&stmt))
+    {
+        compileUpdateVarStmt(*update_var);
+        return;
+    }
+
     throw std::runtime_error("Statement not supported by VM yet: " + stmt.toString());
 }
 
@@ -146,4 +152,13 @@ void Compiler::compileVariableExpr(const VariableExpr &expr)
     uint32_t index = getGlobalVar(expr.name);
 
     emit(OpCode::READ_GLOBAL, index);
+}
+
+void Compiler::compileUpdateVarStmt(const UpdateVarStmt &stmt)
+{
+    compileExpr(*stmt.value);
+
+    uint32_t index = getGlobalVar(stmt.name);
+
+    emit(OpCode::WRITE_GLOBAL, index);
 }

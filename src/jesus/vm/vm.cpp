@@ -87,6 +87,18 @@ void VM::run(const Chunk &chunk)
             break;
         }
 
+        case OpCode::WRITE_GLOBAL:
+        {
+            uint32_t index = ip->operand;
+            Value value = stack.back();
+
+            stack.pop_back();
+            globals[index] = value;
+
+            ++ip;
+            break;
+        }
+
         case OpCode::RETURN:
         {
             return;
