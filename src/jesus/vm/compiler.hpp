@@ -2,6 +2,7 @@
 
 #include "chunk.hpp"
 
+#include "ast/expr/binary_expr.hpp"
 #include "ast/expr/literal_expr.hpp"
 
 #include "ast/stmt/print_stmt.hpp"
@@ -81,6 +82,8 @@ private:
     void compileExpr(const Expr &expr);
 
     void compileLiteralExpr(const LiteralExpr &expr);
+
+    void compileBinaryExpr(const BinaryExpr &expr);
 
     void compilePrintStmt(const PrintStmt &stmt);
 

@@ -29,6 +29,38 @@ void VM::run(const Chunk &chunk)
             break;
         }
 
+        case OpCode::ADD:
+        case OpCode::SUBTRACT:
+        case OpCode::MULTIPLY:
+        case OpCode::DIVIDE:
+        {
+            Value right = stack.back();
+            stack.pop_back();
+            Value left = stack.back();
+            stack.pop_back();
+
+            switch (ip->opcode)
+            {
+            case OpCode::ADD:
+                stack.push_back(left + right);
+                break;
+            case OpCode::SUBTRACT:
+                stack.push_back(left - right);
+                break;
+            case OpCode::MULTIPLY:
+                stack.push_back(left * right);
+                break;
+            case OpCode::DIVIDE:
+                stack.push_back(left / right);
+                break;
+            default:
+                break;
+            }
+
+            ++ip;
+            break;
+        }
+
         case OpCode::RETURN:
         {
             return;

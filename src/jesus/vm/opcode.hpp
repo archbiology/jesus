@@ -26,9 +26,9 @@ enum class OpCode : uint8_t
     STORE_GLOBAL,
 
     ADD,
-    SUB,
-    MUL,
-    DIV,
+    SUBTRACT,
+    MULTIPLY,
+    DIVIDE,
 
     PRINT,
 

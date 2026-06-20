@@ -16,14 +16,14 @@ std::string opcodeToString(OpCode opcode)
     case OpCode::ADD:
         return "ADD";
 
-    case OpCode::SUB:
-        return "SUB";
+    case OpCode::SUBTRACT:
+        return "SUBTRACT";
 
-    case OpCode::MUL:
-        return "MUL";
+    case OpCode::MULTIPLY:
+        return "MULTIPLY";
 
-    case OpCode::DIV:
-        return "DIV";
+    case OpCode::DIVIDE:
+        return "DIVIDE";
 
     case OpCode::PRINT:
         return "PRINT";

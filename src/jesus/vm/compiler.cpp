@@ -41,7 +41,37 @@ void Compiler::compileExpr(const Expr &expr)
         return;
     }
 
+    if (auto binary = dynamic_cast<const BinaryExpr *>(&expr))
+    {
+        compileBinaryExpr(*binary);
+        return;
+    }
+
     throw std::runtime_error("Expression not supported by VM yet: " + expr.toString());
+}
+
+void Compiler::compileBinaryExpr(const BinaryExpr &expr)
+{
+    compileExpr(*expr.left);
+    compileExpr(*expr.right);
+
+    switch (expr.op.type)
+    {
+    case TokenType::PLUS:
+        emit(OpCode::ADD);
+        break;
+    case TokenType::MINUS:
+        emit(OpCode::SUBTRACT);
+        break;
+    case TokenType::STAR:
+        emit(OpCode::MULTIPLY);
+        break;
+    case TokenType::SLASH:
+        emit(OpCode::DIVIDE);
+        break;
+    default:
+        throw std::runtime_error("Binary operator not supported by VM yet: " + expr.op.lexeme);
+    }
 }
 
 void Compiler::compileLiteralExpr(const LiteralExpr &expr)
