@@ -4,6 +4,7 @@
 
 #include "ast/expr/binary_expr.hpp"
 #include "ast/expr/literal_expr.hpp"
+#include "ast/expr/variable_expr.hpp"
 
 #include "ast/stmt/create_var_stmt.hpp"
 #include "ast/stmt/print_stmt.hpp"
@@ -107,4 +108,7 @@ private:
 
     uint32_t registerGlobalVar(const std::string &name);
     void compileCreateVarStmt(const CreateVarStmt &stmt);
+
+    uint32_t getGlobalVar(const std::string &name);
+    void compileVariableExpr(const VariableExpr &expr);
 };

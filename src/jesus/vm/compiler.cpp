@@ -53,6 +53,12 @@ void Compiler::compileExpr(const Expr &expr)
         return;
     }
 
+    if (auto var = dynamic_cast<const VariableExpr *>(&expr))
+    {
+        compileVariableExpr(*var);
+        return;
+    }
+
     throw std::runtime_error("Expression not supported by VM yet: " + expr.toString());
 }
 
@@ -123,4 +129,21 @@ void Compiler::compileCreateVarStmt(const CreateVarStmt &stmt)
     uint32_t index = registerGlobalVar(stmt.name);
 
     emit(OpCode::CREATE_GLOBAL, index);
+}
+
+uint32_t Compiler::getGlobalVar(const std::string &name)
+{
+    auto it = globals.find(name);
+
+    if (it == globals.end())
+        throw std::runtime_error("Unknown global variable: " + name);
+
+    return it->second;
+}
+
+void Compiler::compileVariableExpr(const VariableExpr &expr)
+{
+    uint32_t index = getGlobalVar(expr.name);
+
+    emit(OpCode::READ_GLOBAL, index);
 }
