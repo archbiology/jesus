@@ -2,8 +2,12 @@
 
 #include "chunk.hpp"
 
+#include "ast/expr/binary_expr.hpp"
 #include "ast/expr/literal_expr.hpp"
+#include "ast/expr/variable_expr.hpp"
 
+#include "ast/stmt/create_var_stmt.hpp"
+#include "ast/stmt/update_var_stmt.hpp"
 #include "ast/stmt/print_stmt.hpp"
 
 /**
@@ -51,8 +55,8 @@
  *
  *     Instructions:
  *
- *         LOAD_CONST 0
- *         LOAD_CONST 1
+ *         PUSH_LITERAL 0
+ *         PUSH_LITERAL 1
  *         ADD
  *         PRINT
  *         RETURN
@@ -75,12 +79,15 @@ public:
 
 private:
     Chunk chunk;
+    std::unordered_map<std::string, uint32_t> globals;
 
     void compileStmt(const Stmt &stmt);
 
     void compileExpr(const Expr &expr);
 
     void compileLiteralExpr(const LiteralExpr &expr);
+
+    void compileBinaryExpr(const BinaryExpr &expr);
 
     void compilePrintStmt(const PrintStmt &stmt);
 
@@ -99,4 +106,11 @@ private:
      *  Operand: 3
      */
     void emit(OpCode opcode, uint32_t operand);
+
+    uint32_t registerGlobalVar(const std::string &name);
+    void compileCreateVarStmt(const CreateVarStmt &stmt);
+    uint32_t getGlobalVar(const std::string &name);
+    void compileVariableExpr(const VariableExpr &expr);
+    void compileUpdateVarStmt(const UpdateVarStmt& stmt);
+
 };

@@ -21,8 +21,8 @@
  *
  * Example:
  *
- *     LOAD_CONST 1
- *     LOAD_CONST 2
+ *     PUSH_LITERAL 1
+ *     PUSH_LITERAL 2
  *     ADD
  *
  * Execution:
@@ -55,6 +55,7 @@ private:
      * Instructions push and pop values from this stack.
      */
     std::vector<Value> stack;
+    std::vector<Value> globals;
 
 public:
     /**

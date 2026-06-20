@@ -14,17 +14,17 @@
  *
  * Examples:
  *
- *     LOAD_CONST 3
- *     LOAD_CONST 7
+ *     PUSH_LITERAL 3
+ *     PUSH_LITERAL 7
  *     ADD
  *     PRINT
  *
  * In the examples above:
  *
- *     Opcode: LOAD_CONST
+ *     Opcode: PUSH_LITERAL
  *     Operand: 3
  *
- *     Opcode: LOAD_CONST
+ *     Opcode: PUSH_LITERAL
  *     Operand: 7
  *
  *     Opcode: ADD
@@ -36,7 +36,7 @@
  * Operands are interpreted according to the opcode.
  *
  * For example:
- *     LOAD_CONST 3
+ *     PUSH_LITERAL 3
  *
  * means:
  *     Load constants[3] onto the VM stack.
@@ -65,8 +65,8 @@ struct Instruction
      *
      * Examples:
      *
-     *     LOAD_CONST 5
-     *                ^
+     *     PUSH_LITERAL 5
+     *                  ^
      *                operand
      *
      *     JUMP 12

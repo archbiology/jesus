@@ -14,17 +14,17 @@ void BytecodeInspector::inspect(Interpreter &jesus, const InspectStmt &)
     {
         auto const &instr = chunk.instructions[i];
 
-        const auto &value = chunk.constants[instr.operand];
+        const auto &value = chunk.literals[instr.operand];
 
         std::cout << i << ": ";
 
         switch (instr.opcode)
         {
-        case OpCode::LOAD_CONST:
+        case OpCode::PUSH_LITERAL:
         case OpCode::JUMP:
         case OpCode::JUMP_IF_FALSE:
 
-            std::cout << opcodeToString(instr.opcode) << " const[" << instr.operand << "] -> " << value.toString() << "\n";
+            std::cout << opcodeToString(instr.opcode) << " [" << instr.operand << "] = " << value.toString() << "\n";
             break;
 
         default:

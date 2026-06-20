@@ -11,8 +11,8 @@
  *
  * Example:
  *
- *     LOAD_CONST
- *     LOAD_CONST
+ *     PUSH_LITERAL
+ *     PUSH_LITERAL
  *     ADD
  *     PRINT
  *
@@ -21,14 +21,15 @@
  */
 enum class OpCode : uint8_t
 {
-    LOAD_CONST,
-    LOAD_GLOBAL,
-    STORE_GLOBAL,
+    PUSH_LITERAL,
+    CREATE_GLOBAL,
+    READ_GLOBAL,
+    WRITE_GLOBAL,
 
     ADD,
-    SUB,
-    MUL,
-    DIV,
+    SUBTRACT,
+    MULTIPLY,
+    DIVIDE,
 
     PRINT,
 
