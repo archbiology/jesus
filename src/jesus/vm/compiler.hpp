@@ -9,6 +9,7 @@
 #include "ast/stmt/create_var_stmt.hpp"
 #include "ast/stmt/update_var_stmt.hpp"
 #include "ast/stmt/print_stmt.hpp"
+#include "ast/stmt/repeat_while_stmt.hpp"
 
 /**
  * @brief Converts an Abstract Syntax Tree (AST) into bytecode.
@@ -111,6 +112,54 @@ private:
     void compileCreateVarStmt(const CreateVarStmt &stmt);
     uint32_t getGlobalVar(const std::string &name);
     void compileVariableExpr(const VariableExpr &expr);
-    void compileUpdateVarStmt(const UpdateVarStmt& stmt);
+    void compileUpdateVarStmt(const UpdateVarStmt &stmt);
 
+    /**
+     * Returns the current instruction index in the chunk.
+     *
+     * Used as a label for jumps and control flow targets.
+     *
+     * Meaning: Where am I in the bytecode stream?
+     */
+    uint32_t currentOffset() const;
+
+    /**
+     * @brief Emit an instruction whose operand will be patched later, like JUMP_IF_FALSE
+     *
+     * @param opcode the code to be emited
+     * @return uint32_t the instruction index
+     */
+    /**
+     * Emits a jump-like instruction with a temporary operand (0)
+     * that will be patched later once the target address is known.
+     *
+     * @param opcode the code to be emited, like JUMP_IF_FALSE
+     * @return uint32_t the instruction index so it can be patched.
+     */
+    uint32_t emitPlaceholder(OpCode opcode);
+
+    /**
+     * @brief Patches a previously emitted jump instruction with the current instruction position.
+     *
+     * @param instructionIndex the index of the instruction to be patched
+     */
+    void patchJump(uint32_t instructionIndex);
+
+    /**
+     * Compiles:
+     *
+     * repeat while condition:
+     *     body
+     * amen
+     *
+     * Control flow shape:
+     *
+     *  loopStart:
+     *     evaluate condition
+     *     if false → exit
+     *     body
+     *     jump loopStart
+     *  exit:
+     */
+    void compileRepeatWhileStmt(const RepeatWhileStmt &stmt);
 };

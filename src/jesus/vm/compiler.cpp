@@ -35,6 +35,12 @@ void Compiler::compileStmt(const Stmt &stmt)
         return;
     }
 
+    if (auto repeat_while = dynamic_cast<const RepeatWhileStmt *>(&stmt))
+    {
+        compileRepeatWhileStmt(*repeat_while);
+        return;
+    }
+
     throw std::runtime_error("Statement not supported by VM yet: " + stmt.toString());
 }
 
@@ -87,6 +93,39 @@ void Compiler::compileBinaryExpr(const BinaryExpr &expr)
     case TokenType::SLASH:
         emit(OpCode::DIVIDE);
         break;
+    case TokenType::MOD:
+        emit(OpCode::MODULO);
+        break;
+
+    case TokenType::IS:
+        emit(OpCode::EQUAL);
+        break;
+    case TokenType::NOT_EQUAL:
+        emit(OpCode::NOT_EQUAL);
+        break;
+    case TokenType::LESS:
+        emit(OpCode::LESS);
+        break;
+    case TokenType::LESS_EQUAL:
+        emit(OpCode::LESS_EQUAL);
+        break;
+    case TokenType::GREATER:
+        emit(OpCode::GREATER);
+        break;
+    case TokenType::GREATER_EQUAL:
+        emit(OpCode::GREATER_EQUAL);
+        break;
+
+    case TokenType::OR:
+        emit(OpCode::OR);
+        break;
+    case TokenType::AND:
+        emit(OpCode::AND);
+        break;
+    case TokenType::VERSUS:
+        emit(OpCode::XOR);
+        break;
+
     default:
         throw std::runtime_error("Binary operator not supported by VM yet: " + expr.op.lexeme);
     }
@@ -161,4 +200,41 @@ void Compiler::compileUpdateVarStmt(const UpdateVarStmt &stmt)
     uint32_t index = getGlobalVar(stmt.name);
 
     emit(OpCode::WRITE_GLOBAL, index);
+}
+
+uint32_t Compiler::currentOffset() const
+{
+    return chunk.instructions.size();
+}
+
+uint32_t Compiler::emitPlaceholder(OpCode opcode)
+{
+    uint32_t index = chunk.instructions.size();
+
+    emit(opcode, 0);
+
+    return index;
+}
+
+void Compiler::patchJump(uint32_t instructionIndex)
+{
+    chunk.instructions[instructionIndex].operand = chunk.instructions.size();
+}
+
+void Compiler::compileRepeatWhileStmt(const RepeatWhileStmt &stmt)
+{
+    uint32_t loopStart = currentOffset();
+
+    compileExpr(*stmt.condition);
+
+    uint32_t jumpOut = emitPlaceholder(OpCode::JUMP_IF_FALSE);
+
+    for (const auto &bodyStmt : stmt.body)
+    {
+        compileStmt(*bodyStmt);
+    }
+
+    emit(OpCode::JUMP, loopStart);
+
+    patchJump(jumpOut);
 }
