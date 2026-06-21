@@ -35,6 +35,12 @@ void Compiler::compileStmt(const Stmt &stmt)
         return;
     }
 
+    if (auto repeat_while = dynamic_cast<const RepeatWhileStmt *>(&stmt))
+    {
+        compileRepeatWhileStmt(*repeat_while);
+        return;
+    }
+
     throw std::runtime_error("Statement not supported by VM yet: " + stmt.toString());
 }
 
@@ -194,4 +200,41 @@ void Compiler::compileUpdateVarStmt(const UpdateVarStmt &stmt)
     uint32_t index = getGlobalVar(stmt.name);
 
     emit(OpCode::WRITE_GLOBAL, index);
+}
+
+uint32_t Compiler::currentOffset() const
+{
+    return chunk.instructions.size();
+}
+
+uint32_t Compiler::emitPlaceholder(OpCode opcode)
+{
+    uint32_t index = chunk.instructions.size();
+
+    emit(opcode, 0);
+
+    return index;
+}
+
+void Compiler::patchJump(uint32_t instructionIndex)
+{
+    chunk.instructions[instructionIndex].operand = chunk.instructions.size();
+}
+
+void Compiler::compileRepeatWhileStmt(const RepeatWhileStmt &stmt)
+{
+    uint32_t loopStart = currentOffset();
+
+    compileExpr(*stmt.condition);
+
+    uint32_t jumpOut = emitPlaceholder(OpCode::JUMP_IF_FALSE);
+
+    for (const auto &bodyStmt : stmt.body)
+    {
+        compileStmt(*bodyStmt);
+    }
+
+    emit(OpCode::JUMP, loopStart);
+
+    patchJump(jumpOut);
 }

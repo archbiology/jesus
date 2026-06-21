@@ -164,6 +164,32 @@ void VM::run(const Chunk &chunk)
             break;
         }
 
+        case OpCode::JUMP_IF_FALSE:
+        {
+            Value condition = stack.back();
+            stack.pop_back();
+
+            if (!condition.AS_BOOLEAN)
+            {
+                // false ? jump to end of the loop
+                ip = begin + ip->operand;
+            }
+            else
+            {
+                // true? execute the loop
+                ++ip;
+            }
+
+            break;
+        }
+
+        case OpCode::JUMP:
+        {
+            // Back to the beginning of the loop
+            ip = begin + ip->operand;
+            break;
+        }
+
         case OpCode::RETURN:
         {
             return;
