@@ -30,6 +30,18 @@ enum class OpCode : uint8_t
     SUBTRACT,
     MULTIPLY,
     DIVIDE,
+    MODULO,
+
+    EQUAL,
+    NOT_EQUAL,
+    LESS,
+    LESS_EQUAL,
+    GREATER,
+    GREATER_EQUAL,
+
+    OR,
+    AND,
+    XOR,
 
     PRINT,
 

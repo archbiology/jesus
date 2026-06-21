@@ -87,6 +87,39 @@ void Compiler::compileBinaryExpr(const BinaryExpr &expr)
     case TokenType::SLASH:
         emit(OpCode::DIVIDE);
         break;
+    case TokenType::MOD:
+        emit(OpCode::MODULO);
+        break;
+
+    case TokenType::IS:
+        emit(OpCode::EQUAL);
+        break;
+    case TokenType::NOT_EQUAL:
+        emit(OpCode::NOT_EQUAL);
+        break;
+    case TokenType::LESS:
+        emit(OpCode::LESS);
+        break;
+    case TokenType::LESS_EQUAL:
+        emit(OpCode::LESS_EQUAL);
+        break;
+    case TokenType::GREATER:
+        emit(OpCode::GREATER);
+        break;
+    case TokenType::GREATER_EQUAL:
+        emit(OpCode::GREATER_EQUAL);
+        break;
+
+    case TokenType::OR:
+        emit(OpCode::OR);
+        break;
+    case TokenType::AND:
+        emit(OpCode::AND);
+        break;
+    case TokenType::VERSUS:
+        emit(OpCode::XOR);
+        break;
+
     default:
         throw std::runtime_error("Binary operator not supported by VM yet: " + expr.op.lexeme);
     }

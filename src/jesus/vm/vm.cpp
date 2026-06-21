@@ -33,6 +33,16 @@ void VM::run(const Chunk &chunk)
         case OpCode::SUBTRACT:
         case OpCode::MULTIPLY:
         case OpCode::DIVIDE:
+        case OpCode::MODULO:
+        case OpCode::EQUAL:
+        case OpCode::NOT_EQUAL:
+        case OpCode::LESS:
+        case OpCode::LESS_EQUAL:
+        case OpCode::GREATER:
+        case OpCode::GREATER_EQUAL:
+        case OpCode::OR:
+        case OpCode::AND:
+        case OpCode::XOR:
         {
             Value right = stack.back();
             stack.pop_back();
@@ -41,6 +51,9 @@ void VM::run(const Chunk &chunk)
 
             switch (ip->opcode)
             {
+            // ----------
+            // Arithmetic
+            // ----------
             case OpCode::ADD:
                 stack.push_back(left + right);
                 break;
@@ -53,6 +66,58 @@ void VM::run(const Chunk &chunk)
             case OpCode::DIVIDE:
                 stack.push_back(left / right);
                 break;
+            case OpCode::MODULO:
+                stack.push_back(left % right);
+                break;
+            // -----------------------
+            // Relational / Comparison
+            // -----------------------
+            case OpCode::EQUAL:
+                stack.push_back(Value(left == right));
+                break;
+            case OpCode::NOT_EQUAL:
+                stack.push_back(Value(left != right));
+                break;
+            case OpCode::LESS:
+                stack.push_back(Value(left < right));
+                break;
+            case OpCode::LESS_EQUAL:
+                stack.push_back(Value(left <= right));
+                break;
+            case OpCode::GREATER:
+                stack.push_back(Value(left > right));
+                break;
+            case OpCode::GREATER_EQUAL:
+                stack.push_back(Value(left >= right));
+                break;
+            // -----
+            // Logic
+            // -----
+            case OpCode::OR:
+                stack.push_back(left.AS_BOOLEAN ? left : right);
+                break;
+            case OpCode::AND:
+                stack.push_back(left.AS_BOOLEAN ? right : left);
+                break;
+
+            case OpCode::XOR:
+                if (left.IS_BOOLEAN && right.IS_BOOLEAN)
+                {
+                    // Logical XOR
+                    stack.push_back(Value(left.AS_BOOLEAN != right.AS_BOOLEAN));
+                    break;
+                }
+
+                if (left.IS_NUMBER && right.IS_NUMBER)
+                {
+                    // Bitwise XOR
+                    stack.push_back(Value(left.toInt() ^ right.toInt()));
+                    break;
+                }
+
+                stack.push_back(Value::formless()); // fallback if types mismatch
+                break;
+
             default:
                 break;
             }
