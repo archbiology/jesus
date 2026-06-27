@@ -135,6 +135,11 @@ public:
         return *std::get<std::shared_ptr<DictValue>>(value);
     }
 
+    std::shared_ptr<CreationType> asClass() const
+    {
+        return std::get<std::shared_ptr<CreationType>>(value);
+    }
+
     /**
      * @brief Output stream overload for Value
      *

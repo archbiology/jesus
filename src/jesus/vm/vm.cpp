@@ -1,6 +1,9 @@
+#include <sstream>
+#include <memory>
+
 #include "vm.hpp"
 #include "opcode.hpp"
-#include <sstream>
+#include "interpreter/runtime/instance.hpp"
 
 void VM::run(const Chunk &chunk)
 {
@@ -187,6 +190,17 @@ void VM::run(const Chunk &chunk)
         {
             // Back to the beginning of the loop
             ip = begin + ip->operand;
+            break;
+        }
+
+        case OpCode::CREATE_INSTANCE:
+        {
+            auto klass = stack.back().asClass();
+            stack.pop_back();
+
+            stack.push_back(Value(std::make_shared<Instance>(klass)));
+
+            ++ip;
             break;
         }
 
