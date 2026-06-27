@@ -6,6 +6,7 @@
 #include "ast/expr/create_instance_expr.hpp"
 #include "ast/expr/literal_expr.hpp"
 #include "ast/expr/variable_expr.hpp"
+#include "ast/expr/method_call_expr.hpp"
 
 #include "ast/stmt/create_var_stmt.hpp"
 #include "ast/stmt/create_class_stmt.hpp"
@@ -168,4 +169,5 @@ private:
 
     void compileCreateClassStmt(const CreateClassStmt &stmt);
     void compileCreateInstanceExpr(const CreateInstanceExpr &expr);
+    void compileMethodCallExpr(const MethodCallExpr &expr);
 };

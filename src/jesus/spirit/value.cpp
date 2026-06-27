@@ -1,6 +1,7 @@
 #include "value.hpp"
-#include "../interpreter/runtime/instance.hpp"
-#include "../interpreter/runtime/module.hpp"
+#include "interpreter/runtime/instance.hpp"
+#include "interpreter/runtime/module.hpp"
+#include "interpreter/runtime/method.hpp"
 
 struct make_string_functor
 {
@@ -12,6 +13,7 @@ struct make_string_functor
     std::string operator()(const std::shared_ptr<Module> x) const { return x->toString(); }
     std::string operator()(const std::shared_ptr<CreationType> x) const { return x->toString(); }
     std::string operator()(const std::shared_ptr<Instance> x) const { return x->toString(); }
+    std::string operator()(const std::shared_ptr<IMethod> x) const { return x->toString(); }
 
     std::string operator()(const std::shared_ptr<ListValue> &list) const
     {
@@ -69,6 +71,17 @@ const std::shared_ptr<Instance> Value::toInstance() const
     }
 
     return std::get<std::shared_ptr<Instance>>(value);
+}
+
+const std::shared_ptr<IMethod> Value::asMethod() const
+{
+    if (!IS_METHOD)
+    {
+        // FIXME: This has to be validated at parse time
+        throw std::runtime_error("Only methods can be returned as methods.");
+    }
+
+    return std::get<std::shared_ptr<IMethod>>(value);
 }
 
 std::string Value::toString() const

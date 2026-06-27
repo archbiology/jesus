@@ -3,7 +3,10 @@
 
 #include "vm.hpp"
 #include "opcode.hpp"
+#include "ast/stmt/return_stmt.hpp"
+#include "ast/expr/literal_expr.hpp"
 #include "interpreter/runtime/instance.hpp"
+#include "interpreter/runtime/method.hpp"
 
 void VM::run(const Chunk &chunk)
 {
@@ -202,6 +205,30 @@ void VM::run(const Chunk &chunk)
 
             ++ip;
             break;
+        }
+
+        case OpCode::CALL:
+        {
+            auto instance = stack.back();
+            stack.pop_back();
+
+            auto method = chunk.literals[ip->operand].asMethod();
+
+            auto userMethod = std::dynamic_pointer_cast<Method>(method);
+            if (userMethod && userMethod->body.size() == 1)
+            {
+                if (auto returnStmt = dynamic_cast<const ReturnStmt *>(userMethod->body[0].get()))
+                {
+                    if (auto literalExpr = dynamic_cast<const LiteralExpr *>(returnStmt->value.get()))
+                    {
+                        stack.push_back(literalExpr->value);
+                        ++ip;
+                        break;
+                    }
+                }
+            }
+
+            throw std::runtime_error("VM CALL: only single literal returns are supported in VM mode currently.");
         }
 
         case OpCode::RETURN:
