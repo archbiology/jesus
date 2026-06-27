@@ -5,6 +5,7 @@
 #include "opcode.hpp"
 #include "ast/stmt/return_stmt.hpp"
 #include "ast/expr/literal_expr.hpp"
+#include "ast/expr/variable_expr.hpp"
 #include "interpreter/runtime/instance.hpp"
 #include "interpreter/runtime/method.hpp"
 
@@ -225,10 +226,17 @@ void VM::run(const Chunk &chunk)
                         ++ip;
                         break;
                     }
+
+                    if (auto getAttr = dynamic_cast<const VariableExpr *>(returnStmt->value.get()))
+                    {
+                        stack.push_back(instance.toInstance()->getAttribute(getAttr->name));
+                        ++ip;
+                        break;
+                    }
                 }
             }
 
-            throw std::runtime_error("VM CALL: only single literal returns are supported in VM mode currently.");
+            throw std::runtime_error("VM CALL: only single literal and attribute returns are supported in VM mode currently.");
         }
 
         case OpCode::RETURN:

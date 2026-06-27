@@ -44,12 +44,12 @@ public:
 
     virtual std::string toString() const
     {
-        std::string str = "{type: \"method\",\n params: {";
+        std::string str = "{type: \"method\", name: \"" + name + "\", params: {";
         if (!params->isEmpty())
         {
             str += params->toString();
         }
-        str += " }\n}";
+        str += " }}";
         return str;
     }
 
