@@ -70,7 +70,10 @@ std::unique_ptr<Stmt> CreateVarStmtRule::parse(ParserContext &ctx)
     }
     if (!varType)
     {
-        varType = KnownTypes::resolve(varType_, "core");
+        varType = KnownTypes::resolve(varType_, ctx.moduleName);
+        if (!varType && ctx.isClassKnown(varType_))
+            varType = ctx.resolveType(varType_);
+
         if (!varType)
             throw std::runtime_error("Unknown variable type: '" + varType_ + "'");
     }
@@ -102,7 +105,7 @@ std::unique_ptr<Stmt> CreateVarStmtRule::parse(ParserContext &ctx)
         std::string value_str = "";
         if (varType->isClass())
         {
-            value = std::make_unique<CreateInstanceExpr>(varType);
+            value = std::make_unique<CreateInstanceExpr>(varName, varType);
         }
         // ------------------------------------------------------------
         // If the 'value' is a literal, validate it now, at parse time.

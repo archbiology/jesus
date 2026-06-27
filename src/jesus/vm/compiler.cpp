@@ -1,4 +1,6 @@
 #include "compiler.hpp"
+#include "ast/stmt/create_method_stmt.hpp"
+#include "interpreter/runtime/method.hpp"
 
 Chunk Compiler::compile(const std::vector<std::unique_ptr<Stmt>> &statements)
 {
@@ -41,6 +43,12 @@ void Compiler::compileStmt(const Stmt &stmt)
         return;
     }
 
+    if (auto create_class = dynamic_cast<const CreateClassStmt *>(&stmt))
+    {
+        compileCreateClassStmt(*create_class);
+        return;
+    }
+
     throw std::runtime_error("Statement not supported by VM yet: " + stmt.toString());
 }
 
@@ -68,6 +76,12 @@ void Compiler::compileExpr(const Expr &expr)
     if (auto var = dynamic_cast<const VariableExpr *>(&expr))
     {
         compileVariableExpr(*var);
+        return;
+    }
+
+    if (auto instance = dynamic_cast<const CreateInstanceExpr *>(&expr))
+    {
+        compileCreateInstanceExpr(*instance);
         return;
     }
 
@@ -169,6 +183,12 @@ uint32_t Compiler::registerGlobalVar(const std::string &name)
 
 void Compiler::compileCreateVarStmt(const CreateVarStmt &stmt)
 {
+    if (auto instance = dynamic_cast<const CreateInstanceExpr *>(stmt.value.get()))
+    {
+        compileCreateInstanceExpr(*instance);
+        return;
+    }
+
     compileExpr(*stmt.value);
 
     uint32_t index = registerGlobalVar(stmt.name);
@@ -237,4 +257,61 @@ void Compiler::compileRepeatWhileStmt(const RepeatWhileStmt &stmt)
     emit(OpCode::JUMP, loopStart);
 
     patchJump(jumpOut);
+}
+
+void Compiler::compileCreateClassStmt(const CreateClassStmt &stmt)
+{
+    std::vector<std::shared_ptr<IConstraint>> constraints; // no constraints yet
+
+    auto scope = std::make_shared<Heart>("class::" + stmt.name);
+    auto userClass = std::make_shared<CreationType>(
+        PrimitiveType::Class,
+        stmt.name,
+        stmt.module_name,
+        stmt.parent_class,
+        constraints);
+
+    for (const auto &member : stmt.body)
+    {
+        // -----------------
+        // handle attributes
+        // -----------------
+        if (auto attr = dynamic_cast<CreateVarStmt *>(member.get()))
+        {
+            userClass->addAttribute(attr->base_type, attr->name, std::move(attr->value), scope);
+        }
+        // --------------
+        // handle methods
+        // --------------
+        else if (auto methodStmt = dynamic_cast<CreateMethodStmt *>(member.get()))
+        {
+            auto method = std::make_shared<Method>(
+                methodStmt->name,
+                methodStmt->params,
+                methodStmt->body,
+                methodStmt->returnType);
+
+            userClass->addMethod(methodStmt->name, method);
+        }
+        else
+        {
+            throw std::runtime_error("Class body member not supported yet");
+        }
+    }
+
+    classes[stmt.name] = std::move(userClass);
+}
+
+void Compiler::compileCreateInstanceExpr(const CreateInstanceExpr &expr)
+{
+    auto it = classes.find(expr.klass->name);
+    if (it == classes.end())
+        throw std::runtime_error("Unknown class: " + expr.klass->name);
+
+    uint32_t classIndex = addConstant(Value(it->second));
+    emit(OpCode::PUSH_LITERAL, classIndex);
+    emit(OpCode::CREATE_INSTANCE);
+
+    uint32_t varIndex = registerGlobalVar(expr.name);
+    emit(OpCode::CREATE_GLOBAL, varIndex);
 }

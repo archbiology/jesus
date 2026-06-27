@@ -27,6 +27,21 @@ const std::shared_ptr<CreationType> ParserContext::getVarType(const std::string 
     return interpreter->getVarType(varName);
 }
 
+std::shared_ptr<CreationType> ParserContext::resolveType(const std::string &name)
+{
+    return interpreter->resolveType(name);
+}
+
+void ParserContext::registerType(const std::shared_ptr<CreationType> &type)
+{
+    interpreter->registerParseTimeType(type);
+}
+
+bool ParserContext::isClassKnown(const std::string &className) const
+{
+    return interpreter->isClassKnown(className);
+}
+
 void ParserContext::registerClassName(const std::string &className)
 {
     interpreter->registerClassName(className);

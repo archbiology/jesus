@@ -26,6 +26,10 @@ enum class OpCode : uint8_t
     READ_GLOBAL,
     WRITE_GLOBAL,
 
+    CREATE_INSTANCE,
+    READ_ATTR,
+    WRITE_ATTR,
+
     ADD,
     SUBTRACT,
     MULTIPLY,

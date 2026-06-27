@@ -6,17 +6,18 @@ REGISTER_FOR_UML(
     CreateInstanceExpr,
     .packageName("ast.expr")
         .parentsList({"Expr"})
-        .fieldsList({"klass", "constructorArgs"}));
+        .fieldsList({"name", "klass", "constructorArgs"}));
 
 class CreateInstanceExpr : public Expr
 {
 public:
+    const std::string name;
     const std::shared_ptr<CreationType> klass;
     std::unique_ptr<Expr> constructorArgs;
 
 public:
-    explicit CreateInstanceExpr(std::shared_ptr<CreationType> klass, std::unique_ptr<Expr> constructorArgs = nullptr)
-        : klass(std::move(klass)), constructorArgs(std::move(constructorArgs)) {}
+    explicit CreateInstanceExpr(const std::string name, std::shared_ptr<CreationType> klass, std::unique_ptr<Expr> constructorArgs = nullptr)
+        : name(std::move(name)), klass(std::move(klass)), constructorArgs(std::move(constructorArgs)) {}
 
     Value evaluate(std::shared_ptr<Heart> scope) const override
     {

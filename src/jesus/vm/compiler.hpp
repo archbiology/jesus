@@ -3,10 +3,12 @@
 #include "chunk.hpp"
 
 #include "ast/expr/binary_expr.hpp"
+#include "ast/expr/create_instance_expr.hpp"
 #include "ast/expr/literal_expr.hpp"
 #include "ast/expr/variable_expr.hpp"
 
 #include "ast/stmt/create_var_stmt.hpp"
+#include "ast/stmt/create_class_stmt.hpp"
 #include "ast/stmt/update_var_stmt.hpp"
 #include "ast/stmt/print_stmt.hpp"
 #include "ast/stmt/repeat_while_stmt.hpp"
@@ -81,6 +83,7 @@ public:
 private:
     Chunk chunk;
     std::unordered_map<std::string, uint32_t> globals;
+    std::unordered_map<std::string, std::shared_ptr<CreationType>> classes;
 
     void compileStmt(const Stmt &stmt);
 
@@ -162,4 +165,7 @@ private:
      *  exit:
      */
     void compileRepeatWhileStmt(const RepeatWhileStmt &stmt);
+
+    void compileCreateClassStmt(const CreateClassStmt &stmt);
+    void compileCreateInstanceExpr(const CreateInstanceExpr &expr);
 };

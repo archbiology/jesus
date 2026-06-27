@@ -180,7 +180,12 @@ public:
 
     void registerClassName(const std::string &className);
 
+    void registerType(const std::shared_ptr<CreationType> &type);
+
+    bool isClassKnown(const std::string &className) const;
+
     const std::shared_ptr<CreationType> getVarType(const std::string &varName);
+    std::shared_ptr<CreationType> resolveType(const std::string &name);
 
     void addScope(std::shared_ptr<Heart> scope);
 

@@ -16,6 +16,15 @@ std::string opcodeToString(OpCode opcode)
     case OpCode::WRITE_GLOBAL:
         return "WRITE_GLOBAL";
 
+    case OpCode::CREATE_INSTANCE:
+        return "CREATE_INSTANCE";
+
+    case OpCode::READ_ATTR:
+        return "READ_ATTR";
+
+    case OpCode::WRITE_ATTR:
+        return "WRITE_ATTR";
+
     case OpCode::ADD:
         return "ADD";
 
