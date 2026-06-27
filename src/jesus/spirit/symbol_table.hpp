@@ -119,7 +119,18 @@ public:
         current_scope->registerClassName(className);
     }
 
-    bool varExistsInHierarchy(const std::string &name) {
+    bool isClassKnown(const std::string &className) const
+    {
+        for (auto it = scopes.rbegin(); it != scopes.rend(); ++it)
+        {
+            if ((*it)->isClassKnown(className))
+                return true;
+        }
+        return false;
+    }
+
+    bool varExistsInHierarchy(const std::string &name)
+    {
         return current_scope->varExistsInHierarchy(name);
     }
 };

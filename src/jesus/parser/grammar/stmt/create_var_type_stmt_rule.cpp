@@ -29,6 +29,17 @@ std::unique_ptr<Stmt> CreateVarTypeStmtRule::parse(ParserContext &ctx)
 
     std::string typeName = ctx.previous().lexeme;
 
+    int snapshot = ctx.snapshot();
+    // We check if there’s a constraint (like > 0)
+    // Otherwise it's not a variable type declaration
+    if (!ctx.matchAny({TokenType::GREATER, TokenType::LESS,
+                       TokenType::GREATER_EQUAL,
+                       TokenType::LESS_EQUAL,
+                       TokenType::MATCHES}))
+    {
+        return nullptr;
+    }
+    ctx.restore(snapshot); // because matchAny above calls advance()
 
     bool typeExistsLocally = ctx.varExistsInHierarchy(baseTypeStr);
     std::shared_ptr<CreationType> baseType = nullptr;
@@ -41,22 +52,13 @@ std::unique_ptr<Stmt> CreateVarTypeStmtRule::parse(ParserContext &ctx)
 
     if (!baseType)
     {
-        baseType = KnownTypes::resolve(baseTypeStr, "core");
+        baseType = KnownTypes::resolve(baseTypeStr, ctx.moduleName);
+        if (!baseType && ctx.isClassKnown(baseTypeStr))
+            baseType = ctx.resolveType(baseTypeStr);
+
         if (!baseType)
             throw std::runtime_error("Unknown base type: '" + baseTypeStr + "'");
     }
-
-    int snapshot = ctx.snapshot();
-    // Here comes the key difference: we check if there’s a constraint (like > 0)
-    // Otherwise it's not a variable type declaration
-    if (!ctx.matchAny({TokenType::GREATER, TokenType::LESS,
-                       TokenType::GREATER_EQUAL,
-                       TokenType::LESS_EQUAL,
-                       TokenType::MATCHES}))
-    {
-        return nullptr;
-    }
-    ctx.restore(snapshot);  // becauase matchAny above calls advance()
 
     std::vector<std::shared_ptr<IConstraint>> constraints;
 

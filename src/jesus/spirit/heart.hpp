@@ -153,6 +153,11 @@ public:
         semantics_analyzer->registerClassName(className);
     }
 
+    bool isClassKnown(const std::string &className) const
+    {
+        return semantics_analyzer->isClassKnown(className);
+    }
+
     const std::shared_ptr<CreationType> getVarType(const std::string &varName)
     {
         auto type = semantics_analyzer->getVarType(varName);

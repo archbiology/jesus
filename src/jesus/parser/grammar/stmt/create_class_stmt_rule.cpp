@@ -5,6 +5,18 @@
 #include "../../../understanding/doctrine/law/ungodly_naming.hpp"
 #include <stdexcept>
 
+static void registerParseTimeClass(ParserContext &ctx, const std::string &className,
+                                   const std::string &module_name,
+                                   const std::shared_ptr<CreationType> &parent_class)
+{
+    std::vector<std::shared_ptr<IConstraint>> constraints;
+    auto userClass = std::make_shared<CreationType>(
+        PrimitiveType::Class, className, module_name, parent_class, constraints);
+
+    ctx.registerType(userClass);
+    ctx.registerClassName(className);
+}
+
 std::unique_ptr<Stmt> CreateClassStmtRule::parse(ParserContext &ctx)
 {
     std::string stmt = "let there be";
@@ -76,7 +88,7 @@ std::unique_ptr<Stmt> CreateClassStmtRule::parse(ParserContext &ctx)
     {
         // Allowing 'empty-bodied' classes without ': amen'.
         // Just: let there be Light
-        ctx.registerClassName(className);
+        registerParseTimeClass(ctx, className, module_name, baseClassType);
         return std::make_unique<CreateClassStmt>(className, module_name, baseClassType, body);
     }
 
@@ -118,6 +130,6 @@ std::unique_ptr<Stmt> CreateClassStmtRule::parse(ParserContext &ctx)
     if (!ctx.match(TokenType::AMEN))
         throw std::runtime_error("Expected 'amen' after ':' in '" + stmt + "' to close class body.");
 
-    ctx.registerClassName(className);
+    registerParseTimeClass(ctx, className, module_name, baseClassType);
     return std::make_unique<CreateClassStmt>(className, module_name, baseClassType, body);
 }

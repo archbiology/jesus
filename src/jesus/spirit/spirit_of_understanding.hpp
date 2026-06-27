@@ -38,7 +38,7 @@ public:
 
     const std::shared_ptr<CreationType> getVarType(const std::string &varName);
 
-    bool isClassKnown(const std::string &className)
+    bool isClassKnown(const std::string &className) const
     {
         return classNames.find(className) != classNames.end();
     }

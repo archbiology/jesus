@@ -24,6 +24,8 @@
 #include "../ast/stmt/skip_stmt.hpp"
 #include "../spirit/heart.hpp"
 #include "../spirit/symbol_table.hpp"
+#include "types/known_types.hpp"
+#include "types/type_registry.hpp"
 
 REGISTER_FOR_UML(
     Interpreter,
@@ -52,7 +54,9 @@ REGISTER_FOR_UML(
 class Interpreter : public ExprVisitor, public StmtVisitor
 {
 public:
-    explicit Interpreter(std::shared_ptr<Module> module, bool useVm) : currentModule(module), httpRuntime(*this), useVm(useVm) {}
+    explicit Interpreter(std::shared_ptr<Module> module, bool useVm)
+        : currentModule(module), httpRuntime(*this), useVm(useVm),
+          typeRegistry(std::make_shared<TypeRegistry>()) {}
     /**
      * @brief Evaluates a given expression and returns its computed value.
      *
@@ -118,6 +122,26 @@ public:
         currentModule->symbol_table->registerClassName(className);
     }
 
+    void registerParseTimeType(const std::shared_ptr<CreationType> &type)
+    {
+        typeRegistry->registerType(type);
+    }
+
+    bool isClassKnown(const std::string &className) const
+    {
+        return typeRegistry->exists(className) ||
+               currentModule->symbol_table->isClassKnown(className);
+    }
+
+    std::shared_ptr<CreationType> resolveType(const std::string &name)
+    {
+        auto type = KnownTypes::resolve(name, currentModule->name);
+        if (type)
+            return type;
+
+        return typeRegistry->resolve(name);
+    }
+
     void addScope(std::shared_ptr<Heart> scope)
     {
         currentModule->symbol_table->addScope(scope);
@@ -176,6 +200,7 @@ private:
     static std::unordered_map<std::string, std::shared_ptr<Module>> modules;
     HttpRuntime httpRuntime;
     bool useVm;
+    std::shared_ptr<TypeRegistry> typeRegistry;
 
     // 🟢️🟢️🟢️🟢️🟢️🟢️🟢️🟢️🟢️🟢️🟢️🟢️🟢️🟢️
     // 🟢️ Visit expression methods 🟢️
