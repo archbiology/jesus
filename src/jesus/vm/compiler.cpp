@@ -85,6 +85,12 @@ void Compiler::compileExpr(const Expr &expr)
         return;
     }
 
+    if (auto methodCall = dynamic_cast<const MethodCallExpr *>(&expr))
+    {
+        compileMethodCallExpr(*methodCall);
+        return;
+    }
+
     throw std::runtime_error("Expression not supported by VM yet: " + expr.toString());
 }
 
@@ -314,4 +320,13 @@ void Compiler::compileCreateInstanceExpr(const CreateInstanceExpr &expr)
 
     uint32_t varIndex = registerGlobalVar(expr.name);
     emit(OpCode::CREATE_GLOBAL, varIndex);
+}
+
+void Compiler::compileMethodCallExpr(const MethodCallExpr &expr)
+{
+    compileExpr(*expr.object);
+
+    uint32_t methodIndex = addConstant(Value(expr.method));
+
+    emit(OpCode::CALL, methodIndex);
 }

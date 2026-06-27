@@ -1,17 +1,39 @@
 #include "create_class_stmt_rule.hpp"
-#include "../../../ast/stmt/create_class_stmt.hpp"
-#include "../../../ast/stmt/incomplete_block_stmt.hpp"
-#include "../../../types/known_types.hpp"
-#include "../../../understanding/doctrine/law/ungodly_naming.hpp"
+#include "ast/stmt/create_class_stmt.hpp"
+#include "ast/stmt/incomplete_block_stmt.hpp"
+#include "ast/stmt/create_method_stmt.hpp"
+#include "ast/stmt/create_var_stmt.hpp"
+#include "interpreter/runtime/method.hpp"
+#include "types/known_types.hpp"
+#include "understanding/doctrine/law/ungodly_naming.hpp"
 #include <stdexcept>
 
 static void registerParseTimeClass(ParserContext &ctx, const std::string &className,
                                    const std::string &module_name,
-                                   const std::shared_ptr<CreationType> &parent_class)
+                                   const std::shared_ptr<CreationType> &parent_class,
+                                   const std::vector<std::shared_ptr<Stmt>> &body)
 {
     std::vector<std::shared_ptr<IConstraint>> constraints;
     auto userClass = std::make_shared<CreationType>(
         PrimitiveType::Class, className, module_name, parent_class, constraints);
+
+    for (const auto &member : body)
+    {
+        if (auto attr = dynamic_cast<CreateVarStmt *>(member.get()))
+        {
+            userClass->class_attributes->createVar(attr->base_type, attr->name, Value());
+        }
+        else if (auto methodStmt = dynamic_cast<CreateMethodStmt *>(member.get()))
+        {
+            auto method = std::make_shared<Method>(
+                methodStmt->name,
+                methodStmt->params,
+                methodStmt->body,
+                methodStmt->returnType);
+
+            userClass->addMethod(methodStmt->name, method);
+        }
+    }
 
     ctx.registerType(userClass);
     ctx.registerClassName(className);
@@ -88,7 +110,7 @@ std::unique_ptr<Stmt> CreateClassStmtRule::parse(ParserContext &ctx)
     {
         // Allowing 'empty-bodied' classes without ': amen'.
         // Just: let there be Light
-        registerParseTimeClass(ctx, className, module_name, baseClassType);
+        registerParseTimeClass(ctx, className, module_name, baseClassType, body);
         return std::make_unique<CreateClassStmt>(className, module_name, baseClassType, body);
     }
 
@@ -130,6 +152,6 @@ std::unique_ptr<Stmt> CreateClassStmtRule::parse(ParserContext &ctx)
     if (!ctx.match(TokenType::AMEN))
         throw std::runtime_error("Expected 'amen' after ':' in '" + stmt + "' to close class body.");
 
-    registerParseTimeClass(ctx, className, module_name, baseClassType);
+    registerParseTimeClass(ctx, className, module_name, baseClassType, body);
     return std::make_unique<CreateClassStmt>(className, module_name, baseClassType, body);
 }

@@ -102,6 +102,14 @@ const std::shared_ptr<CreationType> KnownTypes::resolve(const std::string &name,
     if (it != typesByName.end())
         return it->second;
 
+    if (module != "core")
+    {
+        const std::string fallbackKey = makeKey("core", name);
+        auto fallbackIt = typesByName.find(fallbackKey);
+        if (fallbackIt != typesByName.end())
+            return fallbackIt->second;
+    }
+
     return nullptr;
 }
 

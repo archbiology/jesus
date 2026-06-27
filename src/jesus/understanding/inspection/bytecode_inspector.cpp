@@ -71,6 +71,7 @@ void BytecodeInspector::inspect(Interpreter &jesus, const InspectStmt &)
             opcode_str = maybeRed(padded_opcode);
             break;
         case OpCode::RETURN:
+        case OpCode::CALL:
             opcode_str = maybeBold(padded_opcode);
             break;
 
@@ -83,6 +84,7 @@ void BytecodeInspector::inspect(Interpreter &jesus, const InspectStmt &)
         switch (instr.opcode)
         {
         case OpCode::PUSH_LITERAL:
+        case OpCode::CALL:
         {
             const auto &value = chunk.literals[instr.operand];
             std::cout << " const[" << instr.operand << "] = " << value.toString();
