@@ -22,14 +22,17 @@ public:
     std::vector<std::string> varNames;
     std::unique_ptr<Expr> iterable;
     std::vector<std::unique_ptr<Stmt>> body;
+    std::shared_ptr<Heart> scope;
 
     ForEachStmt(
         std::vector<std::string> varNames,
         std::unique_ptr<Expr> iterable,
+        std::shared_ptr<Heart> scope,
         std::vector<std::unique_ptr<Stmt>> body)
         : varNames(std::move(varNames)),
           iterable(std::move(iterable)),
+          scope(std::move(scope)),
           body(std::move(body)) {}
 
-  void accept(StmtVisitor &visitor) const override;
+    void accept(StmtVisitor &visitor) const override;
 };

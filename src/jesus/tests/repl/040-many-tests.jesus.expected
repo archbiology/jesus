@@ -4,7 +4,7 @@ CreateVarStmt(messiah, LiteralExpr(Jesus))
 CreateVarStmt(age, LiteralExpr((int) 33))
 CreateVarStmt(priest, LiteralExpr(me))
 CreateVarStmt(average, LiteralExpr((double) 2.300000))
-PrintStmt(SAY: VariableExpr(age))
+PrintStmt(SAY: VariableExpr('age'))
 (Jesus) Jesus
 (Jesus) me
 (Jesus) (int) 33
@@ -102,15 +102,15 @@ PrintStmt(SAY: VariableExpr(age))
 (Jesus) (Jesus) (int) 0
 (Jesus) (Jesus) (double) 3.140000
 (Jesus) (Jesus) (double) -6.000000
-(Jesus) ❌ Error: Unknown base type: 'positive'
+(Jesus) ❌ Error: Unknown variable type: 'positive'
 (Jesus) ❌ Error: Undefined variable: elders (scope: __jesus__)
-(Jesus) ❌ Error: Unknown base type: 'positive'
+(Jesus) ❌ Error: Unknown variable type: 'positive'
 (Jesus) ❌ Error: Undefined variable: sinful (scope: __jesus__)
-(Jesus) ❌ Error: Unknown base type: 'negative'
+(Jesus) ❌ Error: Unknown variable type: 'negative'
 (Jesus) ❌ Error: Undefined variable: debt (scope: __jesus__)
-(Jesus) ❌ Error: Unknown base type: 'negative'
+(Jesus) ❌ Error: Unknown variable type: 'negative'
 (Jesus) ❌ Error: Undefined variable: credit (scope: __jesus__)
-(Jesus) ❌ Error: Unknown base type: 'negative'
+(Jesus) ❌ Error: Unknown variable type: 'negative'
 (Jesus) ❌ Error: Undefined variable: void (scope: __jesus__)
 (Jesus) (Jesus) (int) 7
 (Jesus) ❌ Error: Expected value >= (double) 0.000000
@@ -137,7 +137,7 @@ Example:
 1 John 1:9 — If we confess our sins (to Jesus Christ, not to man), he is faithful and just and will forgive us our sins and purify us from all unrighteousness.
 ❌ Error: Invalid value '(int) 13' for variable 'rebellion' declared as type text
 (Jesus) ❌ Error: Undefined variable: rebellion (scope: __jesus__)
-(Jesus) ❌ Error: Unknown base type: 'car'
+(Jesus) ❌ Error: Unknown variable type: 'car'
 (Jesus) ❌ Error: Undefined variable: hilux (scope: __jesus__)
 (Jesus) (Jesus) (int) 490
 (Jesus) (Jesus) Jesus loves YOU
@@ -192,9 +192,9 @@ What is your age again (curent: (int) 33)? (Jesus) (double) 2025.000000
 (Jesus) {type: "instance",
  class: "Person",
  attributes: {
-  age: "(int) 930",
+  name: "Adam",
   wife: "Eve",
-  name: "Adam"
+  age: "(int) 930"
  }
 }
 (Jesus) I am inside functionWithoutParams
@@ -227,9 +227,9 @@ null
 (Jesus) Hi, {type: "instance",
  class: "Person",
  attributes: {
-  age: "(int) 930",
+  name: "Adopted by Jesus Christ",
   wife: "Eve",
-  name: "Adopted by Jesus Christ"
+  age: "(int) 930"
  }
 } (double-quoted)
 (Jesus) Your name is Adopted by Jesus Christ
@@ -311,7 +311,15 @@ null
 (Jesus) (Jesus) Inside try-repent.
 Pleas forgive my sins, Oh God Almighty.
 God always wins.
-(Jesus) (Jesus) CreateClassStmt
+(Jesus) (Jesus) CreateClassStmt(name: 'GrandSon', body: [
+  CreateVarStmt(surname, LiteralExpr(Isaacson)),
+  CreateMethodStmt('praise', body: [
+    UpdateVarStmt('name', value: LiteralExpr(Jacob)),
+    PrintStmt(SAY: FormattedStringExpr("Bethel ({name} {surname}),)")]),
+  CreateMethodStmt('who', body: [
+    PrintStmt(SAY: FormattedStringExpr("I am Israel, previously named {name}.)")]),
+  CreateMethodStmt('generateJudah', body: [
+    PrintStmt(SAY: FormattedStringExpr("Judah is my lion, and my name is {name}.)")])])
 AST Memory: 8 bytes
 (Jesus) (Jesus) Class name 'Alien' does not appear to reflect God's standards.
 To hide this warning, declare the class explicitly as 'ungodly'.
@@ -349,18 +357,16 @@ It has 3 elements (valid indexes: 0 to 2).
 (Jesus) (Jesus) (Jesus) (Jesus) [[{type: "instance",
  class: "Son",
  attributes: {
-  surname: "Terahson",
-  name: "Jacob"
-
-  surname: "Hijo"
+  surname: "Hijo",
+  name: "Abraham"
  }
 }]]
 (Jesus) (Jesus) Apostle Matt
 Apostle Marcos
 Apostle Luke
-(Jesus) Luke
+(Jesus) null
 (Jesus) (Jesus) (Jesus) name -> Jesus
 surname -> Christ
 role -> Savior
-(Jesus) Savior
+(Jesus) null
 (Jesus) 

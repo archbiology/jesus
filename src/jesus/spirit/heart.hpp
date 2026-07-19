@@ -16,6 +16,12 @@ REGISTER_FOR_UML(
                       "registerVarType", "updatePolymorphicVarType",
                       "registerClassName"}));
 
+struct VariableAddress
+{
+    uint32_t slot;
+    uint32_t scopeId;
+};
+
 /**
  * @brief The Heart class stores variables declared during execution.
  *
@@ -32,6 +38,7 @@ class Heart : JesusProgrammingLanguage
 {
 
 public:
+    uint32_t scopeId;
     const std::string scope_name;
 
     /**
@@ -41,26 +48,29 @@ public:
      */
     explicit Heart(std::string scope_name, std::shared_ptr<Heart> parent = nullptr)
         : scope_name(scope_name),
+          scopeId(nextId++),
           parent_attributes(std::move(parent)),
           semantics_analyzer(std::make_shared<SpiritOfUnderstanding>()) {}
 
     /**
      * @brief Construct a new Heart object
      *
-     * @param scope_name The scope name of the final copy
-     * @param other The original that will be used as a copy
+     * @param new_scope_name The scope name of the final copy
      */
     std::shared_ptr<Heart> clone(const std::string &new_scope_name, std::shared_ptr<Heart> parent_attributes_override = nullptr) const
     {
-        auto copy = std::make_shared<Heart>(scope_name);
-        copy->variables = variables;
+        auto copy = std::make_shared<Heart>(new_scope_name);
+        copy->slots = slots;
+        copy->values = values;
+        copy->paramsCount = paramsCount;
+        copy->scopeId = scopeId;
         copy->variableOrder = variableOrder;
         copy->semantics_analyzer = semantics_analyzer;
 
         if (parent_attributes_override)
             copy->parent_attributes = parent_attributes_override;
         else
-            copy->parent_attributes = parent_attributes;
+            copy->parent_attributes = parent_attributes ? parent_attributes->clone(new_scope_name + ":parent") : nullptr;
 
         return copy;
     }
@@ -101,7 +111,8 @@ public:
      * @param name The name of the variable (e.g., "age")
      * @param value The value to assign (e.g., "33")
      */
-    void createVar(const VarType &type, const std::string &name, const Value &value);
+    void createVar(const VarType &type, const std::string &name, const Value &value, bool isParam = false);
+    VariableAddress declareVar(const VarType &type, const std::string &name, bool isParam);
 
     /**
      * @brief Retrieves the value of a variable.
@@ -110,10 +121,10 @@ public:
      * Kingdom of Heaven is like a man who is a householder,
      * who brings out of his treasure new and old things.” - Matthew 13:52
      *
-     * @param name The name of the variable to retrieve.
+     * @param address The address of the variable to retrieve.
      * @return Value The value, which may be std::monostate if not found.
      */
-    Value getVar(const std::string &name) const;
+    Value getVar(const VariableAddress address) const;
 
     /**
      * @brief Updates the value of an already existing variable.
@@ -126,16 +137,17 @@ public:
      *
      * @throws std::runtime_error If the variable doesn't exist yet.
      */
-    void updateVar(const std::string &name, const Value &value);
+    void updateVar(const uint32_t slot, const Value &value);
+    void updateVar(const VariableAddress &address, const Value &value);
 
     bool isEmpty() const
     {
-        return variables.empty();
+        return values.empty();
     }
 
     bool size() const
     {
-        return variables.size();
+        return values.size();
     }
 
     void registerVarType(const VarType &type, const std::string &name)
@@ -169,22 +181,33 @@ public:
         return variableOrder;
     }
 
+    void appendToString(std::string &out, std::unordered_set<std::string> &vars_printed) const
+    {
+
+        for (size_t i = 0; i < variableOrder.size(); ++i)
+        {
+            const auto &name = variableOrder[i];
+
+            if (vars_printed.contains(name))
+                continue;
+
+            vars_printed.insert(name);
+
+            out += "\n  " + name + ": \"" + values[i].toString() + "\",";
+        }
+
+        if (parent_attributes)
+            parent_attributes->appendToString(out, vars_printed);
+    }
+
     const std::string toString() const
     {
         std::string str = "";
-        bool removeLastComma = false;
+        std::unordered_set<std::string> vars_printed;
 
-        if (parent_attributes)
-            str = parent_attributes->toString();
+        appendToString(str, vars_printed);
 
-        for (auto &pair : variables)
-        {
-            const std::string &key = pair.first;
-            const Value &value = pair.second;
-
-            str += "\n  " + key + ": \"" + value.toString() + "\",";
-            removeLastComma = true;
-        }
+        bool removeLastComma = !str.empty();
 
         if (removeLastComma)
         {
@@ -195,9 +218,38 @@ public:
         return str;
     }
 
+    VariableAddress resolveVariableAddress(const std::string &name) const
+    {
+        if (!slots.contains(name))
+        {
+            throw std::runtime_error("No slot found in " + scope_name + " for : " + name);
+        }
+
+        return {.slot = slots.at(name), .scopeId = scopeId};
+    }
+
+    /**
+     * @brief Resolves a variable slot walking the inheritance chain (child before parent).
+     */
+    VariableAddress resolveVariableAddressInHierarchy(const std::string &name) const
+    {
+        if (slots.contains(name))
+            return {.slot = slots.at(name), .scopeId = scopeId};
+
+        if (parent_attributes)
+            return parent_attributes->resolveVariableAddressInHierarchy(name);
+
+        throw std::runtime_error("No slot found in hierarchy of " + scope_name + " for: " + name);
+    }
+
+    int paramsCount = 0;
+
 private:
     std::shared_ptr<Heart> parent_attributes = nullptr;
+    std::unordered_map<std::string, uint32_t> slots;
+    static uint32_t nextId;
+
     std::vector<std::string> variableOrder; // insertion order
-    std::unordered_map<std::string, Value> variables;
+    std::vector<Value> values;
     std::shared_ptr<SpiritOfUnderstanding> semantics_analyzer;
 };

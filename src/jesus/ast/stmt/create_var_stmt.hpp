@@ -19,12 +19,12 @@ REGISTER_FOR_UML(
 class CreateVarStmt : public Stmt
 {
 public:
-    std::shared_ptr<CreationType> base_type;
     std::string name;
+    VariableAddress address;
     std::unique_ptr<Expr> value;
 
-    CreateVarStmt(std::shared_ptr<CreationType> type, std::string name, std::unique_ptr<Expr> value)
-        : base_type(type), name(name), value(std::move(value)) {}
+    CreateVarStmt(std::string name, VariableAddress address, std::unique_ptr<Expr> value)
+        : name(name), address(address), value(std::move(value)) {}
 
     /**
      * @brief Returns a string representation of the statement.

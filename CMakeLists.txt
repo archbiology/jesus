@@ -13,6 +13,9 @@ include_directories(src/jesus src/bible/include)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
+message(NOTICE "\n   Jesus Christ loves YOU!!!\n")
+message(NOTICE "   Confess Jesus Christ as your lord and savior, and live (type: jesus confess)")
+
 # ------------------------------------------------------------------------------
 # Version Information (auto-generated)
 #
@@ -63,7 +66,8 @@ configure_file(
     ${CMAKE_SOURCE_DIR}/src/jesus/utils/version.hpp
     @ONLY
 )
-message(STATUS "\n   Build date (Jerusalem Scriptural Time / UTC+9): ${JESUS_BUILD_DATE} ${JESUS_BUILD_TIME}\n")
+message(NOTICE "\n   Build date (Jerusalem Scriptural Time / UTC+9): ${JESUS_BUILD_DATE} ${JESUS_BUILD_TIME}\n")
+message(NOTICE "   Build type: ${CMAKE_BUILD_TYPE}\n")
 
 # -------------------
 # Define source files

@@ -24,6 +24,7 @@ class VariableExpr : public Expr
 {
 public:
     std::string name;
+    const VariableAddress address;
 
     /**
      * @brief Constructs a VariableExpr with a given name.
@@ -38,12 +39,12 @@ public:
      *
      * @param name The name of the variable being referenced (e.g., prophet).
      */
-    explicit VariableExpr(const std::string &name)
-        : name(name), Expr(ExprKind::Variable) {}
+    explicit VariableExpr(const VariableAddress address, std::string name)
+        : address(address), name(name), Expr(ExprKind::Variable) {}
 
     Value evaluate(std::shared_ptr<Heart> heart) const override
     {
-        return heart->getVar(name);
+        return heart->getVar(address);
     }
 
     Value accept(ExprVisitor &visitor) const override;
@@ -62,5 +63,5 @@ public:
      * "For nothing is hidden that will not be made manifest, nor is anything
      * secret that will not be known and come to light." — Luke 8:17
      */
-    virtual std::string toString() const override { return "VariableExpr(" + name + ")"; }
+    virtual std::string toString() const override { return "VariableExpr('" + name + "')"; }
 };

@@ -44,14 +44,14 @@ void Interpreter::execute(const std::shared_ptr<Stmt> &stmt)
     stmt->accept(*this);
 }
 
-void Interpreter::createVariable(const VarType &type, const std::string &name, const Value &value)
+void Interpreter::createVariable(const VariableAddress address, const Value &value)
 {
-    currentModule->symbol_table->createVar(type, name, value);
+    currentModule->symbol_table->updateVar(address, value);
 }
 
-void Interpreter::updateVariable(const std::string &name, const Value &value)
+void Interpreter::updateVariable(const VariableAddress address, const Value &value)
 {
-    currentModule->symbol_table->updateVar(name, value);
+    currentModule->symbol_table->updateVar(address, value);
 }
 
 Value Interpreter::visitBinary(const BinaryExpr &expr)
@@ -76,7 +76,7 @@ Value Interpreter::visitVariable(const VariableExpr &expr)
 
 Value Interpreter::visitCreateInstanceExpr(const CreateInstanceExpr &expr)
 {
-    auto instance = std::make_shared<Instance>(expr.klass);
+    auto instance = std::make_shared<Instance>(expr.klass, expr.name);
     return Value(instance);
 }
 
@@ -86,7 +86,7 @@ Value Interpreter::visitGetAttribute(const GetAttributeExpr &expr)
 
     std::shared_ptr<Instance> instance = obj.toInstance();
 
-    return instance->getAttribute(expr.attribute);
+    return instance->getAttribute(expr.address);
 }
 
 Value Interpreter::visitParityCheckExpr(const ParityCheckExpr &expr)
@@ -144,7 +144,7 @@ std::string Interpreter::valueToString(const Value &value)
 void Interpreter::visitCreateVar(const CreateVarStmt &stmt)
 {
     Value val = evaluate(stmt.value);
-    createVariable(stmt.base_type, stmt.name, val);
+    createVariable(stmt.address, val);
     registerAstNodeForInspection(stmt.name, &stmt);
 }
 
@@ -182,26 +182,20 @@ Value Interpreter::askAndValidate(const std::shared_ptr<Expr> ask_expr, std::sha
 void Interpreter::visitCreateVarWithAsk(const CreateVarWithAskStmt &stmt)
 {
     Value value = askAndValidate(stmt.ask_expr, stmt.var_type);
-    createVariable(stmt.var_type, stmt.var_name, value);
+    createVariable(stmt.address, value);
     registerAstNodeForInspection(stmt.var_name, &stmt);
 }
 
 void Interpreter::visitUpdateVarWithAsk(const UpdateVarWithAskStmt &stmt)
 {
     Value value = askAndValidate(stmt.ask_expr, stmt.var_type);
-    updateVariable(stmt.var_name, value);
+    updateVariable(stmt.address, value);
 }
 
 void Interpreter::visitCreateClass(const CreateClassStmt &stmt)
 {
-    std::vector<std::shared_ptr<IConstraint>> constraints; // no constraints yet
-
-    auto userClass = std::make_shared<CreationType>(
-        PrimitiveType::Class,
-        stmt.name,
-        stmt.module_name,
-        stmt.parent_class,
-        constraints);
+    auto userClass = stmt.userClass;
+    auto scope = currentModule->symbol_table->currentScope();
 
     for (auto &member : stmt.body)
     {
@@ -210,25 +204,12 @@ void Interpreter::visitCreateClass(const CreateClassStmt &stmt)
         // -----------------
         if (auto attr = dynamic_cast<CreateVarStmt *>(member.get()))
         {
-            userClass->addAttribute(attr->base_type, attr->name, std::move(attr->value), currentModule->symbol_table->currentScope());
-        }
-        // --------------
-        // handle methods
-        // --------------
-        else if (auto methodStmt = dynamic_cast<CreateMethodStmt *>(member.get()))
-        {
-            auto method = std::make_shared<Method>(
-                methodStmt->name,
-                methodStmt->params,
-                methodStmt->body,
-                methodStmt->returnType);
-
-            userClass->addMethod(methodStmt->name, method);
+            auto initialValue = attr->value->evaluate(scope);
+            userClass->class_attributes->updateVar(attr->address.slot, initialValue); // FIXME: Set only non-literals. Literals must be set at parse time, on registerParseTimeClass
         }
     }
 
     KnownTypes::registerType(userClass);
-    currentModule->symbol_table->createVar(userClass, userClass->name, Value(userClass));
     registerAstNodeForInspection(userClass->name, &stmt);
 }
 
@@ -239,6 +220,7 @@ void Interpreter::visitCreateVarType(const CreateVarTypeStmt &stmt)
         stmt.name,
         stmt.module_name,
         stmt.base_type,
+        stmt.base_type->class_attributes,
         stmt.constraints);
 
     KnownTypes::registerType(std::move(custom_type));
@@ -248,7 +230,7 @@ void Interpreter::visitCreateVarType(const CreateVarTypeStmt &stmt)
 void Interpreter::visitUpdateVar(const UpdateVarStmt &stmt)
 {
     Value val = evaluate(stmt.value);
-    updateVariable(stmt.name, val);
+    currentModule->symbol_table->updateVar(stmt.name, val);
 }
 
 void Interpreter::visitAssignStmt(const AssignStmt &stmt)
@@ -515,7 +497,7 @@ void Interpreter::visitForEach(const ForEachStmt &stmt)
 
     auto &items = listValue.asList();
 
-    currentModule->symbol_table->addScope(std::make_shared<Heart>("foreach"));
+    currentModule->symbol_table->addScope(stmt.scope);
     for (const std::shared_ptr<Value> &value : items)
     {
         // ----------------------
@@ -523,7 +505,7 @@ void Interpreter::visitForEach(const ForEachStmt &stmt)
         // ----------------------
         if (stmt.varNames.size() == 1)
         {
-            updateVariable(stmt.varNames[0], *value);
+            stmt.scope->updateVar(0, *value);
         }
         // --------------------------------
         // foreach key, value in dict.pairs
@@ -544,8 +526,8 @@ void Interpreter::visitForEach(const ForEachStmt &stmt)
                 throw std::runtime_error("foreach key,value expects pairs with exactly 2 values. Got '" +std::to_string(pair.size()) + "' values.");
             }
 
-            updateVariable(stmt.varNames[0], *pair[0]);
-            updateVariable(stmt.varNames[1], *pair[1]);
+            stmt.scope->updateVar(0, *pair[0]);
+            stmt.scope->updateVar(1, *pair[1]);
         }
 
         try
@@ -829,9 +811,10 @@ void Interpreter::visitImportModuleStmt(const ImportModuleStmt &stmt)
     if (stmt.importedSymbols.empty())
     {
         std::string name = stmt.moduleAlias.empty() ? importedModule->name : stmt.moduleAlias;
+        const bool isParam = false;
 
         // Bind module object to its name
-        currentModule->symbol_table->createVar(KnownTypes::MODULE, name, Value(importedModule));
+        currentModule->symbol_table->createVar(KnownTypes::MODULE, name, Value(importedModule), isParam);
         registerAstNodeForInspection(name, &stmt);
         return;
     }
@@ -839,15 +822,17 @@ void Interpreter::visitImportModuleStmt(const ImportModuleStmt &stmt)
     // -------------------------------
     // from moduleName come MemberName
     // -------------------------------
-    for (const auto& symbol : stmt.importedSymbols)
-    {
-        std::string symbolToExpose = symbol.alias.empty() ? symbol.originalName : symbol.alias;
-        Value member = importedModule->getVar(symbol.originalName);
-        auto memberType = importedModule->getVarType(symbol.originalName);
+    // FIXME: This was disabled when using slots instead of string as varnames to speed things up. We need it back.
+    // for (const auto& symbol : stmt.importedSymbols)
+    // {
+    //     std::string symbolToExpose = symbol.alias.empty() ? symbol.originalName : symbol.alias;
+    //     // Value member = importedModule->getVar(symbol.originalName);
+    //     Value member = importedModule->getVar(symbol.originalName);
+    //     auto memberType = importedModule->getVarType(symbol.originalName);
 
-        currentModule->symbol_table->createVar(memberType, symbolToExpose, member);
-        registerAstNodeForInspection(symbolToExpose, &stmt);
-    }
+    //     currentModule->symbol_table->createVar(memberType, symbolToExpose, member);
+    //     registerAstNodeForInspection(symbolToExpose, &stmt);
+    // }
 }
 
 void Interpreter::addModule(const std::string &path, std::shared_ptr<Module> module)

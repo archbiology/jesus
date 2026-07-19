@@ -8,22 +8,20 @@
 #include "understanding/doctrine/law/ungodly_naming.hpp"
 #include <stdexcept>
 
-static void registerParseTimeClass(ParserContext &ctx, const std::string &className,
-                                   const std::string &module_name,
-                                   const std::shared_ptr<CreationType> &parent_class,
-                                   const std::vector<std::shared_ptr<Stmt>> &body)
+static std::shared_ptr<CreationType> registerParseTimeClass(
+    ParserContext &ctx, const std::string &className,
+    const std::string &module_name,
+    const std::shared_ptr<CreationType> &parent_class,
+    const std::shared_ptr<Heart> &attributes,
+    const std::vector<std::shared_ptr<Stmt>> &body)
 {
     std::vector<std::shared_ptr<IConstraint>> constraints;
     auto userClass = std::make_shared<CreationType>(
-        PrimitiveType::Class, className, module_name, parent_class, constraints);
+        PrimitiveType::Class, className, module_name, parent_class, std::move(attributes), constraints);
 
     for (const auto &member : body)
     {
-        if (auto attr = dynamic_cast<CreateVarStmt *>(member.get()))
-        {
-            userClass->class_attributes->createVar(attr->base_type, attr->name, Value());
-        }
-        else if (auto methodStmt = dynamic_cast<CreateMethodStmt *>(member.get()))
+        if (auto methodStmt = dynamic_cast<CreateMethodStmt *>(member.get()))
         {
             auto method = std::make_shared<Method>(
                 methodStmt->name,
@@ -37,6 +35,8 @@ static void registerParseTimeClass(ParserContext &ctx, const std::string &classN
 
     ctx.registerType(userClass);
     ctx.registerClassName(className);
+
+    return userClass;
 }
 
 std::unique_ptr<Stmt> CreateClassStmtRule::parse(ParserContext &ctx)
@@ -101,6 +101,7 @@ std::unique_ptr<Stmt> CreateClassStmtRule::parse(ParserContext &ctx)
     // ---------------------------
     // The class may not have body
     // ---------------------------
+    auto attributes = std::make_shared<Heart>("class:" + className, baseClassType->class_attributes);
     std::vector<std::shared_ptr<Stmt>> body;
     std::string module_name = ctx.moduleName;
 
@@ -110,8 +111,8 @@ std::unique_ptr<Stmt> CreateClassStmtRule::parse(ParserContext &ctx)
     {
         // Allowing 'empty-bodied' classes without ': amen'.
         // Just: let there be Light
-        registerParseTimeClass(ctx, className, module_name, baseClassType, body);
-        return std::make_unique<CreateClassStmt>(className, module_name, baseClassType, body);
+        auto userClass = registerParseTimeClass(ctx, className, module_name, baseClassType, std::move(attributes), body);
+        return std::make_unique<CreateClassStmt>(className, module_name, baseClassType, body, std::move(userClass));
     }
 
     if (!ctx.match(TokenType::COLON))
@@ -122,7 +123,6 @@ std::unique_ptr<Stmt> CreateClassStmtRule::parse(ParserContext &ctx)
     // ----------
     // Class body
     // ----------
-    auto attributes = std::make_shared<Heart>(className);
     ctx.addScope(attributes); // <🟢️>
 
     while (!ctx.check(TokenType::AMEN) && !ctx.isAtEnd())
@@ -152,6 +152,6 @@ std::unique_ptr<Stmt> CreateClassStmtRule::parse(ParserContext &ctx)
     if (!ctx.match(TokenType::AMEN))
         throw std::runtime_error("Expected 'amen' after ':' in '" + stmt + "' to close class body.");
 
-    registerParseTimeClass(ctx, className, module_name, baseClassType, body);
-    return std::make_unique<CreateClassStmt>(className, module_name, baseClassType, body);
+    auto userClass = registerParseTimeClass(ctx, className, module_name, baseClassType, std::move(attributes), body);
+    return std::make_unique<CreateClassStmt>(className, module_name, baseClassType, body, std::move(userClass));
 }

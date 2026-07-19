@@ -26,18 +26,24 @@ public:
     explicit Module(std::string name, std::string path, std::shared_ptr<SymbolTable> symbol_table)
         : name(name), file_path(path), symbol_table(std::move(symbol_table)) {}
 
-    void createVar(const VarType &type, const std::string &name, const Value &value)
+    void createVar(const VarType &type, const std::string &name, const Value &value, bool isParam)
     {
-        symbol_table->createVar(type, name, value);
+        symbol_table->createVar(type, name, value, isParam);
     }
 
-    bool varExistsInHierarchy(const std::string &name) {
+    bool varExistsInHierarchy(const std::string &name)
+    {
         return symbol_table->varExistsInHierarchy(name);
     }
 
-    Value getVar(const std::string &name) const
+    Value getVar(const VariableAddress address) const
     {
-        return symbol_table->getVar(name);
+        return symbol_table->getVar(address);
+    }
+
+    VariableAddress resolveVariableAddress(std::string &name)
+    {
+        return symbol_table->resolveVariableAddress(name);
     }
 
     std::shared_ptr<CreationType> getVarType(const std::string &name) const

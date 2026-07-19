@@ -4,12 +4,13 @@
 
 void ListType::registerMethods()
 {
+    const bool isParam = true;
     // -----------
     // add(value)
     // -----------
     {
         auto params = std::make_shared<Heart>("list.add");
-        params->createVar(elementType, "item", Value::formless());
+        params->createVar(elementType, "item", Value::formless(), isParam);
         addMethod("add", std::make_shared<NativeMethod>("add", params, KnownTypes::VOID, ListType::addItem));
     }
 
@@ -18,7 +19,7 @@ void ListType::registerMethods()
     // --------------
     {
         auto params = std::make_shared<Heart>("list.remove");
-        params->createVar(elementType, "item", Value::formless());
+        params->createVar(elementType, "item", Value::formless(), isParam);
         addMethod("remove", std::make_shared<NativeMethod>("remove", params, KnownTypes::BOOLEAN, ListType::removeItem));
     }
 
@@ -27,7 +28,7 @@ void ListType::registerMethods()
     // -----------------
     {
         auto params = std::make_shared<Heart>("list.remove_at");
-        params->createVar(KnownTypes::INT, "index", Value::formless());
+        params->createVar(KnownTypes::INT, "index", Value::formless(), isParam);
         addMethod("remove_at", std::make_shared<NativeMethod>("remove_at", params, elementType, ListType::removeAt));
     }
 
@@ -52,7 +53,7 @@ void ListType::registerMethods()
     // ----------------
     {
         auto params = std::make_shared<Heart>("list.contains");
-        params->createVar(elementType, "item", Value::formless());
+        params->createVar(elementType, "item", Value::formless(), isParam);
         addMethod("contains", std::make_shared<NativeMethod>("contains", params, KnownTypes::BOOLEAN, ListType::contains));
     }
 

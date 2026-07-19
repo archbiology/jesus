@@ -68,9 +68,10 @@ std::unique_ptr<Stmt> ForEachStmtRule::parse(ParserContext &ctx)
     auto elementType = listType->elementType;
 
     auto foreachScope = std::make_shared<Heart>("foreach." + varNames[0]);
+    auto isParam = false;
     if (varNames.size() == 1)
     {
-        foreachScope->createVar(elementType, varNames[0], Value::formless());
+        foreachScope->declareVar(elementType, varNames[0], isParam);
     }
     else
     {
@@ -84,8 +85,8 @@ std::unique_ptr<Stmt> ForEachStmtRule::parse(ParserContext &ctx)
                 listType->elementType->name + "'.");
         }
 
-        foreachScope->createVar(innerListType->elementType, varNames[0], Value::formless());
-        foreachScope->createVar(innerListType->elementType, varNames[1], Value::formless());
+        foreachScope->declareVar(innerListType->elementType, varNames[0], isParam);
+        foreachScope->declareVar(innerListType->elementType, varNames[1], isParam);
     }
 
     // ----------
@@ -103,7 +104,7 @@ std::unique_ptr<Stmt> ForEachStmtRule::parse(ParserContext &ctx)
     }
     ctx.popScope(); // </🟢️>
 
-    return std::make_unique<ForEachStmt>(std::move(varNames), std::move(iterable), std::move(body));
+    return std::make_unique<ForEachStmt>(std::move(varNames), std::move(iterable), foreachScope, std::move(body));
 }
 
 std::vector<std::unique_ptr<Stmt>> ForEachStmtRule::parseBody(ParserContext &ctx)

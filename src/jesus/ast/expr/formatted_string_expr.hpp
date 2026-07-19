@@ -65,5 +65,5 @@ public:
      * "For nothing is hidden that will not be made manifest, nor is anything
      * secret that will not be known and come to light." — Luke 8:17
      */
-    virtual std::string toString() const override { return "FormattedStringExpr('" + raw + ")'"; }
+    virtual std::string toString() const override { return "FormattedStringExpr(\"" + raw + ")\""; }
 };

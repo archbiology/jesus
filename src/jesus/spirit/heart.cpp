@@ -1,58 +1,84 @@
 #include "heart.hpp"
 #include <stdexcept>
 
-void Heart::createVar(const VarType &type, const std::string &name, const Value &value)
+uint32_t Heart::nextId = 0;
+
+VariableAddress Heart::declareVar(const VarType &type, const std::string &name, bool isParam)
 {
-    if (localVarExists(name))
+    if (slots.contains(name))
     {
         throw std::runtime_error("The variable '" + name + "' already exists in this scope (" + scope_name + ").");
     }
 
-    variables[name] = value;
+    uint32_t slot = values.size();
+
+    slots[name] = slot;
+    values.emplace_back();         // default-constructed Value
+    variableOrder.push_back(name); // preserve insertion order to assign 'args' to method 'params' by index.
+
     registerVarType(type, name);
 
-    variableOrder.push_back(name); // preserve insertion order to assign 'args' to method 'params' by index.
+    if (isParam)
+        paramsCount++;
+
+    return VariableAddress{.slot = slot, .scopeId = scopeId};
 }
 
-Value Heart::getVar(const std::string &name) const
+void Heart::createVar(const VarType &type, const std::string &name, const Value &value, bool isParam)
 {
-    auto it = variables.find(name);
-    if (it != variables.end())
-    {
-        return it->second;
-    }
+    auto address = declareVar(type, name, isParam);
+    updateVar(address, value);
+}
+
+Value Heart::getVar(const VariableAddress address) const
+{
+    if (address.scopeId == scopeId)
+        return values[address.slot];
 
     if (parent_attributes)
     {
-        return parent_attributes->getVar(name);
+        return parent_attributes->getVar(address);
     }
 
-    throw std::runtime_error("Undefined variable: " + name + " (scope: " + scope_name + ")");
+    throw std::runtime_error(
+        "Invalid variable address (scopeId=" + std::to_string(address.scopeId) + ", slot=" + std::to_string(address.slot) + ")." +
+        " Current scope: " + scope_name + " (scopeId=" + std::to_string(scopeId) + ").");
 }
 
-void Heart::updateVar(const std::string &name, const Value &value)
+void Heart::updateVar(const uint32_t slot, const Value &value)
+{
+    if (slot >= values.size())
+    {
+        throw std::runtime_error("updateVar: Invalid variable slot " + std::to_string(slot) + " (scope: " + scope_name + ", values: " + std::to_string(values.size()) + ")");
+    }
+
+    values[slot] = value;
+}
+
+void Heart::updateVar(const VariableAddress &address, const Value &value)
 {
      // If it exists locally, update here
-    auto it = variables.find(name);
-    if (it != variables.end())
+    if (address.scopeId == scopeId)
     {
-        it->second = value;
+        updateVar(address.slot, value);
         return;
     }
 
     // Otherwise, recurse to parent
     if (parent_attributes)
     {
-        parent_attributes->updateVar(name, value);
+        parent_attributes->updateVar(address, value);
         return;
     }
 
-    throw std::runtime_error("Cannot assign to undefined variable: " + name + " (scope: " + scope_name + ")");
+    throw std::runtime_error(
+        "Cannot assign to undefined variable (scopeId=" + std::to_string(address.scopeId) + ", slot=" + std::to_string(address.slot) + ")." +
+        " Current scope: " + scope_name + " (scopeId=" + std::to_string(scopeId) + ").");
 }
 
 bool Heart::localVarExists(const std::string &name) const
 {
-    return variables.find(name) != variables.end();
+    return slots.contains(name);
 }
 
 bool Heart::varExistsInHierarchy(const std::string &name) const

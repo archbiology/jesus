@@ -1,6 +1,7 @@
 
 #include "parser_context.hpp"
 #include "../interpreter/interpreter.hpp"
+#include "interpreter/runtime/module.hpp"
 
 ParserContext::ParserContext(
     std::vector<Token> tokens, Interpreter *interpreter,
@@ -15,6 +16,11 @@ bool ParserContext::varExistsInHierarchy(const std::string &name)
 void ParserContext::registerVarType(const VarType &type, const std::string &name)
 {
     interpreter->registerVarType(type, name);
+}
+
+VariableAddress ParserContext::declareVar(const VarType &type, const std::string &name)
+{
+    return interpreter->declareVar(type, name);
 }
 
 void ParserContext::updatePolymorphicVarType(const std::string &name, const VarType &type)
@@ -55,4 +61,12 @@ void ParserContext::addScope(std::shared_ptr<Heart> scope)
 void ParserContext::popScope()
 {
     interpreter->popScope();
+}
+
+VariableAddress ParserContext::resolveVariableAddress(const std::string &name)
+{
+    return interpreter
+        ->currentModule
+        ->symbol_table
+        ->resolveVariableAddress(name);
 }

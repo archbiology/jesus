@@ -270,12 +270,7 @@ void Compiler::compileCreateClassStmt(const CreateClassStmt &stmt)
     std::vector<std::shared_ptr<IConstraint>> constraints; // no constraints yet
 
     auto scope = std::make_shared<Heart>("class::" + stmt.name);
-    auto userClass = std::make_shared<CreationType>(
-        PrimitiveType::Class,
-        stmt.name,
-        stmt.module_name,
-        stmt.parent_class,
-        constraints);
+    auto userClass = stmt.userClass;
 
     for (const auto &member : stmt.body)
     {
@@ -284,24 +279,18 @@ void Compiler::compileCreateClassStmt(const CreateClassStmt &stmt)
         // -----------------
         if (auto attr = dynamic_cast<CreateVarStmt *>(member.get()))
         {
-            userClass->addAttribute(attr->base_type, attr->name, std::move(attr->value), scope);
+            auto initialValue = attr->value->evaluate(scope);
+            userClass->class_attributes->updateVar(attr->address.slot, initialValue);
         }
         // --------------
         // handle methods
         // --------------
         else if (auto methodStmt = dynamic_cast<CreateMethodStmt *>(member.get()))
         {
-            auto method = std::make_shared<Method>(
-                methodStmt->name,
-                methodStmt->params,
-                methodStmt->body,
-                methodStmt->returnType);
-
-            userClass->addMethod(methodStmt->name, method);
         }
         else
         {
-            throw std::runtime_error("Class body member not supported yet");
+            throw std::runtime_error("Class body member not supported yet: " + member->toString());
         }
     }
 

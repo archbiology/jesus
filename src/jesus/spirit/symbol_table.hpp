@@ -48,47 +48,79 @@ public:
         }
     }
 
-    void createVar(const VarType &type, const std::string &name, const Value &value)
+    void createVar(const VarType &type, const std::string &name, const Value &value, bool isParam)
     {
-        current_scope->createVar(type, name, value);
+        current_scope->createVar(type, name, value, isParam);
+    }
+
+    VariableAddress resolveVariableAddress(const std::string &name)
+    {
+        for (auto scope = scopes.rbegin(); scope != scopes.rend(); ++scope)
+        {
+            if ((*scope)->varExistsInHierarchy(name))
+                return (*scope)->resolveVariableAddressInHierarchy(name);
+        }
+
+        throw std::runtime_error("Undefined variable: " + name + " (scope: " + current_scope->scope_name + ")");
     }
 
     Value getVar(const std::string &name) const
     {
-        // FIXME: speed it up:
-        //  1 - Store scope level 'enum class ScopeLevel { PARAMS, INSTANCE_ATTR, GLOBAL };' at parseTime on GetParamExpr|GetAttributeExpr|GetGlobalVarExpr
-        //  2 - store an index into the Heart (like int slot) at parse time, so getVar doesn’t even need to hash the 'name' at runtime — just array access.
+        // FIXME: Use only 'getVar(const VariableAddress address)', which is faster then this 'getVar(const std::string &name)'
+        for (auto scope = scopes.rbegin(); scope != scopes.rend(); ++scope)
+        {
+            if ((*scope)->varExistsInHierarchy(name))
+            {
+                auto address = (*scope)->resolveVariableAddressInHierarchy(name);
+                return (*scope)->getVar(address);
+            }
+        }
 
+        throw std::runtime_error("Undefined variable: " + name + " (scope: " + current_scope->scope_name + ")");
+    }
+
+    Value getVar(const VariableAddress address) const
+    {
         // Iterate over the scopes in reverse order (rbegin, rend)
         for (auto scope = scopes.rbegin(); scope != scopes.rend(); ++scope)
         {
-            auto isVarOnScope = (*scope)->varExistsInHierarchy(name);
-            if (isVarOnScope)
-                return (*scope)->getVar(name);
+            if ((*scope)->scopeId == address.scopeId)
+                return (*scope)->getVar(address);
         }
 
-        return current_scope->getVar(name);
+        return current_scope->getVar(address);
     }
 
     void updateVar(const std::string &name, const Value &value)
     {
-        // FIXME: speed it up:
-        //  1 - Store scope level 'enum class ScopeLevel { PARAMS, INSTANCE_ATTR, GLOBAL };' at parseTime on GetParamExpr|GetAttributeExpr|GetGlobalVarExpr
-        //  2 - store an index into the Heart (like int slot) at parse time, so getVar doesn’t even need to hash the 'name' at runtime — just array access.
+        // FIXME: Use only 'updateVar(const VariableAddress address', which is faster then this 'updateVar(const std::string &name'
+        for (auto scope = scopes.rbegin(); scope != scopes.rend(); ++scope)
+        {
+            if ((*scope)->varExistsInHierarchy(name))
+            {
+                auto address = (*scope)->resolveVariableAddressInHierarchy(name);
+                (*scope)->updateVar(address, value);
+                return;
+            }
+        }
 
+        throw std::runtime_error("Undefined variable: " + name + " (scope: " + current_scope->scope_name + ")");
+    }
+
+    void updateVar(const VariableAddress address, const Value &value)
+    {
         // Iterate over the scopes in reverse order (rbegin, rend)
         for (auto scope = scopes.rbegin(); scope != scopes.rend(); ++scope)
         {
-            auto isVarOnScope = (*scope)->varExistsInHierarchy(name);
-            if (isVarOnScope)
+            if ((*scope)->scopeId == address.scopeId)
             {
-                (*scope)->updateVar(name, value);
+                (*scope)->updateVar(address.slot, value);
 
                 return;
             }
         }
 
-        current_scope->updateVar(name, value);
+        throw std::runtime_error("Invalid variable address (scopeId=" + std::to_string(address.scopeId) + ", slot=" + std::to_string(address.slot) + ").");
     }
 
     std::shared_ptr<CreationType> getVarType(const std::string &varName)
@@ -107,6 +139,12 @@ public:
     void registerVarType(const VarType &type, const std::string &name)
     {
         current_scope->registerVarType(type, name);
+    }
+
+    VariableAddress declareVar(const VarType &type, const std::string &name)
+    {
+        const bool isParam = false;
+        return current_scope->declareVar(type, name, isParam);
     }
 
     void updatePolymorphicVarType(const std::string &name, const VarType &type)

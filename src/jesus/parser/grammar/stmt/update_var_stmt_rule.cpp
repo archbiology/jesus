@@ -34,7 +34,8 @@ std::unique_ptr<Stmt> UpdateVarStmtRule::parse(ParserContext &ctx)
         if (!ask_expr)
             throw std::runtime_error("Expected a text literal or a text-typed variable after 'ask' (e.g., ask \"What is your name again?\" or ask question).");
 
-        return std::make_unique<UpdateVarWithAskStmt>(varType, varName, std::move(ask_expr));
+        auto address = ctx.resolveVariableAddress(varName);
+        return std::make_unique<UpdateVarWithAskStmt>(varType, varName, address, std::move(ask_expr));
     }
 
     std::unique_ptr<Expr> value = expression->parse(ctx);
@@ -45,7 +46,7 @@ std::unique_ptr<Stmt> UpdateVarStmtRule::parse(ParserContext &ctx)
     bool typesMatch = valueType->isA(varType);
     if (!typesMatch)
     {
-        if (! (valueType->isPolymorphic() && valueType->parent_class->isA(varType)))
+        if (!(valueType->isPolymorphic() && valueType->parent_class->isA(varType)))
         {
             throw std::runtime_error("Variable '" + varName + "' expects a '" + varType->name + "', but got: '" + valueType->name + "'.");
         }
@@ -58,5 +59,6 @@ std::unique_ptr<Stmt> UpdateVarStmtRule::parse(ParserContext &ctx)
         ctx.updatePolymorphicVarType(varName, polymorphicType);
     }
 
-    return std::make_unique<UpdateVarStmt>(varName, std::move(value));
+    auto address = ctx.resolveVariableAddress(varName);
+    return std::make_unique<UpdateVarStmt>(varName, address, std::move(value));
 }

@@ -83,7 +83,8 @@ std::unique_ptr<Expr> GetAttributeRule::parse(ParserContext &ctx)
                 // -----------------
                 if (member->isAttribute())
                 {
-                    expr = std::make_unique<GetAttributeExpr>(std::move(expr), name);
+                    auto address = member->declaring_class->class_attributes->resolveVariableAddressInHierarchy(name);
+                    expr = std::make_unique<GetAttributeExpr>(std::move(expr), name, address);
                 }
 
                 // ------------
@@ -96,7 +97,7 @@ std::unique_ptr<Expr> GetAttributeRule::parse(ParserContext &ctx)
                     // If the next token(s) indicate arguments, parse them
                     if (!ctx.check(TokenType::NEWLINE) && !ctx.check(TokenType::END_OF_FILE))
                     {
-                        auto expectedParams = member->method->params->size();
+                        auto expectedParams = member->method->params->paramsCount;
                         if (expectedParams > 0)
                         do
                         {

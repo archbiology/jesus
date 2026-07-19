@@ -5,12 +5,13 @@
 
 void DictType::registerMethods()
 {
+    const bool isParam = true;
     // ----------------
     // contains(key)
     // ----------------
     {
         auto params = std::make_shared<Heart>("dict.contains");
-        params->createVar(keyType, "key", Value::formless());
+        params->createVar(keyType, "key", Value::formless(), isParam);
         addMethod("contains", std::make_shared<NativeMethod>("contains", params, KnownTypes::BOOLEAN, DictType::contains));
     }
 
@@ -19,7 +20,7 @@ void DictType::registerMethods()
     // -------------
     {
         auto params = std::make_shared<Heart>("dict.remove");
-        params->createVar(keyType, "key", Value::formless());
+        params->createVar(keyType, "key", Value::formless(), isParam);
         addMethod("remove", std::make_shared<NativeMethod>("remove", params, KnownTypes::BOOLEAN, DictType::remove));
     }
 
@@ -78,8 +79,8 @@ void DictType::registerMethods()
     // ------
     {
         auto params = std::make_shared<Heart>("dict.get");
-        params->createVar(keyType, "key", Value::formless());
-        params->createVar(valueType, "default", Value::formless());
+        params->createVar(keyType, "key", Value::formless(), isParam);
+        params->createVar(valueType, "default", Value::formless(), isParam);
         addMethod("get", std::make_shared<NativeMethod>("get", params, valueType, DictType::get));
     }
 
@@ -96,7 +97,7 @@ void DictType::registerMethods()
     // ---------
     {
         auto params = std::make_shared<Heart>("dict.update");
-        params->createVar(KnownTypes::DICT, "other", Value::formless());
+        params->createVar(KnownTypes::DICT, "other", Value::formless(), isParam);
         addMethod("update", std::make_shared<NativeMethod>("update", params, KnownTypes::VOID, DictType::update));
     }
 }
