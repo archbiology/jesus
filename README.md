@@ -128,6 +128,17 @@ You can generate the .expected file like this:
 
 ```
 
+## Development
+
+To keep the codebase consistent across editors and operating systems, this project uses:
+
+- **UTF-8** source encoding
+- **LF** (`\n`) line endings
+- **.editorconfig** for editor settings
+- **.clang-format** for C++ code formatting
+
+Please ensure your editor supports [**EditorConfig**](https://editorconfig.org/). If it doesn't, install an **EditorConfig** extension. This helps keep indentation, line endings, and file encoding consistent across the project.
+
 ## 🙏 Purpose
 
 This project is not just about building a programming language — it's about creating with intention, exploring truth, and doing everything as an act of worship.
