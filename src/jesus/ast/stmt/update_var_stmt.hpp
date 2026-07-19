@@ -19,10 +19,17 @@ class UpdateVarStmt : public Stmt
 {
 public:
     std::string name;
+    const VariableAddress address;
     std::unique_ptr<Expr> value;
 
-    UpdateVarStmt(const std::string name, std::unique_ptr<Expr> value)
-        : name(name), value(std::move(value)) {}
+    UpdateVarStmt(const std::string name, const VariableAddress address, std::unique_ptr<Expr> value)
+        : name(name), address(address), value(std::move(value)) {}
 
     void accept(StmtVisitor &visitor) const override;
+
+    std::string toString() const override
+    {
+        std::string str = "UpdateVarStmt('" + name + "', value: " + value->toString() + ")";
+        return str;
+    }
 };

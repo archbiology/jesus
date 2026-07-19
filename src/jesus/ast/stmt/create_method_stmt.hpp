@@ -60,7 +60,22 @@ public:
      */
     std::string toString() const override
     {
-        return "CreateMethodStmt( " + name + " (\n" + params->toString() + "))";
+        std::string str = "CreateMethodStmt('" + name + "', body: [";
+        bool isFirst = true;
+
+        for (auto &stmt : body)
+        {
+            if (!isFirst)
+                str += ",";
+
+            str += "\n    " + stmt->toString();
+
+            isFirst = false;
+        }
+
+        str += "])";
+
+        return str;
     }
 
     void accept(StmtVisitor &visitor) const override {};

@@ -57,21 +57,21 @@ public:
      * @brief Construct a new Instance with a given spirit (class).
      * @param klass The class (spirit) that defines this instance.
      */
-    explicit Instance(std::shared_ptr<CreationType> klass)
+    explicit Instance(std::shared_ptr<CreationType> klass, const std::string &name = "")
         : spirit(std::move(klass))
     {
         // Copy default class attributes into the instance's heart
-        attributes = spirit->class_attributes->clone("i-" + std::to_string(InstanceID++));
+        attributes = spirit->class_attributes->clone("instance:" + std::to_string(InstanceID++) + ":" + name);
     }
 
-    const Value getAttribute(const std::string &name) const
+    const Value getAttribute(const VariableAddress &address) const
     {
-        return attributes->getVar(name);
+        return attributes->getVar(address);
     }
 
-    void setAttribute(const std::string &name, const Value &value)
+    void setAttribute(const VariableAddress &address, const Value &value)
     {
-        attributes->updateVar(name, value);
+        attributes->updateVar(address, value);
     }
 
     std::string toString()

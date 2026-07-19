@@ -21,10 +21,11 @@ class UpdateVarWithAskStmt : public Stmt
 public:
     const std::shared_ptr<CreationType> var_type;
     const std::string var_name;
+    const VariableAddress address;
     std::shared_ptr<Expr> ask_expr; // Type is AskExpr
 
-    UpdateVarWithAskStmt(const std::shared_ptr<CreationType> type, std::string name, std::unique_ptr<Expr> ask_expr)
-        : var_type(type), var_name(name), ask_expr(std::move(ask_expr)) {}
+    UpdateVarWithAskStmt(const std::shared_ptr<CreationType> type, std::string name, const VariableAddress address, std::unique_ptr<Expr> ask_expr)
+        : var_type(type), var_name(name), address(address), ask_expr(std::move(ask_expr)) {}
 
     void accept(StmtVisitor &visitor) const override;
 

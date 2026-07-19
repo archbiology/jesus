@@ -9,6 +9,8 @@
 class Interpreter;  // Forward declaration
 class CreationType; // Forward declaration
 class Heart;        // Forward declaration
+class VariableAddress;  // Forward declaration
+using VarType = std::shared_ptr<CreationType>;
 
 /**
  * @brief The context passed around during parsing, holding tokens and parsing position.
@@ -175,6 +177,10 @@ public:
     bool varExistsInHierarchy(const std::string &name);
 
     void registerVarType(const std::shared_ptr<CreationType> &type, const std::string &name);
+
+    VariableAddress declareVar(const VarType &type, const std::string &name);
+
+    VariableAddress resolveVariableAddress(const std::string &name);
 
     void updatePolymorphicVarType(const std::string &name, const std::shared_ptr<CreationType> &type);
 

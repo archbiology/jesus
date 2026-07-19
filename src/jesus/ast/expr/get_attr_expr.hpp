@@ -13,9 +13,10 @@ class GetAttributeExpr : public AssignableExpr
 public:
     std::unique_ptr<Expr> object;
     std::string attribute;
+    const VariableAddress address;
 
-    GetAttributeExpr(std::unique_ptr<Expr> object, std::string attribute)
-        : object(std::move(object)), attribute(std::move(attribute)), AssignableExpr(ExprKind::GetAttribute) {}
+    GetAttributeExpr(std::unique_ptr<Expr> object, std::string attribute, const VariableAddress address)
+        : object(std::move(object)), attribute(std::move(attribute)), address(address), AssignableExpr(ExprKind::GetAttribute) {}
 
     Value evaluate(std::shared_ptr<Heart> heart) const override
     {
@@ -33,4 +34,9 @@ public:
      * "Flesh gives birth to flesh, but the Spirit gives birth to spirit." — John 3:6
      */
     std::shared_ptr<CreationType> getReturnType(ParserContext &ctx) const override;
+
+    std::string toString() const override
+    {
+        return "GetAttributeExpr(" + attribute + ")";
+    }
 };

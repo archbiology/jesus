@@ -12,9 +12,10 @@ Value Method::call(Interpreter &interpreter, Value &object, const std::vector<Va
 
     // Bind the actual 'arguments' to the 'param' names
     int index = 0;
-    for (const auto &name : paramsScope->getVariableNames())
-        paramsScope->updateVar(name, args[index++]);
+    for (int index = 0; index < paramsScope->paramsCount; index++)
+        paramsScope->updateVar(index, args[index]);
 
+    interpreter.addScope(instance->attributes); // FIXME: should not add two scopes here. SymbolTable::updateVar should instead consider scope->parent_attributes
     interpreter.addScope(paramsScope);
 
     // 2. Execute method body
@@ -28,6 +29,7 @@ Value Method::call(Interpreter &interpreter, Value &object, const std::vector<Va
     }
 
     // 3. Pop'params' (and 'attributes') scope
+    interpreter.popScope();
     interpreter.popScope();
 
     return returnValue;

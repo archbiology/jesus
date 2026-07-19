@@ -49,21 +49,14 @@ public:
 
     CreationType(PrimitiveType primitive_type, std::string name, std::string module = "core",
                  std::shared_ptr<CreationType> parent = nullptr,
+                 std::shared_ptr<Heart> attributes = nullptr,
                  std::vector<std::shared_ptr<IConstraint>> constraints = {})
         : primitive_type(primitive_type),
           name(name), module_name(module),
           parent_class(std::move(parent)),
+          class_attributes(std::move(attributes)),
           constraints(std::move(constraints)), id(lastId++)
     {
-
-        if (primitive_type == PrimitiveType::Class)
-        {
-            std::shared_ptr<Heart> parent_attributes = nullptr;
-            if (parent_class)
-                parent_attributes = parent_class->class_attributes;
-
-            class_attributes = std::make_shared<Heart>(name, parent_attributes);
-        }
     }
 
     virtual Value parseFromString(const std::string &raw) const
@@ -129,12 +122,8 @@ public:
             initVal = initializer->evaluate(heart);
         }
 
-        class_attributes->createVar(type, name, initVal);
-    }
-
-    const Value getAttribute(const std::string &name) const
-    {
-        return class_attributes->getVar(name);
+        const bool isParam = false;
+        class_attributes->createVar(type, name, initVal, isParam);
     }
 
     void addMethod(const std::string &name, std::shared_ptr<IMethod> method)

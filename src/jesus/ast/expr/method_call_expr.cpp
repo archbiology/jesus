@@ -35,19 +35,20 @@ bool MethodCallExpr::isArgumentAssignable(const std::shared_ptr<CreationType> &p
 void MethodCallExpr::validate(ParserContext &ctx) const
 {
     const auto &paramNames = method->params->getVariableNames();
+    const auto &paramsCount = method->params->paramsCount;
 
-    if (args.size() != paramNames.size())
+    if (args.size() != paramsCount)
     {
         std::string message =
             "Method '" + method->name +
-            "' expects " + std::to_string(paramNames.size()) +
+            "' expects " + std::to_string(paramsCount) +
             " argument(s), but got " + std::to_string(args.size()) + ".";
 
-        if (args.size() < paramNames.size())
+        if (args.size() < paramsCount)
         {
             message += "\n\nMissing parameter(s):";
 
-            for (size_t i = args.size(); i < paramNames.size(); ++i)
+            for (size_t i = args.size(); i < paramsCount; ++i)
             {
                 auto paramType = method->params->getVarType(paramNames[i]);
                 message += "\n - " + paramNames[i] + ": " + paramType->name;

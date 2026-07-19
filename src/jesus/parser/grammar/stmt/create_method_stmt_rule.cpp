@@ -34,12 +34,11 @@ std::unique_ptr<Stmt> CreateMethodStmtRule::parse(ParserContext &ctx)
     if (nameIsUngodly && !isUngodlyDeclared)
     {
         doctrine::law::handleUngodlyNaming(
-            "Method name '" + methodName + "' does not appear to reflect God's standards.\n"
-            "To hide this warning, declare the method explicitly as 'ungodly'.\n\n"
-            "Example:\n"
-            "   ungodly purpose " + methodName + "():\n   amen\n\n"
-            + bibleReference
-        );
+            "Method name '" + methodName + "' does not appear to reflect God's standards.\n" +
+            "To hide this warning, declare the method explicitly as 'ungodly'.\n\n" +
+            "Example:\n" +
+            "   ungodly purpose " + methodName + "():\n   amen\n\n" +
+            bibleReference);
     }
 
     // ----------
@@ -48,8 +47,9 @@ std::unique_ptr<Stmt> CreateMethodStmtRule::parse(ParserContext &ctx)
     if (!ctx.match(TokenType::LEFT_PAREN))
         throw std::runtime_error("Expected '(' after method name in 'calling' statement.");
 
-    auto params = std::make_shared<Heart>(methodName);
+    auto params = std::make_shared<Heart>("method:" + methodName);
     ctx.addScope(params); // <🟢️>
+    const bool isParam = true;
 
     if (!ctx.check(TokenType::RIGHT_PAREN))
     {
@@ -71,7 +71,7 @@ std::unique_ptr<Stmt> CreateMethodStmtRule::parse(ParserContext &ctx)
 
             std::string name = ctx.previous().lexeme;
 
-            params->createVar(type, name, Value(1)); // FIXME: Validate `type` and allow initial values
+            params->createVar(type, name, Value(1), isParam); // FIXME: Validate `type` and allow initial values
 
         } while (ctx.match(TokenType::SEMICOLON)); // TODO: allow more args of same type: int x, y, z; string name, surname;
     }
@@ -193,5 +193,5 @@ std::unique_ptr<Stmt> CreateMethodStmtRule::parse(ParserContext &ctx)
         }
     }
 
-    return std::make_unique<CreateMethodStmt>(methodName, params, returnType, body, /*isGenesis=*/false);
+    return std::make_unique<CreateMethodStmt>(methodName, std::move(params), returnType, body, /*isGenesis=*/false);
 }

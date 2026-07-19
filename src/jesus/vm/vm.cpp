@@ -229,7 +229,7 @@ void VM::run(const Chunk &chunk)
 
                     if (auto getAttr = dynamic_cast<const VariableExpr *>(returnStmt->value.get()))
                     {
-                        stack.push_back(instance.toInstance()->getAttribute(getAttr->name));
+                        stack.push_back(instance.toInstance()->getAttribute(getAttr->address));
                         ++ip;
                         break;
                     }

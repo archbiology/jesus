@@ -32,13 +32,36 @@ public:
     std::string module_name;
     const std::shared_ptr<CreationType> parent_class;
     std::vector<std::shared_ptr<Stmt>> body;
+    const std::shared_ptr<CreationType> userClass;
 
     CreateClassStmt(const std::string &name, const std::string &module_name,
                     const std::shared_ptr<CreationType> &parent_class,
-                    const std::vector<std::shared_ptr<Stmt>> &body)
+                    const std::vector<std::shared_ptr<Stmt>> &body,
+                    const std::shared_ptr<CreationType> userClass)
         : name(name), module_name(module_name),
-        parent_class(parent_class),
-        body(body) {}
+          parent_class(parent_class),
+          body(body),
+          userClass(std::move(userClass)) {}
 
     void accept(StmtVisitor &visitor) const override;
+
+    std::string toString() const override
+    {
+        std::string str = "CreateClassStmt(name: '" + name + "', body: [";
+        bool isFirst = true;
+
+        for (auto &stmt : body)
+        {
+            if (!isFirst)
+                str += ",";
+
+            str += "\n  " + stmt->toString();
+
+            isFirst = false;
+        }
+
+        str += "])";
+
+        return str;
+    }
 };

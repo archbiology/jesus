@@ -45,7 +45,8 @@ std::unique_ptr<Expr> AskExprRule::parse(ParserContext &ctx)
         throw std::runtime_error("Error: 'ask' expects a variable of primitive type 'text' as its prompt, but received variable '" + varName + "' of primitive type '" + varType->primitiveTypeName() + "'.");
     }
 
-    return std::make_unique<AskExpr>(std::make_unique<VariableExpr>(varName));
+    auto address = ctx.resolveVariableAddress(varName);
+    return std::make_unique<AskExpr>(std::make_unique<VariableExpr>(address, varName));
 }
 
 std::string AskExprRule::toStr(GrammarRuleHashTable &visited) const

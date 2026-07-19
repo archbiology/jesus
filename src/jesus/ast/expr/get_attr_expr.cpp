@@ -28,5 +28,5 @@ void GetAttributeExpr::assign(Interpreter &interpreter, const Value &value) cons
             "Tip: ensure the value is a valid object before accessing its attributes.");
     }
 
-    instance->setAttribute(attribute, value);
+    instance->setAttribute(address, value);
 }

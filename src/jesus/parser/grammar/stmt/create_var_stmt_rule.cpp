@@ -43,17 +43,16 @@ std::unique_ptr<Stmt> CreateVarStmtRule::parse(ParserContext &ctx)
     // Ungodly semantic validation
     // -----------------------------------
     std::string bibleReference;
-    bool nameIsUngodly =  doctrine::law::isUngodlyName(varName, bibleReference);
+    bool nameIsUngodly = doctrine::law::isUngodlyName(varName, bibleReference);
 
     if (nameIsUngodly && !isUngodlyDeclared)
     {
         doctrine::law::handleUngodlyNaming(
             "Variable name '" + varName + "' does not appear to reflect God's standards.\n" +
-            "To hide this warning, declare the symbol explicitly as 'ungodly'.\n\n"
-            "Example:\n"
-            "   create ungodly " + varType_ + " " + varName+" = ...\n\n"
-            + bibleReference
-        );
+            "To hide this warning, declare the symbol explicitly as 'ungodly'.\n\n" +
+            "Example:\n" +
+            "   create ungodly " + varType_ + " " + varName + " = ...\n\n" +
+            bibleReference);
     }
 
     // ---------------------
@@ -94,9 +93,8 @@ std::unique_ptr<Stmt> CreateVarStmtRule::parse(ParserContext &ctx)
             if (!ask_expr)
                 throw std::runtime_error("Expected a text literal or a text-typed variable after 'ask' (e.g., ask \"What is your name?\" or ask question).");
 
-            ctx.registerVarType(varType, varName);
-
-            return std::make_unique<CreateVarWithAskStmt>(varType, varName, std::move(ask_expr));
+            auto address = ctx.declareVar(varType, varName);
+            return std::make_unique<CreateVarWithAskStmt>(varType, varName, address, std::move(ask_expr));
         }
         value = expression->parse(ctx);
         if (!value)
@@ -112,7 +110,7 @@ std::unique_ptr<Stmt> CreateVarStmtRule::parse(ParserContext &ctx)
         // ------------------------------------------------------------
         else if (value->canEvaluateAtParseTime())
         {
-            auto empty_scope = std::make_shared<Heart>("creating_var");
+            auto empty_scope = std::make_shared<Heart>("parser:create_var:" + varName);
             Value literal = value->evaluate(empty_scope);
 
             varType->validate(literal);
@@ -134,9 +132,8 @@ std::unique_ptr<Stmt> CreateVarStmtRule::parse(ParserContext &ctx)
         {
             varType = valueType;
         }
-
-        ctx.registerVarType(varType, varName);
     }
 
-    return std::make_unique<CreateVarStmt>(varType, varName, std::move(value));
+    auto address = ctx.declareVar(varType, varName);
+    return std::make_unique<CreateVarStmt>(varName, address, std::move(value));
 }

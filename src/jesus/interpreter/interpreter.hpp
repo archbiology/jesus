@@ -65,8 +65,8 @@ public:
      */
     Value evaluate(const std::unique_ptr<Expr> &expr);
 
-    void createVariable(const VarType &type, const std::string &name, const Value &value);
-    void updateVariable(const std::string &name, const Value &value);
+    void createVariable(const VariableAddress address, const Value &value);
+    void updateVariable(const VariableAddress address, const Value &value);
 
     /**
      * @brief Executes a single statement node in the abstract syntax tree (AST).
@@ -110,6 +110,11 @@ public:
     void registerVarType(const VarType &type, const std::string &name)
     {
         currentModule->symbol_table->registerVarType(type, name);
+    }
+
+    VariableAddress declareVar(const VarType &type, const std::string &name)
+    {
+        return currentModule->symbol_table->declareVar(type, name);
     }
 
     void updatePolymorphicVarType(const std::string &name, const VarType &type)
@@ -156,7 +161,7 @@ public:
     {
         if (!Interpreter::moduleRegistered(fullpath))
         {
-            auto scope = std::make_shared<Heart>(name);
+            auto scope = std::make_shared<Heart>("file:" + name);
             auto symbolTable = std::make_shared<SymbolTable>(scope);
             auto newModule = std::make_shared<Module>(name, fullpath, symbolTable);
             Interpreter::addModule(fullpath, newModule);
@@ -192,11 +197,12 @@ public:
         persistedAST.push_back(std::move(node));
     }
 
+    std::shared_ptr<Module> currentModule;
+
 private:
     /**
      * @brief Prevent re-imports / circular imports
      */
-    std::shared_ptr<Module> currentModule;
     static std::unordered_map<std::string, std::shared_ptr<Module>> modules;
     HttpRuntime httpRuntime;
     bool useVm;
