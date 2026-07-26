@@ -66,7 +66,7 @@ Make sure both the `jesus` binary and the `test_runner` are built. Build the `te
 ```
 cd src/jesus/
 
-g++ -std=c++17 -o test_runner test_runner.cpp
+g++ -std=c++23 -o test_runner test_runner.cpp
 ```
 
 Then simply run:

@@ -54,8 +54,8 @@ REGISTER_FOR_UML(
 class Interpreter : public ExprVisitor, public StmtVisitor
 {
 public:
-    explicit Interpreter(std::shared_ptr<Module> module, bool useVm)
-        : currentModule(module), httpRuntime(*this), useVm(useVm),
+    explicit Interpreter(std::shared_ptr<Module> module, bool useVm, bool keepAst)
+        : currentModule(module), httpRuntime(*this), useVm(useVm), keepAst(keepAst),
           typeRegistry(std::make_shared<TypeRegistry>()) {}
     /**
      * @brief Evaluates a given expression and returns its computed value.
@@ -198,6 +198,7 @@ public:
     }
 
     std::shared_ptr<Module> currentModule;
+    const bool keepAst;
 
 private:
     /**

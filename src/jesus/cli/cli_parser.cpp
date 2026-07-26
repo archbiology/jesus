@@ -53,6 +53,27 @@ ParsedCLI CLIParser::parse(int argc, char **argv)
             continue;
         }
 
+        // -----------------------------------------------------------------------
+        // By default, the AST is only preserved in the REPL, which is started by
+        // running `jesus` without a source file. This allows users to inspect the
+        // original (non-optimized) AST with the `ast` command while learning how
+        // the parser builds the syntax tree.
+        //
+        // When executing a source file (e.g. `jesus program.jesus`), the compiler
+        // performs optimization passes before execution. The optimized AST is then
+        // discarded because it is no longer needed, reducing memory usage.
+        //
+        // The `--keep-ast` option preserves the optimized AST when executing a
+        // source file, allowing users to inspect the result of the optimization
+        // passes with the `ast` command. This option exists primarily for learning,
+        // debugging, and developing the compiler.
+        // -----------------------------------------------------------------------
+        if (arg == "--keep-ast")
+        {
+            out.keepAst = true;
+            continue;
+        }
+
         if (arg.starts_with("-"))
         {
             std::cerr << "Unknown option: " << arg << "\n";

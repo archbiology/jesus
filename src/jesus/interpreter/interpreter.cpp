@@ -800,7 +800,7 @@ void Interpreter::visitImportModuleStmt(const ImportModuleStmt &stmt)
         // --------------------
         // Interpret the module
         // --------------------
-        Faith michael(useVm);
+        Faith michael(useVm, keepAst);
         michael.execute(fullpath); // Declare classes, methods, etc.
     }
     auto importedModule = Interpreter::getModule(fullpath);

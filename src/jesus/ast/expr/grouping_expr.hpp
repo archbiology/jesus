@@ -47,6 +47,11 @@ public:
         return expression->evaluate(heart);
     }
 
+    bool canEvaluateAtParseTime() const override
+    {
+        return expression ? expression->canEvaluateAtParseTime() : false;
+    }
+
     Value accept(ExprVisitor &visitor) const override;
 
     /**

@@ -16,7 +16,7 @@ REGISTER_FOR_UML(
 class IfStmt : public Stmt
 {
 public:
-  const std::unique_ptr<Expr> condition;
+  std::unique_ptr<Expr> condition;
   std::vector<std::unique_ptr<Stmt>> thenBranch;
   std::vector<std::unique_ptr<Stmt>> otherwiseBranch;
 
