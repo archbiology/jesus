@@ -1,10 +1,25 @@
+# Jesus Programming Language coding style.
+#
+# The formatter favors readability and pull request review over minimizing vertical space.
+# Long parameter lists are expanded rather than aligned after '(',
+# comments are preserved as written, and short declarations remain on a
+# single line whenever they fit.
+
 BasedOnStyle: LLVM
 
 BreakBeforeBraces: Allman
+AlignAfterOpenBracket: AlwaysBreak
+BinPackParameters: false
+BinPackArguments: false
+
 IndentWidth: 4
-ColumnLimit: 100
+ContinuationIndentWidth: 8
+ColumnLimit: 120
 UseTab: Never
 
 Standard: Latest
 SortIncludes: Never
+ReflowComments: false
+PenaltyReturnTypeOnItsOwnLine: 1000000
 
+AllowShortFunctionsOnASingleLine: All

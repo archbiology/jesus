@@ -1,0 +1,4 @@
+(Jesus) (Jesus) (int) 33
+(Jesus) CreateVarStmt(age, LiteralExpr((int) 33))
+PrintStmt(SAY: VariableExpr('age'))
+(Jesus) 

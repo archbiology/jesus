@@ -201,6 +201,7 @@ set(JESUS_CPP_FILES
     # ---------
     src/jesus/optimizer/optimizer.cpp
     src/jesus/optimizer/constant_folder.cpp
+    src/jesus/optimizer/constant_propagator.cpp
 
     # -----------
     # Interpreter
