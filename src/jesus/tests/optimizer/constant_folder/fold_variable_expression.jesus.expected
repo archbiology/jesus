@@ -1,2 +1,2 @@
 CreateVarStmt(age, LiteralExpr((int) 33))
-CreateVarStmt(older, BinaryExpr(operator: +, left: VariableExpr('age'), right: LiteralExpr((int) 2)))
+CreateVarStmt(older, BinaryExpr(operator: +, left: LiteralExpr((int) 33), right: LiteralExpr((int) 2)))
