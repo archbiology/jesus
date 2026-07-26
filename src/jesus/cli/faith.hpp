@@ -26,7 +26,7 @@ REGISTER_FOR_UML(
 class Faith
 {
 public:
-    explicit Faith(bool useVm) : useVm(useVm) {};
+    explicit Faith(bool useVm, bool keepAst) : useVm(useVm), keepAst(keepAst) {};
 
     /**
      * @brief Loads a file and execute it.
@@ -37,6 +37,7 @@ public:
 
 private:
     bool useVm;
+    bool keepAst;
     /**
      * @brief Interpret and execute the source of a file
      *

@@ -1,0 +1,1 @@
+CreateVarStmt(value, LiteralExpr((int) 144000))

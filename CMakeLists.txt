@@ -196,6 +196,12 @@ set(JESUS_CPP_FILES
     src/jesus/parser/grammar/stmt/on_stmt_rule.cpp
     src/jesus/parser/grammar/stmt/serve_stmt_rule.cpp
 
+    # ---------
+    # Optimizer
+    # ---------
+    src/jesus/optimizer/optimizer.cpp
+    src/jesus/optimizer/constant_folder.cpp
+
     # -----------
     # Interpreter
     # -----------

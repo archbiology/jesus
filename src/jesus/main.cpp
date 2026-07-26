@@ -83,7 +83,7 @@ int main(int argc, char **argv)
             return 1;
         }
 
-        Faith michael(cli.useVm);
+        Faith michael(cli.useVm, cli.keepAst);
         return michael.execute(cli.filename);
     }
 
@@ -99,7 +99,8 @@ int main(int argc, char **argv)
     auto scope = std::make_shared<Heart>(replName);
     auto symbol_table = std::make_shared<SymbolTable>(scope);
     auto repl = std::make_shared<Module>(replName, replPath, symbol_table);
-    Interpreter jesus(repl, cli.useVm);
+    cli.keepAst = true;
+    Interpreter jesus(repl, cli.useVm, cli.keepAst);
 
     Disciple follower(jesus);
     follower.walk();

@@ -1,0 +1,3 @@
+create truth value = 5 >= 5
+create truth value2 = 5 >= 7
+ast

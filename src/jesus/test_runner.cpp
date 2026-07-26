@@ -5,9 +5,10 @@
 #include <optional>
 #include "utils/file_utils.hpp"
 
-std::string runJesusInterpreter(const std::string &inputFile, bool useRepl)
+std::string runJesusInterpreter(const std::string &inputFile, bool useRepl, bool keepAst)
 {
-    std::string command = "jesus '" + inputFile + "' 2>&1";
+    std::string command =
+        std::string("jesus") + (keepAst ? " --keep-ast " : " ") + "'" + inputFile + "' 2>&1";
 
     if (useRepl)
         command = "jesus --quiet < '" + inputFile + "' 2>&1";
@@ -30,7 +31,15 @@ std::string runJesusInterpreter(const std::string &inputFile, bool useRepl)
 
 bool shouldUseRepl(const std::filesystem::path &path)
 {
-    if (path.string().find("tests/repl/") != std::string::npos)
+    if (path.string().contains("tests/repl/"))
+        return true;
+
+    return false;
+}
+
+bool shouldKeepAst(const std::string &path)
+{
+    if (path.contains("tests/optimizer/"))
         return true;
 
     return false;
@@ -97,7 +106,8 @@ int main()
                 expectedFile = inputFile + ".expected";
             }
 
-            std::string output = runJesusInterpreter(inputFile, useRepl);
+            bool keepAst = shouldKeepAst(fullInputFile);
+            std::string output = runJesusInterpreter(inputFile, useRepl, keepAst);
             auto expectedOpt = loadFile(expectedFile);
 
             if (!expectedOpt.has_value())
@@ -107,7 +117,9 @@ int main()
                 std::cout << "    " << fullExpectedFile << "\n\n";
 
                 std::cout << "    Create it with:\n";
-                std::cout << "      jesus " << (useRepl ? "--quiet < " : "") << "'" << fullInputFile << "' &> '" << fullExpectedFile << "'\n\n";
+                std::cout << "      jesus "
+                          << (useRepl ? "--quiet < " : (keepAst ? "--keep-ast " : "")) << "'"
+                          << fullInputFile << "' &> '" << fullExpectedFile << "'\n\n";
 
                 allPassed = false;
                 continue;

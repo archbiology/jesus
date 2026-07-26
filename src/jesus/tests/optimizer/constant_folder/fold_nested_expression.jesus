@@ -1,0 +1,2 @@
+create number value = ((2 + 3) * (10 - 4) * 4 + 24) * 1000
+ast

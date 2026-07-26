@@ -1,7 +1,8 @@
 #include "faith.hpp"
 #include "lexer/lexer.hpp"
 #include "parser/parser.hpp"
-#include "../utils/file_utils.hpp"
+#include "utils/file_utils.hpp"
+#include "optimizer/optimizer.hpp"
 #include "vm/compiler.hpp"
 #include "vm/vm.hpp"
 
@@ -20,6 +21,9 @@ void Faith::interpret(Interpreter &jesus, const std::string &source, const std::
             statements.push_back(std::move(stmt));
     }
 
+    Optimizer optimizer;
+    optimizer.optimize(statements);
+
     if (useVm)
     {
         Compiler compiler;
@@ -30,8 +34,21 @@ void Faith::interpret(Interpreter &jesus, const std::string &source, const std::
         return;
     }
 
-    for (auto &you : statements)
-        jesus.loves(you);
+    if (keepAst)
+    {
+        for (auto &you : statements)
+        {
+            jesus.loves(you);
+            jesus.persistAST(std::move(you));
+        }
+    }
+    else
+    {
+        for (auto &you : statements)
+        {
+            jesus.loves(you);
+        }
+    }
 }
 
 int Faith::execute(std::string filename)
@@ -42,7 +59,7 @@ int Faith::execute(std::string filename)
         std::string moduleName = utils::basenameWithoutExtension(filename);
 
         auto newModule = Interpreter::createModule(moduleName, filename);
-        Interpreter jesus(newModule, useVm);
+        Interpreter jesus(newModule, useVm, keepAst);
 
         interpret(jesus, source, moduleName);
         return 0;

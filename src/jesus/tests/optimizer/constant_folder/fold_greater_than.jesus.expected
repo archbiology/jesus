@@ -1,0 +1,2 @@
+CreateVarStmt(value1, LiteralExpr((logic) 1))
+CreateVarStmt(value2, LiteralExpr((logic) 0))

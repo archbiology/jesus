@@ -11,6 +11,7 @@ REGISTER_FOR_UML(
 struct ParsedCLI
 {
     bool quiet = false;
+    bool keepAst = false;
     bool showHelp = false;
     bool fileExists = false;
     bool showBibleHelp = false;
