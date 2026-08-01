@@ -1,0 +1,4 @@
+once
+RepeatForeverStmt(body: [
+  SayStmt(LiteralExpr(once)),
+  BreakStmt])

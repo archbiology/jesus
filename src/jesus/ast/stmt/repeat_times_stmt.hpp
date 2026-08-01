@@ -27,4 +27,24 @@ public:
         : countExpr(std::move(countExpr)), body(std::move(body)) {}
 
     void accept(StmtVisitor &visitor) const override;
+
+    std::string toString() const override
+    {
+        std::string str = "RepeatTimesStmt(times: " + countExpr->toString() + ", body: [";
+        bool isFirst = true;
+
+        for (auto &stmt : body)
+        {
+            if (!isFirst)
+                str += ",";
+
+            str += "\n  " + stmt->toString();
+
+            isFirst = false;
+        }
+
+        str += "])";
+
+        return str;
+    }
 };

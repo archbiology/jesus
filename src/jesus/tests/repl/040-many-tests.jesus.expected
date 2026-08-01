@@ -4,7 +4,7 @@ CreateVarStmt(messiah, LiteralExpr(Jesus))
 CreateVarStmt(age, LiteralExpr((int) 33))
 CreateVarStmt(priest, LiteralExpr(me))
 CreateVarStmt(average, LiteralExpr((double) 2.300000))
-PrintStmt(SAY: VariableExpr('age'))
+SayStmt(VariableExpr('age'))
 (Jesus) Jesus
 (Jesus) me
 (Jesus) (int) 33
@@ -315,11 +315,11 @@ God always wins.
   CreateVarStmt(surname, LiteralExpr(Isaacson)),
   CreateMethodStmt('praise', body: [
     UpdateVarStmt('name', value: LiteralExpr(Jacob)),
-    PrintStmt(SAY: FormattedStringExpr("Bethel ({name} {surname}),)")]),
+    SayStmt(FormattedStringExpr("Bethel ({name} {surname}),)")]),
   CreateMethodStmt('who', body: [
-    PrintStmt(SAY: FormattedStringExpr("I am Israel, previously named {name}.)")]),
+    SayStmt(FormattedStringExpr("I am Israel, previously named {name}.)")]),
   CreateMethodStmt('generateJudah', body: [
-    PrintStmt(SAY: FormattedStringExpr("Judah is my lion, and my name is {name}.)")])])
+    SayStmt(FormattedStringExpr("Judah is my lion, and my name is {name}.)")])])
 AST Memory: 8 bytes
 (Jesus) (Jesus) Class name 'Alien' does not appear to reflect God's standards.
 To hide this warning, declare the class explicitly as 'ungodly'.

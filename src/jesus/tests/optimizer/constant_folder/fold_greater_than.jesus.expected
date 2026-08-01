@@ -1,2 +1,4 @@
-CreateVarStmt(value1, LiteralExpr((logic) 1))
-CreateVarStmt(value2, LiteralExpr((logic) 0))
+(logic) 1
+(logic) 0
+SayStmt(LiteralExpr((logic) 1))
+SayStmt(LiteralExpr((logic) 0))

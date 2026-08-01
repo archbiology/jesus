@@ -1,0 +1,9 @@
+before
+before
+CreateVarStmt(count, LiteralExpr((int) 2))
+RepeatForeverStmt(body: [
+  SayStmt(LiteralExpr(before)),
+  UpdateVarStmt('count', value: BinaryExpr(operator: -, left: VariableExpr('count'), right: LiteralExpr((int) 1))),
+  IfStmt(condition: BinaryExpr(operator: is, left: VariableExpr('count'), right: LiteralExpr((int) 0)), then: [
+  BreakStmt]),
+  SkipStmt])

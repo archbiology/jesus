@@ -1,1 +1,2 @@
-CreateVarStmt(value, LiteralExpr((double) 7.000000))
+(double) 7.000000
+SayStmt(LiteralExpr((double) 7.000000))

@@ -1,0 +1,2 @@
+alive
+SayStmt(LiteralExpr(alive))

@@ -1,3 +1,5 @@
 create number age = 33
 create number older = age + 2
+say age
+say older
 ast

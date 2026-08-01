@@ -1,2 +1,4 @@
-CreateVarStmt(age, LiteralExpr((int) 33))
-CreateVarStmt(older, BinaryExpr(operator: +, left: LiteralExpr((int) 33), right: LiteralExpr((int) 2)))
+(int) 33
+(int) 35
+SayStmt(LiteralExpr((int) 33))
+SayStmt(LiteralExpr((int) 35))

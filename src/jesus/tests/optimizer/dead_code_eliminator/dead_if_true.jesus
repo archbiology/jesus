@@ -1,0 +1,8 @@
+create truth confessed_jesus_christ = yes
+if confessed_jesus_christ:
+    say "live"
+otherwise:
+    say "dead"
+amen
+
+ast
