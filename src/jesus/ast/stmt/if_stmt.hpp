@@ -28,4 +28,39 @@ public:
         otherwiseBranch(std::move(otherwiseBranch)) {}
 
   void accept(StmtVisitor &visitor) const override;
+
+  std::string toString() const override
+  {
+      std::string str = "IfStmt(condition: " + condition->toString() + ", then: [";
+      bool isFirst = true;
+
+      for (auto &stmt : thenBranch)
+      {
+          if (!isFirst)
+              str += ",";
+
+          str += "\n  " + stmt->toString();
+
+          isFirst = false;
+      }
+
+      if (!otherwiseBranch.empty())
+      {
+          str += "], otherwise: [";
+      }
+
+      for (auto &stmt : otherwiseBranch)
+      {
+          if (!isFirst)
+              str += ",";
+
+          str += "\n  " + stmt->toString();
+
+          isFirst = false;
+      }
+
+      str += "])";
+
+      return str;
+  }
 };

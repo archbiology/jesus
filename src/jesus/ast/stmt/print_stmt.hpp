@@ -47,9 +47,7 @@ public:
      */
     std::string toString() const override
     {
-        std::string str = "PrintStmt(";
-
-        str += (type == StmtType::SAY ? "SAY: " : "WARN: ");
+        std::string str = (type == StmtType::SAY ? "SayStmt(" : "WarnStmt(");
 
         if (message)
             str += message->toString();

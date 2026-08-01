@@ -30,4 +30,16 @@ public:
     void accept(StmtVisitor &visitor) const override;
 
     std::shared_ptr<CreationType> getReturnType(ParserContext &ctx) const;
+
+    std::string toString() const override
+    {
+        std::string str = "ReturnStmt(";
+
+        if (value)
+            str += value->toString();
+
+        str += ")";
+
+        return str;
+    }
 };

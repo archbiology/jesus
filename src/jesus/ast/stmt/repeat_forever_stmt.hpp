@@ -22,4 +22,24 @@ public:
     RepeatForeverStmt(std::vector<std::unique_ptr<Stmt>> body) : body(std::move(body)) {}
 
     void accept(StmtVisitor &visitor) const override;
+
+    std::string toString() const override
+    {
+        std::string str = "RepeatForeverStmt(body: [";
+        bool isFirst = true;
+
+        for (auto &stmt : body)
+        {
+            if (!isFirst)
+                str += ",";
+
+            str += "\n  " + stmt->toString();
+
+            isFirst = false;
+        }
+
+        str += "])";
+
+        return str;
+    }
 };
