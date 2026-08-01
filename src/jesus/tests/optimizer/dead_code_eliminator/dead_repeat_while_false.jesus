@@ -1,0 +1,6 @@
+create truth sin_on_heavens = no
+repeat while sin_on_heavens:
+    say "never"
+amen
+
+ast

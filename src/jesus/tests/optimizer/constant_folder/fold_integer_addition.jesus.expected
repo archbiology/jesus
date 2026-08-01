@@ -1,1 +1,2 @@
-CreateVarStmt(value, LiteralExpr((int) 5))
+(int) 5
+SayStmt(LiteralExpr((int) 5))

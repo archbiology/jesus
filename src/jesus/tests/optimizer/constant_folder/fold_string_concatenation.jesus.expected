@@ -1,1 +1,2 @@
-CreateVarStmt(value, LiteralExpr(Hello Jesus))
+Hello Jesus
+SayStmt(LiteralExpr(Hello Jesus))

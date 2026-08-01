@@ -1,0 +1,14 @@
+create number count = 2
+repeat forever:
+    say "before"
+
+    count = count - 1
+    if count is 0:
+        break
+    amen
+
+    skip
+    say "dead"
+amen
+
+ast

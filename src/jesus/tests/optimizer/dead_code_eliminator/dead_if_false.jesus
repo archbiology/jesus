@@ -1,0 +1,8 @@
+create truth sins = no
+if sins:
+    say "dead"
+otherwise:
+    say "alive"
+amen
+
+ast

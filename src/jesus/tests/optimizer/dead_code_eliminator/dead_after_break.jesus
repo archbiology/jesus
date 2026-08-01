@@ -1,0 +1,7 @@
+repeat forever:
+    say "once"
+    break
+    say "dead"
+amen
+
+ast

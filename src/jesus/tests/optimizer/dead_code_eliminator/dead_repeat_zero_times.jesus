@@ -1,0 +1,6 @@
+create number jesus_lost = 0
+repeat jesus_lost times:
+    say "never"
+amen
+
+ast

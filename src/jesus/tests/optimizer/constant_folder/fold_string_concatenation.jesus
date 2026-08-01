@@ -1,2 +1,3 @@
 create text value = "Hello " + "Jesus"
+say value
 ast

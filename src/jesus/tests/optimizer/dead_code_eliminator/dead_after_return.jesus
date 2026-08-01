@@ -1,0 +1,13 @@
+let there be DeadInChrist:
+
+    purpose lives() -> number:
+        say "Turn to Jesus Christ before you turn to dust"
+
+        return 7
+
+        say "After Christ returns, they live forever"
+        return 1
+    amen
+amen
+
+ast

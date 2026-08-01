@@ -1,0 +1,7 @@
+(Jesus) (Jesus) (Jesus) CreateClassStmt(name: 'DeadInChrist', body: [
+  CreateMethodStmt('lives', body: [
+    SayStmt(LiteralExpr(Turn to Jesus Christ before you turn to dust)),
+    ReturnStmt(LiteralExpr((int) 7)),
+    SayStmt(LiteralExpr(After Christ returns, they live forever)),
+    ReturnStmt(LiteralExpr((int) 1))])])
+(Jesus) 

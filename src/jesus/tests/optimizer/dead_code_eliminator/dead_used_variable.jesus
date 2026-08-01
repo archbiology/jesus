@@ -1,0 +1,5 @@
+create number age = 33
+
+say age
+
+ast

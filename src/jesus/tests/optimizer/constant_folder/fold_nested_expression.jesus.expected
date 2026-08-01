@@ -1,1 +1,2 @@
-CreateVarStmt(value, LiteralExpr((int) 144000))
+(int) 144000
+SayStmt(LiteralExpr((int) 144000))
