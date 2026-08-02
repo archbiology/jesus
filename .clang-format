@@ -13,7 +13,6 @@ BinPackParameters: false
 BinPackArguments: false
 
 IndentWidth: 4
-ContinuationIndentWidth: 8
 ColumnLimit: 120
 UseTab: Never
 

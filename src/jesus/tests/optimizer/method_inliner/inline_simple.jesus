@@ -1,0 +1,10 @@
+let there be Math:
+    purpose pi() -> number:
+        return 314 / 100
+    amen
+amen
+
+create Math math = 1
+say math pi
+
+ast

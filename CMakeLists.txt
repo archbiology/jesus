@@ -203,6 +203,7 @@ set(JESUS_CPP_FILES
     src/jesus/optimizer/constant_folder.cpp
     src/jesus/optimizer/constant_propagator.cpp
     src/jesus/optimizer/dead_code_eliminator.cpp
+    src/jesus/optimizer/method_inliner.cpp
 
     # -----------
     # Interpreter
