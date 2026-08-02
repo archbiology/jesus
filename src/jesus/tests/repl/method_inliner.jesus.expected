@@ -1,0 +1,7 @@
+(Jesus) (Jesus) (Jesus) (Jesus) (double) 3.140000
+(Jesus) (Jesus) CreateClassStmt(name: 'Math', body: [
+  CreateMethodStmt('pi', body: [
+    ReturnStmt(BinaryExpr(operator: /, left: LiteralExpr((int) 314), right: LiteralExpr((int) 100)))])])
+CreateVarStmt(math, CreateInstanceExpr)
+SayStmt(MethodCallExpr)
+(Jesus) 

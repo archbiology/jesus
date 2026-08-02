@@ -1,0 +1,6 @@
+(double) 3.140000
+CreateClassStmt(name: 'Math', body: [
+  CreateMethodStmt('pi', body: [
+    ReturnStmt(LiteralExpr((double) 3.140000))])])
+CreateVarStmt(math, CreateInstanceExpr)
+SayStmt(LiteralExpr((double) 3.140000))
