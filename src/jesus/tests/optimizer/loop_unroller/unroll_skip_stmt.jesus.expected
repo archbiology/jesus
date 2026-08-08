@@ -1,0 +1,6 @@
+before
+before
+before
+SayStmt(LiteralExpr(before))
+SayStmt(LiteralExpr(before))
+SayStmt(LiteralExpr(before))

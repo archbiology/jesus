@@ -35,6 +35,8 @@
 #include "ast/expr/create_instance_expr.hpp"
 #include "ast/expr/parity_check_expr.hpp"
 
+#include "types/known_types.hpp"
+
 void DeadCodeEliminator::run(std::vector<std::unique_ptr<Stmt>> &program)
 {
     bool changed = true;
@@ -971,6 +973,24 @@ bool DeadCodeEliminator::isControlFlowTerminator(const Stmt &statement)
            dynamic_cast<const ResistStmt *>(&statement) != nullptr;
 }
 
+bool DeadCodeEliminator::endsWithUnconditionalSkip(const std::vector<std::unique_ptr<Stmt>> &body)
+{
+    if (body.empty())
+        return false;
+
+    // .back() returns the last statement.
+    return dynamic_cast<const SkipStmt *>(body.back().get()) != nullptr;
+}
+
+bool DeadCodeEliminator::endsWithUnconditionalBreak(const std::vector<std::unique_ptr<Stmt>> &body)
+{
+    if (body.empty())
+        return false;
+
+    // .back() returns the last statement.
+    return dynamic_cast<const BreakStmt *>(body.back().get()) != nullptr;
+}
+
 void DeadCodeEliminator::optimizeBlock(
     std::vector<std::unique_ptr<Stmt>> &stmts,
     const std::unordered_set<std::string> &usedVars,
@@ -1199,6 +1219,16 @@ std::vector<std::unique_ptr<Stmt>> DeadCodeEliminator::optimizeStatement(
         std::unordered_set<std::string> emptyClasses;
         optimizeBlock(repeatTimes->body, usedVars, emptyClasses);
 
+        if (endsWithUnconditionalBreak(repeatTimes->body))
+        {
+            repeatTimes->body.pop_back();
+            repeatTimes->countExpr = std::make_unique<LiteralExpr>(Value(1), KnownTypes::INT);
+        }
+        else if (endsWithUnconditionalSkip(repeatTimes->body))
+        {
+            repeatTimes->body.pop_back();
+        }
+
         if (repeatTimes->countExpr && repeatTimes->countExpr->canEvaluateAtParseTime())
         {
             try
@@ -1227,6 +1257,25 @@ std::vector<std::unique_ptr<Stmt>> DeadCodeEliminator::optimizeStatement(
     {
         std::unordered_set<std::string> emptyClasses;
         optimizeBlock(repeatForever->body, usedVars, emptyClasses);
+
+        if (endsWithUnconditionalBreak(repeatForever->body))
+        {
+            repeatForever->body.pop_back();
+
+            for (auto &statement : repeatForever->body)
+            {
+                if (statement)
+                    result.push_back(std::move(statement));
+            }
+
+            return result;
+        }
+
+        if (endsWithUnconditionalSkip(repeatForever->body))
+        {
+            repeatForever->body.pop_back();
+        }
+
         result.push_back(std::move(stmt));
         return result;
     }
@@ -1396,6 +1445,16 @@ std::vector<std::shared_ptr<Stmt>> DeadCodeEliminator::optimizeStatement(
         std::unordered_set<std::string> emptyClasses;
         optimizeBlock(repeatTimes->body, usedVars, emptyClasses);
 
+        if (endsWithUnconditionalBreak(repeatTimes->body))
+        {
+            repeatTimes->body.pop_back();
+            repeatTimes->countExpr = std::make_unique<LiteralExpr>(Value(1), KnownTypes::INT);
+        }
+        else if (endsWithUnconditionalSkip(repeatTimes->body))
+        {
+            repeatTimes->body.pop_back();
+        }
+
         if (repeatTimes->countExpr && repeatTimes->countExpr->canEvaluateAtParseTime())
         {
             try
@@ -1424,7 +1483,26 @@ std::vector<std::shared_ptr<Stmt>> DeadCodeEliminator::optimizeStatement(
     {
         std::unordered_set<std::string> emptyClasses;
         optimizeBlock(repeatForever->body, usedVars, emptyClasses);
-        result.push_back(stmt);
+
+        if (endsWithUnconditionalBreak(repeatForever->body))
+        {
+            repeatForever->body.pop_back();
+
+            for (auto &statement : repeatForever->body)
+            {
+                if (statement)
+                    result.push_back(std::move(statement));
+            }
+
+            return result;
+        }
+
+        if (endsWithUnconditionalSkip(repeatForever->body))
+        {
+            repeatForever->body.pop_back();
+        }
+
+        result.push_back(std::move(stmt));
         return result;
     }
 

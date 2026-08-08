@@ -1,0 +1,4 @@
+(int) 36
+(int) 36
+SayStmt(LiteralExpr((int) 36))
+SayStmt(LiteralExpr((int) 36))

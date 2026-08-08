@@ -1,0 +1,6 @@
+(int) 0
+(int) 1
+CreateVarStmt(value, LiteralExpr((int) 0))
+RepeatWhileStmt(condition: BinaryExpr(operator: <, left: VariableExpr('value'), right: LiteralExpr((int) 2)), body: [
+  SayStmt(VariableExpr('value')),
+  UpdateVarStmt('value', value: BinaryExpr(operator: +, left: VariableExpr('value'), right: LiteralExpr((int) 1)))])

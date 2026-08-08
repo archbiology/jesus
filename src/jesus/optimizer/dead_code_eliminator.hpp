@@ -113,6 +113,22 @@ class DeadCodeEliminator
     bool isControlFlowTerminator(const Stmt &statement);
 
     /**
+     * @brief Returns whether a loop body ends with an unconditional skip.
+     *
+     * If that is the case, it can be safely just removed
+     */
+    bool endsWithUnconditionalSkip(const std::vector<std::unique_ptr<Stmt>> &body);
+
+    /**
+     * @brief Returns whether a loop body ends with an unconditional break.
+     *
+     * The break must be the final statement in the body.
+     * If so, the 'repeat N times' can simply becomes 'repeat 1 times',
+     * and from there the LoopUnroller takes charge.
+     */
+    bool endsWithUnconditionalBreak(const std::vector<std::unique_ptr<Stmt>> &body);
+
+    /**
      * @brief Check if a class statement has no side effects.
      *
      * A class is considered side-effect free if it only contains methods

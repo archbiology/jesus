@@ -1,4 +1,2 @@
 once
-RepeatForeverStmt(body: [
-  SayStmt(LiteralExpr(once)),
-  BreakStmt])
+SayStmt(LiteralExpr(once))
