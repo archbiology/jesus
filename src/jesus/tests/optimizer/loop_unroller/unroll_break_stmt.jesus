@@ -1,0 +1,6 @@
+repeat 3 times:
+    say "before"
+    break
+amen
+
+ast

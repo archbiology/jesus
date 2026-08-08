@@ -1,0 +1,8 @@
+create number value = 0
+
+repeat forever:
+    value = value + 1
+    break
+amen
+
+ast

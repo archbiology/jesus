@@ -1,0 +1,8 @@
+let there be Math:
+    purpose pi() -> number:
+        return 314 / 100
+    amen
+amen
+say 20
+
+ast

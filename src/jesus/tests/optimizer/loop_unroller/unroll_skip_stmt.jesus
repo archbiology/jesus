@@ -1,0 +1,7 @@
+repeat 3 times:
+    say "before"
+    skip
+    say "after"
+amen
+
+ast

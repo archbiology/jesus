@@ -1,0 +1,2 @@
+CreateVarStmt(value, LiteralExpr((int) 0))
+UpdateVarStmt('value', value: BinaryExpr(operator: +, left: VariableExpr('value'), right: LiteralExpr((int) 1)))

@@ -1,0 +1,8 @@
+create number value = 0
+
+repeat while value < 2:
+    say value
+    value = value + 1
+amen
+
+ast

@@ -1,4 +1,0 @@
-CreateClassStmt(name: 'DeadInChrist', body: [
-  CreateMethodStmt('lives', body: [
-    SayStmt(LiteralExpr(Turn to Jesus Christ before you turn to dust)),
-    ReturnStmt(LiteralExpr((int) 7))])])
