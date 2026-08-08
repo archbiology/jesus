@@ -1,0 +1,10 @@
+(int) 1
+(int) 2
+(int) 3
+CreateVarStmt(value, LiteralExpr((int) 0))
+UpdateVarStmt('value', value: BinaryExpr(operator: +, left: VariableExpr('value'), right: LiteralExpr((int) 1)))
+SayStmt(VariableExpr('value'))
+UpdateVarStmt('value', value: BinaryExpr(operator: +, left: VariableExpr('value'), right: LiteralExpr((int) 1)))
+SayStmt(VariableExpr('value'))
+UpdateVarStmt('value', value: BinaryExpr(operator: +, left: VariableExpr('value'), right: LiteralExpr((int) 1)))
+SayStmt(VariableExpr('value'))

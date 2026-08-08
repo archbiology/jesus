@@ -1,0 +1,12 @@
+A
+B
+A
+B
+A
+B
+SayStmt(LiteralExpr(A))
+SayStmt(LiteralExpr(B))
+SayStmt(LiteralExpr(A))
+SayStmt(LiteralExpr(B))
+SayStmt(LiteralExpr(A))
+SayStmt(LiteralExpr(B))

@@ -1,0 +1,24 @@
+small
+small
+small
+small
+small
+small
+small
+large
+large
+large
+large
+large
+large
+large
+large
+SayStmt(LiteralExpr(small))
+SayStmt(LiteralExpr(small))
+SayStmt(LiteralExpr(small))
+SayStmt(LiteralExpr(small))
+SayStmt(LiteralExpr(small))
+SayStmt(LiteralExpr(small))
+SayStmt(LiteralExpr(small))
+RepeatTimesStmt(times: LiteralExpr((int) 8), body: [
+  SayStmt(LiteralExpr(large))])

@@ -1,0 +1,5 @@
+repeat 8 times:
+    say "should remain a loop"
+amen
+
+ast

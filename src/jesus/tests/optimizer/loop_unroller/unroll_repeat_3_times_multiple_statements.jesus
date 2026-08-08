@@ -1,0 +1,6 @@
+repeat 3 times:
+    say "A"
+    say "B"
+amen
+
+ast

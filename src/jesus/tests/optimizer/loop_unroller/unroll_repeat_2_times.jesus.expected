@@ -1,0 +1,4 @@
+twice
+twice
+SayStmt(LiteralExpr(twice))
+SayStmt(LiteralExpr(twice))
