@@ -11,6 +11,8 @@
 class CreateVarStmt; // Forward declaration
 class UpdateVarStmt;
 class AssignStmt;
+class CreateClassStmt;
+class MethodCallExpr;
 
 /**
  * @brief Eliminates dead code from the AST.
@@ -57,6 +59,7 @@ class DeadCodeEliminator
      *    run()
      *       ↓
      *  collectReferencedVariables()
+     *  collectReferencedClasses()
      *       ↓
      *  optimizeBlock()
      *       ↓
@@ -72,6 +75,9 @@ class DeadCodeEliminator
     void collectReferencedVariables(const Stmt &statement, std::unordered_set<std::string> &usedVars);
     void collectReferencedVariables(const Expr *expression, std::unordered_set<std::string> &usedVars);
 
+    void collectReferencedClasses(const Stmt &statement, std::unordered_set<std::string> &usedClasses);
+    void collectReferencedClasses(const Expr *expression, std::unordered_set<std::string> &usedClasses);
+
     /**
      * @brief Check if expression has no side effect (LiteralExpr or VariableExpr)
      *
@@ -86,6 +92,11 @@ class DeadCodeEliminator
     bool hasNoSideEffects(const Expr *expression);
 
     /**
+     * @brief Check if a statement has no side effects.
+     */
+    bool hasNoSideEffects(const Stmt *stmt);
+
+    /**
      * @brief Returns whether the statement can be safely removed.
      *
      * A declaration or assignment can be discarded when the assigned value
@@ -94,6 +105,7 @@ class DeadCodeEliminator
     bool canDiscard(const CreateVarStmt *, const std::unordered_set<std::string> &usedVars);
     bool canDiscard(const UpdateVarStmt *, const std::unordered_set<std::string> &usedVars);
     bool canDiscard(const AssignStmt *, const std::unordered_set<std::string> &usedVars);
+    bool canDiscard(const CreateClassStmt *, const std::unordered_set<std::string> &usedClasses);
 
     /**
      * @brief Check if statement is return, break, skip, or resist.
@@ -101,13 +113,26 @@ class DeadCodeEliminator
     bool isControlFlowTerminator(const Stmt &statement);
 
     /**
+     * @brief Check if a class statement has no side effects.
+     *
+     * A class is considered side-effect free if it only contains methods
+     * and no I/O operations, no file access, no network calls, and no global mutation.
+     */
+    bool hasNoSideEffects(const CreateClassStmt *stmt);
+
+    /**
+     * @brief Check if a method call expression has no side effects.
+     */
+    bool hasNoSideEffects(const MethodCallExpr *expr);
+
+    /**
      * @brief Optimizes every statement in a sequential block.
      *
      * Statements may be removed, replaced, or left unchanged.
      * Statements following a control-flow terminator are discarded.
      */
-    void optimizeBlock(std::vector<std::unique_ptr<Stmt>> &stmts, const std::unordered_set<std::string> &usedVars);
-    void optimizeBlock(std::vector<std::shared_ptr<Stmt>> &stmts, const std::unordered_set<std::string> &usedVars);
+    void optimizeBlock(std::vector<std::unique_ptr<Stmt>> &stmts, const std::unordered_set<std::string> &usedVars, const std::unordered_set<std::string> &usedClasses);
+    void optimizeBlock(std::vector<std::shared_ptr<Stmt>> &stmts, const std::unordered_set<std::string> &usedVars, const std::unordered_set<std::string> &usedClasses);
 
     /**
      * @brief Optimizes a single statement.
@@ -116,8 +141,8 @@ class DeadCodeEliminator
      * optimized statements.
      */
     std::vector<std::unique_ptr<Stmt>> optimizeStatement(
-            std::unique_ptr<Stmt> statement, const std::unordered_set<std::string> &usedVars);
+            std::unique_ptr<Stmt> statement, const std::unordered_set<std::string> &usedVars, const std::unordered_set<std::string> &usedClasses);
 
     std::vector<std::shared_ptr<Stmt>> optimizeStatement(
-            std::shared_ptr<Stmt> statement, const std::unordered_set<std::string> &usedVars);
+            std::shared_ptr<Stmt> statement, const std::unordered_set<std::string> &usedVars, const std::unordered_set<std::string> &usedClasses);
 };
