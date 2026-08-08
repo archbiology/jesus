@@ -1,0 +1,7 @@
+create text name = "Jesus"
+
+repeat 2 times:
+    say "Hello {name}"
+amen
+
+ast

@@ -1,0 +1,12 @@
+repeat 2 times:
+    say "1"
+    say "2"
+    say "3"
+    say "4"
+    say "5"
+    say "6"
+    say "7"
+    say "8 - should not be unrolled"
+amen
+
+ast

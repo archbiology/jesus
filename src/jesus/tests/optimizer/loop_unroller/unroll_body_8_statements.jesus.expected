@@ -1,0 +1,25 @@
+1
+2
+3
+4
+5
+6
+7
+8 - should not be unrolled
+1
+2
+3
+4
+5
+6
+7
+8 - should not be unrolled
+RepeatTimesStmt(times: LiteralExpr((int) 2), body: [
+  SayStmt(LiteralExpr(1)),
+  SayStmt(LiteralExpr(2)),
+  SayStmt(LiteralExpr(3)),
+  SayStmt(LiteralExpr(4)),
+  SayStmt(LiteralExpr(5)),
+  SayStmt(LiteralExpr(6)),
+  SayStmt(LiteralExpr(7)),
+  SayStmt(LiteralExpr(8 - should not be unrolled))])

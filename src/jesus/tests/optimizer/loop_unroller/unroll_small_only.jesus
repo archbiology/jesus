@@ -1,0 +1,9 @@
+repeat 7 times:
+    say "small"
+amen
+
+repeat 8 times:
+    say "large"
+amen
+
+ast

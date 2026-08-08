@@ -1,0 +1,10 @@
+should remain a loop
+should remain a loop
+should remain a loop
+should remain a loop
+should remain a loop
+should remain a loop
+should remain a loop
+should remain a loop
+RepeatTimesStmt(times: LiteralExpr((int) 8), body: [
+  SayStmt(LiteralExpr(should remain a loop))])

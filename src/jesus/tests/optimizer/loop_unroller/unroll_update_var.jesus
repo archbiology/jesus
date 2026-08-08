@@ -1,0 +1,8 @@
+create number value = 0
+
+repeat 3 times:
+    value = value + 1
+    say value
+amen
+
+ast
