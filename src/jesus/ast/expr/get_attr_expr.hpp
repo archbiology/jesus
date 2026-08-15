@@ -18,10 +18,7 @@ public:
     GetAttributeExpr(std::unique_ptr<Expr> object, std::string attribute, const VariableAddress address)
         : object(std::move(object)), attribute(std::move(attribute)), address(address), AssignableExpr(ExprKind::GetAttribute) {}
 
-    Value evaluate(std::shared_ptr<Heart> heart) const override
-    {
-        return object->evaluate(heart);
-    }
+    Value evaluate(std::shared_ptr<Heart> heart) const override;
 
     Value accept(ExprVisitor &visitor) const override;
 
