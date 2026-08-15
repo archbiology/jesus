@@ -67,14 +67,31 @@ class ConstantPropagator
 
   private:
     void collectModifiedVars(
-            const Stmt &statement,
-            std::unordered_set<std::string> &modifiedVars,
-            std::unordered_set<std::string> &declaredVars);
+        const Stmt &statement,
+        std::unordered_set<std::string> &modifiedVars,
+        std::unordered_set<std::string> &declaredVars);
 
     void collectModifiedVarsFromExpr(const Expr *expression, std::unordered_set<std::string> &modifiedVars);
 
+    /**
+     * @brief Collects the declared initial values of every class attribute in
+     * the program.
+     *
+     * A reference to a class attribute (a VariableExpr declared in the class
+     * scope, e.g. `return name` inside a method) carries the scopeId and
+     * slot of the class attributes scope. When the attribute is never modified
+     * its declared initial value is its constant value, so the reference can be
+     * replaced by that literal.
+     */
+    void collectClassAttributeValues(
+        const std::vector<std::unique_ptr<Stmt>> &program,
+        std::unordered_map<uint32_t, std::unordered_map<uint32_t, std::unique_ptr<Expr>>> &classAttributeValues);
+
     void replaceConstWithLiteralInStatement(
-            Stmt &statement, const std::unordered_map<std::string, std::unique_ptr<Expr>> &constVars);
+        Stmt &statement,
+        const std::unordered_map<std::string, std::unique_ptr<Expr>> &constVars,
+        const std::unordered_map<uint32_t, std::unordered_map<uint32_t, std::unique_ptr<Expr>>> &classAttributeValues,
+        const std::unordered_set<std::string> &modifiedVars);
 
     /**
      * @brief This is the heart of ConstantPropagator.
@@ -85,7 +102,10 @@ class ConstantPropagator
      *    leave the expression unchanged.
      */
     std::unique_ptr<Expr> replaceConstWithLiteralInExpression(
-            std::unique_ptr<Expr> expression, const std::unordered_map<std::string, std::unique_ptr<Expr>> &constVars);
+        std::unique_ptr<Expr> expression,
+        const std::unordered_map<std::string, std::unique_ptr<Expr>> &constVars,
+        const std::unordered_map<uint32_t, std::unordered_map<uint32_t, std::unique_ptr<Expr>>> &classAttributeValues,
+        const std::unordered_set<std::string> &modifiedVars);
 
     std::unique_ptr<Expr> cloneExpr(const Expr &expr);
     std::unique_ptr<Expr> createLiteral(const Value &value);

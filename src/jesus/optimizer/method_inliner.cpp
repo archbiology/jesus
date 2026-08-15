@@ -37,7 +37,7 @@
 
 void MethodInliner::run(std::vector<std::unique_ptr<Stmt>> &program)
 {
-    std::unordered_map<std::string, const CreateMethodStmt *> knownMethods;
+    std::unordered_map<std::string, InlinableMethod> knownMethods;
 
     // Pass 1: Collect method definitions
     for (const auto &stmt : program)
@@ -51,7 +51,7 @@ void MethodInliner::run(std::vector<std::unique_ptr<Stmt>> &program)
 }
 
 void MethodInliner::collectMethodsFromStmt(
-    const Stmt &statement, std::unordered_map<std::string, const CreateMethodStmt *> &knownMethods)
+    const Stmt &statement, std::unordered_map<std::string, InlinableMethod> &knownMethods)
 {
     // ----------------------------------------------------
     // Methods in Jesus are always declared inside classes.
@@ -59,6 +59,10 @@ void MethodInliner::collectMethodsFromStmt(
     // ----------------------------------------------------
     if (auto createClass = dynamic_cast<const CreateClassStmt *>(&statement))
     {
+        const Heart *classAttributes = nullptr;
+        if (createClass->userClass)
+            classAttributes = createClass->userClass->class_attributes.get();
+
         for (const auto &stmt : createClass->body)
         {
             if (stmt)
@@ -66,7 +70,7 @@ void MethodInliner::collectMethodsFromStmt(
                 if (auto method = dynamic_cast<const CreateMethodStmt *>(stmt.get()))
                 {
                     // FIXME: two classes may have the same method names
-                    knownMethods[method->name] = method;
+                    knownMethods[method->name] = {method, classAttributes};
                 }
             }
         }
@@ -75,8 +79,7 @@ void MethodInliner::collectMethodsFromStmt(
 }
 
 void MethodInliner::optimizeBlock(
-    std::vector<std::unique_ptr<Stmt>> &stmts,
-    const std::unordered_map<std::string, const CreateMethodStmt *> &knownMethods)
+    std::vector<std::unique_ptr<Stmt>> &stmts, const std::unordered_map<std::string, InlinableMethod> &knownMethods)
 {
     for (auto &stmt : stmts)
     {
@@ -86,8 +89,7 @@ void MethodInliner::optimizeBlock(
 }
 
 void MethodInliner::optimizeBlock(
-    std::vector<std::shared_ptr<Stmt>> &stmts,
-    const std::unordered_map<std::string, const CreateMethodStmt *> &knownMethods)
+    std::vector<std::shared_ptr<Stmt>> &stmts, const std::unordered_map<std::string, InlinableMethod> &knownMethods)
 {
     for (auto &stmt : stmts)
     {
@@ -97,7 +99,7 @@ void MethodInliner::optimizeBlock(
 }
 
 void MethodInliner::optimizeStatement(
-    Stmt &statement, const std::unordered_map<std::string, const CreateMethodStmt *> &knownMethods)
+    Stmt &statement, const std::unordered_map<std::string, InlinableMethod> &knownMethods)
 {
     if (auto create = dynamic_cast<CreateVarStmt *>(&statement))
     {
@@ -214,7 +216,7 @@ void MethodInliner::optimizeStatement(
 }
 
 std::unique_ptr<Expr> MethodInliner::optimizeExpression(
-    std::unique_ptr<Expr> expression, const std::unordered_map<std::string, const CreateMethodStmt *> &knownMethods)
+    std::unique_ptr<Expr> expression, const std::unordered_map<std::string, InlinableMethod> &knownMethods)
 {
     if (!expression)
         return nullptr;
@@ -333,8 +335,7 @@ std::unique_ptr<Expr> MethodInliner::optimizeExpression(
 }
 
 std::unique_ptr<Expr> MethodInliner::inlineMethodCall(
-    std::unique_ptr<MethodCallExpr> methodCall,
-    const std::unordered_map<std::string, const CreateMethodStmt *> &knownMethods)
+    std::unique_ptr<MethodCallExpr> methodCall, const std::unordered_map<std::string, InlinableMethod> &knownMethods)
 {
     if (methodCall->object)
         methodCall->object = optimizeExpression(std::move(methodCall->object), knownMethods);
@@ -355,6 +356,16 @@ std::unique_ptr<Expr> MethodInliner::inlineMethodCall(
         methodBody = &method->body;
         methodParams = method->params.get();
     }
+
+    // ---------------------------------------------------------
+    // Find the class attributes of the method being called, so
+    // that references to instance attributes can be rewritten as
+    // attribute accesses on the receiver object (user.name).
+    // ---------------------------------------------------------
+    const Heart *classAttributes = nullptr;
+    auto knownMethod = knownMethods.find(methodName);
+    if (knownMethod != knownMethods.end())
+        classAttributes = knownMethod->second.classAttributes;
 
     if (methodBody && methodBody->size() == 1)
     {
@@ -387,8 +398,8 @@ std::unique_ptr<Expr> MethodInliner::inlineMethodCall(
                     }
                 }
 
-                auto inlined =
-                    cloneExpressionReplacingParamsWithArgs(*retStmt->value, argumentValues, methodCall->object.get());
+                auto inlined = cloneExpressionReplacingParamsWithArgs(
+                    *retStmt->value, argumentValues, methodCall->object.get(), classAttributes);
                 if (inlined)
                 {
                     return optimizeExpression(std::move(inlined), knownMethods);
@@ -401,7 +412,10 @@ std::unique_ptr<Expr> MethodInliner::inlineMethodCall(
 }
 
 std::unique_ptr<Expr> MethodInliner::cloneExpressionReplacingParamsWithArgs(
-    const Expr &expression, const std::unordered_map<std::string, const Expr *> &argumentValues, const Expr *objectExpr)
+    const Expr &expression,
+    const std::unordered_map<std::string, const Expr *> &argumentValues,
+    const Expr *objectExpr,
+    const Heart *classAttributes)
 {
     //--------------------------------------------------------------
     // Parameter substitution.
@@ -426,7 +440,7 @@ std::unique_ptr<Expr> MethodInliner::cloneExpressionReplacingParamsWithArgs(
         if (it != argumentValues.end() && it->second)
         {
             // This call clones the literal argument value (it->second is the value)
-            return cloneExpressionReplacingParamsWithArgs(*it->second, {}, nullptr);
+            return cloneExpressionReplacingParamsWithArgs(*it->second, {}, nullptr, classAttributes);
         }
         // The 'heart' of the method ends here.
         // ------------------------------------
@@ -434,9 +448,29 @@ std::unique_ptr<Expr> MethodInliner::cloneExpressionReplacingParamsWithArgs(
         if ((varExpr->name == "my" || varExpr->name == "this" || varExpr->name == "I" || varExpr->name == "self") &&
             objectExpr)
         {
-            return cloneExpressionReplacingParamsWithArgs(*objectExpr, {}, nullptr);
+            return cloneExpressionReplacingParamsWithArgs(*objectExpr, {}, nullptr, classAttributes);
         }
 
+        // ----------------------------------------------------------
+        // An instance attribute is rewritten as an attribute access on
+        // the receiver object: 'name' becomes 'user.name'.
+        //
+        // The parse-time class scope is not reachable from the call
+        // site, so the reference must be resolved through the instance.
+        // ----------------------------------------------------------
+        if (classAttributes && classAttributes->varExistsInHierarchy(varExpr->name))
+        {
+            if (!objectExpr)
+                return nullptr;
+
+            return std::make_unique<GetAttributeExpr>(
+                cloneExpressionReplacingParamsWithArgs(*objectExpr, {}, nullptr, classAttributes),
+                varExpr->name,
+                varExpr->address);
+        }
+
+        // A global variable keeps its reference: its address is still
+        // valid at the call site.
         return std::make_unique<VariableExpr>(varExpr->address, varExpr->name);
     }
 
@@ -464,21 +498,22 @@ std::unique_ptr<Expr> MethodInliner::cloneExpressionReplacingParamsWithArgs(
     if (auto grouping = dynamic_cast<const GroupingExpr *>(&expression))
     {
         return std::make_unique<GroupingExpr>(
-            cloneExpressionReplacingParamsWithArgs(*grouping->expression, argumentValues, objectExpr));
+            cloneExpressionReplacingParamsWithArgs(*grouping->expression, argumentValues, objectExpr, classAttributes));
     }
 
     if (auto unary = dynamic_cast<const UnaryExpr *>(&expression))
     {
         return std::make_unique<UnaryExpr>(
-            unary->op, cloneExpressionReplacingParamsWithArgs(*unary->right, argumentValues, objectExpr));
+            unary->op,
+            cloneExpressionReplacingParamsWithArgs(*unary->right, argumentValues, objectExpr, classAttributes));
     }
 
     if (auto binary = dynamic_cast<const BinaryExpr *>(&expression))
     {
         return std::make_unique<BinaryExpr>(
-            cloneExpressionReplacingParamsWithArgs(*binary->left, argumentValues, objectExpr),
+            cloneExpressionReplacingParamsWithArgs(*binary->left, argumentValues, objectExpr, classAttributes),
             binary->op,
-            cloneExpressionReplacingParamsWithArgs(*binary->right, argumentValues, objectExpr));
+            cloneExpressionReplacingParamsWithArgs(*binary->right, argumentValues, objectExpr, classAttributes));
     }
 
     if (auto listExpr = dynamic_cast<const ListExpr *>(&expression))
@@ -486,7 +521,8 @@ std::unique_ptr<Expr> MethodInliner::cloneExpressionReplacingParamsWithArgs(
         std::vector<std::unique_ptr<Expr>> elements;
         for (const auto &el : listExpr->elements)
             if (el)
-                elements.push_back(cloneExpressionReplacingParamsWithArgs(*el, argumentValues, objectExpr));
+                elements.push_back(
+                    cloneExpressionReplacingParamsWithArgs(*el, argumentValues, objectExpr, classAttributes));
 
         return std::make_unique<ListExpr>(std::move(elements), listExpr->listType);
     }
@@ -496,8 +532,11 @@ std::unique_ptr<Expr> MethodInliner::cloneExpressionReplacingParamsWithArgs(
         std::vector<std::pair<std::unique_ptr<Expr>, std::unique_ptr<Expr>>> entries;
         for (const auto &[key, value] : dictExpr->entries)
         {
-            auto newK = key ? cloneExpressionReplacingParamsWithArgs(*key, argumentValues, objectExpr) : nullptr;
-            auto newV = value ? cloneExpressionReplacingParamsWithArgs(*value, argumentValues, objectExpr) : nullptr;
+            auto newK = key ? cloneExpressionReplacingParamsWithArgs(*key, argumentValues, objectExpr, classAttributes)
+                            : nullptr;
+            auto newV =
+                value ? cloneExpressionReplacingParamsWithArgs(*value, argumentValues, objectExpr, classAttributes)
+                      : nullptr;
             entries.push_back({std::move(newK), std::move(newV)});
         }
 
@@ -507,30 +546,32 @@ std::unique_ptr<Expr> MethodInliner::cloneExpressionReplacingParamsWithArgs(
     if (auto condExpr = dynamic_cast<const ConditionalExpr *>(&expression))
     {
         return std::make_unique<ConditionalExpr>(
-            cloneExpressionReplacingParamsWithArgs(*condExpr->condition, argumentValues, objectExpr),
-            cloneExpressionReplacingParamsWithArgs(*condExpr->thenBranch, argumentValues, objectExpr),
-            cloneExpressionReplacingParamsWithArgs(*condExpr->elseBranch, argumentValues, objectExpr));
+            cloneExpressionReplacingParamsWithArgs(*condExpr->condition, argumentValues, objectExpr, classAttributes),
+            cloneExpressionReplacingParamsWithArgs(*condExpr->thenBranch, argumentValues, objectExpr, classAttributes),
+            cloneExpressionReplacingParamsWithArgs(*condExpr->elseBranch, argumentValues, objectExpr, classAttributes));
     }
 
     if (auto getAttr = dynamic_cast<const GetAttributeExpr *>(&expression))
     {
         std::unique_ptr<Expr> newObj =
-            getAttr->object ? cloneExpressionReplacingParamsWithArgs(*getAttr->object, argumentValues, objectExpr)
-                            : nullptr;
+            getAttr->object
+                ? cloneExpressionReplacingParamsWithArgs(*getAttr->object, argumentValues, objectExpr, classAttributes)
+                : nullptr;
 
         return std::make_unique<GetAttributeExpr>(std::move(newObj), getAttr->attribute, getAttr->address);
     }
 
     if (auto indexExpr = dynamic_cast<const IndexExpr *>(&expression))
     {
-        std::unique_ptr<Expr> newColl =
-            indexExpr->collection
-                ? cloneExpressionReplacingParamsWithArgs(*indexExpr->collection, argumentValues, objectExpr)
-                : nullptr;
+        std::unique_ptr<Expr> newColl = indexExpr->collection
+                                            ? cloneExpressionReplacingParamsWithArgs(
+                                                  *indexExpr->collection, argumentValues, objectExpr, classAttributes)
+                                            : nullptr;
 
         std::unique_ptr<Expr> newIdx =
-            indexExpr->index ? cloneExpressionReplacingParamsWithArgs(*indexExpr->index, argumentValues, objectExpr)
-                             : nullptr;
+            indexExpr->index
+                ? cloneExpressionReplacingParamsWithArgs(*indexExpr->index, argumentValues, objectExpr, classAttributes)
+                : nullptr;
 
         return std::make_unique<IndexExpr>(std::move(newColl), std::move(newIdx));
     }
@@ -540,7 +581,8 @@ std::unique_ptr<Expr> MethodInliner::cloneExpressionReplacingParamsWithArgs(
         std::vector<std::unique_ptr<Expr>> exprs;
         for (const auto &e : fmtString->expressions)
             if (e)
-                exprs.push_back(cloneExpressionReplacingParamsWithArgs(*e, argumentValues, objectExpr));
+                exprs.push_back(
+                    cloneExpressionReplacingParamsWithArgs(*e, argumentValues, objectExpr, classAttributes));
 
         return std::make_unique<FormattedStringExpr>(fmtString->raw, fmtString->parts, std::move(exprs));
     }
@@ -548,8 +590,9 @@ std::unique_ptr<Expr> MethodInliner::cloneExpressionReplacingParamsWithArgs(
     if (auto parity = dynamic_cast<const ParityCheckExpr *>(&expression))
     {
         std::unique_ptr<Expr> newTarget =
-            parity->target ? cloneExpressionReplacingParamsWithArgs(*parity->target, argumentValues, objectExpr)
-                           : nullptr;
+            parity->target
+                ? cloneExpressionReplacingParamsWithArgs(*parity->target, argumentValues, objectExpr, classAttributes)
+                : nullptr;
 
         return std::make_unique<ParityCheckExpr>(std::move(newTarget), parity->negate, parity->checkOdd);
     }
@@ -557,7 +600,9 @@ std::unique_ptr<Expr> MethodInliner::cloneExpressionReplacingParamsWithArgs(
     if (auto ask = dynamic_cast<const AskExpr *>(&expression))
     {
         std::unique_ptr<Expr> newPrompt =
-            ask->prompt ? cloneExpressionReplacingParamsWithArgs(*ask->prompt, argumentValues, objectExpr) : nullptr;
+            ask->prompt
+                ? cloneExpressionReplacingParamsWithArgs(*ask->prompt, argumentValues, objectExpr, classAttributes)
+                : nullptr;
 
         return std::make_unique<AskExpr>(std::move(newPrompt));
     }
@@ -565,18 +610,19 @@ std::unique_ptr<Expr> MethodInliner::cloneExpressionReplacingParamsWithArgs(
     if (auto createInst = dynamic_cast<const CreateInstanceExpr *>(&expression))
     {
         std::unique_ptr<Expr> newArgs =
-            createInst->constructorArgs
-                ? cloneExpressionReplacingParamsWithArgs(*createInst->constructorArgs, argumentValues, objectExpr)
-                : nullptr;
+            createInst->constructorArgs ? cloneExpressionReplacingParamsWithArgs(
+                                              *createInst->constructorArgs, argumentValues, objectExpr, classAttributes)
+                                        : nullptr;
 
         return std::make_unique<CreateInstanceExpr>(createInst->name, createInst->klass, std::move(newArgs));
     }
 
     if (auto convert = dynamic_cast<const ConvertToExpr *>(&expression))
     {
-        std::unique_ptr<Expr> newVal =
-            convert->valueExpr ? cloneExpressionReplacingParamsWithArgs(*convert->valueExpr, argumentValues, objectExpr)
-                               : nullptr;
+        std::unique_ptr<Expr> newVal = convert->valueExpr
+                                           ? cloneExpressionReplacingParamsWithArgs(
+                                                 *convert->valueExpr, argumentValues, objectExpr, classAttributes)
+                                           : nullptr;
 
         return std::make_unique<ConvertToExpr>(std::move(newVal), convert->targetType);
     }
@@ -584,11 +630,14 @@ std::unique_ptr<Expr> MethodInliner::cloneExpressionReplacingParamsWithArgs(
     if (auto mc = dynamic_cast<const MethodCallExpr *>(&expression))
     {
         std::unique_ptr<Expr> newObj =
-            mc->object ? cloneExpressionReplacingParamsWithArgs(*mc->object, argumentValues, objectExpr) : nullptr;
+            mc->object
+                ? cloneExpressionReplacingParamsWithArgs(*mc->object, argumentValues, objectExpr, classAttributes)
+                : nullptr;
         std::vector<std::unique_ptr<Expr>> newArgs;
         for (const auto &a : mc->args)
             if (a)
-                newArgs.push_back(cloneExpressionReplacingParamsWithArgs(*a, argumentValues, objectExpr));
+                newArgs.push_back(
+                    cloneExpressionReplacingParamsWithArgs(*a, argumentValues, objectExpr, classAttributes));
 
         return std::make_unique<MethodCallExpr>(std::move(newObj), mc->method, std::move(newArgs), mc->interpreter);
     }

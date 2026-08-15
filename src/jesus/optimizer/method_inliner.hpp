@@ -41,27 +41,37 @@ class MethodInliner
     void run(std::vector<std::unique_ptr<Stmt>> &program);
 
   private:
+    /**
+     * @brief A method known to the inliner, together with the scope holding
+     * the attributes of the class that declares it.
+     */
+    struct InlinableMethod
+    {
+        const CreateMethodStmt *stmt;
+        const Heart *classAttributes;
+    };
+
     void collectMethodsFromStmt(
-        const Stmt &statement, std::unordered_map<std::string, const CreateMethodStmt *> &knownMethods);
+        const Stmt &statement, std::unordered_map<std::string, InlinableMethod> &knownMethods);
 
     void optimizeBlock(
         std::vector<std::unique_ptr<Stmt>> &stmts,
-        const std::unordered_map<std::string, const CreateMethodStmt *> &knownMethods);
+        const std::unordered_map<std::string, InlinableMethod> &knownMethods);
 
     void optimizeBlock(
         std::vector<std::shared_ptr<Stmt>> &stmts,
-        const std::unordered_map<std::string, const CreateMethodStmt *> &knownMethods);
+        const std::unordered_map<std::string, InlinableMethod> &knownMethods);
 
     void optimizeStatement(
-        Stmt &statement, const std::unordered_map<std::string, const CreateMethodStmt *> &knownMethods);
+        Stmt &statement, const std::unordered_map<std::string, InlinableMethod> &knownMethods);
 
     std::unique_ptr<Expr> optimizeExpression(
         std::unique_ptr<Expr> expression,
-        const std::unordered_map<std::string, const CreateMethodStmt *> &knownMethods);
+        const std::unordered_map<std::string, InlinableMethod> &knownMethods);
 
     std::unique_ptr<Expr> inlineMethodCall(
         std::unique_ptr<MethodCallExpr> methodCall,
-        const std::unordered_map<std::string, const CreateMethodStmt *> &knownMethods);
+        const std::unordered_map<std::string, InlinableMethod> &knownMethods);
 
     /**
      * @brief Clone an expression,
@@ -109,5 +119,6 @@ class MethodInliner
     std::unique_ptr<Expr> cloneExpressionReplacingParamsWithArgs(
         const Expr &expression,
         const std::unordered_map<std::string, const Expr *> &argumentValues,
-        const Expr *objectExpr);
+        const Expr *objectExpr,
+        const Heart *classAttributes);
 };
