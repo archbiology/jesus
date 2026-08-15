@@ -1,0 +1,12 @@
+create number PI = 3.14
+
+let there be Math:
+    purpose getPi() -> number:
+        return PI
+    amen
+amen
+
+create Math math = 1
+say math getPi
+
+ast

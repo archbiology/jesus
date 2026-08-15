@@ -1,0 +1,4 @@
+(int) 3
+CreateVarStmt(sum, LiteralExpr((int) 0))
+UpdateVarStmt('sum', value: BinaryExpr(operator: +, left: VariableExpr('sum'), right: LiteralExpr((int) 3)))
+SayStmt(VariableExpr('sum'))
