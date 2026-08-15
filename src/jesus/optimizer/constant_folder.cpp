@@ -202,8 +202,7 @@ std::unique_ptr<Expr> ConstantFolder::optimizeExpression(std::unique_ptr<Expr> e
 
     if (auto binary = dynamic_cast<BinaryExpr *>(expression.get()))
     {
-        return optimizeBinaryExpr(
-            std::unique_ptr<BinaryExpr>(static_cast<BinaryExpr *>(expression.release())));
+        return optimizeBinaryExpr(std::unique_ptr<BinaryExpr>(static_cast<BinaryExpr *>(expression.release())));
     }
 
     if (auto listExpr = dynamic_cast<ListExpr *>(expression.get()))
@@ -283,7 +282,104 @@ std::unique_ptr<Expr> ConstantFolder::optimizeBinaryExpr(std::unique_ptr<BinaryE
     expression->right = optimizeExpression(std::move(expression->right));
 
     if (!expression->canEvaluateAtParseTime())
+    {
+        // -----------------------------------------------------------
+        // Reassociation for '+' and '-'
+        //
+        // The entire expression cannot be evaluated at parse time because
+        // its base may depend on a runtime value:
+        //
+        //     sum + 1 + 2 - 3 + 4
+        //
+        // However, the constant operands on the right side are already
+        // known at parse time, so we can combine them.
+        //
+        // The parser builds left-associative chains:
+        //
+        //     ((((sum + 1) + 2) - 3) + 4)
+        //
+        // We combine the constant operands while preserving their signs:
+        //
+        //     (sum + 1) - 2  becomes  sum + (-1)
+        //
+        //     (sum - 1) + 2  becomes  sum + 1
+        //
+        // The optimizer processes the tree bottom-up, so this transformation
+        // is repeated automatically:
+        //
+        //     sum + 1 + 2 - 3 + 4
+        //
+        // becomes:
+        //
+        //     sum + 4
+        //
+        // The important detail is that we do NOT assume '-' is associative.
+        // Instead, each constant is first converted to its signed value,
+        // and then the signed values are added.
+        // -----------------------------------------------------------F
+        if ((expression->op.type == TokenType::PLUS || expression->op.type == TokenType::MINUS) &&
+            expression->right->canEvaluateAtParseTime())
+        {
+            if (auto leftBin = dynamic_cast<BinaryExpr *>(expression->left.get()))
+            {
+                if ((leftBin->op.type == TokenType::PLUS || leftBin->op.type == TokenType::MINUS) &&
+                    leftBin->right->canEvaluateAtParseTime())
+                {
+                    try
+                    {
+                        // -----------------------------------------------
+                        //  We have:
+                        //
+                        //      (base +/- leftConstant) +/- rightConstant
+                        //
+                        //  Convert both constants to their signed values:
+                        //
+                        //      (sum + 1) + 2  ->  +1 + 2
+                        //      (sum + 1) - 2  ->  +1 - 2
+                        //      (sum - 1) + 2  ->  -1 + 2
+                        //      (sum - 1) - 2  ->  -1 - 2
+                        //
+                        //  Then fold the two constants together.
+                        //  -----------------------------------------------
+                        Value leftValue = leftBin->right->evaluate(nullptr);
+                        if (leftBin->op.type == TokenType::MINUS)
+                        {
+                            leftValue = Value(0) - leftValue;
+                        }
+
+                        Value rightValue = expression->right->evaluate(nullptr);
+                        if (expression->op.type == TokenType::MINUS)
+                        {
+                            rightValue = Value(0) - rightValue;
+                        }
+
+                        Value mergedValue = leftValue + rightValue;
+                        auto foldedConst = createLiteral(mergedValue);
+
+                        // -----------------------------------------------------
+                        //  Always rebuild using PLUS because the sign has already
+                        //  been incorporated into foldedConst.
+                        //
+                        //  Examples:
+                        //
+                        //      (sum + 1) + 2 -> sum + 3
+                        //      (sum + 1) - 2 -> sum + (-1)
+                        //      (sum - 1) + 2 -> sum + 1
+                        //      (sum - 1) - 2 -> sum + (-3)
+                        // -----------------------------------------------------
+                        Token plusToken(TokenType::PLUS, "+", Value("+"));
+
+                        return std::make_unique<BinaryExpr>(
+                            std::move(leftBin->left), plusToken, std::move(foldedConst));
+                    }
+                    catch (...)
+                    {
+                    }
+                }
+            }
+        }
         return expression;
+    }
 
     try
     {

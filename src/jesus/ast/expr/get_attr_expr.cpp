@@ -5,9 +5,22 @@
 #include "interpreter/interpreter.hpp"
 #include "interpreter/runtime/instance.hpp"
 
-Value GetAttributeExpr::accept(ExprVisitor &visitor) const
+Value GetAttributeExpr::accept(ExprVisitor &visitor) const { return visitor.visitGetAttribute(*this); }
+
+Value GetAttributeExpr::evaluate(std::shared_ptr<Heart> heart) const
 {
-    return visitor.visitGetAttribute(*this);
+    Value obj = object->evaluate(heart);
+
+    std::shared_ptr<Instance> instance = obj.toInstance();
+
+    if (!instance)
+    {
+        throw std::runtime_error(
+            "Cannot access attribute '" + attribute + "' on '" + obj.toString() + "' value.\n" +
+            "Tip: ensure the value is a valid object before accessing its attributes.");
+    }
+
+    return instance->getAttribute(address);
 }
 
 std::shared_ptr<CreationType> GetAttributeExpr::getReturnType(ParserContext &ctx) const
