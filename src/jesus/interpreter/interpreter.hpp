@@ -27,6 +27,8 @@
 #include "types/known_types.hpp"
 #include "types/type_registry.hpp"
 
+class Instance; // Forward declaration
+
 REGISTER_FOR_UML(
     Interpreter,
     .parentsList({"ExprVisitor", "StmtVisitor"})
@@ -57,6 +59,15 @@ public:
     explicit Interpreter(std::shared_ptr<Module> module, bool useVm, bool keepAst)
         : currentModule(module), httpRuntime(*this), useVm(useVm), keepAst(keepAst),
           typeRegistry(std::make_shared<TypeRegistry>()) {}
+
+    /**
+     * @brief Runs the '__omega__' destructor of every living instance
+     * created during this interpreter's execution.
+     *
+     * "For everything there is a season... a time to be born, and a time to die."
+     * — Ecclesiastes 3:1-2
+     */
+    ~Interpreter();
     /**
      * @brief Evaluates a given expression and returns its computed value.
      *
@@ -201,6 +212,13 @@ public:
     const bool keepAst;
 
 private:
+    /**
+     * @brief Every instance born during execution, watched via weak_ptr.
+     *
+     * Used to invoke '__omega__' destructors at the end of the program.
+     */
+    std::vector<std::weak_ptr<Instance>> liveInstances;
+
     /**
      * @brief Prevent re-imports / circular imports
      */

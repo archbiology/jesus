@@ -53,6 +53,15 @@ static std::shared_ptr<CreationType> registerParseTimeClass(
                     throw std::runtime_error("Class '" + className + "' already has a destructor '__omega__'.");
                 }
                 hasDestructor = true;
+
+                // -------------------------------------------------------------
+                // Register the destructor as a method so that it can be
+                // found and invoked automatically when an instance passes away.
+                // -------------------------------------------------------------
+                auto method = std::make_shared<Method>(
+                    methodStmt->name, methodStmt->params, methodStmt->body, methodStmt->returnType);
+                userClass->addMethod(methodStmt->name, method);
+
                 continue;
             }
 

@@ -79,6 +79,10 @@ Value Interpreter::visitCreateInstanceExpr(const CreateInstanceExpr &expr)
 {
     auto instance = std::make_shared<Instance>(expr.klass, expr.name);
 
+    // Watch this instance so its '__omega__' destructor can be
+    // invoked automatically at the end of the program.
+    liveInstances.push_back(instance);
+
     // -----------------------------------------------------------------
     // The constructor ('__alpha__') runs automatically whenever a new
     // instance is born.
@@ -1028,4 +1032,36 @@ void Interpreter::visitServeStmt(const ServeStmt &stmt)
     }
 
     httpRuntime.serve(port);
+}
+
+Interpreter::~Interpreter()
+{
+    // -------------------------------------------------------------
+    // End of the program: run the '__omega__' destructor of every
+    // instance that is still alive.
+    // -------------------------------------------------------------
+    size_t count = liveInstances.size();
+    for (size_t i = 0; i < count; ++i)
+    {
+        try
+        {
+            auto instance = liveInstances[i].lock();
+            if (!instance)
+                continue;
+
+            auto destructorMember = instance->spirit->findMember("__omega__", instance->spirit);
+            if (destructorMember && destructorMember->isMethod())
+            {
+                if (auto destructor = std::dynamic_pointer_cast<Method>(destructorMember->method))
+                {
+                    Value instanceValue(instance);
+                    destructor->call(*this, instanceValue, {});
+                }
+            }
+        }
+        catch (...)
+        {
+            // Destructors must never throw.
+        }
+    }
 }
