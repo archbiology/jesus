@@ -16,16 +16,16 @@ std::unique_ptr<Stmt> CreateVarTypeStmtRule::parse(ParserContext &ctx)
 {
     // TODO: This code is similar to CreateVarStmtRule::parse. Unify them.
 
-    if (!ctx.match(TokenType::CREATE))
+    if (!ctx.match(TokenType::TYPE))
         return nullptr;
 
     if (!ctx.match(TokenType::IDENTIFIER))
-        throw std::runtime_error("Expected base type after 'create'");
+        throw std::runtime_error("Expected base type after 'type'");
 
     std::string baseTypeStr = ctx.previous().lexeme;
 
     if (!ctx.match(TokenType::IDENTIFIER))
-        throw std::runtime_error("Expected new type name after 'create " + baseTypeStr + "'");
+        throw std::runtime_error("Expected new type name after 'type " + baseTypeStr + "'");
 
     std::string typeName = ctx.previous().lexeme;
 

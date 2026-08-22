@@ -68,6 +68,7 @@ enum class TokenType
     OMEGA,          // class destructor: __omega__(): amen
     RETURN,         // Function returns: return 144000
     CREATE,         // create days = 7
+    TYPE,           // type number Positive > 0
     ASK,            // create int age = ask "What is your age?"
     SAY,            // "say" prints to stdout
     WARN,           // "warn" prints to stderr
