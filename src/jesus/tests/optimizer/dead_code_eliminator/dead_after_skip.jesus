@@ -1,4 +1,4 @@
-create number count = 2
+create count: number = 2
 repeat forever:
     say "before"
 

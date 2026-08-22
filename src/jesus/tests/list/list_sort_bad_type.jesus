@@ -1,6 +1,6 @@
-create list l1 = [1]
-create list l2 = [2]
+create l1: list = [1]
+create l2: list = [2]
 
-create list l3 = [l1, l2]
+create l3: list = [l1, l2]
 
 l3 sort

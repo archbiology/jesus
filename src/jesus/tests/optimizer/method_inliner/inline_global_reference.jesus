@@ -1,4 +1,4 @@
-create number PI = 3.14
+create PI: number = 3.14
 
 let there be Math:
     purpose getPi() -> number:
@@ -6,7 +6,7 @@ let there be Math:
     amen
 amen
 
-create Math math = 1
+create math: Math = 1
 say math getPi
 
 ast

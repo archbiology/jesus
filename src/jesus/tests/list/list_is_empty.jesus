@@ -1,4 +1,4 @@
-create list nums = []
+create nums: list = []
 
 say nums is_empty
 

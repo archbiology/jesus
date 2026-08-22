@@ -1,5 +1,5 @@
-create truth value1 = 5 > 2
-create truth value2 = 2 > 5
+create value1: truth = 5 > 2
+create value2: truth = 2 > 5
 say value1
 say value2
 ast

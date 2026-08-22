@@ -1,4 +1,4 @@
-create number age = 33
+create age: number = 33
 
 say age
 

@@ -1,5 +1,5 @@
-create truth value1 = 3 <= 3
-create truth value2 = 3 <= 2
+create value1: truth = 3 <= 3
+create value2: truth = 3 <= 2
 say value1
 say value2
 ast

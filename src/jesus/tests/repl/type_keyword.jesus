@@ -1,15 +1,15 @@
-type number Positive > 0
-create Positive age = 2
+type Positive: number > 0
+create age: Positive = 2
 say age
-type number Negative < 0
-create Negative debt = -5
+type Negative: number < 0
+create debt: Negative = -5
 say debt
-type number AtLeast >= 10
-create AtLeast score = 10
+type AtLeast: number >= 10
+create score: AtLeast = 10
 say score
-type number AtMost <= 5
-create AtMost small = 5
+type AtMost: number <= 5
+create small: AtMost = 5
 say small
-type text Greeting matches "(Hello|Hi)"
-create Greeting hi = "Hello"
+type Greeting: text matches "(Hello|Hi)"
+create hi: Greeting = "Hello"
 say hi

@@ -4,7 +4,7 @@ let there be Person:
     amen
 amen
 
-create Person person = 1
+create person: Person = 1
 
 repeat 2 times:
     say person name

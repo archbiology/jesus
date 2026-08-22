@@ -1,0 +1,22 @@
+create age = 33
+say age
+create ratio = 2.5
+say ratio
+create truthy = yes
+say truthy
+type Positive: number > 0
+create score: Positive = 10
+say score
+type Negative: number < 0
+create below: Negative = -5
+say below
+type Greeting: text matches "(Hello|Hi)"
+create hi: Greeting = "Hello"
+say hi
+let there be Person:
+    create name: text = "Adam"
+amen
+create person: Person = 1
+say person name
+create person2: Person = 1
+say person2 name

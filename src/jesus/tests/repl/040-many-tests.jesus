@@ -1,8 +1,8 @@
-create text light = "Day"
-create text messiah = "Jesus"
-create number age = 33
-create text priest = "me"
-create real average = 2.3
+create light: text = "Day"
+create messiah: text = "Jesus"
+create age: number = 33
+create priest: text = "me"
+create average: real = 2.3
 say age
 ast
 say messiah
@@ -33,7 +33,7 @@ not not 23
 (0 versus age)
 (1 versus age )
 ( 1 versus 0 )
-create text name = "Jesus"
+create name: text = "Jesus"
 ( age versus name )
 ( 1 vs 9 )
 say name if ( 1 vs 1 ) otherwise "final"
@@ -48,7 +48,7 @@ say "adult" if ((age>=18)) otherwise "minor"
 ( age <= 1 )
 ( ( age <= 1 ) )
 
-create number age = 33
+create age: number = 33
 say "adult" if ( ( age >= 18 ) ) otherwise "minor"
 ( 1 + 1 )
 ( 2 + 7 )
@@ -91,98 +91,98 @@ not not 23
 ( 1 versus 7 )
 ( 1.0 versus 7 )
 ( 1.0 versus 7.98 )
-create text name = "Jesus"
+create name: text = "Jesus"
 ( age versus name )
 ( 1 vs 9 )
 say name if ( 1 vs 1 ) otherwise "final"
 (age*4)
 say "adult" if ((age>=18)) otherwise "minor"
 create with_no_type = 33
-create number count = "wrong value"
-create number one = 1
+create count: number = "wrong value"
+create one: number = 1
 say count
 say one
-create number zero = 0
+create zero: number = 0
 say zero
-create number PI = 3.14
+create PI: number = 3.14
 say PI
-create number temperature = -6
+create temperature: number = -6
 say temperature
-create positive elders = 24
+create elders: positive = 24
 say elders
-create positive sinful = 0
+create sinful: positive = 0
 say sinful
-create negative debt = -1
+create debt: negative = -1
 say debt
-create negative credit = 13
+create credit: negative = 13
 say credit
-create negative void = 0
+create void: negative = 0
 say void
-create natural spirits = 7
+create spirits: natural = 7
 say spirits
-create natural darkness = -13
+create darkness: natural = -13
 say darkness
-create percentage fallen_angels = 0.333
+create fallen_angels: percentage = 0.333
 say fallen_angels
-create percentage fallen_wise = -0.333
+create fallen_wise: percentage = -0.333
 say fallen_wise
-create percentage sheep = 100
-create percentage sheep = 101
+create sheep: percentage = 100
+create sheep: percentage = 101
 say sheep
-create word empty = ""
+create empty: word = ""
 say empty
-create word savior = "Jesus"
+create savior: word = "Jesus"
 say savior
-create word invalid = "Sinful wise"
+create invalid: word = "Sinful wise"
 warn invalid
-create phrase confusion = 6
+create confusion: phrase = 6
 warn confusion
-create phrase lie = "God does not see"
+create lie: phrase = "God does not see"
 warn lie
-create text valid = ""
+create valid: text = ""
 say valid
-create text rebellion = 13
+create rebellion: text = 13
 warn rebellion
-create car hilux = 0
+create hilux: car = 0
 say hilux
-create decimal forgive = 70 * 7
+create forgive: decimal = 70 * 7
 say forgive
 valid = "Jesus loves YOU"
 say valid
-create number age = 8
-type number Positive > 0
-create Positive abc = -9
+create age: number = 8
+type Positive: number > 0
+create abc: Positive = -9
 say abc
-create Positive gifts = 9
+create gifts: Positive = 9
 say gifts
-type number Negative < 0
-create Negative debit = -6
+type Negative: number < 0
+create debit: Negative = -6
 say debit
 debit = 19
-type number Other >= 7
-create Other ab = 7
+type Other: number >= 7
+create ab: Other = 7
 say ab
-create Other ab = 6
-type number Tribe <= 12
-create Tribe israel = 12
-create Tribe israel = 13
+create ab: Other = 6
+type Tribe: number <= 12
+create israel: Tribe = 12
+create israel: Tribe = 13
 say israel
-type text Confirm matches "(Y|y)es"
-type text IsraelVar matches "WakeUp, {israel}"
-create Confirm sure = "Yes"
+type Confirm: text matches "(Y|y)es"
+type IsraelVar: text matches "WakeUp, {israel}"
+create sure: Confirm = "Yes"
 sure = "no"
 say sure
-create text question = "What is your age? "
-create number edad = ask question
+create question: text = "What is your age? "
+create edad: number = ask question
 18
 say edad
-create number idade = ask "Qual sua idade? "
+create idade: number = ask "Qual sua idade? "
 seven
 fourteen
 33
 say idade
-create number year = ask PI
-create number year2 = ask temperature
+create year: number = ask PI
+create year2: number = ask temperature
 age = ask "What is your age again (curent: {age})? "
 fourty
 eternal
@@ -192,42 +192,42 @@ question = ask question
 What is the new question?
 say question
 let there be User: amen
-create User Jesus = 1
+create Jesus: User = 1
 say Jesus
 let there be MultiLineClass:
 
 
 amen
-create MultiLineClass multiline = 12
+create multiline: MultiLineClass = 12
 say multiline
 say "igual" se 1 is 1 senão "diferente"
-criar text nome = "Jesus"
+criar nome: text = "Jesus"
 say não nome
-criar number sim = 1
-criar number nao = 0
+criar sim: number = 1
+criar nao: number = 0
 say sim é 1 e nao é 0
 say sim é 1 ou nao é 0
 haja Luz: amém
-criar Luz dia = 1
+criar dia: Luz = 1
 say dia
 dia é uma Luz
 haja Canção
-criar Canção louvor = "Me ama, Ele me ama..."
+criar louvor: Canção = "Me ama, Ele me ama..."
 say louvor
 let there be Person:
-    create text name = "Adam"
-    create text wife = "Eve"
-    create number age = 930
+    create name: text = "Adam"
+    create wife: text = "Eve"
+    create age: number = 930
 
     purpose bless(): amen
     propósito sejaUmaBenção(): amém
-    purpose testing(text what): create text var = "inside function" amen
-    purpose testTheSpirits(text a_; number b): create text reference = "1 John 4:1" amen
+    purpose testing(text what): create var: text = "inside function" amen
+    purpose testTheSpirits(text a_; number b): create reference: text = "1 John 4:1" amen
     purpose aToB(number a_; number b):
         say "a before"
         say a_
-        create number c = 1
-        create number d = a_
+        create c: number = 1
+        create d: number = a_
         say "b before"
         say b
         say "before update b"
@@ -251,7 +251,7 @@ let there be Person:
     amen
 amen
 say wife
-create Person adam = 1
+create adam: Person = 1
 say adam name
 say adam wife
 say adam age
@@ -284,7 +284,7 @@ let there be SonOfMan:
         return 70 * 7
     amen
 amen
-create SonOfMan sonOfMan = 1
+create sonOfMan: SonOfMan = 1
 say sonOfMan
 say sonOfMan age
 say sonOfMan saySomething
@@ -294,10 +294,10 @@ let there be TestSpirits:
         return "lie"
     amen
 amen
-create number edade = sonOfMan age
+create edade: number = sonOfMan age
 say "La edad es: {edade}"
-create text ageStr = sonOfMan age
-create number naaman = 1
+create ageStr: text = sonOfMan age
+create naaman: number = 1
 repeat while naaman <= 7:
     say " Naaman faith count: {naaman}"
     naaman = naaman + 1
@@ -305,15 +305,15 @@ amen
 repeat 2 times:
     say "Twice"
 amen
-create number two = 2
+create two: number = 2
 repeat two times:
     say 'two times'
 amen
-create text _two = "two"
+create _two: text = "two"
 repeat _two times:
     say 'This should not be printed'
 amen
-create number limit = 3
+create limit: number = 3
 repeat forever:
   limit = limit - 1
   say "Decreasing... {limit}"
@@ -321,7 +321,7 @@ repeat forever:
     break
   amen
 amen
-create truth isEven = yes
+create isEven: truth = yes
 repeat 10 times:
   isEven = not isEven
   limit = limit + 1
@@ -355,8 +355,8 @@ say not 8
 'a text' is a number
 
 let there be Parent:
-    create text name = "Abraham"
-    create text surname = "Terahson"
+    create name: text = "Abraham"
+    create surname: text = "Terahson"
 
     purpose praise():
         say "Praise the LORD, oh my soul ({name} {surname}),"
@@ -364,15 +364,15 @@ let there be Parent:
 amen
 
 let there be Son from Parent:
-    create text surname = "Abrahamson"
+    create surname: text = "Abrahamson"
 amen
 
 let there be Ishmael from Parent:
-    create text surname = 'Hagarson'
+    create surname: text = 'Hagarson'
 amen
 
 let there be GrandSon from Son:
-    create text surname = "Isaacson"
+    create surname: text = "Isaacson"
 
     purpose praise():
         name = "Jacob"
@@ -388,23 +388,23 @@ let there be GrandSon from Son:
     amen
 amen
 
-create Parent abraham = 1
+create abraham: Parent = 1
 abraham praise
 
-create Ishmael ishmael = 0
+create ishmael: Ishmael = 0
 
-create Son isaac = 1
+create isaac: Son = 1
 isaac praise
 isaac to Ishmael
 
-create GrandSon /* Jacob is the grandson of Abraham */ jacob = 1
+create jacob: GrandSon = 1
 jacob praise
 say name
 jacob who
 
 abraham = jacob
 abraham generateJudah
-create GrandSon other = 1
+create other: GrandSon = 1
 other = abraham to GrandSon
 other generateJudah
 abraham to Ishmael
@@ -435,13 +435,13 @@ ast GrandSon
 let there be Alien
 let there be Persona: purpose kill(): amen amen
 
-create text confession = confess
-create text warfare = giants
+create confession: text = confess
+create warfare: text = giants
 
 bible 'john 3:16'
-create text verse = bible '1thessalonians 5:16'
+create verse: text = bible '1thessalonians 5:16'
 say "In Christ we must: {verse}"
-create text luke1732 = "luke 17:32"
+create luke1732: text = "luke 17:32"
 bible luke1732
 
 on http '/savior':
@@ -450,7 +450,7 @@ amen
 on http '/api' -> json :
     return '{"nome": "Jesus", "surname": "Christ"}'
 amen
-create text pdf = 'application/pdf'
+create pdf: text = 'application/pdf'
 on http '/pdf' -> pdf:
     return 'A PDF file'
 amen
@@ -460,7 +460,7 @@ amen
 
 serve on 123456
 
-create list l = ['Matt', 'Mark', 'Luke']
+create l: list = ['Matt', 'Mark', 'Luke']
 4[0]
 l[-1]
 l[3]
@@ -469,7 +469,7 @@ l['index']
 l[1] = 'Marcos'
 l
 
-create list deep = [[isaac]]
+create deep: list = [[isaac]]
 deep[0][0] surname = 'Hijo'
 say deep
 
@@ -478,7 +478,7 @@ foreach disciple in l:
 amen
 say disciple # FIXME: should fail, since disciple is inside 'foreach' only.
 
-create dict d = {"name": "Jesus", 'surname': 'Christ', "role": "Savior"}
+create d: dict = {"name": "Jesus", 'surname': 'Christ', "role": "Savior"}
 foreach key, value in d pairs:
   say "{key} -> {value}"
 amen

@@ -1,4 +1,4 @@
-create number jesus_lost = 0
+create jesus_lost: number = 0
 repeat jesus_lost times:
     say "never"
 amen

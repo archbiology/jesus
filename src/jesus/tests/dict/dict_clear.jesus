@@ -1,4 +1,4 @@
-create dict d = {"name": "Paul", "city": "Jerusalem"}
+create d: dict = {"name": "Paul", "city": "Jerusalem"}
 
 d clear
 

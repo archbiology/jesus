@@ -1,2 +1,2 @@
-create list l = [{"name": "John"}]
+create l: list = [{"name": "John"}]
 say l[0]["name"]

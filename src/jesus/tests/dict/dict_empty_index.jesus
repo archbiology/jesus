@@ -1,2 +1,2 @@
-create dict d = {}
+create d: dict = {}
 say d[]
