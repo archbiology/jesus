@@ -65,6 +65,7 @@ enum class TokenType
     FROM,           // let there be SonClass from ParentClass: amen
     PURPOSE,        // create method: purpose praise(): amen
     ALPHA,          // class constructor: __alpha__(): amen
+    OMEGA,          // class destructor: __omega__(): amen
     RETURN,         // Function returns: return 144000
     CREATE,         // create days = 7
     ASK,            // create int age = ask "What is your age?"

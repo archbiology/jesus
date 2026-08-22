@@ -127,6 +127,7 @@ namespace Keywords
         {"propósito", TokenType::PURPOSE},
 
         {"__alpha__", TokenType::ALPHA},
+        {"__omega__", TokenType::OMEGA},
 
         {"come", TokenType::COME},
         {"dots", TokenType::DOTS},

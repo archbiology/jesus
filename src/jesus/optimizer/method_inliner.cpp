@@ -69,7 +69,7 @@ void MethodInliner::collectMethodsFromStmt(
             {
                 if (auto method = dynamic_cast<const CreateMethodStmt *>(stmt.get()))
                 {
-                    if (method->isConstructor)
+                    if (method->isConstructor || method->isDestructor)
                         continue;
 
                     // FIXME: two classes may have the same method names

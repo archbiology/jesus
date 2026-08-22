@@ -1,0 +1,5 @@
+let there be Resource:
+    __omega__():
+        return 1
+    amen
+amen

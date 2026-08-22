@@ -74,6 +74,8 @@ public:
             return "PURPOSE";
         case TokenType::ALPHA:
             return "ALPHA";
+        case TokenType::OMEGA:
+            return "OMEGA";
         case TokenType::RETURN:
             return "RETURN";
         case TokenType::Note:

@@ -20,6 +20,7 @@ static std::shared_ptr<CreationType> registerParseTimeClass(
         PrimitiveType::Class, className, module_name, parent_class, std::move(attributes), constraints);
 
     bool hasConstructor = false;
+    bool hasDestructor = false;
 
     for (const auto &member : body)
     {
@@ -29,10 +30,19 @@ static std::shared_ptr<CreationType> registerParseTimeClass(
             {
                 if (hasConstructor)
                 {
-                    throw std::runtime_error(
-                        "Class '" + className + "' already has a constructor '__alpha__'.");
+                    throw std::runtime_error("Class '" + className + "' already has a constructor '__alpha__'.");
                 }
                 hasConstructor = true;
+                continue;
+            }
+
+            if (methodStmt->isDestructor)
+            {
+                if (hasDestructor)
+                {
+                    throw std::runtime_error("Class '" + className + "' already has a destructor '__omega__'.");
+                }
+                hasDestructor = true;
                 continue;
             }
 

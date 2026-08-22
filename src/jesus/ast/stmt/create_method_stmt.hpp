@@ -45,13 +45,16 @@ public:
     std::shared_ptr<CreationType> returnType;
     std::vector<std::shared_ptr<Stmt>> body;
     bool isConstructor; // true if this is the special constructor "__alpha__"
+    bool isDestructor;  // true if this is the special destructor "__omega__"
 
     CreateMethodStmt(const std::string &name,
                      const std::shared_ptr<Heart> &params,
                      const std::shared_ptr<CreationType> &returnType,
                      const std::vector<std::shared_ptr<Stmt>> &body,
-                     bool isConstructor = false)
-        : name(name), params(std::move(params)), returnType(std::move(returnType)), body(body), isConstructor(isConstructor)
+                     bool isConstructor = false,
+                     bool isDestructor = false)
+        : name(name), params(std::move(params)), returnType(std::move(returnType)), body(body),
+          isConstructor(isConstructor), isDestructor(isDestructor)
     {
     }
 

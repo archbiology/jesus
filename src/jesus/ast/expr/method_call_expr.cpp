@@ -39,6 +39,11 @@ void MethodCallExpr::validate(ParserContext &ctx) const
         throw std::runtime_error("Constructor '__alpha__' cannot be called directly.");
     }
 
+    if (method && method->name == "__omega__")
+    {
+        throw std::runtime_error("Destructor '__omega__' cannot be called directly.");
+    }
+
     const auto &paramNames = method->params->getVariableNames();
     const auto &paramsCount = method->params->paramsCount;
 
