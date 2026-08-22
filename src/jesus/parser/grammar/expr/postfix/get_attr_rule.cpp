@@ -64,6 +64,16 @@ std::unique_ptr<Expr> GetAttributeRule::parse(ParserContext &ctx)
         // =============================
         // 2. ATTRIBUTE / METHOD ACCESS
         // =============================
+        if (ctx.check(TokenType::ALPHA))
+        {
+            throw std::runtime_error("Constructor '__alpha__' cannot be called directly.");
+        }
+
+        if (ctx.check(TokenType::OMEGA))
+        {
+            throw std::runtime_error("Destructor '__omega__' cannot be called directly.");
+        }
+
         if (ctx.match(TokenType::IDENTIFIER))
         {
             // ----------------------------

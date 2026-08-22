@@ -34,6 +34,16 @@ bool MethodCallExpr::isArgumentAssignable(const std::shared_ptr<CreationType> &p
 
 void MethodCallExpr::validate(ParserContext &ctx) const
 {
+    if (method && method->name == "__alpha__")
+    {
+        throw std::runtime_error("Constructor '__alpha__' cannot be called directly.");
+    }
+
+    if (method && method->name == "__omega__")
+    {
+        throw std::runtime_error("Destructor '__omega__' cannot be called directly.");
+    }
+
     const auto &paramNames = method->params->getVariableNames();
     const auto &paramsCount = method->params->paramsCount;
 

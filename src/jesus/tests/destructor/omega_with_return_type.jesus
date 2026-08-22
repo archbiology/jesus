@@ -1,0 +1,5 @@
+let there be Resource:
+    __omega__() -> number:
+        say 'At the name of Jesus Christ every knee should bow'
+    amen
+amen

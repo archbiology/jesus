@@ -19,10 +19,33 @@ static std::shared_ptr<CreationType> registerParseTimeClass(
     auto userClass = std::make_shared<CreationType>(
         PrimitiveType::Class, className, module_name, parent_class, std::move(attributes), constraints);
 
+    bool hasConstructor = false;
+    bool hasDestructor = false;
+
     for (const auto &member : body)
     {
         if (auto methodStmt = dynamic_cast<CreateMethodStmt *>(member.get()))
         {
+            if (methodStmt->isConstructor)
+            {
+                if (hasConstructor)
+                {
+                    throw std::runtime_error("Class '" + className + "' already has a constructor '__alpha__'.");
+                }
+                hasConstructor = true;
+                continue;
+            }
+
+            if (methodStmt->isDestructor)
+            {
+                if (hasDestructor)
+                {
+                    throw std::runtime_error("Class '" + className + "' already has a destructor '__omega__'.");
+                }
+                hasDestructor = true;
+                continue;
+            }
+
             auto method = std::make_shared<Method>(
                 methodStmt->name,
                 methodStmt->params,

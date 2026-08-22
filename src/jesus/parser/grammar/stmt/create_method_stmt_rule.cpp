@@ -13,32 +13,55 @@ std::unique_ptr<Stmt> CreateMethodStmtRule::parse(ParserContext &ctx)
 {
     // ------------------------------------------------------
     // Grammar:
+    //  __alpha__ ( <params>? ) -> returnType? : ... amen
+    //  __omega__ () : ... amen
     //  [ungodly] purpose <name> ( <params>? ) -> returnType? : ... amen
     // ------------------------------------------------------
-    bool isUngodlyDeclared = ctx.match(TokenType::UNGODLY);
+    bool isConstructor = false;
+    bool isDestructor = false;
+    bool isUngodlyDeclared = false;
+    std::string methodName;
 
-    if (!ctx.match(TokenType::PURPOSE))
-        return nullptr;
+    if (ctx.match(TokenType::ALPHA))
+    {
+        isConstructor = true;
+        methodName = "__alpha__";
+    }
+    else if (ctx.match(TokenType::OMEGA))
+    {
+        isDestructor = true;
+        methodName = "__omega__";
+    }
+    else
+    {
+        isUngodlyDeclared = ctx.match(TokenType::UNGODLY);
 
-    if (!ctx.match(TokenType::IDENTIFIER))
-        throw std::runtime_error("Expected method name after 'calling'");
+        if (!ctx.match(TokenType::PURPOSE))
+            return nullptr;
 
-    std::string methodName = ctx.previous().lexeme;
+        if (!ctx.match(TokenType::IDENTIFIER))
+            throw std::runtime_error("Expected method name after 'purpose'");
+
+        methodName = ctx.previous().lexeme;
+    }
 
     // -----------------------------------
     // Ungodly semantic validation
     // -----------------------------------
-    std::string bibleReference;
-    bool nameIsUngodly = doctrine::law::isUngodlyName(methodName, bibleReference);
-
-    if (nameIsUngodly && !isUngodlyDeclared)
+    if (!isConstructor && !isDestructor)
     {
-        doctrine::law::handleUngodlyNaming(
-            "Method name '" + methodName + "' does not appear to reflect God's standards.\n" +
-            "To hide this warning, declare the method explicitly as 'ungodly'.\n\n" +
-            "Example:\n" +
-            "   ungodly purpose " + methodName + "():\n   amen\n\n" +
-            bibleReference);
+        std::string bibleReference;
+        bool nameIsUngodly = doctrine::law::isUngodlyName(methodName, bibleReference);
+
+        if (nameIsUngodly && !isUngodlyDeclared)
+        {
+            doctrine::law::handleUngodlyNaming(
+                "Method name '" + methodName + "' does not appear to reflect God's standards.\n" +
+                "To hide this warning, declare the method explicitly as 'ungodly'.\n\n" +
+                "Example:\n" +
+                "   ungodly purpose " + methodName + "():\n   amen\n\n" +
+                bibleReference);
+        }
     }
 
     // ----------
@@ -51,7 +74,12 @@ std::unique_ptr<Stmt> CreateMethodStmtRule::parse(ParserContext &ctx)
     ctx.addScope(params); // <🟢️>
     const bool isParam = true;
 
-    if (!ctx.check(TokenType::RIGHT_PAREN))
+    if (isDestructor)
+    {
+        if (!ctx.check(TokenType::RIGHT_PAREN))
+            throw std::runtime_error("Destructor '__omega__' cannot have parameters.");
+    }
+    else if (!ctx.check(TokenType::RIGHT_PAREN))
     {
         do
         {
@@ -83,7 +111,12 @@ std::unique_ptr<Stmt> CreateMethodStmtRule::parse(ParserContext &ctx)
     // Return type
     // -----------
     std::shared_ptr<CreationType> returnType = KnownTypes::VOID; // default: nothing
-    if (ctx.match(TokenType::ARROW))
+    if (isDestructor)
+    {
+        if (ctx.match(TokenType::ARROW))
+            throw std::runtime_error("Destructor '__omega__' cannot have a return type.");
+    }
+    else if (ctx.match(TokenType::ARROW))
     {
         if (!ctx.match(TokenType::IDENTIFIER))
             throw std::runtime_error("Expected return type after '->'.");
@@ -124,6 +157,9 @@ std::unique_ptr<Stmt> CreateMethodStmtRule::parse(ParserContext &ctx)
             body.push_back(std::move(stmt));
         else if (ctx.match(TokenType::RETURN))
         {
+            if (isDestructor)
+                throw std::runtime_error("Destructor '__omega__' cannot contain a return statement.");
+
             std::unique_ptr<Expr> returnExpr = nullptr;
 
             if (!ctx.check(TokenType::NEWLINE) && !ctx.check(TokenType::AMEN))
@@ -155,43 +191,46 @@ std::unique_ptr<Stmt> CreateMethodStmtRule::parse(ParserContext &ctx)
     // ---------------------------
     // Enforce correct return type
     // ---------------------------
-    for (const auto &stmt : body)
+    if (!isDestructor)
     {
-        if (auto ret = dynamic_cast<ReturnStmt *>(stmt.get()))
+        for (const auto &stmt : body)
         {
-            auto actualType = ret->getReturnType(ctx);
+            if (auto ret = dynamic_cast<ReturnStmt *>(stmt.get()))
+            {
+                auto actualType = ret->getReturnType(ctx);
 
-            if (!returnType->isCompatibleWith(actualType))
+                if (!returnType->isCompatibleWith(actualType))
+                {
+                    throw std::runtime_error(
+                        "Type mismatch in method '" + methodName + "': expected return type '" +
+                        returnType->toString() + "', but found '" + actualType->toString() + "'.");
+                }
+            }
+        }
+
+        // -----------------------------
+        // Enforce explicit return rules
+        // -----------------------------
+        if (!returnType->isVoid())
+        {
+            if (body.empty())
             {
                 throw std::runtime_error(
-                    "Type mismatch in method '" + methodName +
-                    "': expected return type '" + returnType->toString() +
-                    "', but found '" + actualType->toString() + "'.");
+                    "Method '" + methodName + "' with return type '" + returnType->toString() +
+                    "' must end with an explicit return.");
+            }
+
+            auto lastStmt = body.back().get();
+            auto ret = dynamic_cast<ReturnStmt *>(lastStmt);
+            if (!ret)
+            {
+                throw std::runtime_error(
+                    "Method '" + methodName + "' with return type '" + returnType->toString() +
+                    "' must end with an explicit return.");
             }
         }
     }
 
-    // -----------------------------
-    // Enforce explicit return rules
-    // -----------------------------
-    if (!returnType->isVoid())
-    {
-        if (body.empty())
-        {
-            throw std::runtime_error(
-                "Method '" + methodName + "' with return type '" +
-                returnType->toString() + "' must end with an explicit return.");
-        }
-
-        auto lastStmt = body.back().get();
-        auto ret = dynamic_cast<ReturnStmt *>(lastStmt);
-        if (!ret)
-        {
-            throw std::runtime_error(
-                "Method '" + methodName + "' with return type '" +
-                returnType->toString() + "' must end with an explicit return.");
-        }
-    }
-
-    return std::make_unique<CreateMethodStmt>(methodName, std::move(params), returnType, body, /*isGenesis=*/false);
+    return std::make_unique<CreateMethodStmt>(
+        methodName, std::move(params), returnType, body, isConstructor, isDestructor);
 }
