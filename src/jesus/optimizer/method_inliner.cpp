@@ -69,6 +69,9 @@ void MethodInliner::collectMethodsFromStmt(
             {
                 if (auto method = dynamic_cast<const CreateMethodStmt *>(stmt.get()))
                 {
+                    if (method->isConstructor)
+                        continue;
+
                     // FIXME: two classes may have the same method names
                     knownMethods[method->name] = {method, classAttributes};
                 }

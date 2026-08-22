@@ -72,6 +72,8 @@ public:
             return "CREATE";
         case TokenType::PURPOSE:
             return "PURPOSE";
+        case TokenType::ALPHA:
+            return "ALPHA";
         case TokenType::RETURN:
             return "RETURN";
         case TokenType::Note:

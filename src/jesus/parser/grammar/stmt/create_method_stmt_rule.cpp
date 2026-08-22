@@ -13,32 +13,48 @@ std::unique_ptr<Stmt> CreateMethodStmtRule::parse(ParserContext &ctx)
 {
     // ------------------------------------------------------
     // Grammar:
+    //  __alpha__ ( <params>? ) -> returnType? : ... amen
     //  [ungodly] purpose <name> ( <params>? ) -> returnType? : ... amen
     // ------------------------------------------------------
-    bool isUngodlyDeclared = ctx.match(TokenType::UNGODLY);
+    bool isConstructor = false;
+    bool isUngodlyDeclared = false;
+    std::string methodName;
 
-    if (!ctx.match(TokenType::PURPOSE))
-        return nullptr;
+    if (ctx.match(TokenType::ALPHA))
+    {
+        isConstructor = true;
+        methodName = "__alpha__";
+    }
+    else
+    {
+        isUngodlyDeclared = ctx.match(TokenType::UNGODLY);
 
-    if (!ctx.match(TokenType::IDENTIFIER))
-        throw std::runtime_error("Expected method name after 'calling'");
+        if (!ctx.match(TokenType::PURPOSE))
+            return nullptr;
 
-    std::string methodName = ctx.previous().lexeme;
+        if (!ctx.match(TokenType::IDENTIFIER))
+            throw std::runtime_error("Expected method name after 'purpose'");
+
+        methodName = ctx.previous().lexeme;
+    }
 
     // -----------------------------------
     // Ungodly semantic validation
     // -----------------------------------
-    std::string bibleReference;
-    bool nameIsUngodly = doctrine::law::isUngodlyName(methodName, bibleReference);
-
-    if (nameIsUngodly && !isUngodlyDeclared)
+    if (!isConstructor)
     {
-        doctrine::law::handleUngodlyNaming(
-            "Method name '" + methodName + "' does not appear to reflect God's standards.\n" +
-            "To hide this warning, declare the method explicitly as 'ungodly'.\n\n" +
-            "Example:\n" +
-            "   ungodly purpose " + methodName + "():\n   amen\n\n" +
-            bibleReference);
+        std::string bibleReference;
+        bool nameIsUngodly = doctrine::law::isUngodlyName(methodName, bibleReference);
+
+        if (nameIsUngodly && !isUngodlyDeclared)
+        {
+            doctrine::law::handleUngodlyNaming(
+                "Method name '" + methodName + "' does not appear to reflect God's standards.\n" +
+                "To hide this warning, declare the method explicitly as 'ungodly'.\n\n" +
+                "Example:\n" +
+                "   ungodly purpose " + methodName + "():\n   amen\n\n" +
+                bibleReference);
+        }
     }
 
     // ----------
@@ -193,5 +209,5 @@ std::unique_ptr<Stmt> CreateMethodStmtRule::parse(ParserContext &ctx)
         }
     }
 
-    return std::make_unique<CreateMethodStmt>(methodName, std::move(params), returnType, body, /*isGenesis=*/false);
+    return std::make_unique<CreateMethodStmt>(methodName, std::move(params), returnType, body, isConstructor);
 }
