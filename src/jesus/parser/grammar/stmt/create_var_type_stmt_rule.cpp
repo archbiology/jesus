@@ -20,14 +20,18 @@ std::unique_ptr<Stmt> CreateVarTypeStmtRule::parse(ParserContext &ctx)
         return nullptr;
 
     if (!ctx.match(TokenType::IDENTIFIER))
-        throw std::runtime_error("Expected base type after 'type'");
-
-    std::string baseTypeStr = ctx.previous().lexeme;
-
-    if (!ctx.match(TokenType::IDENTIFIER))
-        throw std::runtime_error("Expected new type name after 'type " + baseTypeStr + "'");
+        throw std::runtime_error("Expected new type name after 'type'");
 
     std::string typeName = ctx.previous().lexeme;
+
+    const std::string example = " (e.g., type " + typeName + ": number > 0)";
+    if (!ctx.match(TokenType::COLON))
+        throw std::runtime_error("Expected ':' after type name '" + typeName + "'" + example);
+
+    if (!ctx.match(TokenType::IDENTIFIER))
+        throw std::runtime_error("Expected base type after ':' in '" + typeName + "' type declaration" + example);
+
+    std::string baseTypeStr = ctx.previous().lexeme;
 
     int snapshot = ctx.snapshot();
     // We check if there’s a constraint (like > 0)
