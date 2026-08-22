@@ -1,7 +1,6 @@
 #include "create_var_stmt_rule.hpp"
 #include "../../../ast/stmt/create_var_stmt.hpp"
 #include "../../../ast/stmt/create_var_with_ask_stmt.hpp"
-#include "../../../ast/expr/create_instance_expr.hpp"
 #include "../../../types/known_types.hpp"
 #include "../../../lexer/keywords.hpp"
 #include "../../../understanding/doctrine/law/ungodly_naming.hpp"
@@ -119,14 +118,10 @@ std::unique_ptr<Stmt> CreateVarStmtRule::parse(ParserContext &ctx)
         }
 
         std::string value_str = "";
-        if (varType->isClass())
-        {
-            value = std::make_unique<CreateInstanceExpr>(varName, varType);
-        }
         // ------------------------------------------------------------
         // If the 'value' is a literal, validate it now, at parse time.
         // ------------------------------------------------------------
-        else if (value->canEvaluateAtParseTime())
+        if (value->canEvaluateAtParseTime())
         {
             auto empty_scope = std::make_shared<Heart>("parser:create_var:" + varName);
             Value literal = value->evaluate(empty_scope);

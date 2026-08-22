@@ -6,7 +6,7 @@ let there be Zoo:
     amen
 amen
 
-create zoo: Zoo = 1
+create zoo = Zoo()
 say zoo ant
 
 ast

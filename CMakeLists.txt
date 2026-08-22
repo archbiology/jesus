@@ -176,6 +176,8 @@ set(JESUS_CPP_FILES
     src/jesus/parser/grammar/expr/collection/list_rule.cpp
     src/jesus/parser/grammar/expr/collection/dict_rule.cpp
 
+    src/jesus/parser/grammar/expr/instantiation/instantiation_rule.cpp
+
     # -----------------
     # Statement parsers
     # -----------------

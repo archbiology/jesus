@@ -4,5 +4,5 @@ let there be Resource:
     amen
 amen
 
-create r: Resource = 1
+create r = Resource()
 say 'Resouce created'
