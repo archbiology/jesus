@@ -1,10 +1,10 @@
 let there be Zoo:
-    create number aarvark = 1
-    create number baboon = 1
-    create number cat = 1
-    create number donkey = 1
-    create number elephant = 1
-    create number fox = 1
+    create aarvark: number = 1
+    create baboon: number = 1
+    create cat: number = 1
+    create donkey: number = 1
+    create elephant: number = 1
+    create fox: number = 1
 
     purpose ant() -> number:
         return aarvark
@@ -31,8 +31,8 @@ let there be Zoo:
     amen
 amen
 
-create Zoo zoo = 1
-create number sum = 0
+create zoo: Zoo = 1
+create sum: number = 0
 
 repeat while sum < 20:
     sum = sum + zoo ant + zoo banana  + zoo tuna  + zoo hay  + zoo grass  + zoo mouse

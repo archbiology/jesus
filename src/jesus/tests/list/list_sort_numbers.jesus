@@ -1,4 +1,4 @@
-create list nums = [3, 1, 2]
+create nums: list = [3, 1, 2]
 
 nums sort
 

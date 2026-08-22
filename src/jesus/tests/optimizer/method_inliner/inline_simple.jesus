@@ -4,7 +4,7 @@ let there be Math:
     amen
 amen
 
-create Math math = 1
+create math: Math = 1
 say math pi
 
 ast

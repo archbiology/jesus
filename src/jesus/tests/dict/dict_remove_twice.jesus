@@ -1,4 +1,4 @@
-create dict d = {"name": "Paul"}
+create d: dict = {"name": "Paul"}
 
 say d remove "name"
 say d remove "name"

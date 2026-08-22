@@ -18,22 +18,12 @@ std::unique_ptr<Stmt> CreateVarStmtRule::parse(ParserContext &ctx)
     bool isUngodlyDeclared = ctx.match(TokenType::UNGODLY);
 
     // -------------
-    // Variable type
-    // -------------
-    if (!ctx.match(TokenType::IDENTIFIER))
-        throw std::runtime_error("Expected variable type after 'create'");
-
-    std::string varType_ = ctx.previous().lexeme;
-
-    // -------------
     // Variable name
     // -------------
-    Token nameToken = ctx.advance();
-    if (nameToken.type != TokenType::IDENTIFIER)
-        throw std::runtime_error("Expected a variable name after 'create " + varType_ + "'.");
+    if (!ctx.match(TokenType::IDENTIFIER))
+        throw std::runtime_error("Expected variable name after 'create'");
 
-    std::string varName = nameToken.lexeme;
-
+    std::string varName = ctx.previous().lexeme;
     if (Keywords::isReserved(varName))
     {
         throw std::runtime_error("'" + varName + "' is a reserved word and cannot be used as a variable name.");
@@ -51,30 +41,38 @@ std::unique_ptr<Stmt> CreateVarStmtRule::parse(ParserContext &ctx)
             "Variable name '" + varName + "' does not appear to reflect God's standards.\n" +
             "To hide this warning, declare the symbol explicitly as 'ungodly'.\n\n" +
             "Example:\n" +
-            "   create ungodly " + varType_ + " " + varName + " = ...\n\n" +
+            "   create ungodly " + varName + " = ...\n\n" +
             bibleReference);
     }
 
-    // ---------------------
-    // Resolve variable type
-    // ---------------------
-    bool typeExistsLocally = ctx.varExistsInHierarchy(varType_);
+    // -----------------------
+    // Optional explicit type
+    // -----------------------
     std::shared_ptr<CreationType> varType = nullptr;
+    if (ctx.match(TokenType::COLON))
+    {
+        if (!ctx.match(TokenType::IDENTIFIER))
+            throw std::runtime_error("Expected a type name after ':' in create statement.");
 
-    if (typeExistsLocally)
-    {
-        auto localType = ctx.getVarType(varType_);
-        if (localType->isClass())
-            varType = localType;
-    }
-    if (!varType)
-    {
-        varType = KnownTypes::resolve(varType_, ctx.moduleName);
-        if (!varType && ctx.isClassKnown(varType_))
-            varType = ctx.resolveType(varType_);
+        std::string varType_ = ctx.previous().lexeme;
+
+        bool typeExistsLocally = ctx.varExistsInHierarchy(varType_);
+        if (typeExistsLocally)
+        {
+            auto localType = ctx.getVarType(varType_);
+            if (localType->isClass())
+                varType = localType;
+        }
 
         if (!varType)
-            throw std::runtime_error("Unknown variable type: '" + varType_ + "'");
+        {
+            varType = KnownTypes::resolve(varType_, ctx.moduleName);
+            if (!varType && ctx.isClassKnown(varType_))
+                varType = ctx.resolveType(varType_);
+
+            if (!varType)
+                throw std::runtime_error("Unknown variable type: '" + varType_ + "'");
+        }
     }
 
     // -----------------------
@@ -91,14 +89,34 @@ std::unique_ptr<Stmt> CreateVarStmtRule::parse(ParserContext &ctx)
 
             std::unique_ptr<Expr> ask_expr = ask->parse(ctx);
             if (!ask_expr)
-                throw std::runtime_error("Expected a text literal or a text-typed variable after 'ask' (e.g., ask \"What is your name?\" or ask question).");
+                throw std::runtime_error(
+                    "Expected a text literal or a text-typed variable after 'ask' "
+                    "(e.g., ask \"What is your name?\" or ask question).");
+
+            if (!varType)
+                varType = ask_expr->getReturnType(ctx);
 
             auto address = ctx.declareVar(varType, varName);
             return std::make_unique<CreateVarWithAskStmt>(varType, varName, address, std::move(ask_expr));
         }
+
         value = expression->parse(ctx);
         if (!value)
             throw std::runtime_error("Expected expression after '=' in create statement.");
+
+        if (!varType)
+        {
+            // ----------------------------------
+            // Type inference from the expression
+            // ----------------------------------
+            varType = value->getReturnType(ctx);
+            if (!varType)
+            {
+                throw std::runtime_error(
+                    "Variable '" + varName + "' needs a type " + "(create " + varName +
+                    ": TYPE = ...) or an initial value (create " + varName + " = ...).");
+            }
+        }
 
         std::string value_str = "";
         if (varType->isClass())

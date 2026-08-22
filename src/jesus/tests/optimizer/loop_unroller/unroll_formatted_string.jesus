@@ -1,4 +1,4 @@
-create text name = "Jesus"
+create name: text = "Jesus"
 
 repeat 2 times:
     say "Hello {name}"

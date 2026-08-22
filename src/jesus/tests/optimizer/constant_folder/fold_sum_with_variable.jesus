@@ -1,4 +1,4 @@
-create number sum = 0
+create sum: number = 0
 sum = sum + 1 + 1 + 1
 say sum
 

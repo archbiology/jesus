@@ -1,4 +1,4 @@
-create list nums = [1, 2, 3]
+create nums: list = [1, 2, 3]
 
 nums reverse
 

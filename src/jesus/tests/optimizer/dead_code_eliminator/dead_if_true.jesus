@@ -1,4 +1,4 @@
-create truth confessed_jesus_christ = yes
+create confessed_jesus_christ: truth = yes
 if confessed_jesus_christ:
     say "live"
 otherwise:

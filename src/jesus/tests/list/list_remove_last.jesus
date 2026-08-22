@@ -1,4 +1,4 @@
-create list nums = [10, 20]
+create nums: list = [10, 20]
 
 say nums remove_last
 say nums

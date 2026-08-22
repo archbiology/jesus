@@ -1,4 +1,4 @@
-create dict d = {
+create d: dict = {
     "name": "Paul",
     "city": "Jerusalem"
 }

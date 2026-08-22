@@ -1,12 +1,12 @@
 let there be Zoo:
-    create number aarvark = 1
+    create aarvark: number = 1
 
     purpose ant() -> number:
         return aarvark
     amen
 amen
 
-create Zoo zoo = 1
+create zoo: Zoo = 1
 say zoo ant
 
 ast

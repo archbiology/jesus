@@ -1,4 +1,4 @@
-create number value = 0
+create value: number = 0
 
 repeat forever:
     value = value + 1

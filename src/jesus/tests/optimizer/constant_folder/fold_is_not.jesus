@@ -1,5 +1,5 @@
-create truth value1 = 5 is not 4
-create truth value2 = 5 is not 5
+create value1: truth = 5 is not 4
+create value2: truth = 5 is not 5
 say value1
 say value2
 ast

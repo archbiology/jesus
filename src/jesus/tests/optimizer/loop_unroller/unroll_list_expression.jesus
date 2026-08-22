@@ -1,5 +1,5 @@
 repeat 2 times:
-    create list values = [1, 2, 3]
+    create values: list = [1, 2, 3]
     say values
 amen
 

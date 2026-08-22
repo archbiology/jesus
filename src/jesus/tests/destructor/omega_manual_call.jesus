@@ -4,5 +4,5 @@ let there be Resource:
     amen
 amen
 
-create Resource r = 1
+create r: Resource = 1
 say r __omega__

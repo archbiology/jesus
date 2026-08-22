@@ -1,4 +1,4 @@
-create truth sin_on_heavens = no
+create sin_on_heavens: truth = no
 repeat while sin_on_heavens:
     say "never"
 amen

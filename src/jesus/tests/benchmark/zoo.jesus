@@ -7,9 +7,25 @@
 # Clox:             0.249795 s
 # Python 3.12.3:    0.444851 s
 #
-# Jesus
+# Jesus benchmark history
+#
+# Milestones:
+#   [2a29564] Step 85 — Initial interpreter benchmark
+#   [c95f280] Step 92 — Slot-based variable addressing
+#   [df42a1b] Step 99 — Optimizer suite: Constant folding,
+#                       constant propagation, dead-code elimination,
+#                       method inlining, and loop unrolling
+#
+# Results:
 #   AST [2a29564]:  64.455000 s
-#   VM:
+#   AST [c95f280]:  16.646000 s
+#   AST [df42a1b]:   0.120000 s
+#
+#   VM  [c95f280]:   0.843000 s
+#   VM  [df42a1b]:   0.144000 s
+#
+#   VM [after improvements of dynamic cast, and others]:
+#
 #   JIT:
 #
 # Machine:
@@ -19,12 +35,12 @@
 #   OS: Ubuntu 24.04.4 LTS
 
 let there be Zoo:
-    create number aarvark = 1
-    create number baboon = 1
-    create number cat = 1
-    create number donkey = 1
-    create number elephant = 1
-    create number fox = 1
+    create aarvark: number = 1
+    create baboon: number = 1
+    create cat: number = 1
+    create donkey: number = 1
+    create elephant: number = 1
+    create fox: number = 1
 
     purpose ant() -> number:
         return aarvark
@@ -51,8 +67,8 @@ let there be Zoo:
     amen
 amen
 
-create Zoo zoo = 1
-create number sum = 0
+create zoo: Zoo = 1
+create sum: number = 0
 
 repeat while sum < 10000000:
     sum = sum + zoo ant + zoo banana  + zoo tuna  + zoo hay  + zoo grass  + zoo mouse

@@ -1,4 +1,4 @@
-create dict d = {}
+create d: dict = {}
 
 say d is_empty
 d['king'] = 'Jesus Christ'

@@ -1,4 +1,4 @@
-create number value = 10
+create value: number = 10
 
 repeat 2 times:
     say ((value + 2) * 3)

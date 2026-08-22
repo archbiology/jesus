@@ -1,4 +1,4 @@
-create truth sins = no
+create sins: truth = no
 if sins:
     say "dead"
 otherwise:

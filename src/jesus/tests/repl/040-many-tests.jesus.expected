@@ -95,8 +95,7 @@ SayStmt(VariableExpr('age'))
 (Jesus) final
 (Jesus) (int) 132
 (Jesus) adult
-(Jesus) ❌ Error: Expected a variable name after 'create with_no_type'.
-(Jesus) ❌ Error: Expected an integer value.
+(Jesus) (Jesus) ❌ Error: Expected an integer value.
 (Jesus) (Jesus) ❌ Error: Undefined variable: count (scope: __jesus__)
 (Jesus) (int) 1
 (Jesus) (Jesus) (int) 0
@@ -131,7 +130,7 @@ SayStmt(VariableExpr('age'))
 To hide this warning, declare the symbol explicitly as 'ungodly'.
 
 Example:
-   create ungodly text rebellion = ...
+   create ungodly rebellion = ...
 
 1 Samuel 15:23 — For rebellion is as the sin of divination, and presumption is as iniquity and idolatry. Because you have rejected the word of the Lord, he has also rejected you from being king.
 1 John 1:9 — If we confess our sins (to Jesus Christ, not to man), he is faithful and just and will forgive us our sins and purify us from all unrighteousness.

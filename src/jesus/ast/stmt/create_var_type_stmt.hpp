@@ -15,10 +15,10 @@ REGISTER_FOR_UML(
 /**
  * @brief Represents the creation of a new variable type with a given value.
  * E.g:
- *  create number Positive > 0
- *  create number Negative < 0
- *  create number Percentage > 0 and <=100
- *  create number Percent between 0 and 100
+ *  type Positive: number > 0
+ *  type Negative: number < 0
+ *  type Percentage: number > 0 and <=100
+ *  type Percent: number between 0 and 100
  *
  * "In the beginning God created..." — Genesis 1:1
  */
