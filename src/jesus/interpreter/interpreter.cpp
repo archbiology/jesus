@@ -3,6 +3,7 @@
 #include <filesystem>
 #include "runtime/instance.hpp"
 #include "runtime/method.hpp"
+#include "../parser/helpers/member.hpp"
 #include "../ast/stmt/create_method_stmt.hpp"
 #include "../ast/stmt/print_stmt.hpp"
 #include "../types/known_types.hpp"
@@ -77,6 +78,49 @@ Value Interpreter::visitVariable(const VariableExpr &expr)
 Value Interpreter::visitCreateInstanceExpr(const CreateInstanceExpr &expr)
 {
     auto instance = std::make_shared<Instance>(expr.klass, expr.name);
+
+    // Watch this instance so its '__omega__' destructor can be
+    // invoked automatically at the end of the program.
+    liveInstances.push_back(instance);
+
+    // -----------------------------------------------------------------
+    // The constructor ('__alpha__') runs automatically whenever a new
+    // instance is born.
+    // -----------------------------------------------------------------
+    auto ctorMember = expr.klass->findMember("__alpha__", expr.klass);
+    if (ctorMember && ctorMember->isMethod())
+    {
+        if (auto ctor = std::dynamic_pointer_cast<Method>(ctorMember->method))
+        {
+            // Evaluate any constructor arguments, if provided.
+            std::vector<Value> args;
+            if (expr.constructorArgs)
+            {
+                Value argsValue = evaluate(expr.constructorArgs);
+                if (argsValue.IS_LIST)
+                {
+                    for (const auto &arg : argsValue.asList())
+                        args.push_back(*arg);
+                }
+                else if (!argsValue.IS_FORMLESS)
+                {
+                    args.push_back(argsValue);
+                }
+            }
+
+            // -------------------------------------------------------------
+            // Invoke the constructor only when we can satisfy its
+            // parameter list (e.g. a no-arg constructor with no arguments).
+            // FIXME: validate this at parse time, not runtime.
+            // -------------------------------------------------------------
+            if (args.size() == static_cast<size_t>(ctor->params->paramsCount))
+            {
+                Value instanceValue(instance);
+                ctor->call(*this, instanceValue, args);
+            }
+        }
+    }
+
     return Value(instance);
 }
 
@@ -988,4 +1032,36 @@ void Interpreter::visitServeStmt(const ServeStmt &stmt)
     }
 
     httpRuntime.serve(port);
+}
+
+Interpreter::~Interpreter()
+{
+    // -------------------------------------------------------------
+    // End of the program: run the '__omega__' destructor of every
+    // instance that is still alive.
+    // -------------------------------------------------------------
+    size_t count = liveInstances.size();
+    for (size_t i = 0; i < count; ++i)
+    {
+        try
+        {
+            auto instance = liveInstances[i].lock();
+            if (!instance)
+                continue;
+
+            auto destructorMember = instance->spirit->findMember("__omega__", instance->spirit);
+            if (destructorMember && destructorMember->isMethod())
+            {
+                if (auto destructor = std::dynamic_pointer_cast<Method>(destructorMember->method))
+                {
+                    Value instanceValue(instance);
+                    destructor->call(*this, instanceValue, {});
+                }
+            }
+        }
+        catch (...)
+        {
+            // Destructors must never throw.
+        }
+    }
 }

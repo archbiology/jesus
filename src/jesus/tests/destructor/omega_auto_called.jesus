@@ -1,0 +1,8 @@
+let there be Resource:
+    __omega__():
+        say 'and destroyed'
+    amen
+amen
+
+create Resource r = 1
+say 'Resouce created'
