@@ -1,0 +1,15 @@
+type number Positive > 0
+create Positive age = 2
+say age
+type number Negative < 0
+create Negative debt = -5
+say debt
+type number AtLeast >= 10
+create AtLeast score = 10
+say score
+type number AtMost <= 5
+create AtMost small = 5
+say small
+type text Greeting matches "(Hello|Hi)"
+create Greeting hi = "Hello"
+say hi

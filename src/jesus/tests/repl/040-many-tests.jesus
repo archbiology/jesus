@@ -150,25 +150,25 @@ say forgive
 valid = "Jesus loves YOU"
 say valid
 create number age = 8
-create number Positive > 0
+type number Positive > 0
 create Positive abc = -9
 say abc
 create Positive gifts = 9
 say gifts
-create number Negative < 0
+type number Negative < 0
 create Negative debit = -6
 say debit
 debit = 19
-create number Other >= 7
+type number Other >= 7
 create Other ab = 7
 say ab
 create Other ab = 6
-create number Tribe <= 12
+type number Tribe <= 12
 create Tribe israel = 12
 create Tribe israel = 13
 say israel
-create text Confirm matches "(Y|y)es"
-create text IsraelVar matches "WakeUp, {israel}"
+type text Confirm matches "(Y|y)es"
+type text IsraelVar matches "WakeUp, {israel}"
 create Confirm sure = "Yes"
 sure = "no"
 say sure

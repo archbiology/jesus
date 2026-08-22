@@ -30,7 +30,7 @@ std::unique_ptr<Stmt> CreateVarStmtRule::parse(ParserContext &ctx)
     // -------------
     Token nameToken = ctx.advance();
     if (nameToken.type != TokenType::IDENTIFIER)
-        throw std::runtime_error("Expected an identifier name after 'create " + varType_ + "'.");
+        throw std::runtime_error("Expected a variable name after 'create " + varType_ + "'.");
 
     std::string varName = nameToken.lexeme;
 

@@ -93,6 +93,8 @@ namespace Keywords
         {"create", TokenType::CREATE},
         {"criar", TokenType::CREATE},
 
+        {"type", TokenType::TYPE},
+
         {"if", TokenType::IF},
         {"se", TokenType::IF},
 

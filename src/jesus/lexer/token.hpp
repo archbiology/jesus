@@ -70,6 +70,8 @@ public:
             return "FROM";
         case TokenType::CREATE:
             return "CREATE";
+        case TokenType::TYPE:
+            return "TYPE";
         case TokenType::PURPOSE:
             return "PURPOSE";
         case TokenType::ALPHA:

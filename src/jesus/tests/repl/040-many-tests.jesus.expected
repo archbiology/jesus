@@ -95,7 +95,7 @@ SayStmt(VariableExpr('age'))
 (Jesus) final
 (Jesus) (int) 132
 (Jesus) adult
-(Jesus) ❌ Error: Expected new type name after 'create with_no_type'
+(Jesus) ❌ Error: Expected a variable name after 'create with_no_type'.
 (Jesus) ❌ Error: Expected an integer value.
 (Jesus) (Jesus) ❌ Error: Undefined variable: count (scope: __jesus__)
 (Jesus) (int) 1
