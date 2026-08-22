@@ -1,0 +1,11 @@
+let there be Human:
+    create text name = "Adam"
+    create number age = 0
+    __alpha__():
+        age = 930
+    amen
+amen
+
+create Human h = 1
+say h age
+say h name

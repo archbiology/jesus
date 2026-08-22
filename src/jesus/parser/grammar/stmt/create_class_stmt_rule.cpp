@@ -33,6 +33,16 @@ static std::shared_ptr<CreationType> registerParseTimeClass(
                     throw std::runtime_error("Class '" + className + "' already has a constructor '__alpha__'.");
                 }
                 hasConstructor = true;
+
+                // -------------------------------------------------------
+                // Register the constructor as a method so that it can be
+                // found and invoked automatically whenever a new instance
+                // of this class is created.
+                // -------------------------------------------------------
+                auto method = std::make_shared<Method>(
+                    methodStmt->name, methodStmt->params, methodStmt->body, methodStmt->returnType);
+                userClass->addMethod(methodStmt->name, method);
+
                 continue;
             }
 
