@@ -16,7 +16,9 @@ say hi
 let there be Person:
     create name: text = "Adam"
 amen
-create person: Person = 1
+create person: Person = Person()
 say person name
-create person2: Person = 1
+create person2: Person = Person()
 say person2 name
+
+create piece = LifeWithoutChrist()

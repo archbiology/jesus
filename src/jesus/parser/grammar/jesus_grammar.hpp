@@ -30,6 +30,7 @@
 #include "expr/collection/list_rule.hpp"
 #include "expr/collection/dict_rule.hpp"
 
+#include "expr/instantiation/instantiation_rule.hpp"
 #include "expr/ask_expr_rule.hpp"
 #include "expr/conditional_expr_rule.hpp"
 #include "stmt/print_stmt_rule.hpp"
@@ -97,13 +98,14 @@ namespace grammar
     inline auto BibleRef = std::make_shared<BibleExprRule>(Expression);
     inline auto List = std::make_shared<ListRule>(Expression);
     inline auto Dict = std::make_shared<DictRule>(Expression);
+    inline auto Instantiation = std::make_shared<InstantiationRule>(Expression);
 
     /**
      * @brief Primary is anything that can be evaluated directly: number, string, or a grouped expression.
      */
     inline auto Primary =
         Number | String | FormattedString | YesNo | Sex | Weekday |
-        Confess | Giants | Variable | BibleRef | List | Dict |
+        Confess | Giants | Instantiation | Variable | BibleRef | List | Dict |
         Group(Expression);
     inline auto GetAttribute = std::make_shared<GetAttributeRule>(Primary);
 

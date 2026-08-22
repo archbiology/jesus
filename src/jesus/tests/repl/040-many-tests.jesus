@@ -192,13 +192,13 @@ question = ask question
 What is the new question?
 say question
 let there be User: amen
-create Jesus: User = 1
+create Jesus = User()
 say Jesus
 let there be MultiLineClass:
 
 
 amen
-create multiline: MultiLineClass = 12
+create multiline = MultiLineClass()
 say multiline
 say "igual" se 1 is 1 senão "diferente"
 criar nome: text = "Jesus"
@@ -208,11 +208,11 @@ criar nao: number = 0
 say sim é 1 e nao é 0
 say sim é 1 ou nao é 0
 haja Luz: amém
-criar dia: Luz = 1
+criar dia = Luz()
 say dia
 dia é uma Luz
 haja Canção
-criar louvor: Canção = "Me ama, Ele me ama..."
+criar louvor = Canção()
 say louvor
 let there be Person:
     create name: text = "Adam"
@@ -251,7 +251,7 @@ let there be Person:
     amen
 amen
 say wife
-create adam: Person = 1
+create adam = Person()
 say adam name
 say adam wife
 say adam age
@@ -284,7 +284,7 @@ let there be SonOfMan:
         return 70 * 7
     amen
 amen
-create sonOfMan: SonOfMan = 1
+create sonOfMan = SonOfMan()
 say sonOfMan
 say sonOfMan age
 say sonOfMan saySomething
@@ -388,23 +388,23 @@ let there be GrandSon from Son:
     amen
 amen
 
-create abraham: Parent = 1
+create abraham = Parent()
 abraham praise
 
-create ishmael: Ishmael = 0
+create ishmael = Ishmael()
 
-create isaac: Son = 1
+create isaac = Son()
 isaac praise
 isaac to Ishmael
 
-create jacob: GrandSon = 1
+create jacob = GrandSon()
 jacob praise
 say name
 jacob who
 
 abraham = jacob
 abraham generateJudah
-create other: GrandSon = 1
+create other = GrandSon()
 other = abraham to GrandSon
 other generateJudah
 abraham to Ishmael

@@ -31,7 +31,7 @@ let there be Zoo:
     amen
 amen
 
-create zoo: Zoo = 1
+create zoo = Zoo()
 create sum: number = 0
 
 repeat while sum < 20:

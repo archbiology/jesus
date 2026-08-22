@@ -6,7 +6,7 @@ let there be Math:
     amen
 amen
 
-create math: Math = 1
+create math = Math()
 say math getPi
 
 ast

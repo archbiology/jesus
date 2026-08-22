@@ -6,6 +6,6 @@ let there be Human:
     amen
 amen
 
-create h: Human = 1
+create h: Human = Human()
 say h age
 say h name
