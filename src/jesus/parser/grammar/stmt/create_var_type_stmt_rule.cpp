@@ -9,6 +9,7 @@
 #include "../../../types/constraints/greater_than_or_equal_constraint.hpp"
 #include "../../../types/constraints/matches_regex_constraint.hpp"
 #include "../../../interpreter/interpreter.hpp"
+#include "lexer/keywords.hpp"
 
 #include <stdexcept>
 
@@ -19,17 +20,43 @@ std::unique_ptr<Stmt> CreateVarTypeStmtRule::parse(ParserContext &ctx)
     if (!ctx.match(TokenType::TYPE))
         return nullptr;
 
-    if (!ctx.match(TokenType::IDENTIFIER))
+    if (ctx.check(TokenType::IDENTIFIER))
+    {
+        ctx.advance();
+    }
+    else if (Keywords::isReservedWord(ctx.peek().lexeme))
+    {
+        std::string typeName = ctx.peek().lexeme;
+        throw std::runtime_error(Keywords::reservedWordMsg(typeName, "type"));
+    }
+    else
+    {
         throw std::runtime_error("Expected new type name after 'type'");
+    }
 
     std::string typeName = ctx.previous().lexeme;
+    if (Keywords::isReservedWord(typeName))
+    {
+        throw std::runtime_error(Keywords::reservedWordMsg(typeName, "type"));
+    }
 
     const std::string example = " (e.g., type " + typeName + ": number > 0)";
     if (!ctx.match(TokenType::COLON))
         throw std::runtime_error("Expected ':' after type name '" + typeName + "'" + example);
 
-    if (!ctx.match(TokenType::IDENTIFIER))
+    if (ctx.check(TokenType::IDENTIFIER))
+    {
+        ctx.advance();
+    }
+    else if (Keywords::isReservedWord(ctx.peek().lexeme))
+    {
+        std::string baseTypeStr = ctx.peek().lexeme;
+        throw std::runtime_error(Keywords::reservedWordMsg(baseTypeStr, "type"));
+    }
+    else
+    {
         throw std::runtime_error("Expected base type after ':' in '" + typeName + "' type declaration" + example);
+    }
 
     std::string baseTypeStr = ctx.previous().lexeme;
 

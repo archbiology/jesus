@@ -1,0 +1,23 @@
+(Jesus) ❌ Error: 'a' is a reserved word and cannot be used as a variable name.
+Try 'a_variable' instead.
+(Jesus) ❌ Error: 'if' is a reserved word and cannot be used as a variable name.
+Try 'if_variable' instead.
+(Jesus) ❌ Error: 'a' is a reserved word and cannot be used as a class name.
+Try 'a_class' instead.
+(Jesus) ❌ Error: Unknown expression type (parser.cpp)
+(Jesus) ❌ Error: 'while' is a reserved word and cannot be used as a class name.
+Try 'while_class' instead.
+(Jesus) ❌ Error: Unknown expression type (parser.cpp)
+(Jesus) ❌ Error: 'a' is a reserved word and cannot be used as a method name.
+Try 'a_method' instead.
+(Jesus) ❌ Error: Unknown expression type (parser.cpp)
+(Jesus) ❌ Error: Unknown expression type (parser.cpp)
+(Jesus) ❌ Error: 'type' is a reserved word and cannot be used as a method name.
+Try 'type_method' instead.
+(Jesus) ❌ Error: Unknown expression type (parser.cpp)
+(Jesus) ❌ Error: Unknown expression type (parser.cpp)
+(Jesus) ❌ Error: 'a' is a reserved word and cannot be used as a type name.
+Try 'a_type' instead.
+(Jesus) ❌ Error: 'is' is a reserved word and cannot be used as a type name.
+Try 'is_type' instead.
+(Jesus) 

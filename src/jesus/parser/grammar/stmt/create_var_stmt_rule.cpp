@@ -19,13 +19,24 @@ std::unique_ptr<Stmt> CreateVarStmtRule::parse(ParserContext &ctx)
     // -------------
     // Variable name
     // -------------
-    if (!ctx.match(TokenType::IDENTIFIER))
+    if (ctx.check(TokenType::IDENTIFIER))
+    {
+        ctx.advance();
+    }
+    else if (Keywords::isReservedWord(ctx.peek().lexeme))
+    {
+        std::string varName = ctx.peek().lexeme;
+        throw std::runtime_error(Keywords::reservedWordMsg(varName, "variable"));
+    }
+    else
+    {
         throw std::runtime_error("Expected variable name after 'create'");
+    }
 
     std::string varName = ctx.previous().lexeme;
-    if (Keywords::isReserved(varName))
+    if (Keywords::isReservedWord(varName))
     {
-        throw std::runtime_error("'" + varName + "' is a reserved word and cannot be used as a variable name.");
+        throw std::runtime_error(Keywords::reservedWordMsg(varName, "variable"));
     }
 
     // -----------------------------------
@@ -50,8 +61,19 @@ std::unique_ptr<Stmt> CreateVarStmtRule::parse(ParserContext &ctx)
     std::shared_ptr<CreationType> varType = nullptr;
     if (ctx.match(TokenType::COLON))
     {
-        if (!ctx.match(TokenType::IDENTIFIER))
+        if (ctx.check(TokenType::IDENTIFIER))
+        {
+            ctx.advance();
+        }
+        else if (Keywords::isReservedWord(ctx.peek().lexeme))
+        {
+            std::string typeName = ctx.peek().lexeme;
+            throw std::runtime_error(Keywords::reservedWordMsg(typeName, "type"));
+        }
+        else
+        {
             throw std::runtime_error("Expected a type name after ':' in create statement.");
+        }
 
         std::string varType_ = ctx.previous().lexeme;
 
