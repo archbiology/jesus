@@ -1,0 +1,8 @@
+(Jesus) (Jesus) (Jesus) (Jesus) (Jesus) (Jesus) Adam
+(Jesus) ❌ Error: Attribute 'age' is protected and can only be seen by class 'Person' and its children.
+(Jesus) ❌ Error: Attribute 'secret' is private and can only be seen by class 'Person'.
+(Jesus) hidden
+(Jesus) (Jesus) (Jesus) Jack
+(Jesus) (int) 30
+(Jesus) ❌ Error: Attribute 'secret' is private and can only be seen by class 'Person'.
+(Jesus) 

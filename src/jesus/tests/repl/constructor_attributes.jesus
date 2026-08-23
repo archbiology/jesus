@@ -1,0 +1,12 @@
+let there be Person:
+    __alpha__(public text name; number age; public number years):
+    amen
+amen
+
+create p = Person(name="Jubileu", years=49, age=32)
+say p name
+say p years
+say p age
+create q = Person(age=1, years=2, name="Eve")
+say q name
+say q years

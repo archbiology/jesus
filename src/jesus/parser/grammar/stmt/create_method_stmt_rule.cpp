@@ -73,7 +73,7 @@ std::unique_ptr<Stmt> CreateMethodStmtRule::parse(ParserContext &ctx)
     auto params = std::make_shared<Heart>("method:" + methodName);
     ctx.addScope(params); // <🟢️>
     const bool isParam = true;
-    std::vector<std::string> attributeNames;
+    std::vector<std::pair<std::string, std::string>> attributeNames;
 
     if (isDestructor)
     {
@@ -89,7 +89,7 @@ std::unique_ptr<Stmt> CreateMethodStmtRule::parse(ParserContext &ctx)
             // on constructor parameters: they promote the parameter to an
             // instance attribute.
             // -------------------------------------------------------------
-            bool hasAccessModifier = false;
+            std::string access = "";
             if (ctx.matchAny({TokenType::PRIVATE, TokenType::PROTECTED, TokenType::PUBLIC}))
             {
                 if (!isConstructor)
@@ -98,7 +98,7 @@ std::unique_ptr<Stmt> CreateMethodStmtRule::parse(ParserContext &ctx)
                         "Access modifiers (private/protected/public) are only allowed on constructor "
                         "('__alpha__') parameters.");
                 }
-                hasAccessModifier = true;
+                access = ctx.previous().lexeme;
             }
 
             if (!ctx.match(TokenType::IDENTIFIER))
@@ -119,8 +119,8 @@ std::unique_ptr<Stmt> CreateMethodStmtRule::parse(ParserContext &ctx)
 
             params->createVar(type, name, Value(1), isParam); // FIXME: Validate `type` and allow initial values
 
-            if (hasAccessModifier)
-                attributeNames.push_back(name);
+            if (!access.empty())
+                attributeNames.push_back({name, access});
 
         } while (ctx.match(TokenType::SEMICOLON)); // TODO: allow more args of same type: int x, y, z; string name, surname;
     }

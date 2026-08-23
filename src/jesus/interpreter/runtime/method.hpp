@@ -2,6 +2,7 @@
 
 #include <string>
 #include <vector>
+#include <utility> // for std::pair
 #include <memory>
 #include "../../ast/stmt/stmt.hpp"
 #include "../../spirit/return_signal.hpp"
@@ -71,15 +72,16 @@ class Method : public IMethod
     /**
      * @brief Constructor parameters defined as
      * private/protected/public become instance attributes.
+     * Each entry is (name, access).
      */
-    const std::vector<std::string> attributeNames;
+    const std::vector<std::pair<std::string, std::string>> attributeNames;
 
     Method(
         std::string name,
         std::shared_ptr<Heart> params,
         std::vector<std::shared_ptr<Stmt>> body,
         std::shared_ptr<CreationType> returnType,
-        std::vector<std::string> attributeNames = {})
+        std::vector<std::pair<std::string, std::string>> attributeNames = {})
         : IMethod(std::move(name), std::move(params), std::move(returnType)), body(std::move(body)),
           attributeNames(std::move(attributeNames))
     {

@@ -49,6 +49,12 @@ class MethodInliner
     {
         const CreateMethodStmt *stmt;
         const Heart *classAttributes;
+
+        /**
+         * @brief When false, the method must run inside its owning class
+         * (e.g. private, protected), so it must not be inlined.
+         */
+        bool canInline = true;
     };
 
     void collectMethodsFromStmt(

@@ -50,8 +50,9 @@ public:
     /**
      * @brief Parameters prefixed with private/protected/public
      * in the constructor become instance attributes
+     * Each entry is (name, access)
      */
-    std::vector<std::string> attributeNames;
+    std::vector<std::pair<std::string, std::string>> attributeNames;
 
     CreateMethodStmt(const std::string &name,
                      const std::shared_ptr<Heart> &params,
@@ -59,7 +60,7 @@ public:
                      const std::vector<std::shared_ptr<Stmt>> &body,
                      bool isConstructor = false,
                      bool isDestructor = false,
-                     const std::vector<std::string> &attributeNames = {})
+                     const std::vector<std::pair<std::string, std::string>> &attributeNames = {})
         : name(name), params(std::move(params)), returnType(std::move(returnType)), body(body),
           isConstructor(isConstructor), isDestructor(isDestructor),
           attributeNames(attributeNames)

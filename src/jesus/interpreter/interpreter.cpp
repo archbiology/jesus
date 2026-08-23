@@ -72,7 +72,12 @@ Value Interpreter::visitLiteral(const LiteralExpr &expr)
 
 Value Interpreter::visitVariable(const VariableExpr &expr)
 {
-    return currentModule->symbol_table->getVar(expr.name);
+    VariableAddress address = currentModule->symbol_table->resolveVariableAddress(expr.name);
+
+    // FIXME: Enforce at parse time, not runtime
+    enforceVariableAccess(expr.name, address);
+
+    return currentModule->symbol_table->getVar(address);
 }
 
 Value Interpreter::visitCreateInstanceExpr(const CreateInstanceExpr &expr)
@@ -125,7 +130,7 @@ Value Interpreter::visitCreateInstanceExpr(const CreateInstanceExpr &expr)
                     const auto paramNames = constructor->params->getVariableNames();
                     for (size_t i = 0; i < args.size() && i < paramNames.size(); ++i)
                     {
-                        for (const auto &attrName : constructor->attributeNames)
+                        for (const auto &[attrName, access] : constructor->attributeNames)
                         {
                             if (paramNames[i] == attrName)
                             {
@@ -151,7 +156,104 @@ Value Interpreter::visitGetAttribute(const GetAttributeExpr &expr)
 
     std::shared_ptr<Instance> instance = obj.toInstance();
 
+    // FIXME: enforce at parse time, not runtime
+    enforceAttributeAccess(instance->spirit, expr.attribute);
+
     return instance->getAttribute(expr.address);
+}
+
+void Interpreter::enforceAttributeAccess(
+    const std::shared_ptr<CreationType> &instanceClass, const std::string &attribute) const
+{
+    // ---------------------------------------------------------------------
+    // Only constructor-promoted attributes carry access levels. Every other
+    // attribute (class-body declaration, runtime-created) is public.
+    // ---------------------------------------------------------------------
+    std::string access = "public";
+    std::shared_ptr<CreationType> definingClass = nullptr;
+
+    // ------------------------------------------------------------------------
+    // Search the class hierarchy for the class that declares this attribute's
+    // access level. Start with the instance's class and walk through its
+    // parents until the attribute is found.
+    // ------------------------------------------------------------------------
+    for (auto klass = instanceClass; klass; klass = klass->parent_class)
+    {
+        auto it = klass->attributeAccess.find(attribute);
+        if (it != klass->attributeAccess.end())
+        {
+            access = it->second;
+            definingClass = klass;
+            break;
+        }
+    }
+
+    // ----------------------------------------
+    // Public attributes require no validation.
+    // ----------------------------------------
+    if (access == "public" || !definingClass)
+        return;
+
+    auto deny = [&]()
+    {
+        throw std::runtime_error(
+            "Attribute '" + attribute + "' is " + access + " and can only be seen by class '" + definingClass->name +
+            "'" + (access == "protected" ? " and its children." : "."));
+    };
+
+    // ------------------------------------------------------------------
+    // Accessing a non-public attribute requires execution inside a class.
+    // Code running outside any class cannot access private or protected
+    // attributes.
+    // ------------------------------------------------------------------
+    auto caller = currentClassContext();
+    if (!caller)
+    {
+        deny();
+        return;
+    }
+
+    //  ----------------------------------------------------------------
+    // A private attribute is visible only to the class that defines it.
+    //  ----------------------------------------------------------------
+    if (access == "private" && caller->id != definingClass->id)
+        deny();
+
+    // -----------------------------------------------------------------
+    // A protected attribute is also visible to classes derived from the
+    // class that defines it.
+    // -----------------------------------------------------------------
+    else if (access == "protected" && !caller->isA(definingClass))
+        deny();
+}
+
+void Interpreter::enforceVariableAccess(const std::string &name, const VariableAddress &address) const
+{
+    // ----------------------------------------------------------------------
+    // A variable name can refer to a local variable, a method parameter, or
+    // an attribute of the current object. We only need to check private and
+    // protected rules when the name refers to an attribute.
+    //
+    // At this point, `address` tells us where the variable was found, but not
+    // whether that place belongs to an object attribute. So we look through
+    // the objects belonging to the currently executing classes and compare
+    // their scope IDs with the scope where the variable was found.
+    //
+    // If the IDs match, the variable is an object attribute. We then check
+    // whether the class currently executing is allowed to access that
+    // attribute.
+    // ----------------------------------------------------------------------
+    for (auto it = methodContexts.rbegin(); it != methodContexts.rend(); ++it)
+    {
+        for (auto heart = it->instanceAttrs; heart; heart = heart->getParentAttributes())
+        {
+            if (heart->scopeId == address.scopeId)
+            {
+                enforceAttributeAccess(it->klass, name);
+                return;
+            }
+        }
+    }
 }
 
 Value Interpreter::visitParityCheckExpr(const ParityCheckExpr &expr)
