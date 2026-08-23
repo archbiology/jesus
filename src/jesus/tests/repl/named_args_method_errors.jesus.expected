@@ -1,0 +1,10 @@
+(Jesus) (Jesus) (Jesus) (Jesus) ❌ Error: Multiple values given for argument 'x'.
+(Jesus) ❌ Error: Method 'plus' has no parameter named 'evil'.
+(Jesus) ❌ Error: Positional argument cannot follow a named argument in method 'plus'.
+(Jesus) ❌ Error: Method 'plus' expects 2 argument(s), but got 1.
+
+Missing parameter(s):
+ - y: number
+(Jesus) (int) 10
+(Jesus) ❌ Error: Method 'plus' has no parameter named 'z'.
+(Jesus) 

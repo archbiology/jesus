@@ -2,6 +2,9 @@
 #include "ast/expr/create_instance_expr.hpp"
 #include "ast/expr/list_expr.hpp"
 #include "types/known_types.hpp"
+#include "parser/helpers/member.hpp"
+#include "interpreter/runtime/method.hpp"
+#include "parser/grammar/argument_binding.hpp"
 
 std::unique_ptr<Expr> InstantiationRule::parse(ParserContext &ctx)
 {
@@ -45,23 +48,57 @@ std::unique_ptr<Expr> InstantiationRule::parse(ParserContext &ctx)
             "Unknown class: '" + className + "'. Make sure the class has been declared or imported.");
     }
 
-    // ---------------------
-    // Optional constructor
-    // arguments
-    // ---------------------
-    std::vector<std::unique_ptr<Expr>> args;
+    // ---------------------------
+    // Constructor parameters.
+    // A class without a defined '__alpha__' constructor behaves like
+    // a constructor with zero parameters.
+    // ---------------------------
+    std::vector<std::string> paramNames;
+    std::shared_ptr<Heart> constructorScope = nullptr;
+    auto __alpha__ = klass->findMember("__alpha__", klass);
+    if (__alpha__ && __alpha__->isMethod())
+    {
+        constructorScope = __alpha__->method->params;
+        paramNames = constructorScope->getParameterNames();
+    }
+
+    // ---------------------------------------------
+    // Optional constructor arguments.
+    // Each argument is either positional (an expression)
+    // or named (name=value, as in Python).
+    // ---------------------------------------------
+    std::vector<grammar::Argument> rawArgs;
 
     if (!ctx.check(TokenType::RIGHT_PAREN))
     {
         do
         {
+            // -------------------------------------
+            // Detect a named argument: name='Jesus'
+            // -------------------------------------
+            std::optional<std::string> argName;
+            if (ctx.check(TokenType::IDENTIFIER))
+            {
+                int snap = ctx.snapshot();
+                const Token &token = ctx.advance();
+                if (ctx.check(TokenType::EQUAL))
+                {
+                    ctx.advance(); // consume the '='
+                    argName = token.lexeme;
+                }
+                else
+                {
+                    ctx.restore(snap);
+                }
+            }
+
             auto arg = expression->parse(ctx);
             if (!arg)
             {
                 throw std::runtime_error("Expected a constructor argument inside '" + className + "(...)'.");
             }
 
-            args.push_back(std::move(arg));
+            rawArgs.push_back({argName, std::move(arg)});
         } while (ctx.match(TokenType::COMMA));
     }
 
@@ -70,11 +107,13 @@ std::unique_ptr<Expr> InstantiationRule::parse(ParserContext &ctx)
         throw std::runtime_error("Expected ')' to close class instantiation '" + className + "(...)'.");
     }
 
-    std::unique_ptr<Expr> constructorArgs = nullptr;
-    if (!args.empty())
-    {
-        constructorArgs = std::make_unique<ListExpr>(std::move(args), KnownTypes::LIST);
-    }
+    auto args =
+        grammar::bindArgumentsToParameters(std::move(rawArgs), paramNames, constructorScope, "Constructor", className);
 
-    return std::make_unique<CreateInstanceExpr>(className, std::move(klass), std::move(constructorArgs));
+    auto constructorArgs = std::make_unique<ListExpr>(std::move(args), KnownTypes::LIST);
+
+    auto instantiation = std::make_unique<CreateInstanceExpr>(className, std::move(klass), std::move(constructorArgs));
+    instantiation->validate(ctx);
+
+    return instantiation;
 }

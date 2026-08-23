@@ -1,0 +1,12 @@
+let there be Ancestor:
+    create origin: number = 0
+    __alpha__():
+        origin = 100
+    amen
+amen
+
+let there be Human from Ancestor:
+amen
+
+create h = Human()
+say h origin
