@@ -24,6 +24,8 @@ public:
         throw std::runtime_error("CreateInstanceExpr cannot be directly evaluated without a Visitor.");
     }
 
+    void validate(ParserContext &ctx) const override;
+
     Value accept(ExprVisitor &visitor) const override;
 
     /**
