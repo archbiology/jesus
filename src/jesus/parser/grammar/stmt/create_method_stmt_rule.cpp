@@ -73,6 +73,7 @@ std::unique_ptr<Stmt> CreateMethodStmtRule::parse(ParserContext &ctx)
     auto params = std::make_shared<Heart>("method:" + methodName);
     ctx.addScope(params); // <🟢️>
     const bool isParam = true;
+    std::vector<std::pair<std::string, std::string>> attributeNames;
 
     if (isDestructor)
     {
@@ -83,6 +84,23 @@ std::unique_ptr<Stmt> CreateMethodStmtRule::parse(ParserContext &ctx)
     {
         do
         {
+            // -------------------------------------------------------------
+            // Access modifiers (private/protected/public) are only allowed
+            // on constructor parameters: they promote the parameter to an
+            // instance attribute.
+            // -------------------------------------------------------------
+            std::string access = "";
+            if (ctx.matchAny({TokenType::PRIVATE, TokenType::PROTECTED, TokenType::PUBLIC}))
+            {
+                if (!isConstructor)
+                {
+                    throw std::runtime_error(
+                        "Access modifiers (private/protected/public) are only allowed on constructor "
+                        "('__alpha__') parameters.");
+                }
+                access = ctx.previous().lexeme;
+            }
+
             if (!ctx.match(TokenType::IDENTIFIER))
                 throw std::runtime_error("Expected parameter type in method declaration.");
 
@@ -100,6 +118,9 @@ std::unique_ptr<Stmt> CreateMethodStmtRule::parse(ParserContext &ctx)
             std::string name = ctx.previous().lexeme;
 
             params->createVar(type, name, Value(1), isParam); // FIXME: Validate `type` and allow initial values
+
+            if (!access.empty())
+                attributeNames.push_back({name, access});
 
         } while (ctx.match(TokenType::SEMICOLON)); // TODO: allow more args of same type: int x, y, z; string name, surname;
     }
@@ -245,5 +266,5 @@ std::unique_ptr<Stmt> CreateMethodStmtRule::parse(ParserContext &ctx)
     ctx.popScope(); // </🟢️>
 
     return std::make_unique<CreateMethodStmt>(
-        methodName, std::move(params), returnType, body, isConstructor, isDestructor);
+        methodName, std::move(params), returnType, body, isConstructor, isDestructor, attributeNames);
 }

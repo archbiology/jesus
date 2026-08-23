@@ -1,0 +1,30 @@
+let there be Person:
+    __alpha__(public text name; protected number age; private text secret):
+    amen
+    purpose whisper() -> text:
+        return secret
+    amen
+amen
+
+let there be ungodly Hero from Person:
+    purpose peekName() -> text:
+        return name
+    amen
+    purpose peekAge() -> number:
+        return age
+    amen
+    purpose peekSecret() -> text:
+        return secret
+    amen
+amen
+
+create p = Person("Adam", 930, "hidden")
+say p name
+say p age
+say p secret
+say p whisper
+
+create h = Hero("Jack", 30, "top")
+say h peekName
+say h peekAge
+say h peekSecret

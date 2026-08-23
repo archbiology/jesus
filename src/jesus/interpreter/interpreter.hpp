@@ -168,6 +168,37 @@ public:
         currentModule->symbol_table->popScope();
     }
 
+    void pushClassContext(const std::shared_ptr<CreationType> &klass,
+                          const std::shared_ptr<Heart> &instanceAttrs)
+    {
+        methodContexts.push_back({klass, instanceAttrs});
+    }
+
+    void popClassContext()
+    {
+        methodContexts.pop_back();
+    }
+
+    std::shared_ptr<CreationType> currentClassContext() const
+    {
+        return methodContexts.empty() ? nullptr : methodContexts.back().klass;
+    }
+
+    /**
+     * @brief Enforces attribute access permissions (public/protected/private)
+     * for attributes promoted from constructor parameters.
+     *
+     * Throws if the caller (current class context) is not allowed to access
+     * the given attribute of an instance of instanceClass.
+     */
+    void enforceAttributeAccess(const std::shared_ptr<CreationType> &instanceClass, const std::string &attribute) const;
+
+    /**
+     * @brief Enforces attribute permissions when a method resolves an
+     * attribute of its own object ("this") via an unqualified name.
+     */
+    void enforceVariableAccess(const std::string &name, const VariableAddress &address) const;
+
     static std::shared_ptr<Module> createModule(std::string name, std::string fullpath)
     {
         if (!Interpreter::moduleRegistered(fullpath))
@@ -218,6 +249,26 @@ private:
      * Used to invoke '__omega__' destructors at the end of the program.
      */
     std::vector<std::weak_ptr<Instance>> liveInstances;
+
+    /**
+     * @brief Keeps the class and object info needed while a method executes.
+     *
+     * Used to enforce attribute access permissions.
+     */
+    struct MethodAccessContext
+    {
+        std::shared_ptr<CreationType> klass;
+        std::shared_ptr<Heart> instanceAttrs;
+    };
+
+    /**
+     * @brief Context of the methods that are currently executing.
+     *
+     * Each entry keeps the class and object info needed while that method
+     * executes. The last entry represents the method currently executing and
+     * therefore identifies the current "this/self/I/my" object.
+     */
+    std::vector<MethodAccessContext> methodContexts;
 
     /**
      * @brief Prevent re-imports / circular imports

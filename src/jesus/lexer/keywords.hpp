@@ -128,6 +128,10 @@ namespace Keywords
         {"purpose", TokenType::PURPOSE},
         {"propósito", TokenType::PURPOSE},
 
+        {"private", TokenType::PRIVATE},
+        {"protected", TokenType::PROTECTED},
+        {"public", TokenType::PUBLIC},
+
         {"__alpha__", TokenType::ALPHA},
         {"__omega__", TokenType::OMEGA},
 

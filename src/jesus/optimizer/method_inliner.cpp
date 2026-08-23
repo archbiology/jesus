@@ -60,8 +60,21 @@ void MethodInliner::collectMethodsFromStmt(
     if (auto createClass = dynamic_cast<const CreateClassStmt *>(&statement))
     {
         const Heart *classAttributes = nullptr;
+        bool canInline = true;
         if (createClass->userClass)
+        {
             classAttributes = createClass->userClass->class_attributes.get();
+
+            // --------------------------------------------------------------
+            // Methods of a class with constructor-promoted attributes may
+            // access permission-governed members (private/protected).
+            // They must execute inside their owning class so that visibility
+            // is enforced correctly, so they are not inlined.
+            // FIXME: public attributes can be inlined
+            // --------------------------------------------------------------
+            if (!createClass->userClass->attributeAccess.empty())
+                canInline = false;
+        }
 
         for (const auto &stmt : createClass->body)
         {
@@ -73,7 +86,7 @@ void MethodInliner::collectMethodsFromStmt(
                         continue;
 
                     // FIXME: two classes may have the same method names
-                    knownMethods[method->name] = {method, classAttributes};
+                    knownMethods[method->name] = {method, classAttributes, canInline};
                 }
             }
         }
@@ -368,7 +381,17 @@ std::unique_ptr<Expr> MethodInliner::inlineMethodCall(
     const Heart *classAttributes = nullptr;
     auto knownMethod = knownMethods.find(methodName);
     if (knownMethod != knownMethods.end())
+    {
         classAttributes = knownMethod->second.classAttributes;
+
+        // ----------------------------------------------------
+        // Methods of using private/public attributes must run
+        // inside their owning class, so do not inline them.
+        // FIXME: public attributes can be inlined
+        // ----------------------------------------------------
+        if (!knownMethod->second.canInline)
+            return methodCall;
+    }
 
     if (methodBody && methodBody->size() == 1)
     {

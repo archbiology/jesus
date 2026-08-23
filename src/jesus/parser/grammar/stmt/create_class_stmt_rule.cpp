@@ -16,8 +16,28 @@ static std::shared_ptr<CreationType> registerParseTimeClass(
     const std::vector<std::shared_ptr<Stmt>> &body)
 {
     std::vector<std::shared_ptr<IConstraint>> constraints;
+
+    // ---------------------------------------------------------------
+    // Set public/protected/private modifiers to class attributes.
+    // e.g. __alpha__(private age: number): each new instance of this
+    // class carries an 'age' attribute automatically.
+    // ---------------------------------------------------------------
+    std::unordered_map<std::string, std::string> attributeAccess;
+    for (const auto &member : body)
+    {
+        if (auto methodStmt = dynamic_cast<CreateMethodStmt *>(member.get()))
+        {
+            if (methodStmt->isConstructor && !methodStmt->attributeNames.empty())
+            {
+                for (const auto &[paramName, access] : methodStmt->attributeNames)
+                    attributeAccess[paramName] = access;
+            }
+        }
+    }
+
     auto userClass = std::make_shared<CreationType>(
         PrimitiveType::Class, className, module_name, parent_class, std::move(attributes), constraints);
+    userClass->attributeAccess = std::move(attributeAccess);
 
     bool hasConstructor = false;
     bool hasDestructor = false;
@@ -40,9 +60,13 @@ static std::shared_ptr<CreationType> registerParseTimeClass(
                 // of this class is created.
                 // -------------------------------------------------------
                 auto method = std::make_shared<Method>(
-                    methodStmt->name, methodStmt->params, methodStmt->body, methodStmt->returnType);
-                userClass->addMethod(methodStmt->name, method);
+                    methodStmt->name,
+                    methodStmt->params,
+                    methodStmt->body,
+                    methodStmt->returnType,
+                    methodStmt->attributeNames);
 
+                userClass->addMethod(methodStmt->name, method);
                 continue;
             }
 
@@ -171,6 +195,24 @@ std::unique_ptr<Stmt> CreateClassStmtRule::parse(ParserContext &ctx)
     {
         if (auto method = createMethod->parse(ctx))
         {
+            // ------------------------------------------------------------
+            // Register access-modified constructor parameters as class
+            // attributes as soon as the constructor is parsed, so that
+            // method bodies parsed afterwards can reference them (variable
+            // resolution happens at parse time).
+            // ------------------------------------------------------------
+            if (auto methodStmt = dynamic_cast<CreateMethodStmt *>(method.get()))
+            {
+                if (methodStmt->isConstructor && !methodStmt->attributeNames.empty())
+                {
+                    for (const auto &[paramName, access] : methodStmt->attributeNames)
+                    {
+                        auto paramType = methodStmt->params->getVarType(paramName);
+                        attributes->createVar(paramType, paramName, Value(), /** isParam = */ false);
+                    }
+                }
+            }
+
             body.push_back(std::move(method));
         }
         else if (auto attr = createVar->parse(ctx))

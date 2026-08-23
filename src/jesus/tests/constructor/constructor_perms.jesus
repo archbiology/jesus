@@ -1,0 +1,24 @@
+let there be Person:
+    __alpha__(public text name; protected number age; private text secret):
+    amen
+    purpose card() -> text:
+        return "{name}:{age}:{secret}"
+    amen
+amen
+
+let there be ungodly Creature:
+    __alpha__(public text label; number age; protected text kind):
+        say "blessed {label} ({kind})"
+    amen
+    purpose describe() -> text:
+        return "a {kind} named {label}"
+    amen
+amen
+
+create p = Person("Adam", 930, "hidden")
+say p name
+say p card
+
+create c = Creature("Dog", 3, "animal")
+say c label
+say c describe

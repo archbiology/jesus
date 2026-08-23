@@ -47,6 +47,15 @@ public:
     std::shared_ptr<Heart> class_attributes = nullptr;
     std::unordered_map<std::string, std::shared_ptr<IMethod>> methods;
 
+    /**
+     * @brief Access level (public/protected/private) of attributes that
+     * were promoted from constructor parameters (__alpha__).
+     *
+     * Attributes declared in the class body (create x: type) are always
+     * treated as public, so they are not listed here.
+     */
+    std::unordered_map<std::string, std::string> attributeAccess;
+
     CreationType(PrimitiveType primitive_type, std::string name, std::string module = "core",
                  std::shared_ptr<CreationType> parent = nullptr,
                  std::shared_ptr<Heart> attributes = nullptr,

@@ -100,6 +100,11 @@ public:
      */
     bool varExistsInHierarchy(const std::string &name) const;
 
+    std::shared_ptr<Heart> getParentAttributes() const
+    {
+        return parent_attributes;
+    }
+
     /**
      * @brief Create a variable with the given name and value.
      * If the variable already exists, it will raise an exception.
@@ -173,6 +178,14 @@ public:
     const std::shared_ptr<CreationType> getVarType(const std::string &varName)
     {
         auto type = semantics_analyzer->getVarType(varName);
+        if (type != nullptr)
+            return type;
+
+        // Attributes inherited from the constructor-promoted attributes of a
+        // base class live in the parent heart, so keep looking there.
+        if (auto parent = getParentAttributes())
+            return parent->getVarType(varName);
+
         return type;
     }
 

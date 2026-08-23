@@ -1,0 +1,18 @@
+let there be Person:
+    __alpha__(public text name; public number years):
+    amen
+amen
+
+let there be ungodly Creature:
+    __alpha__(public text name; number age; public text kind):
+        say "birth of {name} (age {age}, {kind})"
+    amen
+amen
+
+create p = Person("Jubileu", 49)
+say p name
+say p years
+
+create c = Creature("Dog", 3, "animal")
+say c name
+say c kind
