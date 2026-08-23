@@ -8,17 +8,68 @@
 #include "understanding/doctrine/law/ungodly_naming.hpp"
 #include <stdexcept>
 
-static std::shared_ptr<CreationType> registerParseTimeClass(
-    ParserContext &ctx, const std::string &className,
-    const std::string &module_name,
-    const std::shared_ptr<CreationType> &parent_class,
-    const std::shared_ptr<Heart> &attributes,
+static bool addMethodToClass(
+    std::shared_ptr<CreationType> &userClass,
+    const CreateMethodStmt *methodStmt,
+    bool &hasConstructor,
+    bool &hasDestructor)
+{
+    if (methodStmt->isConstructor)
+    {
+        if (hasConstructor)
+        {
+            throw std::runtime_error("Class '" + userClass->name + "' already has a constructor '__alpha__'.");
+        }
+        hasConstructor = true;
+
+        // -------------------------------------------------------
+        // Register the constructor as a method so that it can be
+        // found and invoked automatically whenever a new instance
+        // of this class is created.
+        // -------------------------------------------------------
+        userClass->addMethod(
+            methodStmt->name,
+            std::make_shared<Method>(
+                methodStmt->name,
+                methodStmt->params,
+                methodStmt->body,
+                methodStmt->returnType,
+                methodStmt->attributeNames));
+
+        return true;
+    }
+
+    if (methodStmt->isDestructor)
+    {
+        if (hasDestructor)
+        {
+            throw std::runtime_error("Class '" + userClass->name + "' already has a destructor '__omega__'.");
+        }
+        hasDestructor = true;
+
+        // -------------------------------------------------------------
+        // Register the destructor as a method so that it can be
+        // found and invoked automatically when an instance passes away.
+        // -------------------------------------------------------------
+        userClass->addMethod(
+            methodStmt->name,
+            std::make_shared<Method>(methodStmt->name, methodStmt->params, methodStmt->body, methodStmt->returnType));
+
+        return true;
+    }
+
+    userClass->addMethod(
+        methodStmt->name,
+        std::make_shared<Method>(methodStmt->name, methodStmt->params, methodStmt->body, methodStmt->returnType));
+
+    return false;
+}
+
+static std::unordered_map<std::string, std::string> collectAttributeAccessModifiers(
     const std::vector<std::shared_ptr<Stmt>> &body)
 {
-    std::vector<std::shared_ptr<IConstraint>> constraints;
-
     // ---------------------------------------------------------------
-    // Set public/protected/private modifiers to class attributes.
+    // Extract public/protected/private modifiers from class attributes.
     // e.g. __alpha__(private age: number): each new instance of this
     // class carries an 'age' attribute automatically.
     // ---------------------------------------------------------------
@@ -35,74 +86,7 @@ static std::shared_ptr<CreationType> registerParseTimeClass(
         }
     }
 
-    auto userClass = std::make_shared<CreationType>(
-        PrimitiveType::Class, className, module_name, parent_class, std::move(attributes), constraints);
-    userClass->attributeAccess = std::move(attributeAccess);
-
-    bool hasConstructor = false;
-    bool hasDestructor = false;
-
-    for (const auto &member : body)
-    {
-        if (auto methodStmt = dynamic_cast<CreateMethodStmt *>(member.get()))
-        {
-            if (methodStmt->isConstructor)
-            {
-                if (hasConstructor)
-                {
-                    throw std::runtime_error("Class '" + className + "' already has a constructor '__alpha__'.");
-                }
-                hasConstructor = true;
-
-                // -------------------------------------------------------
-                // Register the constructor as a method so that it can be
-                // found and invoked automatically whenever a new instance
-                // of this class is created.
-                // -------------------------------------------------------
-                auto method = std::make_shared<Method>(
-                    methodStmt->name,
-                    methodStmt->params,
-                    methodStmt->body,
-                    methodStmt->returnType,
-                    methodStmt->attributeNames);
-
-                userClass->addMethod(methodStmt->name, method);
-                continue;
-            }
-
-            if (methodStmt->isDestructor)
-            {
-                if (hasDestructor)
-                {
-                    throw std::runtime_error("Class '" + className + "' already has a destructor '__omega__'.");
-                }
-                hasDestructor = true;
-
-                // -------------------------------------------------------------
-                // Register the destructor as a method so that it can be
-                // found and invoked automatically when an instance passes away.
-                // -------------------------------------------------------------
-                auto method = std::make_shared<Method>(
-                    methodStmt->name, methodStmt->params, methodStmt->body, methodStmt->returnType);
-                userClass->addMethod(methodStmt->name, method);
-
-                continue;
-            }
-
-            auto method = std::make_shared<Method>(
-                methodStmt->name,
-                methodStmt->params,
-                methodStmt->body,
-                methodStmt->returnType);
-
-            userClass->addMethod(methodStmt->name, method);
-        }
-    }
-
-    ctx.registerType(userClass);
-    ctx.registerClassName(className);
-
-    return userClass;
+    return attributeAccess;
 }
 
 std::unique_ptr<Stmt> CreateClassStmtRule::parse(ParserContext &ctx)
@@ -171,13 +155,26 @@ std::unique_ptr<Stmt> CreateClassStmtRule::parse(ParserContext &ctx)
     std::vector<std::shared_ptr<Stmt>> body;
     std::string module_name = ctx.moduleName;
 
+    // -------------------------------------------------------------------------
+    // Register the class before parsing its body so that methods defined inside
+    // the class can already refer to the class itself through 'I'/'my'.
+    // -------------------------------------------------------------------------
+    std::vector<std::shared_ptr<IConstraint>> constraints;
+    auto userClass = std::make_shared<CreationType>(
+        PrimitiveType::Class, className, module_name, baseClassType, attributes, constraints);
+    ctx.registerType(userClass);
+    ctx.registerClassName(className);
+
+    bool hasConstructor = false;
+    bool hasDestructor = false;
+
     ctx.consumeAllNewLines();
 
     if (ctx.isAtEnd())
     {
         // Allowing 'empty-bodied' classes without ': amen'.
         // Just: let there be Light
-        auto userClass = registerParseTimeClass(ctx, className, module_name, baseClassType, std::move(attributes), body);
+        userClass->attributeAccess = collectAttributeAccessModifiers(body);
         return std::make_unique<CreateClassStmt>(className, module_name, baseClassType, body, std::move(userClass));
     }
 
@@ -211,6 +208,8 @@ std::unique_ptr<Stmt> CreateClassStmtRule::parse(ParserContext &ctx)
                         attributes->createVar(paramType, paramName, Value(), /** isParam = */ false);
                     }
                 }
+
+                addMethodToClass(userClass, methodStmt, hasConstructor, hasDestructor);
             }
 
             body.push_back(std::move(method));
@@ -236,6 +235,6 @@ std::unique_ptr<Stmt> CreateClassStmtRule::parse(ParserContext &ctx)
     if (!ctx.match(TokenType::AMEN))
         throw std::runtime_error("Expected 'amen' after ':' in '" + stmt + "' to close class body.");
 
-    auto userClass = registerParseTimeClass(ctx, className, module_name, baseClassType, std::move(attributes), body);
+    userClass->attributeAccess = collectAttributeAccessModifiers(body);
     return std::make_unique<CreateClassStmt>(className, module_name, baseClassType, body, std::move(userClass));
 }

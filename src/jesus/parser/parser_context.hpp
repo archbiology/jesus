@@ -197,6 +197,14 @@ public:
 
     void popScope();
 
+    /**
+     * @brief Returns the CreationType of the class whose body is currently
+     * being parsed, or nullptr if no class body is open (e.g. top level).
+     *
+     * Used so that the hidden '$self' variable ('my'/'I') works.
+     */
+    const std::shared_ptr<CreationType> currentClassType();
+
     void consumeAllNewLines()
     {
         while (match(TokenType::NEWLINE))

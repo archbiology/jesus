@@ -1,0 +1,9 @@
+(Jesus) (Jesus) (Jesus) (Jesus) (Jesus) (Jesus) Adam#(int) 930#hidden
+(Jesus) null
+(Jesus) Adam#(int) 50#hidden
+(Jesus) null
+(Jesus) Jubileu#(int) 50#hidden
+(Jesus) (Jesus) (Jesus) (int) 30
+(Jesus) ❌ Error: Attribute 'secret' is private and can only be seen by class 'Person'.
+(Jesus) (Jesus) ❌ Error: 'I'/'my' can only be used inside a method body to refer to the object that method is running on. There is no current object here.
+(Jesus) 

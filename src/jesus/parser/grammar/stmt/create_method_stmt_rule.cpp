@@ -5,6 +5,7 @@
 #include "../../../types/creation_type.hpp"
 #include "../../parser_context.hpp"
 #include "../../../types/known_types.hpp"
+#include "../../../spirit/heart.hpp"
 #include "../../../understanding/doctrine/law/ungodly_naming.hpp"
 #include "../jesus_grammar.hpp"
 #include <stdexcept>
@@ -128,6 +129,16 @@ std::unique_ptr<Stmt> CreateMethodStmtRule::parse(ParserContext &ctx)
     if (!ctx.match(TokenType::RIGHT_PAREN))
         throw std::runtime_error("Expected ')' after parameter list in method declaration.");
 
+    // ----------------------------------
+    // Hidden '$self' variable ("I"/"my")
+    // ----------------------------------
+    // 'my name' / 'I like' inside the method body refer to the object the
+    // method runs on. It lives as a hidden local (never a parameter, so it is
+    // not bound by call arguments) so member lookups work at parse time.
+    auto selfType = ctx.currentClassType();
+    if (selfType)
+        params->declareVar(selfType, SELF_VARIABLE, /*isParam=*/false);
+
     // -----------
     // Return type
     // -----------
@@ -173,6 +184,10 @@ std::unique_ptr<Stmt> CreateMethodStmtRule::parse(ParserContext &ctx)
         else if (auto print = printStmt->parse(ctx))
         {
             body.push_back(std::move(print));
+        }
+        else if (auto stmt = assign->parse(ctx))
+        {
+            body.push_back(std::move(stmt));
         }
         else if (auto stmt = grammar::IfStmt->parse(ctx))
             body.push_back(std::move(stmt));

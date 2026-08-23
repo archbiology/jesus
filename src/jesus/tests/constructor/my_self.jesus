@@ -1,0 +1,28 @@
+let there be Person:
+    __alpha__(public text name; public number age):
+    amen
+    purpose celebrate(number age) -> number:
+        my age = age
+        return my age
+    amen
+    purpose card() -> text:
+        return "{I name} is {my age} years old"
+    amen
+    purpose like(text thing) -> truth:
+        return thing is "water"
+    amen
+    purpose weather(text thing):
+        if I like thing:
+            say "I like {thing}"
+        otherwise:
+            say "I do not like {thing}"
+        amen
+    amen
+amen
+
+create p = Person("Adam", 930)
+say p card
+say p celebrate 50
+say p card
+p weather "water"
+p weather "fire"

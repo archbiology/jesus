@@ -28,6 +28,11 @@ public:
         return current_scope;
     }
 
+    const std::vector<std::shared_ptr<Heart>> &getScopes() const
+    {
+        return scopes;
+    }
+
     void addScope(std::shared_ptr<Heart> scope)
     {
         scopes.emplace_back(scope);
