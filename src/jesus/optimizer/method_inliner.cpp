@@ -471,8 +471,7 @@ std::unique_ptr<Expr> MethodInliner::cloneExpressionReplacingParamsWithArgs(
         // The 'heart' of the method ends here.
         // ------------------------------------
 
-        if ((varExpr->name == "my" || varExpr->name == "this" || varExpr->name == "I" || varExpr->name == "self") &&
-            objectExpr)
+        if (varExpr->name == SELF_VARIABLE && objectExpr) // I/my
         {
             return cloneExpressionReplacingParamsWithArgs(*objectExpr, {}, nullptr, classAttributes);
         }

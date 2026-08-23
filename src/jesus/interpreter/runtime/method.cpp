@@ -15,6 +15,12 @@ Value Method::call(Interpreter &interpreter, Value &object, const std::vector<Va
     for (int index = 0; index < paramsScope->paramsCount; index++)
         paramsScope->updateVar(index, args[index]);
 
+    // Bind the hidden '$self' variable ('my'/'I') to the object this method
+    // is running on. Any user method runs inside a class body and has the
+    // hidden variable.
+    if (paramsScope->localVarExists(SELF_VARIABLE))
+        paramsScope->updateVar(paramsScope->resolveVariableAddressInHierarchy(SELF_VARIABLE), Value(instance));
+
     interpreter.addScope(instance->attributes); // FIXME: should not add two scopes here. SymbolTable::updateVar should instead consider scope->parent_attributes
     interpreter.addScope(paramsScope);
 

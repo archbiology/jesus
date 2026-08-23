@@ -70,3 +70,22 @@ VariableAddress ParserContext::resolveVariableAddress(const std::string &name)
         ->symbol_table
         ->resolveVariableAddress(name);
 }
+
+const std::shared_ptr<CreationType> ParserContext::currentClassType()
+{
+    const auto &scopes = interpreter->currentModule->symbol_table->getScopes();
+
+    // The las open "class:<Name>" scope is the class currently being parsed.
+    for (auto it = scopes.rbegin(); it != scopes.rend(); ++it)
+    {
+        const std::string &scopeName = (*it)->scope_name;
+        if (scopeName.rfind("class:", 0) == 0)
+        {
+            auto type = resolveType(scopeName.substr(6));
+            if (type)
+                return type;
+        }
+    }
+
+    return nullptr;
+}

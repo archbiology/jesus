@@ -1,0 +1,35 @@
+let there be Person:
+    __alpha__(public text name; protected number age; private text secret):
+    amen
+    purpose peek() -> text:
+        return "{I name}#{my age}#{I secret}"
+    amen
+    purpose celebrate():
+        my age = 50
+    amen
+    purpose paint(text name):
+        my name = name
+    amen
+amen
+
+let there be ungodly Hero from Person:
+    purpose score() -> number:
+        return my age
+    amen
+    purpose tries() -> text:
+        return my secret
+    amen
+amen
+
+create p = Person("Adam", 930, "hidden")
+say p peek
+p celebrate
+say p peek
+p paint "Jubileu"
+say p peek
+
+create h = Hero("Jack", 30, "top")
+say h score
+say h tries
+
+say my name

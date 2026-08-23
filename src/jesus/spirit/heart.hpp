@@ -23,6 +23,13 @@ struct VariableAddress
 };
 
 /**
+ * @brief Name of the hidden method-scope variable that holds the current
+ * instance ("my"/"I"). Uses '$' so it can never clash with a source-level
+ * identifier (identifiers are letters, digits and '_' only).
+ */
+inline constexpr const char *SELF_VARIABLE = "$self";
+
+/**
  * @brief The Heart class stores variables declared during execution.
  *
  * It acts like a symbol table — each variable has a name (string)

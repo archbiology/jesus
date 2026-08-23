@@ -17,6 +17,7 @@
 #include "expr/atomic/literals/string_rule.hpp"
 #include "expr/atomic/literals/formatted_string_rule.hpp"
 #include "expr/atomic/literals/variable_rule.hpp"
+#include "expr/atomic/literals/self_rule.hpp"
 #include "expr/atomic/literals/yes_no_rule.hpp"
 #include "expr/atomic/literals/born_rule.hpp"
 #include "expr/atomic/literals/weekday_rule.hpp"
@@ -94,6 +95,7 @@ namespace grammar
     inline auto Confess = std::make_shared<ConfessRule>();
     inline auto Giants = std::make_shared<GiantsRule>();
     inline auto Variable = std::make_shared<VariableRule>();
+    inline auto Self = std::make_shared<SelfRule>();
     inline auto Ask = std::make_shared<AskExprRule>();
     inline auto BibleRef = std::make_shared<BibleExprRule>(Expression);
     inline auto List = std::make_shared<ListRule>(Expression);
@@ -105,7 +107,7 @@ namespace grammar
      */
     inline auto Primary =
         Number | String | FormattedString | YesNo | Sex | Weekday |
-        Confess | Giants | Instantiation | Variable | BibleRef | List | Dict |
+        Confess | Giants | Instantiation | Variable | Self | BibleRef | List | Dict |
         Group(Expression);
     inline auto GetAttribute = std::make_shared<GetAttributeRule>(Primary);
 
@@ -117,7 +119,7 @@ namespace grammar
     inline auto CreateVar = std::make_shared<CreateVarStmtRule>(Expression, Ask);
     inline auto UpdateVar = std::make_shared<UpdateVarStmtRule>(Expression, Ask);
     inline auto UpdateItem = std::make_shared<AssignStmtRule>(Expression);
-    inline auto CreateMethod = std::make_shared<CreateMethodStmtRule>(CreateVar, UpdateVar, Print);
+    inline auto CreateMethod = std::make_shared<CreateMethodStmtRule>(CreateVar, UpdateVar, Print, UpdateItem);
     inline auto CreateClass = std::make_shared<CreateClassStmtRule>(CreateVar, CreateMethod);
     inline auto RepeatWhile = std::make_shared<RepeatStmtRule>();
     inline auto Foreach = std::make_shared<ForEachStmtRule>();

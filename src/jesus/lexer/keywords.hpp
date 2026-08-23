@@ -132,6 +132,9 @@ namespace Keywords
         {"protected", TokenType::PROTECTED},
         {"public", TokenType::PUBLIC},
 
+        {"I", TokenType::MY},
+        {"my", TokenType::MY},
+
         {"__alpha__", TokenType::ALPHA},
         {"__omega__", TokenType::OMEGA},
 

@@ -155,6 +155,7 @@ set(JESUS_CPP_FILES
     src/jesus/parser/grammar/expr/atomic/literals/formatted_string_rule.cpp
     src/jesus/parser/grammar/expr/atomic/literals/yes_no_rule.cpp
     src/jesus/parser/grammar/expr/atomic/literals/variable_rule.cpp
+    src/jesus/parser/grammar/expr/atomic/literals/self_rule.cpp
     src/jesus/parser/grammar/expr/atomic/literals/born_rule.cpp
     src/jesus/parser/grammar/expr/atomic/literals/weekday_rule.cpp
 
