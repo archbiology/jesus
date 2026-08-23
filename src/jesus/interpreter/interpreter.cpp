@@ -90,7 +90,7 @@ Value Interpreter::visitCreateInstanceExpr(const CreateInstanceExpr &expr)
     auto ctorMember = expr.klass->findMember("__alpha__", expr.klass);
     if (ctorMember && ctorMember->isMethod())
     {
-        if (auto ctor = std::dynamic_pointer_cast<Method>(ctorMember->method))
+        if (auto constructor = std::dynamic_pointer_cast<Method>(ctorMember->method))
         {
             // Evaluate any constructor arguments, if provided.
             std::vector<Value> args;
@@ -113,10 +113,31 @@ Value Interpreter::visitCreateInstanceExpr(const CreateInstanceExpr &expr)
             // parameter list (e.g. a no-arg constructor with no arguments).
             // FIXME: validate this at parse time, not runtime.
             // -------------------------------------------------------------
-            if (args.size() == static_cast<size_t>(ctor->params->paramsCount))
+            if (args.size() == static_cast<size_t>(constructor->params->paramsCount))
             {
+                // ---------------------------------------------------------
+                // Constructor parameters defined as
+                // private/protected/public become instance attributes
+                // filled with the passed argument values.
+                // ---------------------------------------------------------
+                if (!constructor->attributeNames.empty())
+                {
+                    const auto paramNames = constructor->params->getVariableNames();
+                    for (size_t i = 0; i < args.size() && i < paramNames.size(); ++i)
+                    {
+                        for (const auto &attrName : constructor->attributeNames)
+                        {
+                            if (paramNames[i] == attrName)
+                            {
+                                auto address = instance->attributes->resolveVariableAddressInHierarchy(attrName);
+                                instance->setAttribute(address, args[i]);
+                            }
+                        }
+                    }
+                }
+
                 Value instanceValue(instance);
-                ctor->call(*this, instanceValue, args);
+                constructor->call(*this, instanceValue, args);
             }
         }
     }

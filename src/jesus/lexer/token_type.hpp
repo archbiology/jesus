@@ -66,6 +66,9 @@ enum class TokenType
     PURPOSE,        // create method: purpose praise(): amen
     ALPHA,          // class constructor: __alpha__(): amen
     OMEGA,          // class destructor: __omega__(): amen
+    PRIVATE,        // private attributes
+    PROTECTED,      // protected attributes
+    PUBLIC,         // public attributes
     RETURN,         // Function returns: return 144000
     CREATE,         // create days = 7
     TYPE,           // type number Positive > 0

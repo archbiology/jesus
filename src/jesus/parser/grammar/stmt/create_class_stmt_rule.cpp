@@ -16,6 +16,27 @@ static std::shared_ptr<CreationType> registerParseTimeClass(
     const std::vector<std::shared_ptr<Stmt>> &body)
 {
     std::vector<std::shared_ptr<IConstraint>> constraints;
+
+    // -------------------------------------------------------------------
+    // Promote public/protected/private parameters to class attributes.
+    // e.g. __alpha__(private age: number): each new instance of this
+    // class carries an 'age' attribute automatically.
+    // -------------------------------------------------------------------
+    for (const auto &member : body)
+    {
+        if (auto methodStmt = dynamic_cast<CreateMethodStmt *>(member.get()))
+        {
+            if (methodStmt->isConstructor && !methodStmt->attributeNames.empty())
+            {
+                for (const auto &paramName : methodStmt->attributeNames)
+                {
+                    auto paramType = methodStmt->params->getVarType(paramName);
+                    attributes->createVar(paramType, paramName, Value(), /** isParam = */ false);
+                }
+            }
+        }
+    }
+
     auto userClass = std::make_shared<CreationType>(
         PrimitiveType::Class, className, module_name, parent_class, std::move(attributes), constraints);
 
@@ -40,9 +61,13 @@ static std::shared_ptr<CreationType> registerParseTimeClass(
                 // of this class is created.
                 // -------------------------------------------------------
                 auto method = std::make_shared<Method>(
-                    methodStmt->name, methodStmt->params, methodStmt->body, methodStmt->returnType);
-                userClass->addMethod(methodStmt->name, method);
+                    methodStmt->name,
+                    methodStmt->params,
+                    methodStmt->body,
+                    methodStmt->returnType,
+                    methodStmt->attributeNames);
 
+                userClass->addMethod(methodStmt->name, method);
                 continue;
             }
 

@@ -47,14 +47,22 @@ public:
     bool isConstructor; // true if this is the special constructor "__alpha__"
     bool isDestructor;  // true if this is the special destructor "__omega__"
 
+    /**
+     * @brief Parameters prefixed with private/protected/public
+     * in the constructor become instance attributes
+     */
+    std::vector<std::string> attributeNames;
+
     CreateMethodStmt(const std::string &name,
                      const std::shared_ptr<Heart> &params,
                      const std::shared_ptr<CreationType> &returnType,
                      const std::vector<std::shared_ptr<Stmt>> &body,
                      bool isConstructor = false,
-                     bool isDestructor = false)
+                     bool isDestructor = false,
+                     const std::vector<std::string> &attributeNames = {})
         : name(name), params(std::move(params)), returnType(std::move(returnType)), body(body),
-          isConstructor(isConstructor), isDestructor(isDestructor)
+          isConstructor(isConstructor), isDestructor(isDestructor),
+          attributeNames(attributeNames)
     {
     }
 

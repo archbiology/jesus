@@ -65,15 +65,25 @@ protected:
 
 class Method : public IMethod
 {
-public:
+  public:
     const std::vector<std::shared_ptr<Stmt>> body;
 
-    Method(std::string name,
-           std::shared_ptr<Heart> params,
-           std::vector<std::shared_ptr<Stmt>> body,
-           std::shared_ptr<CreationType> returnType)
-        : IMethod(std::move(name), std::move(params), std::move(returnType)),
-          body(std::move(body)) {}
+    /**
+     * @brief Constructor parameters defined as
+     * private/protected/public become instance attributes.
+     */
+    const std::vector<std::string> attributeNames;
+
+    Method(
+        std::string name,
+        std::shared_ptr<Heart> params,
+        std::vector<std::shared_ptr<Stmt>> body,
+        std::shared_ptr<CreationType> returnType,
+        std::vector<std::string> attributeNames = {})
+        : IMethod(std::move(name), std::move(params), std::move(returnType)), body(std::move(body)),
+          attributeNames(std::move(attributeNames))
+    {
+    }
 
     Value call(Interpreter &interp, Value &object, const std::vector<Value> &args) override;
 };
