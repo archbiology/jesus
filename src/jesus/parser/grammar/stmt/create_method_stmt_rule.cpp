@@ -177,59 +177,72 @@ std::unique_ptr<Stmt> CreateMethodStmtRule::parse(ParserContext &ctx)
 
         ctx.consumeAllNewLines();
     }
-    ctx.popScope(); // </🟢️>
 
     if (ctx.isAtEnd())
     {
+        ctx.popScope(); // </🟢️>
         // FIXME: Each time an IncompleteBlockStmt is returned, all code is parsed again. Too expensive.
         return std::make_unique<IncompleteBlockStmt>();
     }
 
     if (!ctx.match(TokenType::AMEN))
+    {
+        ctx.popScope(); // </🟢️>
         throw std::runtime_error("Expected 'amen' to close method body.");
+    }
 
     // ---------------------------
     // Enforce correct return type
     // ---------------------------
-    if (!isDestructor)
+    try
     {
-        for (const auto &stmt : body)
+        if (!isDestructor)
         {
-            if (auto ret = dynamic_cast<ReturnStmt *>(stmt.get()))
+            for (const auto &stmt : body)
             {
-                auto actualType = ret->getReturnType(ctx);
+                if (auto ret = dynamic_cast<ReturnStmt *>(stmt.get()))
+                {
+                    auto actualType = ret->getReturnType(ctx);
 
-                if (!returnType->isCompatibleWith(actualType))
+                    if (!returnType->isCompatibleWith(actualType))
+                    {
+                        throw std::runtime_error(
+                            "Type mismatch in method '" + methodName + "': expected return type '" +
+                            returnType->toString() + "', but found '" + actualType->toString() + "'.");
+                    }
+                }
+            }
+
+            // -----------------------------
+            // Enforce explicit return rules
+            // -----------------------------
+            if (!returnType->isVoid())
+            {
+                if (body.empty())
                 {
                     throw std::runtime_error(
-                        "Type mismatch in method '" + methodName + "': expected return type '" +
-                        returnType->toString() + "', but found '" + actualType->toString() + "'.");
+                        "Method '" + methodName + "' with return type '" + returnType->toString() +
+                        "' must end with an explicit return.");
+                }
+
+                auto lastStmt = body.back().get();
+                auto ret = dynamic_cast<ReturnStmt *>(lastStmt);
+                if (!ret)
+                {
+                    throw std::runtime_error(
+                        "Method '" + methodName + "' with return type '" + returnType->toString() +
+                        "' must end with an explicit return.");
                 }
             }
         }
-
-        // -----------------------------
-        // Enforce explicit return rules
-        // -----------------------------
-        if (!returnType->isVoid())
-        {
-            if (body.empty())
-            {
-                throw std::runtime_error(
-                    "Method '" + methodName + "' with return type '" + returnType->toString() +
-                    "' must end with an explicit return.");
-            }
-
-            auto lastStmt = body.back().get();
-            auto ret = dynamic_cast<ReturnStmt *>(lastStmt);
-            if (!ret)
-            {
-                throw std::runtime_error(
-                    "Method '" + methodName + "' with return type '" + returnType->toString() +
-                    "' must end with an explicit return.");
-            }
-        }
     }
+    catch (...)
+    {
+        ctx.popScope(); // </🟢️>
+        throw;
+    }
+
+    ctx.popScope(); // </🟢️>
 
     return std::make_unique<CreateMethodStmt>(
         methodName, std::move(params), returnType, body, isConstructor, isDestructor);
