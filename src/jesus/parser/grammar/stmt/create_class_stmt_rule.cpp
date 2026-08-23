@@ -216,7 +216,37 @@ std::unique_ptr<Stmt> CreateClassStmtRule::parse(ParserContext &ctx)
         }
         else if (auto attr = createVar->parse(ctx))
         {
-            body.push_back(std::move(attr));
+            // ---------------------------------------------------------
+            // Dependency Inversion: attributes are dependencies injected
+            // through the '__alpha__' constructor. A class body may only
+            // hold methods, so declaring an attribute here is an error.
+            // ---------------------------------------------------------
+            auto attrStmt = dynamic_cast<CreateVarStmt *>(attr.get());
+            std::string attrName = attrStmt ? attrStmt->name : "<unnamed>";
+            std::string attrType = "creation";
+            if (attrStmt)
+            {
+                try
+                {
+                    auto resolvedType = ctx.getVarType(attrName);
+                    if (resolvedType)
+                        attrType = resolvedType->name;
+                }
+                catch (...)
+                {
+                }
+            }
+
+            throw std::runtime_error(
+                "Class '" + className + "' cannot declare attribute '" + attrName +
+                "' inside its body. Only methods are allowed there.\n\n"
+                "To enforce Dependency Inversion, instance state and dependencies "
+                "must be declared through the '__alpha__' constructor, where they "
+                "are explicitly provided from outside the class.\n\n"
+                "Declare the attribute in '__alpha__' using an access modifier so "
+                "it becomes an instance attribute:\n\n"
+                "    __alpha__(public " + attrType + " " + attrName + "):\n"
+                "    amen");
         }
         else
         {

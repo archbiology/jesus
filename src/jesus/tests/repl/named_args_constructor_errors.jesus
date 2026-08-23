@@ -1,20 +1,16 @@
 let there be Person:
-    create name: text = "Adam"
-    create age: number = 0
-    __alpha__(text first; number years):
-        name = first
-        age = years
+    __alpha__(public text first; public number years):
     amen
 amen
 
 create dup = Person(first='A', first='B')
-say dup name
+say dup first
 create unk = Person(evil=5)
-say unk age
+say unk years
 create pos = Person(first='A', 49)
-say pos age
+say pos years
 create miss = Person(first='John')
-say miss age
+say miss years
 create ok = Person(years=49, first='John')
-say ok name
-say ok age
+say ok first
+say ok years

@@ -1,12 +1,10 @@
 let there be Ancestor:
-    create origin: number = 0
-    __alpha__():
-        origin = 100
+    __alpha__(public number origin):
     amen
 amen
 
 let there be Human from Ancestor:
 amen
 
-create h = Human()
+create h = Human(100)
 say h origin

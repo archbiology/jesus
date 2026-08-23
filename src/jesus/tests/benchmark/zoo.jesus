@@ -35,12 +35,8 @@
 #   OS: Ubuntu 24.04.4 LTS
 
 let there be Zoo:
-    create aarvark: number = 1
-    create baboon: number = 1
-    create cat: number = 1
-    create donkey: number = 1
-    create elephant: number = 1
-    create fox: number = 1
+    __alpha__(public number aarvark; public number baboon; public number cat; public number donkey; public number elephant; public number fox):
+    amen
 
     purpose ant() -> number:
         return aarvark
@@ -67,7 +63,7 @@ let there be Zoo:
     amen
 amen
 
-create zoo = Zoo()
+create zoo = Zoo(1, 1, 1, 1, 1, 1)
 create sum: number = 0
 
 repeat while sum < 10000000:
