@@ -1,0 +1,9 @@
+let there be Human:
+    create age: number = 0
+    __alpha__(number years):
+        age = years
+    amen
+amen
+
+create h = Human(930)
+say h age

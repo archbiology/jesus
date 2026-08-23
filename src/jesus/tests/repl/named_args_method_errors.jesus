@@ -1,0 +1,13 @@
+let there be Calculator:
+    purpose plus(number x; number y) -> number:
+        return x + y
+    amen
+amen
+
+create calc = Calculator()
+say calc plus x=7, x=9
+say calc plus evil=7
+say calc plus x=7, 9
+say calc plus x=7
+say calc plus y=8, x=2
+say calc plus y=8, x=2, z=3

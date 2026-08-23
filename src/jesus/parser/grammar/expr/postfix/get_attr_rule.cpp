@@ -7,8 +7,10 @@
 #include "types/composite/dict_type.hpp"
 #include "parser/helpers/member.hpp"
 #include "parser/grammar/jesus_grammar.hpp"
+#include "parser/grammar/argument_binding.hpp"
 #include "interpreter/runtime/method.hpp"
 #include <memory>
+#include <optional>
 
 std::unique_ptr<Expr> GetAttributeRule::parse(ParserContext &ctx)
 {
@@ -79,55 +81,81 @@ std::unique_ptr<Expr> GetAttributeRule::parse(ParserContext &ctx)
             // ----------------------------
             // Resolve attribute or method
             // ----------------------------
-                std::shared_ptr<CreationType> klass = expr->getReturnType(ctx);
-                std::string name = ctx.previous().lexeme;
+            std::shared_ptr<CreationType> klass = expr->getReturnType(ctx);
+            std::string name = ctx.previous().lexeme;
 
-                auto member = klass->findMember(name, klass);
-                if (!member)
+            auto member = klass->findMember(name, klass);
+            if (!member)
+            {
+                throw std::runtime_error("Unknown member '" + name + "' in class " + klass->name);
+            }
+
+            // -----------------
+            // ATTRIBUTE ACCESS
+            // -----------------
+            if (member->isAttribute())
+            {
+                auto address = member->declaring_class->class_attributes->resolveVariableAddressInHierarchy(name);
+                expr = std::make_unique<GetAttributeExpr>(std::move(expr), name, address);
+            }
+
+            // ------------
+            // METHOD CALL
+            // ------------
+            else if (member->isMethod())
+            {
+                std::vector<grammar::Argument> rawArgs;
+
+                // If the next token(s) indicate arguments, parse them
+                if (!ctx.check(TokenType::NEWLINE) && !ctx.check(TokenType::END_OF_FILE))
                 {
-                    throw std::runtime_error("Unknown member '" + name + "' in class " + klass->name);
-                }
-
-                // -----------------
-                // ATTRIBUTE ACCESS
-                // -----------------
-                if (member->isAttribute())
-                {
-                    auto address = member->declaring_class->class_attributes->resolveVariableAddressInHierarchy(name);
-                    expr = std::make_unique<GetAttributeExpr>(std::move(expr), name, address);
-                }
-
-                // ------------
-                // METHOD CALL
-                // ------------
-                else if (member->isMethod())
-                {
-                    std::vector<std::unique_ptr<Expr>> args;
-
-                    // If the next token(s) indicate arguments, parse them
-                    if (!ctx.check(TokenType::NEWLINE) && !ctx.check(TokenType::END_OF_FILE))
-                    {
-                        auto expectedParams = member->method->params->paramsCount;
-                        if (expectedParams > 0)
+                    auto expectedParams = member->method->params->paramsCount;
+                    if (expectedParams > 0)
                         do
                         {
+                            // -------------------------------------
+                            // Detect a named argument: name='Jesus'
+                            // -------------------------------------
+                            std::optional<std::string> argName;
+                            if (ctx.check(TokenType::IDENTIFIER))
+                            {
+                                int snap = ctx.snapshot();
+                                const Token &token = ctx.advance();
+                                if (ctx.check(TokenType::EQUAL))
+                                {
+                                    ctx.advance(); // consume the '='
+                                    argName = token.lexeme;
+                                }
+                                else
+                                {
+                                    ctx.restore(snap);
+                                }
+                            }
+
                             auto argExpr = primary->parse(ctx); // parse any expression
 
                             if (!argExpr)
                                 throw std::runtime_error("Expected argument for method " + name);
 
-                            args.push_back(std::move(argExpr));
+                            rawArgs.push_back({argName, std::move(argExpr)});
 
                         } while (ctx.match(TokenType::COMMA));
-                    }
+                }
 
-                    expr = std::make_unique<MethodCallExpr>(std::move(expr), member->method, std::move(args), ctx.interpreter);
-                    expr->validate(ctx);
-                }
-                else
-                {
-                    throw std::runtime_error("Unknown member '" + name + "' in class " + klass->name);
-                }
+                auto args = grammar::bindArgumentsToParameters(
+                    std::move(rawArgs),
+                    member->method->params->getParameterNames(),
+                    member->method->params,
+                    "Method",
+                    name);
+
+                expr = std::make_unique<MethodCallExpr>(std::move(expr), member->method, std::move(args), ctx.interpreter);
+                expr->validate(ctx);
+            }
+            else
+            {
+                throw std::runtime_error("Unknown member '" + name + "' in class " + klass->name);
+            }
 
             continue;
         }

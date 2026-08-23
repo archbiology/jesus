@@ -1,0 +1,12 @@
+let there be Human:
+    create name: text = "Adam"
+    create age: number = 0
+    __alpha__(number years; text named):
+        age = years
+        name = named
+    amen
+amen
+
+create h = Human("Jubileu", 49)
+say h age
+say h name

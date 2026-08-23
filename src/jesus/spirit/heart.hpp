@@ -181,6 +181,25 @@ public:
         return variableOrder;
     }
 
+    /**
+     * @brief Returns only the parameter names in declaration order.
+     *
+     * A method/constructor parameter scope may also contain local
+     * variables declared inside the body; those are appended after the
+     * parameters. Only the first `parameterCount` variables are parameters.
+     */
+    std::vector<std::string> getParameterNames() const
+    {
+        std::vector<std::string> names;
+
+        const auto &varNames = getVariableNames();
+
+        for (size_t i = 0; i < paramsCount && i < varNames.size(); ++i)
+            names.push_back(varNames[i]);
+
+        return names;
+    }
+
     void appendToString(std::string &out, std::unordered_set<std::string> &vars_printed) const
     {
 
