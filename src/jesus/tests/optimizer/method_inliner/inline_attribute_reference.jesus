@@ -1,12 +1,13 @@
 let there be Zoo:
-    create aarvark: number = 1
+    __alpha__(public number aarvark):
+    amen
 
     purpose ant() -> number:
         return aarvark
     amen
 amen
 
-create zoo = Zoo()
+create zoo = Zoo(1)
 say zoo ant
 
 ast

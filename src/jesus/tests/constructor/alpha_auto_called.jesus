@@ -1,11 +1,8 @@
 let there be Human:
-    create name: text = "Adam"
-    create age: number = 0
-    __alpha__():
-        age = 930
+    __alpha__(public text name; public number age):
     amen
 amen
 
-create h: Human = Human()
+create h: Human = Human('Adam', 930)
 say h age
 say h name

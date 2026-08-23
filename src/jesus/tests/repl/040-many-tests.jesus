@@ -215,9 +215,8 @@ haja Canção
 criar louvor = Canção()
 say louvor
 let there be Person:
-    create name: text = "Adam"
-    create wife: text = "Eve"
-    create age: number = 930
+    __alpha__(public text name; public text wife; public number age):
+    amen
 
     purpose bless(): amen
     propósito sejaUmaBenção(): amém
@@ -251,7 +250,7 @@ let there be Person:
     amen
 amen
 say wife
-create adam = Person()
+create adam = Person("Adam", "Eve", 930)
 say adam name
 say adam wife
 say adam age
@@ -355,8 +354,7 @@ say not 8
 'a text' is a number
 
 let there be Parent:
-    create name: text = "Abraham"
-    create surname: text = "Terahson"
+    __alpha__(public text name; public text surname): amen
 
     purpose praise():
         say "Praise the LORD, oh my soul ({name} {surname}),"
@@ -364,15 +362,15 @@ let there be Parent:
 amen
 
 let there be Son from Parent:
-    create surname: text = "Abrahamson"
+    __alpha__(public text name; public text surname): amen
 amen
 
 let there be Ishmael from Parent:
-    create surname: text = 'Hagarson'
+    __alpha__(public text name; public text surname): amen
 amen
 
 let there be GrandSon from Son:
-    create surname: text = "Isaacson"
+    __alpha__(public text name; public text surname): amen
 
     purpose praise():
         name = "Jacob"
@@ -388,23 +386,23 @@ let there be GrandSon from Son:
     amen
 amen
 
-create abraham = Parent()
+create abraham = Parent("Abraham", "Terahson")
 abraham praise
 
-create ishmael = Ishmael()
+create ishmael = Ishmael("Ishmael", "Hagarson")
 
-create isaac = Son()
+create isaac = Son("Isaac", "Abrahamson")
 isaac praise
 isaac to Ishmael
 
-create jacob = GrandSon()
+create jacob = GrandSon("Jacob", "Isaacson")
 jacob praise
 say name
 jacob who
 
 abraham = jacob
 abraham generateJudah
-create other = GrandSon()
+create other = GrandSon("Abraham", "Isaacson")
 other = abraham to GrandSon
 other generateJudah
 abraham to Ishmael

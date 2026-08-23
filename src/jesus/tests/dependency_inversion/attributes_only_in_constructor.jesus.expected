@@ -1,0 +1,8 @@
+Class 'Bad' cannot declare attribute 'name' inside its body. Only methods are allowed there.
+
+To enforce Dependency Inversion, instance state and dependencies must be declared through the '__alpha__' constructor, where they are explicitly provided from outside the class.
+
+Declare the attribute in '__alpha__' using an access modifier so it becomes an instance attribute:
+
+    __alpha__(public text name):
+    amen

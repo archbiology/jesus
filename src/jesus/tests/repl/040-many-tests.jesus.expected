@@ -291,7 +291,7 @@ Even: (int) 10
 (Jesus) (logic) 0
 (Jesus) (Jesus) (Jesus) (Jesus) (Jesus) (Jesus) (Jesus) (Jesus) (Jesus) (Jesus) (Jesus) Praise the LORD, oh my soul (Abraham Terahson),
 null
-(Jesus) (Jesus) (Jesus) (Jesus) (Jesus) Praise the LORD, oh my soul (Abraham Abrahamson),
+(Jesus) (Jesus) (Jesus) (Jesus) (Jesus) Praise the LORD, oh my soul (Isaac Abrahamson),
 null
 (Jesus) ❌ Error: Cannot convert from 'Son' to 'Ishmael' since they share no inheritance.
 (Jesus) (Jesus) (Jesus) Bethel (Jacob Isaacson),
@@ -311,7 +311,7 @@ null
 Pleas forgive my sins, Oh God Almighty.
 God always wins.
 (Jesus) (Jesus) CreateClassStmt(name: 'GrandSon', body: [
-  CreateVarStmt(surname, LiteralExpr(Isaacson)),
+  CreateMethodStmt('__alpha__', body: []),
   CreateMethodStmt('praise', body: [
     UpdateVarStmt('name', value: LiteralExpr(Jacob)),
     SayStmt(FormattedStringExpr("Bethel ({name} {surname}),)")]),
@@ -356,8 +356,8 @@ It has 3 elements (valid indexes: 0 to 2).
 (Jesus) (Jesus) (Jesus) (Jesus) [[{type: "instance",
  class: "Son",
  attributes: {
-  surname: "Hijo",
-  name: "Abraham"
+  name: "Isaac",
+  surname: "Hijo"
  }
 }]]
 (Jesus) (Jesus) Apostle Matt

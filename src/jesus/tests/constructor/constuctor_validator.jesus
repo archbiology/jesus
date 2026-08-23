@@ -1,9 +1,5 @@
 let there be Human:
-    create name: text = "Adam"
-    create age: number = 0
-    __alpha__(number years; text named):
-        age = years
-        name = named
+    __alpha__(number years; text name):
     amen
 amen
 

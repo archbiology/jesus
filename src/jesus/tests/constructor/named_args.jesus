@@ -1,27 +1,21 @@
 let there be Person:
-    create firstName: text = "Adam"
-    create lastName: text = "ho"
-    create yearsOld: number = 0
-    __alpha__(text name; text surname; number age):
-        firstName = name
-        lastName = surname
-        yearsOld = age
+    __alpha__(public text name; public text surname; public number age):
     amen
 amen
 
 create p1 = Person(name='John', surname='ho', age=49)
-say p1 firstName
-say p1 lastName
-say p1 yearsOld
+say p1 name
+say p1 surname
+say p1 age
 
 create p2 = Person(age=930, surname='Smith', name='Eve')
-say p2 firstName
-say p2 yearsOld
+say p2 name
+say p2 age
 
 create p3 = Person('Pedro', surname='Alvares', age=32)
-say p3 firstName
-say p3 lastName
+say p3 name
+say p3 surname
 
 create p4 = Person('Noah', 'Cabral', 950)
-say p4 firstName
-say p4 yearsOld
+say p4 name
+say p4 age

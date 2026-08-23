@@ -8,11 +8,11 @@
 (Jesus) (Jesus) Adam
 (Jesus) (Jesus) ❌ Error: Unknown class: 'LifeWithoutChrist'. Make sure the class has been declared or imported.
 (Jesus) (Jesus) (Jesus) (Jesus) (Jesus) (int) 900
-(Jesus) ❌ Error: Argument 'years' for the 'Human' constructor expects a 'number', but got 'text'.
+(Jesus) ❌ Error: Argument 'age' for the 'Human' constructor expects a 'number', but got 'text'.
 (Jesus) ❌ Error: Undefined variable: bad (scope: __jesus__)
 (Jesus) ❌ Error: Constructor 'Human' expects 1 parameter(s), but got 0.
 
 Missing parameter(s):
- - years: number
+ - age: number
 (Jesus) ❌ Error: Undefined variable: nogood (scope: __jesus__)
 (Jesus) 

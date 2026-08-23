@@ -1,7 +1,5 @@
 let there be Human:
-    create age: number = 0
-    __alpha__(number years):
-        age = years
+    __alpha__(public number age):
     amen
 amen
 
