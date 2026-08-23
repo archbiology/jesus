@@ -1,8 +1,9 @@
 #include "try_stmt_rule.hpp"
 #include "../jesus_grammar.hpp"
-#include "../../../ast/stmt/incomplete_block_stmt.hpp"
-#include "../../../ast/stmt/try_stmt.hpp"
-#include "../../../types/known_types.hpp"
+#include "ast/stmt/incomplete_block_stmt.hpp"
+#include "ast/stmt/try_stmt.hpp"
+#include "types/known_types.hpp"
+#include "lexer/keywords.hpp"
 
 std::unique_ptr<Stmt> TryStmtRule::parse(ParserContext &ctx)
 {
@@ -49,8 +50,19 @@ std::unique_ptr<Stmt> TryStmtRule::parse(ParserContext &ctx)
 
             if (ctx.match(TokenType::AS))
             {
-                if (!ctx.match(TokenType::IDENTIFIER))
+                if (ctx.check(TokenType::IDENTIFIER))
+                {
+                    ctx.advance();
+                }
+                else if (Keywords::isReservedWord(ctx.peek().lexeme))
+                {
+                    std::string varName = ctx.peek().lexeme;
+                    throw std::runtime_error(Keywords::reservedWordMsg(varName, "variable"));
+                }
+                else
+                {
                     throw std::runtime_error("Expected variable name after 'as' in 'repent' clause");
+                }
 
                 varName = ctx.previous().lexeme;
                 exceptionType = KnownTypes::resolve(exceptionTypeStr, "core"); // FIXME: not always 'core'. User define their own exceptions.

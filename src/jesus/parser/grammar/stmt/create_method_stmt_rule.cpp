@@ -7,6 +7,7 @@
 #include "../../../types/known_types.hpp"
 #include "../../../spirit/heart.hpp"
 #include "../../../understanding/doctrine/law/ungodly_naming.hpp"
+#include "lexer/keywords.hpp"
 #include "../jesus_grammar.hpp"
 #include <stdexcept>
 
@@ -40,8 +41,19 @@ std::unique_ptr<Stmt> CreateMethodStmtRule::parse(ParserContext &ctx)
         if (!ctx.match(TokenType::PURPOSE))
             return nullptr;
 
-        if (!ctx.match(TokenType::IDENTIFIER))
+        if (ctx.check(TokenType::IDENTIFIER))
+        {
+            ctx.advance();
+        }
+        else if (Keywords::isReservedWord(ctx.peek().lexeme))
+        {
+            std::string methodName = ctx.peek().lexeme;
+            throw std::runtime_error(Keywords::reservedWordMsg(methodName, "method"));
+        }
+        else
+        {
             throw std::runtime_error("Expected method name after 'purpose'");
+        }
 
         methodName = ctx.previous().lexeme;
     }
@@ -102,13 +114,35 @@ std::unique_ptr<Stmt> CreateMethodStmtRule::parse(ParserContext &ctx)
                 access = ctx.previous().lexeme;
             }
 
-            if (!ctx.match(TokenType::IDENTIFIER))
+            if (ctx.check(TokenType::IDENTIFIER))
+            {
+                ctx.advance();
+            }
+            else if (Keywords::isReservedWord(ctx.peek().lexeme))
+            {
+                std::string typeStr = ctx.peek().lexeme;
+                throw std::runtime_error(Keywords::reservedWordMsg(typeStr, "type"));
+            }
+            else
+            {
                 throw std::runtime_error("Expected parameter type in method declaration.");
+            }
 
             std::string typeStr = ctx.previous().lexeme;
 
-            if (!ctx.match(TokenType::IDENTIFIER))
+            if (ctx.check(TokenType::IDENTIFIER))
+            {
+                ctx.advance();
+            }
+            else if (Keywords::isReservedWord(ctx.peek().lexeme))
+            {
+                std::string paramName = ctx.peek().lexeme;
+                throw std::runtime_error(Keywords::reservedWordMsg(paramName, "parameter"));
+            }
+            else
+            {
                 throw std::runtime_error("Expected parameter name after type '" + typeStr + "'.");
+            }
 
             auto type = KnownTypes::resolve(typeStr, "core");
             if (!type)
@@ -117,6 +151,10 @@ std::unique_ptr<Stmt> CreateMethodStmtRule::parse(ParserContext &ctx)
             }
 
             std::string name = ctx.previous().lexeme;
+            if (Keywords::isReservedWord(name))
+            {
+                throw std::runtime_error(Keywords::reservedWordMsg(name, "parameter"));
+            }
 
             params->createVar(type, name, Value(1), isParam); // FIXME: Validate `type` and allow initial values
 
@@ -150,8 +188,19 @@ std::unique_ptr<Stmt> CreateMethodStmtRule::parse(ParserContext &ctx)
     }
     else if (ctx.match(TokenType::ARROW))
     {
-        if (!ctx.match(TokenType::IDENTIFIER))
+        if (ctx.check(TokenType::IDENTIFIER))
+        {
+            ctx.advance();
+        }
+        else if (Keywords::isReservedWord(ctx.peek().lexeme))
+        {
+            std::string typeName = ctx.peek().lexeme;
+            throw std::runtime_error(Keywords::reservedWordMsg(typeName, "type"));
+        }
+        else
+        {
             throw std::runtime_error("Expected return type after '->'.");
+        }
 
         std::string typeName = ctx.previous().lexeme;
         returnType = KnownTypes::resolve(typeName, "core");

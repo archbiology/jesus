@@ -1,7 +1,8 @@
 #include "update_var_stmt_rule.hpp"
-#include "../../../ast/stmt/update_var_stmt.hpp"
-#include "../../../ast/stmt/update_var_with_ask_stmt.hpp"
-#include "../../../types/known_types.hpp"
+#include "ast/stmt/update_var_stmt.hpp"
+#include "ast/stmt/update_var_with_ask_stmt.hpp"
+#include "types/known_types.hpp"
+#include "lexer/keywords.hpp"
 #include <stdexcept>
 
 std::unique_ptr<Stmt> UpdateVarStmtRule::parse(ParserContext &ctx)
@@ -9,9 +10,27 @@ std::unique_ptr<Stmt> UpdateVarStmtRule::parse(ParserContext &ctx)
     int start = ctx.snapshot();
 
     if (!ctx.match(TokenType::IDENTIFIER))
+    {
+        if (Keywords::isReservedWord(ctx.peek().lexeme))
+        {
+            std::string word = ctx.peek().lexeme;
+            int snap = ctx.snapshot();
+            ctx.advance();
+            if (ctx.match(TokenType::EQUAL))
+            {
+                throw std::runtime_error(Keywords::reservedWordMsg(word, "variable"));
+            }
+            ctx.restore(snap);
+        }
         return nullptr;
+    }
 
     const std::string varName = ctx.previous().lexeme;
+
+    if (Keywords::isReservedWord(varName))
+    {
+        throw std::runtime_error(Keywords::reservedWordMsg(varName, "variable"));
+    }
 
     if (!ctx.match(TokenType::EQUAL))
     {

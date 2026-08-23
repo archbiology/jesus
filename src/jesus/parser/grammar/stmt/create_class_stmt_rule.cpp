@@ -6,6 +6,7 @@
 #include "interpreter/runtime/method.hpp"
 #include "types/known_types.hpp"
 #include "understanding/doctrine/law/ungodly_naming.hpp"
+#include "lexer/keywords.hpp"
 #include <stdexcept>
 
 static bool addMethodToClass(
@@ -111,8 +112,19 @@ std::unique_ptr<Stmt> CreateClassStmtRule::parse(ParserContext &ctx)
 
     bool isUngodlyDeclared = ctx.match(TokenType::UNGODLY);
 
-    if (!ctx.match(TokenType::IDENTIFIER))
+    if (ctx.check(TokenType::IDENTIFIER))
+    {
+        ctx.advance();
+    }
+    else if (Keywords::isReservedWord(ctx.peek().lexeme))
+    {
+        std::string className = ctx.peek().lexeme;
+        throw std::runtime_error(Keywords::reservedWordMsg(className, "class"));
+    }
+    else
+    {
         throw std::runtime_error("Expected class name after '" + stmt + "'");
+    }
 
     std::string className = ctx.previous().lexeme;
 
@@ -136,8 +148,19 @@ std::unique_ptr<Stmt> CreateClassStmtRule::parse(ParserContext &ctx)
     std::shared_ptr<CreationType> baseClassType = KnownTypes::resolve("creation", "core");
     if (ctx.match(TokenType::FROM))
     {
-        if (!ctx.match(TokenType::IDENTIFIER))
+        if (ctx.check(TokenType::IDENTIFIER))
+        {
+            ctx.advance();
+        }
+        else if (Keywords::isReservedWord(ctx.peek().lexeme))
+        {
+            std::string parentName = ctx.peek().lexeme;
+            throw std::runtime_error(Keywords::reservedWordMsg(parentName, "class"));
+        }
+        else
+        {
             throw std::runtime_error("Expected base class name after 'from' in class declaration.");
+        }
 
         parentClassName = ctx.previous().lexeme;
 

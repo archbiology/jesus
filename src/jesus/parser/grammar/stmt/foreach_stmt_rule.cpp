@@ -9,6 +9,7 @@
 #include "parser/grammar/jesus_grammar.hpp"
 #include "types/known_types.hpp"
 #include "types/composite/list_type.hpp"
+#include "lexer/keywords.hpp"
 #include <stdexcept>
 
 class IncompleteBlockStmtSignal : public std::exception
@@ -28,15 +29,35 @@ std::unique_ptr<Stmt> ForEachStmtRule::parse(ParserContext &ctx)
     if (!ctx.match(TokenType::FOREACH))
         return nullptr;
 
-    if (!ctx.match(TokenType::IDENTIFIER))
+    if (ctx.check(TokenType::IDENTIFIER))
+    {
+        ctx.advance();
+    }
+    else if (Keywords::isReservedWord(ctx.peek().lexeme))
+    {
+        std::string varName = ctx.peek().lexeme;
+        throw std::runtime_error(Keywords::reservedWordMsg(varName, "variable"));
+    }
+    else
+    {
         throw std::runtime_error("Expected variable name after 'foreach'. ");
+    }
 
     std::vector<std::string> varNames;
     varNames.push_back(ctx.previous().lexeme);
 
     while (ctx.match(TokenType::COMMA))
     {
-        if (!ctx.match(TokenType::IDENTIFIER))
+        if (ctx.check(TokenType::IDENTIFIER))
+        {
+            ctx.advance();
+        }
+        else if (Keywords::isReservedWord(ctx.peek().lexeme))
+        {
+            std::string varName = ctx.peek().lexeme;
+            throw std::runtime_error(Keywords::reservedWordMsg(varName, "variable"));
+        }
+        else
         {
             throw std::runtime_error("Expected variable name after ','.");
         }

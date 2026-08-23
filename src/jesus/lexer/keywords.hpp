@@ -157,9 +157,22 @@ namespace Keywords
         {"json", TokenType::JSON},
     };
 
-    inline bool isReserved(const std::string &word)
+    inline bool isReservedWord(const std::string &word)
     {
         return RESERVED.find(word) != RESERVED.end();
+    }
+
+    /**
+     * Generates an error message for an attempt to use a reserved word as a name.
+     *
+     * @param word The reserved word being used.
+     * @param kind The kind of entity the user is trying to name:
+     *          "class", "variable", "method", or "type".
+     */
+    inline std::string reservedWordMsg(const std::string &word, const std::string &kind)
+    {
+        return "'" + word + "' is a reserved word and cannot be used as a " + kind + " name.\nTry '" + word + "_" +
+               kind + "' instead.";
     }
 
     inline TokenType recognize(const std::string &word)

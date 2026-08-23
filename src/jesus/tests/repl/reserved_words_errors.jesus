@@ -1,0 +1,16 @@
+create a = 1
+create if = 2
+let there be a:
+amen
+let there be while:
+amen
+let there be MyClass:
+    purpose a():
+    amen
+amen
+let there be AnotherClass:
+    purpose type():
+    amen
+amen
+type a: number > 0
+type is: number > 0
