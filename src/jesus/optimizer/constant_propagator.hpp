@@ -10,6 +10,7 @@
 #include "ast/expr/expr.hpp"
 #include "ast/expr/literal_expr.hpp"
 
+class CreateVarStmt;
 /**
  * @brief Replaces reads of immutable variables with their constant values.
  *
@@ -48,6 +49,31 @@
  */
 class ConstantPropagator
 {
+    using Expression = std::unique_ptr<Expr>;
+
+    using VariableName = std::string;
+    using InstanceVariableName = std::string;
+    using AttributeName = std::string;
+    using ScopeId = uint32_t;
+    using Slot = uint32_t;
+
+    using AttributeValues = std::unordered_map<AttributeName, Expression>;
+
+    using ConstVariables = std::unordered_map<VariableName, Expression>;
+    using ClassAttributeValues = std::unordered_map<ScopeId, std::unordered_map<Slot, Expression>>;
+    using ModifiedVariables = std::unordered_set<VariableName>;
+    using DeclaredVariables = std::unordered_set<VariableName>;
+    using ConstAttributes = std::unordered_map<InstanceVariableName, AttributeValues>;
+
+    struct State
+    {
+        ModifiedVariables modifiedVars;
+        DeclaredVariables declaredVars;
+        ConstVariables constVars;
+        ClassAttributeValues classAttributeValues;
+        ConstAttributes constAttributes;
+    };
+
   public:
     /**
      * @brief Executes constant propagation on an AST.
@@ -66,12 +92,9 @@ class ConstantPropagator
     void run(std::vector<std::unique_ptr<Stmt>> &program);
 
   private:
-    void collectModifiedVars(
-        const Stmt &statement,
-        std::unordered_set<std::string> &modifiedVars,
-        std::unordered_set<std::string> &declaredVars);
+    void collectModifiedVars(const Stmt &statement, State &state);
 
-    void collectModifiedVarsFromExpr(const Expr *expression, std::unordered_set<std::string> &modifiedVars);
+    void collectModifiedVarsFromExpr(const Expr *expression, State &state);
 
     /**
      * @brief Collects the declared initial values of every class attribute in
@@ -83,15 +106,9 @@ class ConstantPropagator
      * its declared initial value is its constant value, so the reference can be
      * replaced by that literal.
      */
-    void collectClassAttributeValues(
-        const std::vector<std::unique_ptr<Stmt>> &program,
-        std::unordered_map<uint32_t, std::unordered_map<uint32_t, std::unique_ptr<Expr>>> &classAttributeValues);
+    void collectClassAttributeValues(const std::vector<std::unique_ptr<Stmt>> &program, State &state);
 
-    void replaceConstWithLiteralInStatement(
-        Stmt &statement,
-        const std::unordered_map<std::string, std::unique_ptr<Expr>> &constVars,
-        const std::unordered_map<uint32_t, std::unordered_map<uint32_t, std::unique_ptr<Expr>>> &classAttributeValues,
-        const std::unordered_set<std::string> &modifiedVars);
+    void replaceConstWithLiteralInStatement(Stmt &statement, State &state);
 
     /**
      * @brief This is the heart of ConstantPropagator.
@@ -101,11 +118,9 @@ class ConstantPropagator
      * Otherwise,
      *    leave the expression unchanged.
      */
-    std::unique_ptr<Expr> replaceConstWithLiteralInExpression(
-        std::unique_ptr<Expr> expression,
-        const std::unordered_map<std::string, std::unique_ptr<Expr>> &constVars,
-        const std::unordered_map<uint32_t, std::unordered_map<uint32_t, std::unique_ptr<Expr>>> &classAttributeValues,
-        const std::unordered_set<std::string> &modifiedVars);
+    std::unique_ptr<Expr> replaceConstWithLiteralInExpression(std::unique_ptr<Expr> expression, State &state);
+
+    void propagateConstructorArguments(const CreateVarStmt *create, State &state);
 
     std::unique_ptr<Expr> cloneExpr(const Expr &expr);
     std::unique_ptr<Expr> createLiteral(const Value &value);

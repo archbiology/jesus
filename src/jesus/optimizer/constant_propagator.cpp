@@ -29,14 +29,15 @@
 #include "ast/expr/method_call_expr.hpp"
 #include "ast/expr/get_attr_expr.hpp"
 #include "ast/expr/index_expr.hpp"
+#include "ast/expr/create_instance_expr.hpp"
+#include "interpreter/runtime/method.hpp"
+#include "parser/helpers/member.hpp"
 
 #include "types/known_types.hpp"
 
 void ConstantPropagator::run(std::vector<std::unique_ptr<Stmt>> &program)
 {
-    std::unordered_set<std::string> modifiedVars;
-    std::unordered_set<std::string> declaredVars;
-    std::unordered_map<std::string, std::unique_ptr<Expr>> constVars;
+    State state;
 
     // ----------------------------------------------------------------
     // Pass 1
@@ -48,7 +49,7 @@ void ConstantPropagator::run(std::vector<std::unique_ptr<Stmt>> &program)
     for (const auto &stmt : program)
     {
         if (stmt)
-            collectModifiedVars(*stmt, modifiedVars, declaredVars);
+            collectModifiedVars(*stmt, state);
     }
 
     // ----------------------------------------------------------------
@@ -59,8 +60,7 @@ void ConstantPropagator::run(std::vector<std::unique_ptr<Stmt>> &program)
     // carries the scopeId and slot of that class scope. When the attribute
     // is never modified, its declared initial value is its constant value.
     // ----------------------------------------------------------------
-    std::unordered_map<uint32_t, std::unordered_map<uint32_t, std::unique_ptr<Expr>>> classAttributeValues;
-    collectClassAttributeValues(program, classAttributeValues);
+    collectClassAttributeValues(program, state);
 
     // -----------------------------------------------------------------------
     // Pass 2
@@ -73,29 +73,29 @@ void ConstantPropagator::run(std::vector<std::unique_ptr<Stmt>> &program)
         if (!stmt)
             continue;
 
-        replaceConstWithLiteralInStatement(*stmt, constVars, classAttributeValues, modifiedVars);
+        replaceConstWithLiteralInStatement(*stmt, state);
 
         if (auto create = dynamic_cast<CreateVarStmt *>(stmt.get()))
         {
             // --------------------------------------------------------
             // Only variables that are never modified can be propagated.
             // --------------------------------------------------------
-            bool isConstant = !modifiedVars.contains(create->name);
+            bool isConstant = !state.modifiedVars.contains(create->name);
             if (isConstant && create->value)
             {
                 auto cloned = cloneExpr(*create->value);
                 if (cloned)
                 {
-                    constVars[create->name] = std::move(cloned);
+                    state.constVars[create->name] = std::move(cloned);
                 }
+
+                propagateConstructorArguments(create, state);
             }
         }
     }
 }
 
-void ConstantPropagator::collectClassAttributeValues(
-    const std::vector<std::unique_ptr<Stmt>> &program,
-    std::unordered_map<uint32_t, std::unordered_map<uint32_t, std::unique_ptr<Expr>>> &classAttributeValues)
+void ConstantPropagator::collectClassAttributeValues(const std::vector<std::unique_ptr<Stmt>> &program, State &state)
 {
     for (const auto &stmt : program)
     {
@@ -126,7 +126,7 @@ void ConstantPropagator::collectClassAttributeValues(
             {
                 Value initialValue = attr->value->evaluate(nullptr);
                 auto literal = createLiteral(initialValue);
-                classAttributeValues[scopeId][attr->address.slot] = std::move(literal);
+                state.classAttributeValues[scopeId][attr->address.slot] = std::move(literal);
             }
             catch (...)
             {
@@ -135,45 +135,44 @@ void ConstantPropagator::collectClassAttributeValues(
     }
 }
 
-void ConstantPropagator::collectModifiedVars(
-    const Stmt &statement, std::unordered_set<std::string> &modifiedVars, std::unordered_set<std::string> &declaredVars)
+void ConstantPropagator::collectModifiedVars(const Stmt &statement, State &state)
 {
     if (auto create = dynamic_cast<const CreateVarStmt *>(&statement))
     {
-        if (declaredVars.find(create->name) != declaredVars.end())
+        if (state.declaredVars.find(create->name) != state.declaredVars.end())
         {
-            modifiedVars.insert(create->name);
+            state.modifiedVars.insert(create->name);
         }
         else
         {
-            declaredVars.insert(create->name);
+            state.declaredVars.insert(create->name);
         }
         return;
     }
 
     if (auto update = dynamic_cast<const UpdateVarStmt *>(&statement))
     {
-        modifiedVars.insert(update->name);
+        state.modifiedVars.insert(update->name);
         return;
     }
 
     if (auto assign = dynamic_cast<const AssignStmt *>(&statement))
     {
         if (assign->target)
-            collectModifiedVarsFromExpr(assign->target.get(), modifiedVars);
+            collectModifiedVarsFromExpr(assign->target.get(), state);
 
         return;
     }
 
     if (auto updateAsk = dynamic_cast<const UpdateVarWithAskStmt *>(&statement))
     {
-        modifiedVars.insert(updateAsk->var_name);
+        state.modifiedVars.insert(updateAsk->var_name);
         return;
     }
 
     if (auto createAsk = dynamic_cast<const CreateVarWithAskStmt *>(&statement))
     {
-        modifiedVars.insert(createAsk->var_name);
+        state.modifiedVars.insert(createAsk->var_name);
         return;
     }
 
@@ -181,11 +180,11 @@ void ConstantPropagator::collectModifiedVars(
     {
         for (const auto &child : ifStmt->thenBranch)
             if (child)
-                collectModifiedVars(*child, modifiedVars, declaredVars);
+                collectModifiedVars(*child, state);
 
         for (const auto &child : ifStmt->otherwiseBranch)
             if (child)
-                collectModifiedVars(*child, modifiedVars, declaredVars);
+                collectModifiedVars(*child, state);
 
         return;
     }
@@ -194,7 +193,7 @@ void ConstantPropagator::collectModifiedVars(
     {
         for (const auto &child : repeatWhile->body)
             if (child)
-                collectModifiedVars(*child, modifiedVars, declaredVars);
+                collectModifiedVars(*child, state);
 
         return;
     }
@@ -203,7 +202,7 @@ void ConstantPropagator::collectModifiedVars(
     {
         for (const auto &child : repeatTimes->body)
             if (child)
-                collectModifiedVars(*child, modifiedVars, declaredVars);
+                collectModifiedVars(*child, state);
 
         return;
     }
@@ -212,7 +211,7 @@ void ConstantPropagator::collectModifiedVars(
     {
         for (const auto &child : repeatForever->body)
             if (child)
-                collectModifiedVars(*child, modifiedVars, declaredVars);
+                collectModifiedVars(*child, state);
 
         return;
     }
@@ -220,11 +219,11 @@ void ConstantPropagator::collectModifiedVars(
     if (auto forEach = dynamic_cast<const ForEachStmt *>(&statement))
     {
         for (const auto &name : forEach->varNames)
-            modifiedVars.insert(name);
+            state.modifiedVars.insert(name);
 
         for (const auto &child : forEach->body)
             if (child)
-                collectModifiedVars(*child, modifiedVars, declaredVars);
+                collectModifiedVars(*child, state);
 
         return;
     }
@@ -233,7 +232,7 @@ void ConstantPropagator::collectModifiedVars(
     {
         for (const auto &child : createClass->body)
             if (child)
-                collectModifiedVars(*child, modifiedVars, declaredVars);
+                collectModifiedVars(*child, state);
 
         return;
     }
@@ -242,7 +241,7 @@ void ConstantPropagator::collectModifiedVars(
     {
         for (const auto &child : createMethod->body)
             if (child)
-                collectModifiedVars(*child, modifiedVars, declaredVars);
+                collectModifiedVars(*child, state);
 
         return;
     }
@@ -251,124 +250,111 @@ void ConstantPropagator::collectModifiedVars(
     {
         for (const auto &child : tryStmt->tryBody)
             if (child)
-                collectModifiedVars(*child, modifiedVars, declaredVars);
+                collectModifiedVars(*child, state);
 
         for (const auto &[type, body] : tryStmt->catchClauses)
             for (const auto &child : body)
                 if (child)
-                    collectModifiedVars(*child, modifiedVars, declaredVars);
+                    collectModifiedVars(*child, state);
 
         for (const auto &child : tryStmt->alwaysBody)
             if (child)
-                collectModifiedVars(*child, modifiedVars, declaredVars);
+                collectModifiedVars(*child, state);
 
         return;
     }
 }
 
-void ConstantPropagator::collectModifiedVarsFromExpr(
-    const Expr *expression, std::unordered_set<std::string> &modifiedVars)
+void ConstantPropagator::collectModifiedVarsFromExpr(const Expr *expression, State &state)
 {
     if (!expression)
         return;
 
     if (auto varExpr = dynamic_cast<const VariableExpr *>(expression))
     {
-        modifiedVars.insert(varExpr->name);
+        state.modifiedVars.insert(varExpr->name);
         return;
     }
 
     if (auto getAttr = dynamic_cast<const GetAttributeExpr *>(expression))
     {
-        collectModifiedVarsFromExpr(getAttr->object.get(), modifiedVars);
+        collectModifiedVarsFromExpr(getAttr->object.get(), state);
 
         // An attribute write (user.name = 'you') makes that attribute
         // non-constant everywhere, so it must never be propagated.
-        modifiedVars.insert(getAttr->attribute);
+        state.modifiedVars.insert(getAttr->attribute);
         return;
     }
 
     if (auto indexExpr = dynamic_cast<const IndexExpr *>(expression))
     {
-        collectModifiedVarsFromExpr(indexExpr->collection.get(), modifiedVars);
+        collectModifiedVarsFromExpr(indexExpr->collection.get(), state);
         return;
     }
 }
 
-void ConstantPropagator::replaceConstWithLiteralInStatement(
-    Stmt &statement,
-    const std::unordered_map<std::string, std::unique_ptr<Expr>> &constVars,
-    const std::unordered_map<uint32_t, std::unordered_map<uint32_t, std::unique_ptr<Expr>>> &classAttributeValues,
-    const std::unordered_set<std::string> &modifiedVars)
+void ConstantPropagator::replaceConstWithLiteralInStatement(Stmt &statement, State &state)
 {
     if (auto create = dynamic_cast<CreateVarStmt *>(&statement))
     {
-        create->value = replaceConstWithLiteralInExpression(
-            std::move(create->value), constVars, classAttributeValues, modifiedVars);
+        create->value = replaceConstWithLiteralInExpression(std::move(create->value), state);
         return;
     }
 
     if (auto update = dynamic_cast<UpdateVarStmt *>(&statement))
     {
-        update->value = replaceConstWithLiteralInExpression(
-            std::move(update->value), constVars, classAttributeValues, modifiedVars);
+        update->value = replaceConstWithLiteralInExpression(std::move(update->value), state);
         return;
     }
 
     if (auto assign = dynamic_cast<AssignStmt *>(&statement))
     {
-        assign->value = replaceConstWithLiteralInExpression(
-            std::move(assign->value), constVars, classAttributeValues, modifiedVars);
+        assign->value = replaceConstWithLiteralInExpression(std::move(assign->value), state);
         return;
     }
 
     if (auto printStmt = dynamic_cast<PrintStmt *>(&statement))
     {
-        printStmt->message = replaceConstWithLiteralInExpression(
-            std::move(printStmt->message), constVars, classAttributeValues, modifiedVars);
+        printStmt->message = replaceConstWithLiteralInExpression(std::move(printStmt->message), state);
         return;
     }
 
     if (auto returnStmt = dynamic_cast<ReturnStmt *>(&statement))
     {
-        returnStmt->value = replaceConstWithLiteralInExpression(
-            std::move(returnStmt->value), constVars, classAttributeValues, modifiedVars);
+        returnStmt->value = replaceConstWithLiteralInExpression(std::move(returnStmt->value), state);
         return;
     }
 
     if (auto ifStmt = dynamic_cast<IfStmt *>(&statement))
     {
-        ifStmt->condition = replaceConstWithLiteralInExpression(
-            std::move(ifStmt->condition), constVars, classAttributeValues, modifiedVars);
+        ifStmt->condition = replaceConstWithLiteralInExpression(std::move(ifStmt->condition), state);
         for (auto &child : ifStmt->thenBranch)
             if (child)
-                replaceConstWithLiteralInStatement(*child, constVars, classAttributeValues, modifiedVars);
+                replaceConstWithLiteralInStatement(*child, state);
 
         for (auto &child : ifStmt->otherwiseBranch)
             if (child)
-                replaceConstWithLiteralInStatement(*child, constVars, classAttributeValues, modifiedVars);
+                replaceConstWithLiteralInStatement(*child, state);
 
         return;
     }
 
     if (auto repeatWhile = dynamic_cast<RepeatWhileStmt *>(&statement))
     {
-        repeatWhile->condition = replaceConstWithLiteralInExpression(
-            std::move(repeatWhile->condition), constVars, classAttributeValues, modifiedVars);
+        repeatWhile->condition = replaceConstWithLiteralInExpression(std::move(repeatWhile->condition), state);
         for (auto &child : repeatWhile->body)
             if (child)
-                replaceConstWithLiteralInStatement(*child, constVars, classAttributeValues, modifiedVars);
+                replaceConstWithLiteralInStatement(*child, state);
 
         return;
     }
 
     if (auto repeatTimes = dynamic_cast<RepeatTimesStmt *>(&statement))
     {
-        repeatTimes->countExpr = replaceConstWithLiteralInExpression(
-            std::move(repeatTimes->countExpr), constVars, classAttributeValues, modifiedVars);
+        repeatTimes->countExpr = replaceConstWithLiteralInExpression(std::move(repeatTimes->countExpr), state);
         for (auto &child : repeatTimes->body)
             if (child)
-                replaceConstWithLiteralInStatement(*child, constVars, classAttributeValues, modifiedVars);
+                replaceConstWithLiteralInStatement(*child, state);
 
         return;
     }
@@ -377,17 +363,17 @@ void ConstantPropagator::replaceConstWithLiteralInStatement(
     {
         for (auto &child : repeatForever->body)
             if (child)
-                replaceConstWithLiteralInStatement(*child, constVars, classAttributeValues, modifiedVars);
+                replaceConstWithLiteralInStatement(*child, state);
+
         return;
     }
 
     if (auto forEach = dynamic_cast<ForEachStmt *>(&statement))
     {
-        forEach->iterable = replaceConstWithLiteralInExpression(
-            std::move(forEach->iterable), constVars, classAttributeValues, modifiedVars);
+        forEach->iterable = replaceConstWithLiteralInExpression(std::move(forEach->iterable), state);
         for (auto &child : forEach->body)
             if (child)
-                replaceConstWithLiteralInStatement(*child, constVars, classAttributeValues, modifiedVars);
+                replaceConstWithLiteralInStatement(*child, state);
 
         return;
     }
@@ -396,7 +382,7 @@ void ConstantPropagator::replaceConstWithLiteralInStatement(
     {
         for (auto &child : createClass->body)
             if (child)
-                replaceConstWithLiteralInStatement(*child, constVars, classAttributeValues, modifiedVars);
+                replaceConstWithLiteralInStatement(*child, state);
 
         return;
     }
@@ -405,7 +391,7 @@ void ConstantPropagator::replaceConstWithLiteralInStatement(
     {
         for (auto &child : createMethod->body)
             if (child)
-                replaceConstWithLiteralInStatement(*child, constVars, classAttributeValues, modifiedVars);
+                replaceConstWithLiteralInStatement(*child, state);
 
         return;
     }
@@ -414,33 +400,29 @@ void ConstantPropagator::replaceConstWithLiteralInStatement(
     {
         for (auto &child : tryStmt->tryBody)
             if (child)
-                replaceConstWithLiteralInStatement(*child, constVars, classAttributeValues, modifiedVars);
+                replaceConstWithLiteralInStatement(*child, state);
 
         for (auto &[type, body] : tryStmt->catchClauses)
             for (auto &child : body)
                 if (child)
-                    replaceConstWithLiteralInStatement(*child, constVars, classAttributeValues, modifiedVars);
+                    replaceConstWithLiteralInStatement(*child, state);
 
         for (auto &child : tryStmt->alwaysBody)
             if (child)
-                replaceConstWithLiteralInStatement(*child, constVars, classAttributeValues, modifiedVars);
+                replaceConstWithLiteralInStatement(*child, state);
 
         return;
     }
 
     if (auto resist = dynamic_cast<ResistStmt *>(&statement))
     {
-        resist->messageExpr = replaceConstWithLiteralInExpression(
-            std::move(resist->messageExpr), constVars, classAttributeValues, modifiedVars);
+        resist->messageExpr = replaceConstWithLiteralInExpression(std::move(resist->messageExpr), state);
         return;
     }
 }
 
 std::unique_ptr<Expr> ConstantPropagator::replaceConstWithLiteralInExpression(
-    std::unique_ptr<Expr> expression,
-    const std::unordered_map<std::string, std::unique_ptr<Expr>> &constVars,
-    const std::unordered_map<uint32_t, std::unordered_map<uint32_t, std::unique_ptr<Expr>>> &classAttributeValues,
-    const std::unordered_set<std::string> &modifiedVars)
+    std::unique_ptr<Expr> expression, State &state)
 {
     if (!expression)
         return nullptr;
@@ -462,8 +444,8 @@ std::unique_ptr<Expr> ConstantPropagator::replaceConstWithLiteralInExpression(
     // ---------------------------------------------------------------
     if (auto varExpr = dynamic_cast<VariableExpr *>(expression.get()))
     {
-        auto it = constVars.find(varExpr->name);
-        if (it != constVars.end() && it->second)
+        auto it = state.constVars.find(varExpr->name);
+        if (it != state.constVars.end() && it->second)
         {
             return cloneExpr(*it->second);
         }
@@ -475,13 +457,13 @@ std::unique_ptr<Expr> ConstantPropagator::replaceConstWithLiteralInExpression(
         // carries the scopeId and slot of the class attributes scope,
         // under which its declared initial value is recorded.
         // ----------------------------------------------------------
-        if (varExpr->name != "my" && varExpr->name != "self" && varExpr->name != "this" && varExpr->name != "I")
+        if (varExpr->name != SELF_VARIABLE)
         {
-            auto scopeIt = classAttributeValues.find(varExpr->address.scopeId);
-            if (scopeIt != classAttributeValues.end())
+            auto scopeIt = state.classAttributeValues.find(varExpr->address.scopeId);
+            if (scopeIt != state.classAttributeValues.end())
             {
                 auto slotIt = scopeIt->second.find(varExpr->address.slot);
-                if (slotIt != scopeIt->second.end() && !modifiedVars.contains(varExpr->name))
+                if (slotIt != scopeIt->second.end() && !state.modifiedVars.contains(varExpr->name))
                 {
                     return cloneExpr(*slotIt->second);
                 }
@@ -493,24 +475,20 @@ std::unique_ptr<Expr> ConstantPropagator::replaceConstWithLiteralInExpression(
 
     if (auto grouping = dynamic_cast<GroupingExpr *>(expression.get()))
     {
-        grouping->expression = replaceConstWithLiteralInExpression(
-            std::move(grouping->expression), constVars, classAttributeValues, modifiedVars);
+        grouping->expression = replaceConstWithLiteralInExpression(std::move(grouping->expression), state);
         return expression;
     }
 
     if (auto unary = dynamic_cast<UnaryExpr *>(expression.get()))
     {
-        unary->right =
-            replaceConstWithLiteralInExpression(std::move(unary->right), constVars, classAttributeValues, modifiedVars);
+        unary->right = replaceConstWithLiteralInExpression(std::move(unary->right), state);
         return expression;
     }
 
     if (auto binary = dynamic_cast<BinaryExpr *>(expression.get()))
     {
-        binary->left =
-            replaceConstWithLiteralInExpression(std::move(binary->left), constVars, classAttributeValues, modifiedVars);
-        binary->right = replaceConstWithLiteralInExpression(
-            std::move(binary->right), constVars, classAttributeValues, modifiedVars);
+        binary->left = replaceConstWithLiteralInExpression(std::move(binary->left), state);
+        binary->right = replaceConstWithLiteralInExpression(std::move(binary->right), state);
 
         return expression;
     }
@@ -518,7 +496,7 @@ std::unique_ptr<Expr> ConstantPropagator::replaceConstWithLiteralInExpression(
     if (auto listExpr = dynamic_cast<ListExpr *>(expression.get()))
     {
         for (auto &el : listExpr->elements)
-            el = replaceConstWithLiteralInExpression(std::move(el), constVars, classAttributeValues, modifiedVars);
+            el = replaceConstWithLiteralInExpression(std::move(el), state);
 
         return expression;
     }
@@ -527,8 +505,8 @@ std::unique_ptr<Expr> ConstantPropagator::replaceConstWithLiteralInExpression(
     {
         for (auto &[k, v] : dictExpr->entries)
         {
-            k = replaceConstWithLiteralInExpression(std::move(k), constVars, classAttributeValues, modifiedVars);
-            v = replaceConstWithLiteralInExpression(std::move(v), constVars, classAttributeValues, modifiedVars);
+            k = replaceConstWithLiteralInExpression(std::move(k), state);
+            v = replaceConstWithLiteralInExpression(std::move(v), state);
         }
 
         return expression;
@@ -536,12 +514,9 @@ std::unique_ptr<Expr> ConstantPropagator::replaceConstWithLiteralInExpression(
 
     if (auto condExpr = dynamic_cast<ConditionalExpr *>(expression.get()))
     {
-        condExpr->condition = replaceConstWithLiteralInExpression(
-            std::move(condExpr->condition), constVars, classAttributeValues, modifiedVars);
-        condExpr->thenBranch = replaceConstWithLiteralInExpression(
-            std::move(condExpr->thenBranch), constVars, classAttributeValues, modifiedVars);
-        condExpr->elseBranch = replaceConstWithLiteralInExpression(
-            std::move(condExpr->elseBranch), constVars, classAttributeValues, modifiedVars);
+        condExpr->condition = replaceConstWithLiteralInExpression(std::move(condExpr->condition), state);
+        condExpr->thenBranch = replaceConstWithLiteralInExpression(std::move(condExpr->thenBranch), state);
+        condExpr->elseBranch = replaceConstWithLiteralInExpression(std::move(condExpr->elseBranch), state);
 
         return expression;
     }
@@ -549,11 +524,10 @@ std::unique_ptr<Expr> ConstantPropagator::replaceConstWithLiteralInExpression(
     if (auto methodCall = dynamic_cast<MethodCallExpr *>(expression.get()))
     {
         if (methodCall->object)
-            methodCall->object = replaceConstWithLiteralInExpression(
-                std::move(methodCall->object), constVars, classAttributeValues, modifiedVars);
+            methodCall->object = replaceConstWithLiteralInExpression(std::move(methodCall->object), state);
 
         for (auto &arg : methodCall->args)
-            arg = replaceConstWithLiteralInExpression(std::move(arg), constVars, classAttributeValues, modifiedVars);
+            arg = replaceConstWithLiteralInExpression(std::move(arg), state);
 
         return expression;
     }
@@ -561,8 +535,62 @@ std::unique_ptr<Expr> ConstantPropagator::replaceConstWithLiteralInExpression(
     if (auto getAttr = dynamic_cast<GetAttributeExpr *>(expression.get()))
     {
         if (getAttr->object)
-            getAttr->object = replaceConstWithLiteralInExpression(
-                std::move(getAttr->object), constVars, classAttributeValues, modifiedVars);
+            getAttr->object = replaceConstWithLiteralInExpression(std::move(getAttr->object), state);
+
+        // ------------------------------------------
+        // Propagate the instance attribute if const.
+        //
+        // instance.attribute
+        // │         │
+        // │         └── getAttr->attribute
+        // └──────────── getAttr->object
+        // ------------------------------------------
+        if (auto instance = dynamic_cast<VariableExpr *>(getAttr->object.get()))
+        {
+            if (!state.modifiedVars.contains(instance->name) && !state.modifiedVars.contains(getAttr->attribute))
+            {
+                auto instIt = state.constAttributes.find(instance->name);
+                if (instIt != state.constAttributes.end())
+                {
+                    auto attribute = instIt->second.find(getAttr->attribute);
+                    if (attribute != instIt->second.end() && attribute->second)
+                    {
+                        return cloneExpr(*attribute->second);
+                    }
+                }
+            }
+        }
+
+        // -------------------------------------------------------------------
+        // Direct instance attribute propagation
+        // --------------------------------------
+        // If the object is a CreateInstanceExpr rather than a variable, match
+        // the requested attribute against the corresponding __alpha__ parameter
+        // and propagate its constructor argument when it is provided.
+        // --------------------------------------------------------------------
+        if (auto instance = dynamic_cast<CreateInstanceExpr *>(getAttr->object.get()))
+        {
+            if (instance->klass && instance->constructorArgs && !state.modifiedVars.contains(getAttr->attribute))
+            {
+                auto constructor = instance->klass->findMember("__alpha__", instance->klass);
+                if (constructor && constructor->isMethod() && constructor->method->params)
+                {
+                    auto paramNames = constructor->method->params->getParameterNames();
+                    if (auto arguments = dynamic_cast<ListExpr *>(instance->constructorArgs.get()))
+                    {
+                        for (size_t i = 0; i < paramNames.size() && i < arguments->elements.size(); ++i)
+                        {
+                            if (paramNames[i] == getAttr->attribute && arguments->elements[i])
+                            {
+                                auto cloned = cloneExpr(*arguments->elements[i]);
+                                if (cloned)
+                                    return cloned;
+                            }
+                        }
+                    }
+                }
+            }
+        }
 
         return expression;
     }
@@ -570,12 +598,10 @@ std::unique_ptr<Expr> ConstantPropagator::replaceConstWithLiteralInExpression(
     if (auto indexExpr = dynamic_cast<IndexExpr *>(expression.get()))
     {
         if (indexExpr->collection)
-            indexExpr->collection = replaceConstWithLiteralInExpression(
-                std::move(indexExpr->collection), constVars, classAttributeValues, modifiedVars);
+            indexExpr->collection = replaceConstWithLiteralInExpression(std::move(indexExpr->collection), state);
 
         if (indexExpr->index)
-            indexExpr->index = replaceConstWithLiteralInExpression(
-                std::move(indexExpr->index), constVars, classAttributeValues, modifiedVars);
+            indexExpr->index = replaceConstWithLiteralInExpression(std::move(indexExpr->index), state);
 
         return expression;
     }
@@ -583,7 +609,7 @@ std::unique_ptr<Expr> ConstantPropagator::replaceConstWithLiteralInExpression(
     if (auto fmtString = dynamic_cast<FormattedStringExpr *>(expression.get()))
     {
         for (auto &expr : fmtString->expressions)
-            expr = replaceConstWithLiteralInExpression(std::move(expr), constVars, classAttributeValues, modifiedVars);
+            expr = replaceConstWithLiteralInExpression(std::move(expr), state);
 
         return expression;
     }
@@ -611,6 +637,78 @@ std::unique_ptr<Expr> ConstantPropagator::cloneExpr(const Expr &expr)
     }
 
     return nullptr;
+}
+
+void ConstantPropagator::propagateConstructorArguments(const CreateVarStmt *create, State &state)
+{
+    // ----------------------------------------------------------------
+    // Propagate instance attributes
+    // ------------------------------
+    // When a variable is initialized with a class instance,
+    // propagate the constant values passed to its constructor.
+    //
+    // In this language, class attributes are declared through __alpha__
+    // parameters. For example:
+    //
+    //     let there be Person:
+    //         __alpha__(name: str): amen
+    //     amen
+    //
+    //     create john = Person("John")
+    //
+    // Here, the constructor argument "John" initializes the `name`
+    // attribute of the `john` instance:
+    //
+    //     john.name -> "John"
+    //
+    // later reads of that attribute can be propagated as literals:
+    //
+    //     say john.name
+    //
+    // can become:
+    //
+    //     say "John"
+    //
+    // This is safe when:
+    //
+    //   - the created value is actually an instance;
+    //   - the class has an __alpha__ constructor with parameters;
+    //   - the constructor arguments are represented as a positional list;
+    //   - the corresponding constructor parameter is never modified.
+    //
+    // The values are cloned before being stored because the original AST
+    // nodes remain owned by the instance creation expression.
+    // ----------------------------------------------------------------
+    if (auto instance = dynamic_cast<CreateInstanceExpr *>(create->value.get()))
+    {
+        if (instance->klass && instance->constructorArgs)
+        {
+            auto __alpha__ = instance->klass->findMember("__alpha__", instance->klass);
+            if (__alpha__ && __alpha__->isMethod() && __alpha__->method->params)
+            {
+                auto paramNames = __alpha__->method->params->getParameterNames();
+                if (auto arguments = dynamic_cast<ListExpr *>(instance->constructorArgs.get()))
+                {
+                    // ---------------------------------------------------------------
+                    // Match each positional constructor argument with its
+                    // corresponding __alpha__ parameter and propagate it if constant.
+                    // ---------------------------------------------------------------
+                    for (size_t i = 0; i < paramNames.size() && i < arguments->elements.size(); ++i)
+                    {
+                        const std::string &paramName = paramNames[i];
+                        if (!state.modifiedVars.contains(paramName) && arguments->elements[i])
+                        {
+                            auto clonedArg = cloneExpr(*arguments->elements[i]);
+                            if (clonedArg)
+                            {
+                                state.constAttributes[create->name][paramName] = std::move(clonedArg);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
 }
 
 std::unique_ptr<Expr> ConstantPropagator::createLiteral(const Value &value)

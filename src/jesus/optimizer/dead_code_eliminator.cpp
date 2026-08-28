@@ -36,6 +36,8 @@
 #include "ast/expr/parity_check_expr.hpp"
 
 #include "types/known_types.hpp"
+#include "interpreter/runtime/method.hpp"
+#include "parser/helpers/member.hpp"
 
 void DeadCodeEliminator::run(std::vector<std::unique_ptr<Stmt>> &program)
 {
@@ -696,10 +698,23 @@ bool DeadCodeEliminator::hasNoSideEffects(const Expr *expression)
         return hasNoSideEffects(parity->target.get());
     }
 
-    if (auto createInst = dynamic_cast<const CreateInstanceExpr *>(expression))
+    if (auto instance = dynamic_cast<const CreateInstanceExpr *>(expression))
     {
-        if (createInst->constructorArgs)
-            return hasNoSideEffects(createInst->constructorArgs.get());
+        if (instance->constructorArgs && !hasNoSideEffects(instance->constructorArgs.get()))
+            return false;
+
+        if (instance->klass)
+        {
+            auto __alpha__ = instance->klass->findMember("__alpha__", instance->klass);
+            if (__alpha__ && __alpha__->isMethod() && __alpha__->method)
+            {
+                if (auto constructor = dynamic_cast<Method *>(__alpha__->method.get()))
+                {
+                    if (!constructor->body.empty())
+                        return false;
+                }
+            }
+        }
 
         return true;
     }
