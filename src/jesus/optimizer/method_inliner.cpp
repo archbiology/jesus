@@ -64,16 +64,6 @@ void MethodInliner::collectMethodsFromStmt(
         if (createClass->userClass)
         {
             classAttributes = createClass->userClass->class_attributes.get();
-
-            // --------------------------------------------------------------
-            // Methods of a class with constructor-promoted attributes may
-            // access permission-governed members (private/protected).
-            // They must execute inside their owning class so that visibility
-            // is enforced correctly, so they are not inlined.
-            // FIXME: public attributes can be inlined
-            // --------------------------------------------------------------
-            if (!createClass->userClass->attributeAccess.empty())
-                canInline = false;
         }
 
         for (const auto &stmt : createClass->body)
