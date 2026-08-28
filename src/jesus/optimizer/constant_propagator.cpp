@@ -29,6 +29,9 @@
 #include "ast/expr/method_call_expr.hpp"
 #include "ast/expr/get_attr_expr.hpp"
 #include "ast/expr/index_expr.hpp"
+#include "ast/expr/create_instance_expr.hpp"
+#include "interpreter/runtime/method.hpp"
+#include "parser/helpers/member.hpp"
 
 #include "types/known_types.hpp"
 
@@ -85,6 +88,8 @@ void ConstantPropagator::run(std::vector<std::unique_ptr<Stmt>> &program)
                 {
                     state.constVars[create->name] = std::move(cloned);
                 }
+
+                propagateConstructorArguments(create, state);
             }
         }
     }
@@ -532,6 +537,61 @@ std::unique_ptr<Expr> ConstantPropagator::replaceConstWithLiteralInExpression(
         if (getAttr->object)
             getAttr->object = replaceConstWithLiteralInExpression(std::move(getAttr->object), state);
 
+        // ------------------------------------------
+        // Propagate the instance attribute if const.
+        //
+        // instance.attribute
+        // │         │
+        // │         └── getAttr->attribute
+        // └──────────── getAttr->object
+        // ------------------------------------------
+        if (auto instance = dynamic_cast<VariableExpr *>(getAttr->object.get()))
+        {
+            if (!state.modifiedVars.contains(instance->name) && !state.modifiedVars.contains(getAttr->attribute))
+            {
+                auto instIt = state.constAttributes.find(instance->name);
+                if (instIt != state.constAttributes.end())
+                {
+                    auto attribute = instIt->second.find(getAttr->attribute);
+                    if (attribute != instIt->second.end() && attribute->second)
+                    {
+                        return cloneExpr(*attribute->second);
+                    }
+                }
+            }
+        }
+
+        // -------------------------------------------------------------------
+        // Direct instance attribute propagation
+        // --------------------------------------
+        // If the object is a CreateInstanceExpr rather than a variable, match
+        // the requested attribute against the corresponding __alpha__ parameter
+        // and propagate its constructor argument when it is provided.
+        // --------------------------------------------------------------------
+        if (auto instance = dynamic_cast<CreateInstanceExpr *>(getAttr->object.get()))
+        {
+            if (instance->klass && instance->constructorArgs && !state.modifiedVars.contains(getAttr->attribute))
+            {
+                auto constructor = instance->klass->findMember("__alpha__", instance->klass);
+                if (constructor && constructor->isMethod() && constructor->method->params)
+                {
+                    auto paramNames = constructor->method->params->getParameterNames();
+                    if (auto arguments = dynamic_cast<ListExpr *>(instance->constructorArgs.get()))
+                    {
+                        for (size_t i = 0; i < paramNames.size() && i < arguments->elements.size(); ++i)
+                        {
+                            if (paramNames[i] == getAttr->attribute && arguments->elements[i])
+                            {
+                                auto cloned = cloneExpr(*arguments->elements[i]);
+                                if (cloned)
+                                    return cloned;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
         return expression;
     }
 
@@ -577,6 +637,78 @@ std::unique_ptr<Expr> ConstantPropagator::cloneExpr(const Expr &expr)
     }
 
     return nullptr;
+}
+
+void ConstantPropagator::propagateConstructorArguments(const CreateVarStmt *create, State &state)
+{
+    // ----------------------------------------------------------------
+    // Propagate instance attributes
+    // ------------------------------
+    // When a variable is initialized with a class instance,
+    // propagate the constant values passed to its constructor.
+    //
+    // In this language, class attributes are declared through __alpha__
+    // parameters. For example:
+    //
+    //     let there be Person:
+    //         __alpha__(name: str): amen
+    //     amen
+    //
+    //     create john = Person("John")
+    //
+    // Here, the constructor argument "John" initializes the `name`
+    // attribute of the `john` instance:
+    //
+    //     john.name -> "John"
+    //
+    // later reads of that attribute can be propagated as literals:
+    //
+    //     say john.name
+    //
+    // can become:
+    //
+    //     say "John"
+    //
+    // This is safe when:
+    //
+    //   - the created value is actually an instance;
+    //   - the class has an __alpha__ constructor with parameters;
+    //   - the constructor arguments are represented as a positional list;
+    //   - the corresponding constructor parameter is never modified.
+    //
+    // The values are cloned before being stored because the original AST
+    // nodes remain owned by the instance creation expression.
+    // ----------------------------------------------------------------
+    if (auto instance = dynamic_cast<CreateInstanceExpr *>(create->value.get()))
+    {
+        if (instance->klass && instance->constructorArgs)
+        {
+            auto __alpha__ = instance->klass->findMember("__alpha__", instance->klass);
+            if (__alpha__ && __alpha__->isMethod() && __alpha__->method->params)
+            {
+                auto paramNames = __alpha__->method->params->getParameterNames();
+                if (auto arguments = dynamic_cast<ListExpr *>(instance->constructorArgs.get()))
+                {
+                    // ---------------------------------------------------------------
+                    // Match each positional constructor argument with its
+                    // corresponding __alpha__ parameter and propagate it if constant.
+                    // ---------------------------------------------------------------
+                    for (size_t i = 0; i < paramNames.size() && i < arguments->elements.size(); ++i)
+                    {
+                        const std::string &paramName = paramNames[i];
+                        if (!state.modifiedVars.contains(paramName) && arguments->elements[i])
+                        {
+                            auto clonedArg = cloneExpr(*arguments->elements[i]);
+                            if (clonedArg)
+                            {
+                                state.constAttributes[create->name][paramName] = std::move(clonedArg);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
 }
 
 std::unique_ptr<Expr> ConstantPropagator::createLiteral(const Value &value)

@@ -63,6 +63,7 @@ class ConstantPropagator
     using ClassAttributeValues = std::unordered_map<ScopeId, std::unordered_map<Slot, Expression>>;
     using ModifiedVariables = std::unordered_set<VariableName>;
     using DeclaredVariables = std::unordered_set<VariableName>;
+    using ConstAttributes = std::unordered_map<InstanceVariableName, AttributeValues>;
 
     struct State
     {
@@ -70,6 +71,7 @@ class ConstantPropagator
         DeclaredVariables declaredVars;
         ConstVariables constVars;
         ClassAttributeValues classAttributeValues;
+        ConstAttributes constAttributes;
     };
 
   public:
