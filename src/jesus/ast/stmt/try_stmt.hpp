@@ -14,14 +14,14 @@ REGISTER_FOR_UML(
 class TryStmt : public Stmt
 {
 public:
-    std::vector<std::shared_ptr<Stmt>> tryBody;
-    std::vector<std::pair<std::string, std::vector<std::shared_ptr<Stmt>>>> catchClauses;
-    std::vector<std::shared_ptr<Stmt>> alwaysBody;
+    std::vector<std::unique_ptr<Stmt>> tryBody;
+    std::vector<std::pair<std::string, std::vector<std::unique_ptr<Stmt>>>> catchClauses;
+    std::vector<std::unique_ptr<Stmt>> alwaysBody;
 
 public:
-    TryStmt(std::vector<std::shared_ptr<Stmt>> tryBody,
-            std::vector<std::pair<std::string, std::vector<std::shared_ptr<Stmt>>>> catches,
-            std::vector<std::shared_ptr<Stmt>> alwaysBody)
+    TryStmt(std::vector<std::unique_ptr<Stmt>> tryBody,
+            std::vector<std::pair<std::string, std::vector<std::unique_ptr<Stmt>>>> catches,
+            std::vector<std::unique_ptr<Stmt>> alwaysBody)
         : tryBody(std::move(tryBody)),
           catchClauses(std::move(catches)),
           alwaysBody(std::move(alwaysBody)) {}

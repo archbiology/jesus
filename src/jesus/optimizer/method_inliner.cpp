@@ -94,16 +94,6 @@ void MethodInliner::optimizeBlock(
     }
 }
 
-void MethodInliner::optimizeBlock(
-    std::vector<std::shared_ptr<Stmt>> &stmts, const std::unordered_map<std::string, InlinableMethod> &knownMethods)
-{
-    for (auto &stmt : stmts)
-    {
-        if (stmt)
-            optimizeStatement(*stmt, knownMethods);
-    }
-}
-
 void MethodInliner::optimizeStatement(
     Stmt &statement, const std::unordered_map<std::string, InlinableMethod> &knownMethods)
 {
@@ -349,7 +339,7 @@ std::unique_ptr<Expr> MethodInliner::inlineMethodCall(
     for (auto &arg : methodCall->args)
         arg = optimizeExpression(std::move(arg), knownMethods);
 
-    const std::vector<std::shared_ptr<Stmt>> *methodBody = nullptr;
+    const std::vector<std::unique_ptr<Stmt>> *methodBody = nullptr;
     const Heart *methodParams = nullptr;
     std::string methodName;
 
@@ -359,7 +349,7 @@ std::unique_ptr<Expr> MethodInliner::inlineMethodCall(
     // TODO: Inline also NativeMethod
     if (auto method = dynamic_cast<Method *>(methodCall->method.get()))
     {
-        methodBody = &method->body;
+        methodBody = &method->definition->body;
         methodParams = method->params.get();
     }
 

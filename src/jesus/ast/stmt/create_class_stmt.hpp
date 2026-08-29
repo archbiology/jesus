@@ -31,16 +31,16 @@ public:
     std::string name;
     std::string module_name;
     const std::shared_ptr<CreationType> parent_class;
-    std::vector<std::shared_ptr<Stmt>> body;
+    std::vector<std::unique_ptr<Stmt>> body;
     const std::shared_ptr<CreationType> userClass;
 
     CreateClassStmt(const std::string &name, const std::string &module_name,
                     const std::shared_ptr<CreationType> &parent_class,
-                    const std::vector<std::shared_ptr<Stmt>> &body,
+                    std::vector<std::unique_ptr<Stmt>> body,
                     const std::shared_ptr<CreationType> userClass)
         : name(name), module_name(module_name),
           parent_class(parent_class),
-          body(body),
+          body(std::move(body)),
           userClass(std::move(userClass)) {}
 
     void accept(StmtVisitor &visitor) const override;

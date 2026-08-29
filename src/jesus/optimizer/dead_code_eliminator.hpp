@@ -148,7 +148,6 @@ class DeadCodeEliminator
      * Statements following a control-flow terminator are discarded.
      */
     void optimizeBlock(std::vector<std::unique_ptr<Stmt>> &stmts, const std::unordered_set<std::string> &usedVars, const std::unordered_set<std::string> &usedClasses);
-    void optimizeBlock(std::vector<std::shared_ptr<Stmt>> &stmts, const std::unordered_set<std::string> &usedVars, const std::unordered_set<std::string> &usedClasses);
 
     /**
      * @brief Optimizes a single statement.
@@ -158,7 +157,4 @@ class DeadCodeEliminator
      */
     std::vector<std::unique_ptr<Stmt>> optimizeStatement(
             std::unique_ptr<Stmt> statement, const std::unordered_set<std::string> &usedVars, const std::unordered_set<std::string> &usedClasses);
-
-    std::vector<std::shared_ptr<Stmt>> optimizeStatement(
-            std::shared_ptr<Stmt> statement, const std::unordered_set<std::string> &usedVars, const std::unordered_set<std::string> &usedClasses);
 };

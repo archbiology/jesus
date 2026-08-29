@@ -6,6 +6,7 @@
 #include "ast/stmt/return_stmt.hpp"
 #include "ast/expr/literal_expr.hpp"
 #include "ast/expr/variable_expr.hpp"
+#include "ast/stmt/create_method_stmt.hpp"
 #include "interpreter/runtime/instance.hpp"
 #include "interpreter/runtime/method.hpp"
 
@@ -216,9 +217,9 @@ void VM::run(const Chunk &chunk)
             auto method = chunk.literals[ip->operand].asMethod();
 
             auto userMethod = std::dynamic_pointer_cast<Method>(method);
-            if (userMethod && userMethod->body.size() == 1)
+            if (userMethod && userMethod->definition->body.size() == 1)
             {
-                if (auto returnStmt = dynamic_cast<const ReturnStmt *>(userMethod->body[0].get()))
+                if (auto returnStmt = dynamic_cast<const ReturnStmt *>(userMethod->definition->body[0].get()))
                 {
                     if (auto literalExpr = dynamic_cast<const LiteralExpr *>(returnStmt->value.get()))
                     {
