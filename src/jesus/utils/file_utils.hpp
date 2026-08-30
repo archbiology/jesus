@@ -113,6 +113,40 @@ namespace utils
         }
     }
 
+    inline size_t findCRLF(const std::string &content)
+    {
+        for (size_t i = 0; i + 1 < content.size(); ++i)
+        {
+            if (content[i] == '\r' && content[i + 1] == '\n')
+            {
+                size_t line = 1;
+                for (size_t j = 0; j < i; ++j)
+                    if (content[j] == '\n')
+                        ++line;
+
+                return line;
+            }
+        }
+        return 0;
+    }
+
+    inline void validateNoCRLF(const std::string &content, const std::string &path)
+    {
+        size_t errorLine = findCRLF(content);
+        if (errorLine > 0)
+        {
+            throw std::runtime_error(
+                "Line ending error: '" + path + "' contains CRLF (\\r\\n) line endings" +
+                " (first CRLF found on line " + std::to_string(errorLine) +
+                ").\n\n"
+                "Jesus only supports LF (\\n) line endings.\n"
+                "CRLF line endings (\\r\\n) are rejected to keep diffs clean and avoid\n"
+                "silent whitespace changes that clutter version control history.\n\n"
+                "Tip: configure your editor to use 'LF (Unix)' line endings and re-save the file.\n"
+                "In VS Code, click the CRLF/LF indicator in the bottom-right status bar to switch.");
+        }
+    }
+
     inline bool isFile(const std::string &path)
     {
         try
@@ -144,6 +178,7 @@ namespace utils
         }
 
         validateUtf8(content, path);
+        validateNoCRLF(content, path);
 
         return content;
     }
