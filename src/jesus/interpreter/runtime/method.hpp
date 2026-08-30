@@ -4,7 +4,6 @@
 #include <vector>
 #include <utility> // for std::pair
 #include <memory>
-#include "../../ast/stmt/stmt.hpp"
 #include "../../spirit/return_signal.hpp"
 #include "../../spirit/heart.hpp"
 #include "../../types/creation_type.hpp"
@@ -12,6 +11,7 @@
 
 class Interpreter; // Forward declaration
 class ParserContext;
+class CreateMethodStmt;
 
 REGISTER_FOR_UML(
     IMethod,
@@ -67,7 +67,14 @@ protected:
 class Method : public IMethod
 {
   public:
-    const std::vector<std::shared_ptr<Stmt>> body;
+    /**
+     * @brief The AST method declaration.
+     *
+     * The AST must remain the single source of truth for the method body.
+     * The runtime method only points to the AST so that optimization passes
+     * can safely optimize the method body in a single place.
+     */
+    const CreateMethodStmt *definition;
 
     /**
      * @brief Constructor parameters defined as
@@ -79,10 +86,10 @@ class Method : public IMethod
     Method(
         std::string name,
         std::shared_ptr<Heart> params,
-        std::vector<std::shared_ptr<Stmt>> body,
+        CreateMethodStmt *definition,
         std::shared_ptr<CreationType> returnType,
         std::vector<std::pair<std::string, std::string>> attributeNames = {})
-        : IMethod(std::move(name), std::move(params), std::move(returnType)), body(std::move(body)),
+        : IMethod(std::move(name), std::move(params), std::move(returnType)), definition(definition),
           attributeNames(std::move(attributeNames))
     {
     }

@@ -11,7 +11,7 @@
 
 static bool addMethodToClass(
     std::shared_ptr<CreationType> &userClass,
-    const CreateMethodStmt *methodStmt,
+    CreateMethodStmt *methodStmt,
     bool &hasConstructor,
     bool &hasDestructor)
 {
@@ -33,7 +33,7 @@ static bool addMethodToClass(
             std::make_shared<Method>(
                 methodStmt->name,
                 methodStmt->params,
-                methodStmt->body,
+                methodStmt,
                 methodStmt->returnType,
                 methodStmt->attributeNames));
 
@@ -54,20 +54,20 @@ static bool addMethodToClass(
         // -------------------------------------------------------------
         userClass->addMethod(
             methodStmt->name,
-            std::make_shared<Method>(methodStmt->name, methodStmt->params, methodStmt->body, methodStmt->returnType));
+            std::make_shared<Method>(methodStmt->name, methodStmt->params, methodStmt, methodStmt->returnType));
 
         return true;
     }
 
     userClass->addMethod(
         methodStmt->name,
-        std::make_shared<Method>(methodStmt->name, methodStmt->params, methodStmt->body, methodStmt->returnType));
+        std::make_shared<Method>(methodStmt->name, methodStmt->params, methodStmt, methodStmt->returnType));
 
     return false;
 }
 
 static std::unordered_map<std::string, std::string> collectAttributeAccessModifiers(
-    const std::vector<std::shared_ptr<Stmt>> &body)
+    const std::vector<std::unique_ptr<Stmt>> &body)
 {
     // ---------------------------------------------------------------
     // Extract public/protected/private modifiers from class attributes.
@@ -175,7 +175,7 @@ std::unique_ptr<Stmt> CreateClassStmtRule::parse(ParserContext &ctx)
     // The class may not have body
     // ---------------------------
     auto attributes = std::make_shared<Heart>("class:" + className, baseClassType->class_attributes);
-    std::vector<std::shared_ptr<Stmt>> body;
+    std::vector<std::unique_ptr<Stmt>> body;
     std::string module_name = ctx.moduleName;
 
     // -------------------------------------------------------------------------
@@ -198,7 +198,7 @@ std::unique_ptr<Stmt> CreateClassStmtRule::parse(ParserContext &ctx)
         // Allowing 'empty-bodied' classes without ': amen'.
         // Just: let there be Light
         userClass->attributeAccess = collectAttributeAccessModifiers(body);
-        return std::make_unique<CreateClassStmt>(className, module_name, baseClassType, body, std::move(userClass));
+return std::make_unique<CreateClassStmt>(className, module_name, baseClassType, std::move(body), std::move(userClass));
     }
 
     if (!ctx.match(TokenType::COLON))
@@ -289,5 +289,5 @@ std::unique_ptr<Stmt> CreateClassStmtRule::parse(ParserContext &ctx)
         throw std::runtime_error("Expected 'amen' after ':' in '" + stmt + "' to close class body.");
 
     userClass->attributeAccess = collectAttributeAccessModifiers(body);
-    return std::make_unique<CreateClassStmt>(className, module_name, baseClassType, body, std::move(userClass));
+    return std::make_unique<CreateClassStmt>(className, module_name, baseClassType, std::move(body), std::move(userClass));
 }

@@ -8,5 +8,5 @@ class TryStmtRule
 public:
     std::unique_ptr<Stmt> parse(ParserContext &ctx);
 
-    std::shared_ptr<Stmt> parseStmt(ParserContext &ctx, std::string &blockName);
+    std::unique_ptr<Stmt> parseStmt(ParserContext &ctx, std::string &blockName);
 };

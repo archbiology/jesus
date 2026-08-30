@@ -64,10 +64,6 @@ class MethodInliner
         std::vector<std::unique_ptr<Stmt>> &stmts,
         const std::unordered_map<std::string, InlinableMethod> &knownMethods);
 
-    void optimizeBlock(
-        std::vector<std::shared_ptr<Stmt>> &stmts,
-        const std::unordered_map<std::string, InlinableMethod> &knownMethods);
-
     void optimizeStatement(
         Stmt &statement, const std::unordered_map<std::string, InlinableMethod> &knownMethods);
 

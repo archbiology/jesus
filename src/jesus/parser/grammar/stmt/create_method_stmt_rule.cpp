@@ -216,7 +216,7 @@ std::unique_ptr<Stmt> CreateMethodStmtRule::parse(ParserContext &ctx)
     if (!ctx.match(TokenType::COLON))
         throw std::runtime_error("Expected ':' after method signature.");
 
-    std::vector<std::shared_ptr<Stmt>> body;
+    std::vector<std::unique_ptr<Stmt>> body;
 
     ctx.consumeAllNewLines();
 
@@ -253,7 +253,7 @@ std::unique_ptr<Stmt> CreateMethodStmtRule::parse(ParserContext &ctx)
                 returnExpr = grammar::Expression->parse(ctx);
             }
 
-            body.push_back(std::make_shared<ReturnStmt>(std::move(returnExpr)));
+            body.push_back(std::make_unique<ReturnStmt>(std::move(returnExpr)));
         }
         else
         {
@@ -330,5 +330,5 @@ std::unique_ptr<Stmt> CreateMethodStmtRule::parse(ParserContext &ctx)
     ctx.popScope(); // </🟢️>
 
     return std::make_unique<CreateMethodStmt>(
-        methodName, std::move(params), returnType, body, isConstructor, isDestructor, attributeNames);
+        methodName, std::move(params), returnType, std::move(body), isConstructor, isDestructor, attributeNames);
 }

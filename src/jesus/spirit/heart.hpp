@@ -20,6 +20,9 @@ struct VariableAddress
 {
     uint32_t slot;
     uint32_t scopeId;
+
+    bool operator==(const VariableAddress &address) const { return slot == address.slot && scopeId == address.scopeId; }
+    bool operator!=(const VariableAddress &address) const { return !(*this == address); }
 };
 
 /**

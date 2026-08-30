@@ -1,5 +1,6 @@
 
 #include "method.hpp"
+#include "ast/stmt/create_method_stmt.hpp"
 #include "../interpreter.hpp"
 
 Value Method::call(Interpreter &interpreter, Value &object, const std::vector<Value> &args)
@@ -32,7 +33,7 @@ Value Method::call(Interpreter &interpreter, Value &object, const std::vector<Va
     Value returnValue = Value::formless(); // default return
 
     try {
-        for (auto stmt : body)
+        for (const auto& stmt : definition->body)
             interpreter.execute(stmt);
     } catch (const ReturnSignal &ret) {
         returnValue = ret.value;

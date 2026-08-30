@@ -1,0 +1,9 @@
+create sum: number = 0
+
+repeat while sum < 10000000:
+    sum = sum + 6
+amen
+
+say sum
+
+ast

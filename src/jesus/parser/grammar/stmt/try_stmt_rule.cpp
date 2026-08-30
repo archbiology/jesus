@@ -13,9 +13,9 @@ std::unique_ptr<Stmt> TryStmtRule::parse(ParserContext &ctx)
     if (!ctx.match(TokenType::COLON))
         throw std::runtime_error("Expected ':' after 'try' declaration.");
 
-    std::vector<std::shared_ptr<Stmt>> tryBody;
-    std::vector<std::pair<std::string, std::vector<std::shared_ptr<Stmt>>>> catchClauses;
-    std::vector<std::shared_ptr<Stmt>> alwaysBody;
+    std::vector<std::unique_ptr<Stmt>> tryBody;
+    std::vector<std::pair<std::string, std::vector<std::unique_ptr<Stmt>>>> catchClauses;
+    std::vector<std::unique_ptr<Stmt>> alwaysBody;
 
     ctx.consumeAllNewLines();
 
@@ -74,7 +74,7 @@ std::unique_ptr<Stmt> TryStmtRule::parse(ParserContext &ctx)
             throw std::runtime_error("Expected ':' after 'repent' declaration");
 
         ctx.consumeAllNewLines();
-        std::vector<std::shared_ptr<Stmt>> catchBody;
+        std::vector<std::unique_ptr<Stmt>> catchBody;
         blockName = exceptionType->name;
 
         while (!ctx.checkAny({TokenType::REPENT, TokenType::ALWAYS, TokenType::AMEN}) && !ctx.isAtEnd())
@@ -83,7 +83,7 @@ std::unique_ptr<Stmt> TryStmtRule::parse(ParserContext &ctx)
             ctx.consumeAllNewLines();
         }
         ctx.popScope(); // </🟢️>
-        catchClauses.emplace_back(exceptionTypeStr, catchBody);
+        catchClauses.emplace_back(exceptionTypeStr, std::move(catchBody));
     }
 
     // ----------------------
@@ -114,10 +114,10 @@ std::unique_ptr<Stmt> TryStmtRule::parse(ParserContext &ctx)
     if (!ctx.match(TokenType::AMEN))
         throw std::runtime_error("Expected 'amen' to close 'try' block");
 
-    return std::make_unique<TryStmt>(tryBody, catchClauses, alwaysBody);
+    return std::make_unique<TryStmt>(std::move(tryBody), std::move(catchClauses), std::move(alwaysBody));
 }
 
-std::shared_ptr<Stmt> TryStmtRule::parseStmt(ParserContext &ctx, std::string &blockName)
+std::unique_ptr<Stmt> TryStmtRule::parseStmt(ParserContext &ctx, std::string &blockName)
 {
     ctx.consumeAllNewLines();
 
