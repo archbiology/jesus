@@ -1,0 +1,7 @@
+Encoding error: 'rejects_non_utf8_encoding.jesus' is not a valid UTF-8 file (first invalid byte found on line 1).
+
+Jesus only supports UTF-8 source files.
+Other encodings (e.g. ISO 8859-1 / Windows-1252) are rejected to avoid encoding ambiguity,
+wrong characters and confusing editor/Git behavior.
+
+Tip: re-save the file as UTF-8 in your editor and try again.

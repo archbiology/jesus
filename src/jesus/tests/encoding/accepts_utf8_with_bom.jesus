@@ -1,0 +1,3 @@
+﻿create greeting: text = 'Olá, mundo!'
+say greeting
+say 'Café ✓'
