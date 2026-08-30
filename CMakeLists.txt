@@ -208,6 +208,7 @@ set(JESUS_CPP_FILES
     src/jesus/optimizer/dead_code_eliminator.cpp
     src/jesus/optimizer/method_inliner.cpp
     src/jesus/optimizer/loop_unroller.cpp
+    src/jesus/optimizer/deterministic_loop_optimizer.cpp
 
     # -----------
     # Interpreter

@@ -1,0 +1,9 @@
+create countdown: number = 100
+
+repeat while countdown > 0:
+    countdown = countdown - 3
+amen
+
+say countdown
+
+ast

@@ -1,5 +1,4 @@
 (int) 24
 CreateVarStmt(sum, LiteralExpr((int) 0))
-RepeatWhileStmt(condition: BinaryExpr(operator: <, left: VariableExpr('sum'), right: LiteralExpr((int) 20)), body: [
-  UpdateVarStmt('sum', value: BinaryExpr(operator: +, left: VariableExpr('sum'), right: LiteralExpr((int) 6)))])
+UpdateVarStmt('sum', value: LiteralExpr((int) 24))
 SayStmt(VariableExpr('sum'))

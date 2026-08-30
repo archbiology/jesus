@@ -1,0 +1,4 @@
+(int) 10000002
+CreateVarStmt(sum, LiteralExpr((int) 0))
+UpdateVarStmt('sum', value: LiteralExpr((int) 10000002))
+SayStmt(VariableExpr('sum'))

@@ -1,0 +1,4 @@
+(int) -2
+CreateVarStmt(countdown, LiteralExpr((int) 100))
+UpdateVarStmt('countdown', value: LiteralExpr((int) -2))
+SayStmt(VariableExpr('countdown'))

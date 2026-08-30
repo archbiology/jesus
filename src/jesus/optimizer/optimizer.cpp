@@ -3,6 +3,7 @@
 #include "constant_propagator.hpp"
 #include "dead_code_eliminator.hpp"
 #include "method_inliner.hpp"
+#include "deterministic_loop_optimizer.hpp"
 #include "loop_unroller.hpp"
 
 void Optimizer::optimize(std::vector<std::unique_ptr<Stmt>> &program)
@@ -14,6 +15,12 @@ void Optimizer::optimize(std::vector<std::unique_ptr<Stmt>> &program)
 
     MethodInliner().run(program);
 
+    ConstantFolder().run(program);
+    ConstantPropagator().run(program);
+    ConstantFolder().run(program);
+    DeadCodeEliminator().run(program);
+
+    DeterministicLoopOptimizer().run(program);
     ConstantFolder().run(program);
     ConstantPropagator().run(program);
     ConstantFolder().run(program);
