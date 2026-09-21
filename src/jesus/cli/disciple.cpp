@@ -1,5 +1,6 @@
 #include "disciple.hpp"
 #include "../parser/parser.hpp"
+#include "../parser/grammar/expr/still_parsing_multiline_arguments.hpp"
 #include <iostream>
 
 Disciple::Disciple(Interpreter &interpreter) : jesus(interpreter) {}
@@ -51,7 +52,17 @@ void Disciple::processBuffer(std::string &buffer)
     // --------------------------------
     while (!context.isAtEnd())
     {
-        auto stmt = parse(tokens, context);
+        std::unique_ptr<Stmt> stmt;
+
+        try
+        {
+            stmt = parse(tokens, context);
+        }
+        catch (const StillParsingMultilineArgumentsSignal &)
+        {
+            waitingForMoreTokens = true;
+            break;
+        }
 
         if (stmt)
         {

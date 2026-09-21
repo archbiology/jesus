@@ -1,5 +1,6 @@
 let there be MultilineParams:
     __alpha__(public text name;
+        # multiline parameters
         public number age
     ):
         say name
@@ -14,7 +15,11 @@ let there be MultilineParams:
     amen
 amen
 
-create p = MultilineParams('Jesus', 33)
+create p = MultilineParams(
+    'Jesus',
+    # multiline arguments
+    33
+)
 say p name
 say p age
 p greet 10, 20
