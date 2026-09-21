@@ -97,6 +97,16 @@ std::unique_ptr<Stmt> CreateMethodStmtRule::parse(ParserContext &ctx)
     {
         do
         {
+            // ----------------------------------
+            // Allowing params in multiple lines.
+            // ----------------------------------
+            ctx.consumeAllNewLines();
+            if (ctx.isAtEnd())
+            {
+                ctx.popScope();
+                return std::make_unique<IncompleteBlockStmt>();
+            }
+
             // -------------------------------------------------------------
             // Access modifiers (private/protected/public) are only allowed
             // on constructor parameters: they promote the parameter to an
@@ -162,6 +172,16 @@ std::unique_ptr<Stmt> CreateMethodStmtRule::parse(ParserContext &ctx)
                 attributeNames.push_back({name, access});
 
         } while (ctx.match(TokenType::SEMICOLON)); // TODO: allow more args of same type: int x, y, z; string name, surname;
+    }
+
+    // ----------------------------------
+    // Allowing params in multiple lines.
+    // ----------------------------------
+    ctx.consumeAllNewLines();
+    if (ctx.isAtEnd())
+    {
+        ctx.popScope();
+        return std::make_unique<IncompleteBlockStmt>();
     }
 
     if (!ctx.match(TokenType::RIGHT_PAREN))
