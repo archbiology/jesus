@@ -1,5 +1,5 @@
 let there be Person:
-    __alpha__(public text first; public number years):
+    __alpha__(public first: text; public years: number):
     amen
 amen
 

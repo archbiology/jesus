@@ -1,5 +1,5 @@
 let there be Ancestor:
-    __alpha__(public number origin):
+    __alpha__(public origin: number):
     amen
 amen
 

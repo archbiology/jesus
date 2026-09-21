@@ -1,5 +1,5 @@
 let there be Person:
-    __alpha__(public text name; protected number age; private text secret):
+    __alpha__(public name: text; protected age: number; private secret: text):
     amen
     purpose card() -> text:
         return "{name}:{age}:{secret}"
@@ -7,7 +7,7 @@ let there be Person:
 amen
 
 let there be ungodly Creature:
-    __alpha__(public text label; number age; protected text kind):
+    __alpha__(public label: text; age: number; protected kind: text):
         say "blessed {label} ({kind})"
     amen
     purpose describe() -> text:

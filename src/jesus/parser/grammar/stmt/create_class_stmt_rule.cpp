@@ -268,7 +268,7 @@ return std::make_unique<CreateClassStmt>(className, module_name, baseClassType, 
                 "are explicitly provided from outside the class.\n\n"
                 "Declare the attribute in '__alpha__' using an access modifier so "
                 "it becomes an instance attribute:\n\n"
-                "    __alpha__(public " + attrType + " " + attrName + "):\n"
+                "    __alpha__(public " + attrName + ": " + attrType + "):\n"
                 "    amen");
         }
         else

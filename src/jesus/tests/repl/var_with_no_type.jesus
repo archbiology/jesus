@@ -14,7 +14,7 @@ type Greeting: text matches "(Hello|Hi)"
 create hi: Greeting = "Hello"
 say hi
 let there be Person:
-    __alpha__(public text name): amen
+    __alpha__(public name: text): amen
 amen
 create person: Person = Person("Adam")
 say person name
@@ -24,7 +24,7 @@ say person2 name
 create piece = LifeWithoutChrist()
 
 let there be Human:
-    __alpha__(public number age):
+    __alpha__(public age: number):
     amen
 amen
 
