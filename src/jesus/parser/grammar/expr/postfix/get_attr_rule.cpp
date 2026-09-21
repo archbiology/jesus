@@ -8,6 +8,7 @@
 #include "parser/helpers/member.hpp"
 #include "parser/grammar/jesus_grammar.hpp"
 #include "parser/grammar/argument_binding.hpp"
+#include "../still_parsing_multiline_arguments.hpp"
 #include "interpreter/runtime/method.hpp"
 #include <memory>
 #include <optional>
@@ -109,10 +110,21 @@ std::unique_ptr<Expr> GetAttributeRule::parse(ParserContext &ctx)
                 // If the next token(s) indicate arguments, parse them
                 if (!ctx.check(TokenType::NEWLINE) && !ctx.check(TokenType::END_OF_FILE))
                 {
+                    int argsSnapshot = ctx.snapshot();
                     auto expectedParams = member->method->params->paramsCount;
                     if (expectedParams > 0)
                         do
                         {
+                            // ---------------------------
+                            // Arguments in multiple lines
+                            // ---------------------------
+                            ctx.consumeAllNewLines();
+                            if (ctx.isAtEnd())
+                            {
+                                ctx.restore(argsSnapshot);
+                                throw StillParsingMultilineArgumentsSignal{};
+                            }
+
                             // -------------------------------------
                             // Detect a named argument: name='Jesus'
                             // -------------------------------------

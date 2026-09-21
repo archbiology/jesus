@@ -5,6 +5,7 @@
 #include "parser/helpers/member.hpp"
 #include "interpreter/runtime/method.hpp"
 #include "parser/grammar/argument_binding.hpp"
+#include "../still_parsing_multiline_arguments.hpp"
 
 std::unique_ptr<Expr> InstantiationRule::parse(ParserContext &ctx)
 {
@@ -73,6 +74,16 @@ std::unique_ptr<Expr> InstantiationRule::parse(ParserContext &ctx)
     {
         do
         {
+            // ---------------------------
+            // Arguments in multiple lines
+            // ---------------------------
+            ctx.consumeAllNewLines();
+            if (ctx.isAtEnd())
+            {
+                ctx.restore(snapshot);
+                throw StillParsingMultilineArgumentsSignal{};
+            }
+
             // -------------------------------------
             // Detect a named argument: name='Jesus'
             // -------------------------------------
@@ -100,6 +111,16 @@ std::unique_ptr<Expr> InstantiationRule::parse(ParserContext &ctx)
 
             rawArgs.push_back({argName, std::move(arg)});
         } while (ctx.match(TokenType::COMMA));
+    }
+
+    // ---------------------------
+    // Arguments in multiple lines
+    // ---------------------------
+    ctx.consumeAllNewLines();
+    if (ctx.isAtEnd())
+    {
+        ctx.restore(snapshot);
+        throw StillParsingMultilineArgumentsSignal{};
     }
 
     if (!ctx.match(TokenType::RIGHT_PAREN))

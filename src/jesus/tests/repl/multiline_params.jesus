@@ -1,0 +1,25 @@
+let there be MultilineParams:
+    __alpha__(public text name;
+        # multiline parameters
+        public number age
+    ):
+        say name
+        say age
+    amen
+
+    purpose greet(
+        number x;
+        number y):
+        say x
+        say y
+    amen
+amen
+
+create p = MultilineParams(
+    'Jesus',
+    # multiline arguments
+    33
+)
+say p name
+say p age
+p greet 10, 20
