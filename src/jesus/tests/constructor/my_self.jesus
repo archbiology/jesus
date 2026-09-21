@@ -1,5 +1,5 @@
 let there be Person:
-    __alpha__(public name: text; public age: number):
+    __alpha__(public name: text, public age: number):
     amen
     purpose celebrate(age: number) -> number:
         my age = age

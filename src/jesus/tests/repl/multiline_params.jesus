@@ -1,5 +1,5 @@
 let there be MultilineParams:
-    __alpha__(public name: text;
+    __alpha__(public name: text,
         # multiline parameters
         public age: number
     ):
@@ -8,7 +8,7 @@ let there be MultilineParams:
     amen
 
     purpose greet(
-        x: number;
+        x: number,
         y: number):
         say x
         say y

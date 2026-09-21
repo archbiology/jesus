@@ -179,7 +179,7 @@ std::unique_ptr<Stmt> CreateMethodStmtRule::parse(ParserContext &ctx)
             if (!access.empty())
                 attributeNames.push_back({name, access});
 
-        } while (ctx.match(TokenType::SEMICOLON)); // TODO: allow more args of same type: int x, y, z; string name, surname;
+        } while (ctx.match(TokenType::COMMA));
     }
 
     // ----------------------------------

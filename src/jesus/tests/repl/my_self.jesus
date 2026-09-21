@@ -1,5 +1,5 @@
 let there be Person:
-    __alpha__(public name: text; protected age: number; private secret: text):
+    __alpha__(public name: text, protected age: number, private secret: text):
     amen
     purpose peek() -> text:
         return "{I name}#{my age}#{I secret}"

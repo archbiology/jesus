@@ -1,5 +1,5 @@
 let there be Calculator:
-    purpose plus(x: number; y: number) -> number:
+    purpose plus(x: number, y: number) -> number:
         return x + y
     amen
 amen
