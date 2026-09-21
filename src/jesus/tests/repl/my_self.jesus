@@ -1,5 +1,5 @@
 let there be Person:
-    __alpha__(public text name; protected number age; private text secret):
+    __alpha__(public name: text, protected age: number, private secret: text):
     amen
     purpose peek() -> text:
         return "{I name}#{my age}#{I secret}"
@@ -7,7 +7,7 @@ let there be Person:
     purpose celebrate():
         my age = 50
     amen
-    purpose paint(text name):
+    purpose paint(name: text):
         my name = name
     amen
 amen

@@ -1,5 +1,5 @@
 let there be Person:
-    __alpha__(public text name; protected number age; private text secret):
+    __alpha__(public name: text, protected age: number, private secret: text):
     amen
     purpose whisper() -> text:
         return secret

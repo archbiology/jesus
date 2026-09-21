@@ -1,10 +1,10 @@
 let there be Person:
-    __alpha__(public text name; public number years):
+    __alpha__(public name: text, public years: number):
     amen
 amen
 
 let there be ungodly Creature:
-    __alpha__(public text name; number age; public text kind):
+    __alpha__(public name: text, age: number, public kind: text):
         say "birth of {name} (age {age}, {kind})"
     amen
 amen

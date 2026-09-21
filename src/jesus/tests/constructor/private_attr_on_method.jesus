@@ -1,5 +1,5 @@
 let there be Bad:
-    purpose grow(private number x):
+    purpose grow(private x: number):
         say x
     amen
 amen

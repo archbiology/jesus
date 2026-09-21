@@ -215,14 +215,14 @@ haja Canção
 criar louvor = Canção()
 say louvor
 let there be Person:
-    __alpha__(public text name; public text wife; public number age):
+    __alpha__(public name: text, public wife: text, public age: number):
     amen
 
     purpose bless(): amen
     propósito sejaUmaBenção(): amém
-    purpose testing(text what): create var: text = "inside function" amen
-    purpose testTheSpirits(text a_; number b): create reference: text = "1 John 4:1" amen
-    purpose aToB(number a_; number b):
+    purpose testing(what: text): create var: text = "inside function" amen
+    purpose testTheSpirits(a_: text, b: number): create reference: text = "1 John 4:1" amen
+    purpose aToB(a_: number, b: number):
         say "a before"
         say a_
         create c: number = 1
@@ -354,7 +354,7 @@ say not 8
 'a text' is a number
 
 let there be Parent:
-    __alpha__(public text name; public text surname): amen
+    __alpha__(public name: text, public surname: text): amen
 
     purpose praise():
         say "Praise the LORD, oh my soul ({name} {surname}),"
@@ -362,15 +362,15 @@ let there be Parent:
 amen
 
 let there be Son from Parent:
-    __alpha__(public text name; public text surname): amen
+    __alpha__(public name: text, public surname: text): amen
 amen
 
 let there be Ishmael from Parent:
-    __alpha__(public text name; public text surname): amen
+    __alpha__(public name: text, public surname: text): amen
 amen
 
 let there be GrandSon from Son:
-    __alpha__(public text name; public text surname): amen
+    __alpha__(public name: text, public surname: text): amen
 
     purpose praise():
         name = "Jacob"

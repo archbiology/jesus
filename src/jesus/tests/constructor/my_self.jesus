@@ -1,17 +1,17 @@
 let there be Person:
-    __alpha__(public text name; public number age):
+    __alpha__(public name: text, public age: number):
     amen
-    purpose celebrate(number age) -> number:
+    purpose celebrate(age: number) -> number:
         my age = age
         return my age
     amen
     purpose card() -> text:
         return "{I name} is {my age} years old"
     amen
-    purpose like(text thing) -> truth:
+    purpose like(thing: text) -> truth:
         return thing is "water"
     amen
-    purpose weather(text thing):
+    purpose weather(thing: text):
         if I like thing:
             say "I like {thing}"
         otherwise:

@@ -1,5 +1,5 @@
 let there be Human:
-    __alpha__(public number age):
+    __alpha__(public age: number):
     amen
 amen
 

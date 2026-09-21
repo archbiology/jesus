@@ -3,7 +3,7 @@ warn '👉 Inside routes.jesus'
 
 let there be Route53:
 
-  purpose createRecord(text name):
+  purpose createRecord(name: text):
     say "Creating DNS record: {name}"
     say "Created DNS record: {name}"
     say "Ctrl+Click to open: https://{name}/"

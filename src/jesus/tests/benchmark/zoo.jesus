@@ -35,7 +35,7 @@
 #   OS: Ubuntu 24.04.4 LTS
 
 let there be Zoo:
-    __alpha__(public number aarvark; public number baboon; public number cat; public number donkey; public number elephant; public number fox):
+    __alpha__(public aarvark: number, public baboon: number, public cat: number, public donkey: number, public elephant: number, public fox: number):
     amen
 
     purpose ant() -> number:

@@ -18,6 +18,8 @@ std::unique_ptr<Stmt> CreateMethodStmtRule::parse(ParserContext &ctx)
     //  __alpha__ ( <params>? ) -> returnType? : ... amen
     //  __omega__ () : ... amen
     //  [ungodly] purpose <name> ( <params>? ) -> returnType? : ... amen
+    //
+    //  <params> ::= (name: type) (';' name: type)*
     // ------------------------------------------------------
     bool isConstructor = false;
     bool isDestructor = false;
@@ -124,22 +126,10 @@ std::unique_ptr<Stmt> CreateMethodStmtRule::parse(ParserContext &ctx)
                 access = ctx.previous().lexeme;
             }
 
-            if (ctx.check(TokenType::IDENTIFIER))
-            {
-                ctx.advance();
-            }
-            else if (Keywords::isReservedWord(ctx.peek().lexeme))
-            {
-                std::string typeStr = ctx.peek().lexeme;
-                throw std::runtime_error(Keywords::reservedWordMsg(typeStr, "type"));
-            }
-            else
-            {
-                throw std::runtime_error("Expected parameter type in method declaration.");
-            }
-
-            std::string typeStr = ctx.previous().lexeme;
-
+            // -------------------------------------------------
+            // Parameter syntax: name: type
+            // (same style as variable declarations)
+            // -------------------------------------------------
             if (ctx.check(TokenType::IDENTIFIER))
             {
                 ctx.advance();
@@ -151,13 +141,7 @@ std::unique_ptr<Stmt> CreateMethodStmtRule::parse(ParserContext &ctx)
             }
             else
             {
-                throw std::runtime_error("Expected parameter name after type '" + typeStr + "'.");
-            }
-
-            auto type = KnownTypes::resolve(typeStr, "core");
-            if (!type)
-            {
-                throw std::runtime_error("Unknown param type: '" + typeStr + "'.");
+                throw std::runtime_error("Expected parameter name in method declaration.");
             }
 
             std::string name = ctx.previous().lexeme;
@@ -166,12 +150,36 @@ std::unique_ptr<Stmt> CreateMethodStmtRule::parse(ParserContext &ctx)
                 throw std::runtime_error(Keywords::reservedWordMsg(name, "parameter"));
             }
 
+            if (!ctx.match(TokenType::COLON))
+                throw std::runtime_error("Expected ':' after parameter name '" + name + "' in method declaration.");
+
+            if (ctx.check(TokenType::IDENTIFIER))
+            {
+                ctx.advance();
+            }
+            else if (Keywords::isReservedWord(ctx.peek().lexeme))
+            {
+                std::string typeStr = ctx.peek().lexeme;
+                throw std::runtime_error(Keywords::reservedWordMsg(typeStr, "type"));
+            }
+            else
+            {
+                throw std::runtime_error("Expected parameter type after ':' in method declaration.");
+            }
+
+            std::string typeStr = ctx.previous().lexeme;
+            auto type = KnownTypes::resolve(typeStr, "core");
+            if (!type)
+            {
+                throw std::runtime_error("Unknown param type: '" + typeStr + "'.");
+            }
+
             params->createVar(type, name, Value(1), isParam); // FIXME: Validate `type` and allow initial values
 
             if (!access.empty())
                 attributeNames.push_back({name, access});
 
-        } while (ctx.match(TokenType::SEMICOLON)); // TODO: allow more args of same type: int x, y, z; string name, surname;
+        } while (ctx.match(TokenType::COMMA));
     }
 
     // ----------------------------------

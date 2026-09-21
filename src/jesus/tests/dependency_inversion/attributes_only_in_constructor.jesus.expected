@@ -4,5 +4,5 @@ To enforce Dependency Inversion, instance state and dependencies must be declare
 
 Declare the attribute in '__alpha__' using an access modifier so it becomes an instance attribute:
 
-    __alpha__(public text name):
+    __alpha__(public name: text):
     amen
