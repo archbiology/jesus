@@ -16,6 +16,7 @@ enum class PrimitiveType
     Text,
     Module,
     Class,
+    Enum,
     Polymorphic,
     Collection // list, dict
 };
@@ -99,6 +100,8 @@ public:
         {
         case PrimitiveType::Class:
             return "creation";
+        case PrimitiveType::Enum:
+            return "enum";
         case PrimitiveType::Number:
             return "number";
         case PrimitiveType::Text:
@@ -121,8 +124,8 @@ public:
 
     void addAttribute(const VarType &type, const std::string &name, std::unique_ptr<Expr> initializer, std::shared_ptr<Heart> heart)
     {
-        if (primitive_type != PrimitiveType::Class)
-            throw std::runtime_error("Only class types can have attributes.");
+        if (primitive_type != PrimitiveType::Class && primitive_type != PrimitiveType::Enum)
+            throw std::runtime_error("Only class and enum types can have attributes.");
 
         Value initVal;
         if (initializer)
@@ -138,6 +141,7 @@ public:
     void addMethod(const std::string &name, std::shared_ptr<IMethod> method)
     {
         if (primitive_type != PrimitiveType::Class &&
+            primitive_type != PrimitiveType::Enum &&
             primitive_type != PrimitiveType::Collection)
             throw std::runtime_error("Only class and collection types can have methods.");
 
@@ -183,6 +187,11 @@ public:
     const bool isClass() const
     {
         return primitive_type == PrimitiveType::Class;
+    }
+
+    const bool isEnum() const
+    {
+        return primitive_type == PrimitiveType::Enum;
     }
 
     const bool isPolymorphic() const

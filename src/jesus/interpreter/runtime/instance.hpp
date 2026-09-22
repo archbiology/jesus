@@ -74,7 +74,7 @@ public:
         attributes->updateVar(address, value);
     }
 
-    std::string toString()
+    virtual std::string toString() const
     {
         std::string str = "{type: \"instance\",\n class: \"" + spirit->name + "\",\n attributes: {";
         if (!attributes->isEmpty())

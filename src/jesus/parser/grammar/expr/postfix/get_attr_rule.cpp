@@ -2,6 +2,7 @@
 #include "ast/expr/get_attr_expr.hpp"
 #include "ast/expr/method_call_expr.hpp"
 #include "ast/expr/index_expr.hpp"
+#include "ast/expr/enum_member_expr.hpp"
 #include "types/creation_type.hpp"
 #include "types/known_types.hpp"
 #include "types/composite/dict_type.hpp"
@@ -84,6 +85,50 @@ std::unique_ptr<Expr> GetAttributeRule::parse(ParserContext &ctx)
             // ----------------------------
             std::shared_ptr<CreationType> klass = expr->getReturnType(ctx);
             std::string name = ctx.previous().lexeme;
+
+            // -----------------------------------------------
+            // Enum member access: EnumName MEMBER
+            // If the base expression's type is an enum and the
+            // attribute matches a member, create an EnumMemberExpr.
+            // -----------------------------------------------
+            if (klass && klass->isEnum())
+            {
+                auto member = klass->findMember(name, klass);
+                if (member && member->isAttribute())
+                {
+                    auto addr = member->declaring_class->class_attributes->resolveVariableAddress(member->attr_name);
+                    int value = member->declaring_class->class_attributes->getVar(addr).toInt();
+
+                    // Read the label if one is stored; otherwise it defaults to the member name
+                    std::string label = name;
+                    std::string labelKey = "label_" + name;
+                    if (member->declaring_class->class_attributes->localVarExists(labelKey))
+                    {
+                        auto labelAddr = member->declaring_class->class_attributes->resolveVariableAddress(labelKey);
+                        label = member->declaring_class->class_attributes->getVar(labelAddr).toString();
+                    }
+
+                    expr = std::make_unique<EnumMemberExpr>(klass, name, label, value);
+                    continue;
+                }
+            }
+
+            // -----------------------------------------------
+            // .label / .value on enums:
+            //   Status Pending label    Status Pending value
+            //   e label                 e value     (e holds an enum)
+            // The runtime decides the concrete result based on the
+            // evaluated enum instance.
+            // -----------------------------------------------
+            if (name == "label" || name == "value")
+            {
+                if (klass && klass->isEnum())
+                {
+                    VariableAddress dummyAddress{0, 0};
+                    expr = std::make_unique<GetAttributeExpr>(std::move(expr), name, dummyAddress);
+                    continue;
+                }
+            }
 
             auto member = klass->findMember(name, klass);
             if (!member)

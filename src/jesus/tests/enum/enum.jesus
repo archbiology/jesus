@@ -1,0 +1,31 @@
+enum Status:
+    Pending
+    Active
+    Paid
+    Shipped
+    Closed
+amen
+
+say Status Pending
+say Status Active
+say Status Paid
+say Status Shipped
+say Status Closed
+
+say Status Pending label
+say Status Active label
+say Status Paid label
+say Status Shipped label
+say Status Closed label
+
+say Status Pending value
+say Status Active value
+say Status Paid value
+say Status Shipped value
+say Status Closed value
+
+say Status Pending is Status Pending
+say Status Pending is Status Active
+say Status Active is Status Active
+
+say "Order status: {Status Paid}"

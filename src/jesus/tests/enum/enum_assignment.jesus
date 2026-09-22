@@ -1,0 +1,27 @@
+enum Color:
+    RED('vermelho')
+    GREEN('verde')
+    BLUE('azul')
+amen
+
+create favorite = Color RED
+create declared: Color = Color GREEN
+
+say favorite
+say declared
+
+say favorite is Color RED
+say favorite is Color GREEN
+say declared is Color GREEN
+
+create copied = favorite
+say copied
+
+say favorite label
+say favorite value
+say declared label
+say declared value
+
+say "Favorite: {favorite}"
+say "Favorite label: {favorite label}"
+say "Favorite value: {favorite value}"

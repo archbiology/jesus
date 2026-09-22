@@ -1,0 +1,18 @@
+enum UserRole:
+    ADMIN(1893)
+    STAFF(9839)
+amen
+
+say UserRole ADMIN
+say UserRole STAFF
+
+say UserRole ADMIN label
+say UserRole STAFF label
+
+say UserRole ADMIN value
+say UserRole STAFF value
+
+say UserRole ADMIN is UserRole ADMIN
+say UserRole ADMIN is UserRole STAFF
+
+say "Role: {UserRole STAFF}"

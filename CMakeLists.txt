@@ -108,6 +108,7 @@ set(JESUS_CPP_FILES
     src/jesus/ast/expr/list_expr.cpp
     src/jesus/ast/expr/index_expr.cpp
     src/jesus/ast/expr/dict_expr.cpp
+    src/jesus/ast/expr/enum_member_expr.cpp
 
     # --------------
     # AST Statements
@@ -135,6 +136,7 @@ set(JESUS_CPP_FILES
     src/jesus/ast/stmt/memory_inspect_stmt.cpp
     src/jesus/ast/stmt/on_stmt.cpp
     src/jesus/ast/stmt/serve_stmt.cpp
+    src/jesus/ast/stmt/create_enum_stmt.cpp
 
     # --------------
     # Parser classes
@@ -198,6 +200,7 @@ set(JESUS_CPP_FILES
     src/jesus/parser/grammar/stmt/memory_inspect_stmt_rule.cpp
     src/jesus/parser/grammar/stmt/on_stmt_rule.cpp
     src/jesus/parser/grammar/stmt/serve_stmt_rule.cpp
+    src/jesus/parser/grammar/stmt/create_enum_stmt_rule.cpp
 
     # ---------
     # Optimizer

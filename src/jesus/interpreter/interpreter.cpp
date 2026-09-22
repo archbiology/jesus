@@ -12,10 +12,13 @@
 #include "../utils/file_utils.hpp"
 #include "../cli/faith.hpp"
 #include "../cli/bible.hpp"
+#include "runtime/enum_instance.hpp"
+#include "../ast/expr/enum_member_expr.hpp"
 #include "understanding/inspection/ast_inspector.hpp"
 #include "understanding/inspection/bytecode_inspector.hpp"
 #include "understanding/inspection/vm_inspector.hpp"
 #include <format>
+#include <optional>
 
 // -------------
 // Static fields
@@ -155,6 +158,27 @@ Value Interpreter::visitGetAttribute(const GetAttributeExpr &expr)
     Value obj = expr.object->accept(*this);
 
     std::shared_ptr<Instance> instance = obj.toInstance();
+    if (!instance)
+    {
+        throw std::runtime_error(
+            "Cannot access attribute '" + expr.attribute + "' on '" + obj.toString() + "' value.\n" +
+            "Tip: ensure the value is a valid object before accessing its attributes.");
+    }
+
+    // ---------------------------------------------------------
+    // Enum: .label and .value access a member's label and numeric
+    // value. Works on any enum-typed expression, e.g.
+    //   Status Pending label    Status Pending value
+    //   en label                en value     (en holds an enum)
+    // ---------------------------------------------------------
+    if (auto enumInstance = std::dynamic_pointer_cast<EnumInstance>(instance))
+    {
+        if (expr.attribute == "label")
+            return Value(enumInstance->label);
+
+        if (expr.attribute == "value")
+            return Value(enumInstance->value);
+    }
 
     // FIXME: enforce at parse time, not runtime
     enforceAttributeAccess(instance->spirit, expr.attribute);
@@ -519,6 +543,11 @@ Value Interpreter::evalDictExpr(const DictExpr &expr, ExprVisitor &driver)
 Value Interpreter::visitDictExpr(const DictExpr &expr)
 {
     return evalDictExpr(expr, *this);
+}
+
+Value Interpreter::visitEnumMember(const EnumMemberExpr &expr)
+{
+    return Value(std::make_shared<EnumInstance>(expr.enumType, expr.memberName, expr.label, expr.value));
 }
 
 Value Interpreter::visitIndexExpr(const IndexExpr &expr)
@@ -1155,6 +1184,27 @@ void Interpreter::visitServeStmt(const ServeStmt &stmt)
     }
 
     httpRuntime.serve(port);
+}
+
+void Interpreter::visitCreateEnum(const CreateEnumStmt &stmt)
+{
+    // -------------------------------
+    // Register the enum type globally
+    // -------------------------------
+    KnownTypes::registerType(stmt.enumType);
+
+    // --------------------------------------------------
+    // Create a singleton EnumInstance for this enum type
+    // --------------------------------------------------
+    auto instance = std::make_shared<EnumInstance>(stmt.enumType, "", "", 0);
+    Value enumValue(instance);
+
+    // ---------------------------------------------------
+    // Update the variable that was declared at parse time
+    // ---------------------------------------------------
+    VariableAddress address = currentModule->symbol_table->resolveVariableAddress(stmt.name);
+    currentModule->symbol_table->updateVar(address, enumValue);
+    registerAstNodeForInspection(stmt.name, &stmt);
 }
 
 Interpreter::~Interpreter()

@@ -50,6 +50,7 @@
 #include "stmt/memory_inspect_stmt_rule.hpp"
 #include "stmt/on_stmt_rule.hpp"
 #include "stmt/serve_stmt_rule.hpp"
+#include "stmt/create_enum_stmt_rule.hpp"
 #include "unary_rule.hpp"
 
 /**
@@ -131,6 +132,7 @@ namespace grammar
     inline auto MemoryInspectStmt = std::make_shared<MemoryInspectStmtRule>();
     inline auto OnStmt = std::make_shared<OnStmtRule>();
     inline auto ServeStmt = std::make_shared<ServeStmtRule>();
+    inline auto CreateEnum = std::make_shared<CreateEnumStmtRule>();
 
     /**
      * @brief Set the Expression rule to something (for now just Primary)

@@ -2,8 +2,7 @@
 #
 # The formatter favors readability and pull request review over minimizing vertical space.
 # Long parameter lists are expanded rather than aligned after '(',
-# comments are preserved as written, and short declarations remain on a
-# single line whenever they fit.
+# comments are preserved as written, and functions keep their own body line.
 
 BasedOnStyle: LLVM
 
@@ -21,4 +20,4 @@ SortIncludes: Never
 ReflowComments: false
 PenaltyReturnTypeOnItsOwnLine: 1000000
 
-AllowShortFunctionsOnASingleLine: All
+AllowShortFunctionsOnASingleLine: None

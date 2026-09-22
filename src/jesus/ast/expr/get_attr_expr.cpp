@@ -4,6 +4,7 @@
 #include "../../parser/parser_context.hpp"
 #include "interpreter/interpreter.hpp"
 #include "interpreter/runtime/instance.hpp"
+#include "enum_member_expr.hpp"
 
 Value GetAttributeExpr::accept(ExprVisitor &visitor) const { return visitor.visitGetAttribute(*this); }
 
@@ -25,6 +26,19 @@ Value GetAttributeExpr::evaluate(std::shared_ptr<Heart> heart) const
 
 std::shared_ptr<CreationType> GetAttributeExpr::getReturnType(ParserContext &ctx) const
 {
+    // ----------------------------------------------
+    // Enum: handle .label (text) and .value (number)
+    // ----------------------------------------------
+    std::shared_ptr<CreationType> baseType = object->getReturnType(ctx);
+    if (baseType && baseType->isEnum())
+    {
+        if (attribute == "label")
+            return KnownTypes::STRING;
+
+        if (attribute == "value")
+            return KnownTypes::INT;
+    }
+
     return ctx.getVarType(attribute);
 };
 
