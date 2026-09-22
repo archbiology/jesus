@@ -1,0 +1,54 @@
+enum A:
+    Pending(10)
+    Active
+    Paid
+amen
+
+enum B:
+    Pending(10)
+    Active
+    Paid(100)
+    Shipped
+    Closed
+amen
+
+enum C:
+    First(10)
+    Second
+    Third(5)
+    Fourth
+amen
+
+enum Result:
+    Success(1)
+    AlsoSuccess(1)
+amen
+
+enum Color:
+    RED(123, 'vermelho')
+    GREEN(456, 'verde')
+amen
+
+say A Pending value
+say A Active value
+say A Paid value
+
+say B Pending value
+say B Active value
+say B Paid value
+say B Shipped value
+say B Closed value
+
+say C First value
+say C Second value
+say C Third value
+say C Fourth value
+
+say Result Success value
+say Result AlsoSuccess value
+
+say Color RED
+say Color RED label
+say Color RED value
+say Color GREEN label
+say Color GREEN value

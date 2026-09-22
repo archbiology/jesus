@@ -155,6 +155,8 @@ namespace Keywords
         {"on", TokenType::ON},
         {"serve", TokenType::SERVE},
         {"json", TokenType::JSON},
+
+        {"enum", TokenType::ENUM},
     };
 
     inline bool isReservedWord(const std::string &word)

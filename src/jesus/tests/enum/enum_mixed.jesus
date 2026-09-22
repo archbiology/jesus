@@ -1,0 +1,17 @@
+enum Mixed:
+    RED('vermelho')
+    GREEN
+    BLUE(42)
+amen
+
+say Mixed RED
+say Mixed GREEN
+say Mixed BLUE
+
+say Mixed RED label
+say Mixed GREEN label
+say Mixed BLUE label
+
+say Mixed RED value
+say Mixed GREEN value
+say Mixed BLUE value

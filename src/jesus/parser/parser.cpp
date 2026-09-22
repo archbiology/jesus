@@ -28,6 +28,11 @@ std::unique_ptr<Stmt> parse(const std::vector<Token> &tokens, ParserContext &con
         return createClassStmt;
 
     context.restore(snapshot);
+    auto createEnumStmt = grammar::CreateEnum->parse(context);
+    if (createEnumStmt)
+        return createEnumStmt;
+
+    context.restore(snapshot);
     auto createVarTypeStmt = grammar::CreateVarType->parse(context);
     if (createVarTypeStmt)
         return createVarTypeStmt;

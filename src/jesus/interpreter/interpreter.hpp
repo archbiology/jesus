@@ -371,6 +371,7 @@ private:
     Value visitIndexExpr(const IndexExpr &expr) override;
     Value evalDictExpr(const DictExpr &expr, ExprVisitor &driver);
     Value visitDictExpr(const DictExpr &expr) override;
+    Value visitEnumMember(const EnumMemberExpr &expr) override;
 
     /**
      * @brief Converts a runtime value into a string representation.
@@ -494,4 +495,5 @@ private:
 
     void visitOnStmt(const OnStmt &stmt);
     void visitServeStmt(const ServeStmt &stmt);
+    void visitCreateEnum(const CreateEnumStmt &stmt) override;
 };

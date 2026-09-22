@@ -1,6 +1,7 @@
 #include "create_var_stmt_rule.hpp"
 #include "../../../ast/stmt/create_var_stmt.hpp"
 #include "../../../ast/stmt/create_var_with_ask_stmt.hpp"
+#include "../../../ast/expr/get_attr_expr.hpp"
 #include "../../../types/known_types.hpp"
 #include "../../../lexer/keywords.hpp"
 #include "../../../understanding/doctrine/law/ungodly_naming.hpp"
@@ -136,6 +137,29 @@ std::unique_ptr<Stmt> CreateVarStmtRule::parse(ParserContext &ctx)
                 throw std::runtime_error(
                     "Variable '" + varName + "' needs a type " + "(create " + varName +
                     ": TYPE = ...) or an initial value (create " + varName + " = ...).");
+            }
+        }
+
+        // -----------------------------------------------------------------
+        // Enum assignment made easy:
+        //   create age: number = Age Young   ->  Age Young value
+        //   create color: text = Color RED   ->  Color RED label
+        //
+        // Assigning an enum member to a number implicitly uses its value,
+        // and assigning it to a text implicitly uses its label.
+        // -----------------------------------------------------------------
+        {
+            auto valueType = value->getReturnType(ctx);
+            if (valueType && valueType->isEnum())
+            {
+                if (varType->isNumber())
+                {
+                    value = std::make_unique<GetAttributeExpr>(std::move(value), "value", VariableAddress{0, 0});
+                }
+                else if (varType->isString())
+                {
+                    value = std::make_unique<GetAttributeExpr>(std::move(value), "label", VariableAddress{0, 0});
+                }
             }
         }
 

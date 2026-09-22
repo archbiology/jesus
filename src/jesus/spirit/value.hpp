@@ -240,33 +240,7 @@ public:
         throw std::runtime_error("Operator 'mod' not supported for given types");
     }
 
-    friend bool operator==(const Value &left, const Value &right)
-    {
-        if (left.IS_FORMLESS && right.IS_FORMLESS)
-            return true;
-
-        if (left.IS_NUMBER && right.IS_NUMBER)
-        {
-            double leftN = left.toNumber();
-            double rightN = right.toNumber();
-
-            bool result = leftN == rightN;
-
-            return result;
-        }
-
-        if (left.IS_BOOLEAN && right.IS_BOOLEAN)
-        {
-            return std::get<bool>(left.value) == std::get<bool>(right.value);
-        }
-
-        if (left.IS_STRING && right.IS_STRING)
-        {
-            return std::get<std::string>(left.value) == std::get<std::string>(right.value);
-        }
-
-        return false; // different types are never equal
-    }
+    friend bool operator==(const Value &left, const Value &right);
 
     friend bool operator<(const Value &left, const Value &right)
     {

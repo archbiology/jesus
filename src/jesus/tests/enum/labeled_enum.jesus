@@ -1,0 +1,22 @@
+enum Color:
+    RED('vermelho')
+    GREEN('verde')
+    BLUE('azul')
+amen
+
+say Color RED
+say Color GREEN
+say Color BLUE
+
+say Color RED label
+say Color GREEN label
+say Color BLUE label
+
+say Color RED value
+say Color GREEN value
+say Color BLUE value
+
+say Color RED is Color RED
+say Color RED is Color GREEN
+
+say "Color: {Color BLUE}"

@@ -126,5 +126,7 @@ enum class TokenType
     SERVE,          // serve    (builtin http server)
     JSON,           // on http '/api' -> json: amen
 
+    ENUM,           // enum Status: OK amen
+
     END_OF_FILE
 };

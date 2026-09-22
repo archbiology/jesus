@@ -17,6 +17,7 @@
 #include "../ast/expr/list_expr.hpp"
 #include "../ast/expr/index_expr.hpp"
 #include "ast/expr/dict_expr.hpp"
+#include "ast/expr/enum_member_expr.hpp"
 
 REGISTER_FOR_UML(
     ExprVisitor,
@@ -24,7 +25,8 @@ REGISTER_FOR_UML(
                   "visitGrouping", "visitUnary", "visitConditional",
                   "visitVariable", "visitAsk", "visitCreateInstanceExpr",
                   "visitGetAttribute", "visitMethodCallExpr",
-                  "visitFormattedStringExpr", "visitParityCheckExpr"}));
+                  "visitFormattedStringExpr", "visitParityCheckExpr",
+                  "visitEnumMember"}));
 
 /**
  * @brief Interface for visiting and evaluating expression nodes in the AST.
@@ -77,6 +79,7 @@ public:
     virtual Value visitListExpr(const ListExpr &expr) = 0;
     virtual Value visitIndexExpr(const IndexExpr &expr) = 0;
     virtual Value visitDictExpr(const DictExpr &expr) = 0;
+    virtual Value visitEnumMember(const EnumMemberExpr &expr) = 0;
 
     virtual ~ExprVisitor() = default;
 };

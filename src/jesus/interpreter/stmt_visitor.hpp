@@ -23,6 +23,7 @@
 #include "ast/stmt/memory_inspect_stmt.hpp"
 #include "ast/stmt/on_stmt.hpp"
 #include "ast/stmt/serve_stmt.hpp"
+#include "ast/stmt/create_enum_stmt.hpp"
 
 REGISTER_FOR_UML(
     StmtVisitor,
@@ -33,7 +34,8 @@ REGISTER_FOR_UML(
                   "visitForEach", "visitBreak", "visitSkipStmt",
                   "visitReturnStmt", "visitTryStmt",
                   "visitResistStmt", "visitImportModuleStmt",
-                  "visitInspectStmt", "visitMemoryInspectStmt"
+                  "visitInspectStmt", "visitMemoryInspectStmt",
+                  "visitCreateEnum"
 
     }));
 
@@ -95,6 +97,7 @@ public:
     virtual void visitOnStmt(const OnStmt &stmt) = 0;
     virtual void visitServeStmt(const ServeStmt &stmt) = 0;
     virtual void visitAssignStmt(const AssignStmt &stmt) = 0;
+    virtual void visitCreateEnum(const CreateEnumStmt &stmt) = 0;
 
     virtual ~StmtVisitor() = default;
 };

@@ -1,0 +1,19 @@
+enum Age:
+    Young
+    Old
+amen
+
+enum Color:
+    RED('vermelho')
+amen
+
+create ageInYears: number = Age Young
+create colorText: text = Color RED
+
+create explicitValue: number = Age Old value
+create explicitLabel: text = Color RED label
+
+say ageInYears
+say colorText
+say explicitValue
+say explicitLabel

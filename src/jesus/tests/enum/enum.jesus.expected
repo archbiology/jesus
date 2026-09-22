@@ -1,0 +1,19 @@
+Pending
+Active
+Paid
+Shipped
+Closed
+Pending
+Active
+Paid
+Shipped
+Closed
+(int) 0
+(int) 1
+(int) 2
+(int) 3
+(int) 4
+(logic) 1
+(logic) 0
+(logic) 1
+Order status: Paid

@@ -73,6 +73,58 @@ const std::shared_ptr<Instance> Value::toInstance() const
     return std::get<std::shared_ptr<Instance>>(value);
 }
 
+bool operator==(const Value &left, const Value &right)
+{
+    // --------------------------------------------------------------
+    // Numbers, booleans, strings and null compare in the natural way
+    // --------------------------------------------------------------
+    if (left.IS_FORMLESS && right.IS_FORMLESS)
+        return true;
+
+    if (left.IS_NUMBER && right.IS_NUMBER)
+    {
+        double leftN = left.toNumber();
+        double rightN = right.toNumber();
+
+        return leftN == rightN;
+    }
+
+    if (left.IS_BOOLEAN && right.IS_BOOLEAN)
+        return std::get<bool>(left.value) == std::get<bool>(right.value);
+
+    if (left.IS_STRING && right.IS_STRING)
+        return std::get<std::string>(left.value) == std::get<std::string>(right.value);
+
+    if (left.IS_INSTANCE && right.IS_INSTANCE)
+    {
+        std::shared_ptr<Instance> leftInstance = left.toInstance();
+        std::shared_ptr<Instance> rightInstance = right.toInstance();
+
+        // Two nulls compare equal; a null never equals a real instance.
+        if (!leftInstance || !rightInstance)
+            return leftInstance.get() == rightInstance.get();
+
+        // -------------------------------------------------------------------
+        // ENUM MEMBER EQUALITY:
+        //  (a) they belong to the SAME enum type, and
+        //  (b) they share the SAME MEMBER NAME.
+        //
+        // We compare the NAME rather than the numeric value because enum values
+        // need not be unique (duplicates are legal): `Result Success` and
+        // `Result AlsoSuccess`, both carrying value 1, must remain distinct.
+        // -------------------------------------------------------------------
+        bool sameEnumType = leftInstance->spirit && rightInstance->spirit && leftInstance->spirit->isEnum() &&
+                            rightInstance->spirit->isEnum() && leftInstance->spirit->id == rightInstance->spirit->id;
+
+        if (sameEnumType)
+            return leftInstance->toString() == rightInstance->toString();
+
+        return false;
+    }
+
+    return false; // values of different types are never equal
+}
+
 const std::shared_ptr<IMethod> Value::asMethod() const
 {
     if (!IS_METHOD)
