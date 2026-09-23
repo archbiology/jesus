@@ -191,6 +191,8 @@ std::unique_ptr<Stmt> CreateClassStmtRule::parse(ParserContext &ctx)
     bool hasConstructor = false;
     bool hasDestructor = false;
 
+    try
+    {
     ctx.consumeAllNewLines();
 
     if (ctx.isAtEnd())
@@ -198,7 +200,7 @@ std::unique_ptr<Stmt> CreateClassStmtRule::parse(ParserContext &ctx)
         // Allowing 'empty-bodied' classes without ': amen'.
         // Just: let there be Light
         userClass->attributeAccess = collectAttributeAccessModifiers(body);
-return std::make_unique<CreateClassStmt>(className, module_name, baseClassType, std::move(body), std::move(userClass));
+        return std::make_unique<CreateClassStmt>(className, module_name, baseClassType, std::move(body), std::move(userClass));
     }
 
     if (!ctx.match(TokenType::COLON))
@@ -287,6 +289,18 @@ return std::make_unique<CreateClassStmt>(className, module_name, baseClassType, 
 
     if (!ctx.match(TokenType::AMEN))
         throw std::runtime_error("Expected 'amen' after ':' in '" + stmt + "' to close class body.");
+
+    }
+    catch (...)
+    {
+        // ---------------------------------------------------------------
+        // Clean up the parse-time registration if the class definition
+        // (or one of its methods) fails to parse, so a partially-defined
+        // class never remains visible to later statements (e.g. in REPL).
+        // ---------------------------------------------------------------
+        ctx.unregisterClassName(className);
+        throw;
+    }
 
     userClass->attributeAccess = collectAttributeAccessModifiers(body);
     return std::make_unique<CreateClassStmt>(className, module_name, baseClassType, std::move(body), std::move(userClass));

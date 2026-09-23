@@ -1,0 +1,21 @@
+let there be Counter:
+
+  __alpha__(public value: number):
+  amen
+
+  purpose increment(by: number) -> number:
+    my value = my value + by
+    return my value
+  amen
+
+  purpose clone() -> Counter:
+    return I
+  amen
+
+amen
+
+create first = Counter(1)
+create second = first clone
+create r1 = first increment 10
+create r2 = second increment 100
+say "first: {r1}, second: {r2}"

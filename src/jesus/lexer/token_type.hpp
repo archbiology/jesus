@@ -70,6 +70,7 @@ enum class TokenType
     PROTECTED,      // protected attributes
     PUBLIC,         // public attributes
     MY,             // 'I' / 'my': the current instance (this/self)
+    ITSELF,         // 'itself': the current class being defined (type self-reference)
     RETURN,         // Function returns: return 144000
     CREATE,         // create days = 7
     TYPE,           // type number Positive > 0

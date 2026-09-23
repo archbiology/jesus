@@ -180,6 +180,11 @@ public:
         semantics_analyzer->registerClassName(className);
     }
 
+    void unregisterClassName(const std::string &className)
+    {
+        semantics_analyzer->unregisterClassName(className);
+    }
+
     bool isClassKnown(const std::string &className) const
     {
         return semantics_analyzer->isClassKnown(className);

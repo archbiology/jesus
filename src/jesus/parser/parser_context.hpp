@@ -186,6 +186,8 @@ public:
 
     void registerClassName(const std::string &className);
 
+    void unregisterClassName(const std::string &className);
+
     void registerType(const std::shared_ptr<CreationType> &type);
 
     bool isClassKnown(const std::string &className) const;
