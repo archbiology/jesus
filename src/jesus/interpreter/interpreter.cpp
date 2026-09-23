@@ -604,9 +604,13 @@ void Interpreter::visitPrintStmt(const PrintStmt &stmt)
 {
     Value value = evaluate(stmt.message);
 
-    std::ostream &out = (stmt.type == StmtType::WARN) ? std::cerr : std::cout;
+    std::ostream &out = (stmt.type == StmtType::WARN || stmt.type == StmtType::WARNING) ? std::cerr : std::cout;
 
-    out << value.toString() << std::endl;
+    out << value.toString();
+
+    bool addNewline = (stmt.type == StmtType::SAY || stmt.type == StmtType::WARN);
+    if (addNewline)
+        out << std::endl;
 }
 
 void Interpreter::visitRepeatWhile(const RepeatWhileStmt &stmt)

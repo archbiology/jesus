@@ -74,8 +74,10 @@ enum class TokenType
     CREATE,         // create days = 7
     TYPE,           // type number Positive > 0
     ASK,            // create int age = ask "What is your age?"
-    SAY,            // "say" prints to stdout
-    WARN,           // "warn" prints to stderr
+    SAY,            // "say" prints to stdout with new line + flush
+    WARN,           // "warn" prints to stderr with new line + flush
+    SAYING,         // "saying" prints to stdout without newline or flush
+    WARNING,        // "warning" prints to stderr without newline or flush
     UPDATE,
     MATCHES,        // create text Confirm matches "(Y|y)es"
     BETEWEEN,       // create real Percentage between 0 and 100

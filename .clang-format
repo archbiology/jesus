@@ -12,6 +12,7 @@ BinPackParameters: false
 BinPackArguments: false
 
 IndentWidth: 4
+AccessModifierOffset: -4
 ColumnLimit: 120
 UseTab: Never
 

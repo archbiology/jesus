@@ -13,13 +13,19 @@ enum class StmtType
 {
     SAY,
     WARN,
+    SAYING,
+    WARNING,
 };
 
-/// Statement for printing output: say, praise, rebuke
 /**
- * @brief The PrintStmt class represents the `say` and `warn` commands.
+ * @brief The PrintStmt class represents the `say`, `saying`, `warn` and `warning` commands.
  *
  * It is responsible for displaying text to the screen.
+ *
+ *  say     = stdout + \n + flush
+ *  warn    = stderr + \n + flush
+ *  saying  = stdout (no \n nor flush)
+ *  warning = stderr (no \n nor flush)
  *
  * "He reveals deep and hidden things; He knows what is in the darkness, and light dwells with Him."
  * — Daniel 2:22
@@ -47,7 +53,25 @@ public:
      */
     std::string toString() const override
     {
-        std::string str = (type == StmtType::SAY ? "SayStmt(" : "WarnStmt(");
+        std::string str;
+        switch (type)
+        {
+        case StmtType::SAY:
+            str = "SayStmt(";
+            break;
+
+        case StmtType::WARN:
+            str = "WarnStmt(";
+            break;
+
+        case StmtType::SAYING:
+            str = "SayingStmt(";
+            break;
+
+        case StmtType::WARNING:
+            str = "WarningStmt(";
+            break;
+        }
 
         if (message)
             str += message->toString();

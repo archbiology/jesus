@@ -166,6 +166,10 @@ public:
             return "ASK";
         case TokenType::WARN:
             return "WARN";
+        case TokenType::SAYING:
+            return "SAYING";
+        case TokenType::WARNING:
+            return "WARNING";
         case TokenType::UPDATE:
             return "UPDATE";
         case TokenType::Word:
