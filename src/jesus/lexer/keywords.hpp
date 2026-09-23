@@ -68,6 +68,8 @@ namespace Keywords
         {"ask", TokenType::ASK},
         {"say", TokenType::SAY},
         {"warn", TokenType::WARN},
+        {"saying", TokenType::SAYING},
+        {"warning", TokenType::WARNING},
 
         {"amen", TokenType::AMEN},
         {"amém", TokenType::AMEN},
