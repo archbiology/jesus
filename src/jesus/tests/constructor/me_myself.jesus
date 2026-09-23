@@ -1,0 +1,22 @@
+let there be Person:
+  __alpha__(public name: text, public age: number):
+  amen
+
+  purpose who() -> text:
+    return "I am {me name} and myself is {myself age}"
+  amen
+
+  purpose birthday() -> number:
+    myself age = me age + 1
+    return me age
+  amen
+
+amen
+
+create p = Person("Moses", 119)
+create info = p who
+say info
+create after = p birthday
+say "after: {after}"
+say info
+say p who
