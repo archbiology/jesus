@@ -170,6 +170,18 @@ public:
             return "SAYING";
         case TokenType::WARNING:
             return "WARNING";
+        case TokenType::YELLOW:
+            return "YELLOW";
+        case TokenType::RED:
+            return "RED";
+        case TokenType::BLUE:
+            return "BLUE";
+        case TokenType::GREEN:
+            return "GREEN";
+        case TokenType::BOLD:
+            return "BOLD";
+        case TokenType::ITALIC:
+            return "ITALIC";
         case TokenType::UPDATE:
             return "UPDATE";
         case TokenType::Word:

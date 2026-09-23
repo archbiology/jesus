@@ -23,6 +23,7 @@
 #include "ast/expr/dict_expr.hpp"
 #include "ast/expr/conditional_expr.hpp"
 // #include "ast/expr/formatted_string_expr.hpp"
+#include "ast/expr/format_expr.hpp"
 #include "ast/expr/method_call_expr.hpp"
 #include "ast/expr/get_attr_expr.hpp"
 #include "ast/expr/index_expr.hpp"
@@ -269,6 +270,14 @@ std::unique_ptr<Expr> ConstantFolder::optimizeExpression(std::unique_ptr<Expr> e
 
         if (indexExpr->index)
             indexExpr->index = optimizeExpression(std::move(indexExpr->index));
+
+        return expression;
+    }
+
+    if (auto fmt = dynamic_cast<FormatExpr *>(expression.get()))
+    {
+        if (fmt->inner)
+            fmt->inner = optimizeExpression(std::move(fmt->inner));
 
         return expression;
     }

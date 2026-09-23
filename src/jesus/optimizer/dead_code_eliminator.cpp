@@ -28,6 +28,7 @@
 #include "ast/expr/dict_expr.hpp"
 #include "ast/expr/conditional_expr.hpp"
 #include "ast/expr/formatted_string_expr.hpp"
+#include "ast/expr/format_expr.hpp"
 #include "ast/expr/method_call_expr.hpp"
 #include "ast/expr/get_attr_expr.hpp"
 #include "ast/expr/index_expr.hpp"
@@ -495,6 +496,12 @@ void DeadCodeEliminator::collectReferencedClasses(const Expr *expression, std::u
         collectReferencedClasses(parity->target.get(), usedClasses);
         return;
     }
+
+    if (auto fmt = dynamic_cast<const FormatExpr *>(expression))
+    {
+        collectReferencedClasses(fmt->inner.get(), usedClasses);
+        return;
+    }
 }
 
 void DeadCodeEliminator::collectReferencedVariables(const Expr *expression, std::unordered_set<std::string> &usedVars)
@@ -618,6 +625,12 @@ void DeadCodeEliminator::collectReferencedVariables(const Expr *expression, std:
 
         return;
     }
+
+    if (auto fmt = dynamic_cast<const FormatExpr *>(expression))
+    {
+        collectReferencedVariables(fmt->inner.get(), usedVars);
+        return;
+    }
 }
 
 bool DeadCodeEliminator::hasNoSideEffects(const Expr *expression)
@@ -696,6 +709,11 @@ bool DeadCodeEliminator::hasNoSideEffects(const Expr *expression)
     if (auto parity = dynamic_cast<const ParityCheckExpr *>(expression))
     {
         return hasNoSideEffects(parity->target.get());
+    }
+
+    if (auto fmt = dynamic_cast<const FormatExpr *>(expression))
+    {
+        return hasNoSideEffects(fmt->inner.get());
     }
 
     if (auto instance = dynamic_cast<const CreateInstanceExpr *>(expression))

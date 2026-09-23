@@ -1,0 +1,6 @@
+saying red "red"
+saying yellow "yellow"
+say "no-color"
+saying blue "blue"
+saying green "green"
+say bold "bold"

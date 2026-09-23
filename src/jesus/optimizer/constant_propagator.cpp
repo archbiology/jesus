@@ -26,6 +26,7 @@
 #include "ast/expr/dict_expr.hpp"
 #include "ast/expr/conditional_expr.hpp"
 #include "ast/expr/formatted_string_expr.hpp"
+#include "ast/expr/format_expr.hpp"
 #include "ast/expr/method_call_expr.hpp"
 #include "ast/expr/get_attr_expr.hpp"
 #include "ast/expr/index_expr.hpp"
@@ -289,6 +290,12 @@ void ConstantPropagator::collectModifiedVarsFromExpr(const Expr *expression, Sta
     if (auto indexExpr = dynamic_cast<const IndexExpr *>(expression))
     {
         collectModifiedVarsFromExpr(indexExpr->collection.get(), state);
+        return;
+    }
+
+    if (auto fmt = dynamic_cast<const FormatExpr *>(expression))
+    {
+        collectModifiedVarsFromExpr(fmt->inner.get(), state);
         return;
     }
 }
@@ -610,6 +617,13 @@ std::unique_ptr<Expr> ConstantPropagator::replaceConstWithLiteralInExpression(
     {
         for (auto &expr : fmtString->expressions)
             expr = replaceConstWithLiteralInExpression(std::move(expr), state);
+
+        return expression;
+    }
+
+    if (auto fmt = dynamic_cast<FormatExpr *>(expression.get()))
+    {
+        fmt->inner = replaceConstWithLiteralInExpression(std::move(fmt->inner), state);
 
         return expression;
     }

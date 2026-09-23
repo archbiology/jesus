@@ -27,6 +27,7 @@
 #include "ast/expr/dict_expr.hpp"
 #include "ast/expr/conditional_expr.hpp"
 #include "ast/expr/formatted_string_expr.hpp"
+#include "ast/expr/format_expr.hpp"
 #include "ast/expr/method_call_expr.hpp"
 #include "ast/expr/get_attr_expr.hpp"
 #include "ast/expr/index_expr.hpp"
@@ -323,6 +324,14 @@ std::unique_ptr<Expr> MethodInliner::optimizeExpression(
     {
         if (convert->valueExpr)
             convert->valueExpr = optimizeExpression(std::move(convert->valueExpr), knownMethods);
+
+        return expression;
+    }
+
+    if (auto fmt = dynamic_cast<FormatExpr *>(expression.get()))
+    {
+        if (fmt->inner)
+            fmt->inner = optimizeExpression(std::move(fmt->inner), knownMethods);
 
         return expression;
     }
@@ -645,6 +654,13 @@ std::unique_ptr<Expr> MethodInliner::cloneExpressionReplacingParamsWithArgs(
                     cloneExpressionReplacingParamsWithArgs(*a, argumentValues, objectExpr, classAttributes));
 
         return std::make_unique<MethodCallExpr>(std::move(newObj), mc->method, std::move(newArgs), mc->interpreter);
+    }
+
+    if (auto fmt = dynamic_cast<const FormatExpr *>(&expression))
+    {
+        std::unique_ptr<Expr> newInner = fmt->inner ? cloneExpressionReplacingParamsWithArgs(*fmt->inner, argumentValues, objectExpr, classAttributes) : nullptr;
+
+        return std::make_unique<FormatExpr>(fmt->formatters, std::move(newInner));
     }
 
     return nullptr;
