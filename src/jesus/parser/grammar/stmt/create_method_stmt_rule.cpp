@@ -153,7 +153,14 @@ std::unique_ptr<Stmt> CreateMethodStmtRule::parse(ParserContext &ctx)
             if (!ctx.match(TokenType::COLON))
                 throw std::runtime_error("Expected ':' after parameter name '" + name + "' in method declaration.");
 
-            if (ctx.check(TokenType::IDENTIFIER))
+            std::shared_ptr<CreationType> type;
+            if (ctx.match(TokenType::ITSELF))
+            {
+                type = ctx.currentClassType();
+                if (!type)
+                    throw std::runtime_error("'itself' can only be used as a type inside a class definition.");
+            }
+            else if (ctx.check(TokenType::IDENTIFIER))
             {
                 ctx.advance();
             }
@@ -167,11 +174,17 @@ std::unique_ptr<Stmt> CreateMethodStmtRule::parse(ParserContext &ctx)
                 throw std::runtime_error("Expected parameter type after ':' in method declaration.");
             }
 
-            std::string typeStr = ctx.previous().lexeme;
-            auto type = KnownTypes::resolve(typeStr, "core");
             if (!type)
             {
-                throw std::runtime_error("Unknown param type: '" + typeStr + "'.");
+                std::string typeStr = ctx.previous().lexeme;
+                type = KnownTypes::resolve(typeStr, "core");
+                if (!type)
+                    type = ctx.resolveType(typeStr);
+
+                if (!type)
+                {
+                    throw std::runtime_error("Unknown param type: '" + typeStr + "'.");
+                }
             }
 
             params->createVar(type, name, Value(1), isParam); // FIXME: Validate `type` and allow initial values
@@ -216,7 +229,13 @@ std::unique_ptr<Stmt> CreateMethodStmtRule::parse(ParserContext &ctx)
     }
     else if (ctx.match(TokenType::ARROW))
     {
-        if (ctx.check(TokenType::IDENTIFIER))
+        if (ctx.match(TokenType::ITSELF))
+        {
+            returnType = ctx.currentClassType();
+            if (!returnType)
+                throw std::runtime_error("'itself' can only be used as a type inside a class definition.");
+        }
+        else if (ctx.check(TokenType::IDENTIFIER))
         {
             ctx.advance();
         }
@@ -230,11 +249,17 @@ std::unique_ptr<Stmt> CreateMethodStmtRule::parse(ParserContext &ctx)
             throw std::runtime_error("Expected return type after '->'.");
         }
 
-        std::string typeName = ctx.previous().lexeme;
-        returnType = KnownTypes::resolve(typeName, "core");
-        if (!returnType)
+        if (!returnType || returnType->isVoid())
         {
-            throw std::runtime_error("Unknown return type: '" + typeName + "'.");
+            std::string typeName = ctx.previous().lexeme;
+            returnType = KnownTypes::resolve(typeName, "core");
+            if (!returnType)
+                returnType = ctx.resolveType(typeName);
+
+            if (!returnType)
+            {
+                throw std::runtime_error("Unknown return type: '" + typeName + "'.");
+            }
         }
     }
 

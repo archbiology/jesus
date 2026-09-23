@@ -162,6 +162,11 @@ public:
         current_scope->registerClassName(className);
     }
 
+    void unregisterClassName(const std::string &className)
+    {
+        current_scope->unregisterClassName(className);
+    }
+
     bool isClassKnown(const std::string &className) const
     {
         for (auto it = scopes.rbegin(); it != scopes.rend(); ++it)

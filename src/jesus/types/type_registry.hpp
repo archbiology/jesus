@@ -48,6 +48,11 @@ public:
         return types.contains(name);
     }
 
+    void unregisterType(const std::string &name)
+    {
+        types.erase(name);
+    }
+
 private:
     std::unordered_map<std::string, std::shared_ptr<CreationType>> types;
 };

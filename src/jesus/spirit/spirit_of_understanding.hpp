@@ -27,6 +27,11 @@ public:
         classNames.insert(className);
     }
 
+    void unregisterClassName(const std::string &className)
+    {
+        classNames.erase(className);
+    }
+
     void registerVarType(const VarType &type, const std::string &name)
     {
         variableTypes[name] = type;

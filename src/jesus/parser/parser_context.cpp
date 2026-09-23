@@ -53,6 +53,11 @@ void ParserContext::registerClassName(const std::string &className)
     interpreter->registerClassName(className);
 }
 
+void ParserContext::unregisterClassName(const std::string &className)
+{
+    interpreter->unregisterClassName(className);
+}
+
 void ParserContext::addScope(std::shared_ptr<Heart> scope)
 {
     interpreter->addScope(scope);

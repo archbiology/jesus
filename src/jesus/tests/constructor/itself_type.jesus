@@ -1,0 +1,26 @@
+let there be Counter:
+
+  __alpha__(public value: number):
+  amen
+
+  purpose increment(by: number) -> number:
+    my value = my value + by
+    return my value
+  amen
+
+  purpose clone() -> itself:
+    return I
+  amen
+
+  purpose merge(other: itself) -> itself:
+    my value = my value + other value
+    return I
+  amen
+
+amen
+
+create first = Counter(5)
+create second = first clone
+create third = first merge second
+create r = third increment 4
+say "firstValue: {first value}, secondValue: {second value}, thirdValue: {r}"

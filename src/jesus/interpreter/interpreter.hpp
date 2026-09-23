@@ -138,6 +138,12 @@ public:
         currentModule->symbol_table->registerClassName(className);
     }
 
+    void unregisterClassName(const std::string &className)
+    {
+        currentModule->symbol_table->unregisterClassName(className);
+        typeRegistry->unregisterType(className);
+    }
+
     void registerParseTimeType(const std::shared_ptr<CreationType> &type)
     {
         typeRegistry->registerType(type);

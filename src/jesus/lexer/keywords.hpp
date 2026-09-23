@@ -142,6 +142,7 @@ namespace Keywords
 
         {"I", TokenType::MY},
         {"my", TokenType::MY},
+        {"itself", TokenType::ITSELF},
 
         {"__alpha__", TokenType::ALPHA},
         {"__omega__", TokenType::OMEGA},

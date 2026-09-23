@@ -1,0 +1,16 @@
+let there be Box:
+  __alpha__(public label: text):
+  amen
+  purpose clone() -> itself:
+    return I
+  amen
+  purpose pair(sibling: itself) -> itself:
+    my label = my label + "+" + sibling label
+    return I
+  amen
+amen
+
+create box_one = Box("one")
+create box_two = box_one clone
+create box_merged = box_one pair box_two
+say box_one label
