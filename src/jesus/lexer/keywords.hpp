@@ -70,6 +70,12 @@ namespace Keywords
         {"warn", TokenType::WARN},
         {"saying", TokenType::SAYING},
         {"warning", TokenType::WARNING},
+        {"yellow", TokenType::YELLOW},
+        {"red", TokenType::RED},
+        {"green", TokenType::GREEN},
+        {"blue", TokenType::BLUE},
+        {"bold", TokenType::BOLD},
+        {"italic", TokenType::ITALIC},
 
         {"amen", TokenType::AMEN},
         {"amém", TokenType::AMEN},

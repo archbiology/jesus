@@ -372,6 +372,7 @@ private:
     Value evalDictExpr(const DictExpr &expr, ExprVisitor &driver);
     Value visitDictExpr(const DictExpr &expr) override;
     Value visitEnumMember(const EnumMemberExpr &expr) override;
+    Value visitFormatExpr(const FormatExpr &expr) override;
 
     /**
      * @brief Converts a runtime value into a string representation.

@@ -25,6 +25,7 @@
 #include "ast/expr/dict_expr.hpp"
 #include "ast/expr/conditional_expr.hpp"
 #include "ast/expr/formatted_string_expr.hpp"
+#include "ast/expr/format_expr.hpp"
 #include "ast/expr/method_call_expr.hpp"
 #include "ast/expr/get_attr_expr.hpp"
 #include "ast/expr/index_expr.hpp"
@@ -375,6 +376,9 @@ std::unique_ptr<Expr> LoopUnroller::cloneExpression(const Expr &expression) cons
     if (auto convert = dynamic_cast<const ConvertToExpr *>(&expression))
         return std::make_unique<ConvertToExpr>(
             convert->valueExpr ? cloneExpression(*convert->valueExpr) : nullptr, convert->targetType);
+
+    if (auto fmt = dynamic_cast<const FormatExpr *>(&expression))
+        return std::make_unique<FormatExpr>(fmt->formatters, fmt->inner ? cloneExpression(*fmt->inner) : nullptr);
 
     return nullptr;
 }

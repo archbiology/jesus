@@ -10,6 +10,7 @@
 #include "../types/composite/its_written_exception_type.hpp"
 #include "../utils/string_utils.hpp"
 #include "../utils/file_utils.hpp"
+#include "../utils/terminal/color.hpp"
 #include "../cli/faith.hpp"
 #include "../cli/bible.hpp"
 #include "runtime/enum_instance.hpp"
@@ -548,6 +549,47 @@ Value Interpreter::visitDictExpr(const DictExpr &expr)
 Value Interpreter::visitEnumMember(const EnumMemberExpr &expr)
 {
     return Value(std::make_shared<EnumInstance>(expr.enumType, expr.memberName, expr.label, expr.value));
+}
+
+Value Interpreter::visitFormatExpr(const FormatExpr &expr)
+{
+    std::string text = expr.inner->accept(*this).toString();
+
+    std::string prefix;
+    for (TokenType f : expr.formatters)
+    {
+        switch (f)
+        {
+        case TokenType::YELLOW:
+            prefix += terminal::color::yellow;
+            break;
+
+        case TokenType::RED:
+            prefix += terminal::color::red;
+            break;
+
+        case TokenType::BLUE:
+            prefix += terminal::color::blue;
+            break;
+
+        case TokenType::GREEN:
+            prefix += terminal::color::green;
+            break;
+
+        case TokenType::BOLD:
+            prefix += terminal::color::bold;
+            break;
+
+        case TokenType::ITALIC:
+            prefix += terminal::color::italic;
+            break;
+
+        default:
+            break;
+        }
+    }
+
+    return Value(prefix + text + terminal::color::reset);
 }
 
 Value Interpreter::visitIndexExpr(const IndexExpr &expr)

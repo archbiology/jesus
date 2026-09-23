@@ -78,6 +78,12 @@ enum class TokenType
     WARN,           // "warn" prints to stderr with new line + flush
     SAYING,         // "saying" prints to stdout without newline or flush
     WARNING,        // "warning" prints to stderr without newline or flush
+    RED,            // "red" ANSI color formatter for print
+    GREEN,          // "green" ANSI color formatter for print
+    BLUE,           // "blue" ANSI color formatter for print
+    YELLOW,         // "yellow" ANSI color formatter for print
+    BOLD,           // "bold" ANSI style formatter for print
+    ITALIC,         // "italic" ANSI style formatter for print
     UPDATE,
     MATCHES,        // create text Confirm matches "(Y|y)es"
     BETEWEEN,       // create real Percentage between 0 and 100

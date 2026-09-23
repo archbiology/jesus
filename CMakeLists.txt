@@ -109,6 +109,7 @@ set(JESUS_CPP_FILES
     src/jesus/ast/expr/index_expr.cpp
     src/jesus/ast/expr/dict_expr.cpp
     src/jesus/ast/expr/enum_member_expr.cpp
+    src/jesus/ast/expr/format_expr.cpp
 
     # --------------
     # AST Statements
@@ -155,6 +156,7 @@ set(JESUS_CPP_FILES
     src/jesus/parser/grammar/expr/atomic/literals/number_rule.cpp
     src/jesus/parser/grammar/expr/atomic/literals/string_rule.cpp
     src/jesus/parser/grammar/expr/atomic/literals/formatted_string_rule.cpp
+    src/jesus/parser/grammar/expr/atomic/literals/format_rule.cpp
     src/jesus/parser/grammar/expr/atomic/literals/yes_no_rule.cpp
     src/jesus/parser/grammar/expr/atomic/literals/variable_rule.cpp
     src/jesus/parser/grammar/expr/atomic/literals/self_rule.cpp

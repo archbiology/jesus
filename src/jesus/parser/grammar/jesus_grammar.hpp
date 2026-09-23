@@ -16,6 +16,7 @@
 #include "expr/atomic/literals/number_rule.hpp"
 #include "expr/atomic/literals/string_rule.hpp"
 #include "expr/atomic/literals/formatted_string_rule.hpp"
+#include "expr/atomic/literals/format_rule.hpp"
 #include "expr/atomic/literals/variable_rule.hpp"
 #include "expr/atomic/literals/self_rule.hpp"
 #include "expr/atomic/literals/yes_no_rule.hpp"
@@ -111,6 +112,7 @@ namespace grammar
         Confess | Giants | Instantiation | Variable | Self | BibleRef | List | Dict |
         Group(Expression);
     inline auto GetAttribute = std::make_shared<GetAttributeRule>(Primary);
+    inline auto Format = std::make_shared<FormatRule>(GetAttribute);
 
     // ----------
     // Statements
@@ -145,6 +147,6 @@ namespace grammar
      */
     inline void initializeGrammar()
     {
-        Unary->setTarget(std::make_shared<UnaryRule>(GetAttribute));
+        Unary->setTarget(std::make_shared<UnaryRule>(Format));
     }
 }
