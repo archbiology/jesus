@@ -1,0 +1,24 @@
+let there be Person:
+
+  __alpha__(public name: text, public title: text):
+  amen
+
+  purpose love(you: Person) -> text:
+    return "{my name} loves {you name}"
+  amen
+
+  purpose help(you: Person) -> text:
+    I love myself
+    I love you
+    my title is 'just another king'
+    you love me
+    my title
+    return "{my name} is {my title}"
+  amen
+
+amen
+
+create jesus = Person('Jesus', 'King of kings')
+create luke = Person('Luke', 'doctor')
+
+jesus help luke

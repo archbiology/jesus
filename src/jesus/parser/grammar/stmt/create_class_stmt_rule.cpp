@@ -3,68 +3,10 @@
 #include "ast/stmt/incomplete_block_stmt.hpp"
 #include "ast/stmt/create_method_stmt.hpp"
 #include "ast/stmt/create_var_stmt.hpp"
-#include "interpreter/runtime/method.hpp"
 #include "types/known_types.hpp"
 #include "understanding/doctrine/law/ungodly_naming.hpp"
 #include "lexer/keywords.hpp"
 #include <stdexcept>
-
-static bool addMethodToClass(
-    std::shared_ptr<CreationType> &userClass,
-    CreateMethodStmt *methodStmt,
-    bool &hasConstructor,
-    bool &hasDestructor)
-{
-    if (methodStmt->isConstructor)
-    {
-        if (hasConstructor)
-        {
-            throw std::runtime_error("Class '" + userClass->name + "' already has a constructor '__alpha__'.");
-        }
-        hasConstructor = true;
-
-        // -------------------------------------------------------
-        // Register the constructor as a method so that it can be
-        // found and invoked automatically whenever a new instance
-        // of this class is created.
-        // -------------------------------------------------------
-        userClass->addMethod(
-            methodStmt->name,
-            std::make_shared<Method>(
-                methodStmt->name,
-                methodStmt->params,
-                methodStmt,
-                methodStmt->returnType,
-                methodStmt->attributeNames));
-
-        return true;
-    }
-
-    if (methodStmt->isDestructor)
-    {
-        if (hasDestructor)
-        {
-            throw std::runtime_error("Class '" + userClass->name + "' already has a destructor '__omega__'.");
-        }
-        hasDestructor = true;
-
-        // -------------------------------------------------------------
-        // Register the destructor as a method so that it can be
-        // found and invoked automatically when an instance passes away.
-        // -------------------------------------------------------------
-        userClass->addMethod(
-            methodStmt->name,
-            std::make_shared<Method>(methodStmt->name, methodStmt->params, methodStmt, methodStmt->returnType));
-
-        return true;
-    }
-
-    userClass->addMethod(
-        methodStmt->name,
-        std::make_shared<Method>(methodStmt->name, methodStmt->params, methodStmt, methodStmt->returnType));
-
-    return false;
-}
 
 static std::unordered_map<std::string, std::string> collectAttributeAccessModifiers(
     const std::vector<std::unique_ptr<Stmt>> &body)
@@ -188,9 +130,6 @@ std::unique_ptr<Stmt> CreateClassStmtRule::parse(ParserContext &ctx)
     ctx.registerType(userClass);
     ctx.registerClassName(className);
 
-    bool hasConstructor = false;
-    bool hasDestructor = false;
-
     try
     {
     ctx.consumeAllNewLines();
@@ -218,25 +157,10 @@ std::unique_ptr<Stmt> CreateClassStmtRule::parse(ParserContext &ctx)
         if (auto method = createMethod->parse(ctx))
         {
             // ------------------------------------------------------------
-            // Register access-modified constructor parameters as class
-            // attributes as soon as the constructor is parsed, so that
-            // method bodies parsed afterwards can reference them (variable
-            // resolution happens at parse time).
+            // The method was already registered into the class by
+            // CreateMethodStmtRule (before its own body was parsed), so a
+            // method can call itself and its siblings recursively.
             // ------------------------------------------------------------
-            if (auto methodStmt = dynamic_cast<CreateMethodStmt *>(method.get()))
-            {
-                if (methodStmt->isConstructor && !methodStmt->attributeNames.empty())
-                {
-                    for (const auto &[paramName, access] : methodStmt->attributeNames)
-                    {
-                        auto paramType = methodStmt->params->getVarType(paramName);
-                        attributes->createVar(paramType, paramName, Value(), /** isParam = */ false);
-                    }
-                }
-
-                addMethodToClass(userClass, methodStmt, hasConstructor, hasDestructor);
-            }
-
             body.push_back(std::move(method));
         }
         else if (auto attr = createVar->parse(ctx))
