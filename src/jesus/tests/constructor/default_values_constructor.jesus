@@ -1,0 +1,24 @@
+let there be Engine:
+    __alpha__(public kind:text = "v8"):
+    amen
+amen
+
+let there be Car:
+    __alpha__(public brand:text, public engine:Engine = Engine()):
+    amen
+    purpose who():
+        say "brand: {brand}, engine: {engine kind}"
+    amen
+amen
+
+create car1 = Car("BMW")
+car1 who
+
+create car2 = Car(brand="VW", engine=Engine("v6"))
+car2 who
+
+create car3 = Car(brand="Tesla")
+car3 who
+
+create car4 = Car("Ferrari", Engine("v12"))
+car4 who

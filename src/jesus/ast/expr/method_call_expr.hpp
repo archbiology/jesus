@@ -9,7 +9,7 @@ REGISTER_FOR_UML(
     MethodCallExpr,
     .packageName("ast.expr")
         .parentsList({"Expr"})
-        .fieldsList({"object", "method", "args"}));
+        .fieldsList({"object", "method", "args", "argIndices"}));
 
 class MethodCallExpr : public Expr
 {
@@ -19,11 +19,25 @@ public:
     std::vector<std::unique_ptr<Expr>> args;
     Interpreter *interpreter = nullptr;
 
+    /**
+     * @brief Parameter index filled by each element of `args`.
+     *
+     * When a call omits parameters that have default values, `args` holds
+     * only the provided values; the i-th entry of `args` fills the
+     * paramIdx = argIndices[i] parameter. The defaults are substituted at
+     * runtime. Empty when no defaults are involved (`args` is then the
+     * full, argument-in-declaration-order list).
+     */
+    std::vector<size_t> argIndices;
+
     MethodCallExpr(
         std::unique_ptr<Expr> object,
         std::shared_ptr<IMethod> method,
-        std::vector<std::unique_ptr<Expr>> args, Interpreter *interpreter_)
-        : object(std::move(object)), method(std::move(method)), args(std::move(args)), interpreter(interpreter_)
+        std::vector<std::unique_ptr<Expr>> args,
+        Interpreter *interpreter_,
+        std::vector<size_t> argIndices = {})
+        : object(std::move(object)), method(std::move(method)), args(std::move(args)), interpreter(interpreter_),
+          argIndices(std::move(argIndices))
     {
         if (this->method == nullptr)
         {

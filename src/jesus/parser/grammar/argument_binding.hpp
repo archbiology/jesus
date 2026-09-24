@@ -35,8 +35,18 @@ struct Argument
  * @param parameterScope  The parameter scope, used for types in error messages.
  * @param kind            "Constructor" or "Method" (for error messages).
  * @param target           The class or method name (for error messages).
+ * @param defaultValues   Default value expressions per parameter (nullptr
+ *                        entries mean "required"). Omitted parameters whose
+ *                        default exists are left out of the returned list and
+ *                        filled with their default at runtime. Pass nullptr to
+ *                        keep the strict arity behavior.
+ * @param argIndices      When non-null, filled with the parameter index filled
+ *                        by each returned argument (one entry per returned
+ *                        expression). Only meaningful when @p defaultValues is
+ *                        also provided.
  *
- * @return Argument expressions in parameter declaration order.
+ * @return The provided argument expressions in parameter declaration order.
+ *         Without @p defaultValues this has exactly one entry per parameter.
  *
  * @throws std::runtime_error on unknown parameter names, duplicated
  *         named arguments, positional arguments after named arguments,
@@ -47,7 +57,9 @@ inline std::vector<std::unique_ptr<Expr>> bindArgumentsToParameters(
     const std::vector<std::string> &parameterNames,
     const std::shared_ptr<Heart> &parameterScope,
     const std::string &kind,
-    const std::string &target)
+    const std::string &target,
+    const std::vector<std::shared_ptr<Expr>> *defaultValues = nullptr,
+    std::vector<size_t> *argIndices = nullptr)
 {
     const bool isMethod = (kind == "Method");
     const std::string countWord = isMethod ? "argument(s)" : "parameter(s)";
@@ -62,6 +74,11 @@ inline std::vector<std::unique_ptr<Expr>> bindArgumentsToParameters(
     bool namedArgumentsStarted = false;
     size_t boundArgumentCount = 0;
 
+    auto hasDefault = [&](size_t idx)
+    {
+        return defaultValues && idx < defaultValues->size() && defaultValues->at(idx) != nullptr;
+    };
+
     auto arityError = [&](size_t gotCount)
     {
         std::string message = kind + " '" + target + "' expects " + std::to_string(parameterCount) + " " + countWord +
@@ -73,7 +90,7 @@ inline std::vector<std::unique_ptr<Expr>> bindArgumentsToParameters(
 
             for (size_t i = 0; i < parameterCount; ++i)
             {
-                if (!parameterBound[i])
+                if (!parameterBound[i] && !hasDefault(i))
                 {
                     message += "\n - " + parameterNames[i] + ": " +
                                (parameterScope ? parameterScope->getVarType(parameterNames[i])->name : "unknown");
@@ -137,6 +154,40 @@ inline std::vector<std::unique_ptr<Expr>> bindArgumentsToParameters(
             parameterBound[nextUnboundParameter] = true;
             ++boundArgumentCount;
         }
+    }
+
+    if (defaultValues)
+    {
+        // Every unbound parameter must have a default value; otherwise the
+        // call is missing required arguments.
+        for (size_t i = 0; i < parameterCount; ++i)
+        {
+            if (!parameterBound[i] && !hasDefault(i))
+            {
+                throw std::runtime_error(arityError(boundArgumentCount));
+            }
+        }
+
+        // Keep only the provided arguments, in parameter declaration
+        // order, plus the parameter index each one fills. Parameters satisfied
+        // by their default value are filled at runtime by the constructor
+        // caller, so they have no entry here.
+        std::vector<std::unique_ptr<Expr>> providedArgs;
+        providedArgs.reserve(boundArgumentCount);
+        if (argIndices)
+            argIndices->reserve(boundArgumentCount);
+
+        for (size_t idx = 0; idx < parameterCount; ++idx)
+        {
+            if (parameterBound[idx])
+            {
+                providedArgs.push_back(std::move(orderedArguments[idx]));
+                if (argIndices)
+                    argIndices->push_back(idx);
+            }
+        }
+
+        return providedArgs;
     }
 
     if (boundArgumentCount != parameterCount)

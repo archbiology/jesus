@@ -15,9 +15,21 @@ public:
     const std::shared_ptr<CreationType> klass;
     std::unique_ptr<Expr> constructorArgs;
 
+    /**
+     * @brief For each element of `constructorArgs` (as a ListExpr), the index
+     * of the constructor parameter it fills. Parameters omitted at the call
+     * site (filled by a constructor default value at runtime) simply have no
+     * entry here.
+     */
+    std::vector<size_t> argIndices;
+
 public:
-    explicit CreateInstanceExpr(const std::string name, std::shared_ptr<CreationType> klass, std::unique_ptr<Expr> constructorArgs = nullptr)
-        : name(std::move(name)), klass(std::move(klass)), constructorArgs(std::move(constructorArgs)) {}
+    explicit CreateInstanceExpr(const std::string name,
+                                std::shared_ptr<CreationType> klass,
+                                std::unique_ptr<Expr> constructorArgs = nullptr,
+                                std::vector<size_t> argIndices = {})
+        : name(std::move(name)), klass(std::move(klass)),
+          constructorArgs(std::move(constructorArgs)), argIndices(std::move(argIndices)) {}
 
     Value evaluate(std::shared_ptr<Heart> scope) const override
     {

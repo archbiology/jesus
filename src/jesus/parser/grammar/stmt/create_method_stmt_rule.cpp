@@ -165,6 +165,7 @@ std::unique_ptr<Stmt> CreateMethodStmtRule::parse(ParserContext &ctx)
     ctx.addScope(params); // <🟢️>
     const bool isParam = true;
     std::vector<std::pair<std::string, std::string>> attributeNames;
+    std::vector<std::shared_ptr<Expr>> defaultValues;
 
     if (isDestructor)
     {
@@ -265,6 +266,19 @@ std::unique_ptr<Stmt> CreateMethodStmtRule::parse(ParserContext &ctx)
 
             params->createVar(type, name, Value(1), isParam); // FIXME: Validate `type` and allow initial values
 
+            // -------------------------------------------------
+            // Optional default value: engine: Engine = Engine()
+            // -------------------------------------------------
+            std::shared_ptr<Expr> defaultValue = nullptr;
+            if (ctx.match(TokenType::EQUAL))
+            {
+                defaultValue = grammar::Expression->parse(ctx);
+                if (!defaultValue)
+                    throw std::runtime_error("Expected a default value after '=' for parameter '" + name + "'.");
+            }
+
+            defaultValues.push_back(std::move(defaultValue));
+
             if (!access.empty())
                 attributeNames.push_back({name, access});
 
@@ -353,6 +367,8 @@ std::unique_ptr<Stmt> CreateMethodStmtRule::parse(ParserContext &ctx)
         isConstructor,
         isDestructor,
         attributeNames);
+
+    stmt->defaultValues = std::move(defaultValues);
 
     addMethodToClass(ctx, stmt.get());
 

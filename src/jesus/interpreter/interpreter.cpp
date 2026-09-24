@@ -101,28 +101,62 @@ Value Interpreter::visitCreateInstanceExpr(const CreateInstanceExpr &expr)
     {
         if (auto constructor = std::dynamic_pointer_cast<Method>(ctorMember->method))
         {
-            // Evaluate any constructor arguments, if provided.
-            std::vector<Value> args;
+            const size_t paramsCount = static_cast<size_t>(constructor->params->paramsCount);
+
+            // -----------------------------------------------------------
+            // Evaluate the constructor arguments that were provided
+            // and place each one at their proper place. The
+            // parameters omitted by the caller are then filled with their
+            // constructor default values (Dependency Inversion: defaults are
+            // the only place an object may be created besides call sites).
+            // -----------------------------------------------------------
+            std::vector<Value> fullArgs(paramsCount);
+            std::vector<bool> paramFilled(paramsCount, false);
+
+            std::vector<Value> providedArgs;
             if (expr.constructorArgs)
             {
                 Value argsValue = evaluate(expr.constructorArgs);
                 if (argsValue.IS_LIST)
                 {
                     for (const auto &arg : argsValue.asList())
-                        args.push_back(*arg);
+                        providedArgs.push_back(*arg);
                 }
                 else if (!argsValue.IS_FORMLESS)
                 {
-                    args.push_back(argsValue);
+                    providedArgs.push_back(argsValue);
+                }
+            }
+
+            for (size_t i = 0; i < providedArgs.size(); ++i)
+            {
+                const size_t paramIdx = (!expr.argIndices.empty() && i < expr.argIndices.size())
+                                            ? expr.argIndices[i]
+                                            : i;
+                if (paramIdx < paramsCount)
+                {
+                    fullArgs[paramIdx] = providedArgs[i];
+                    paramFilled[paramIdx] = true;
+                }
+            }
+
+            if (constructor->definition)
+            {
+                const auto &defaults = constructor->definition->defaultValues;
+                for (size_t paramIdx = 0; paramIdx < paramsCount; ++paramIdx)
+                {
+                    if (!paramFilled[paramIdx] && paramIdx < defaults.size() && defaults[paramIdx])
+                        fullArgs[paramIdx] = defaults[paramIdx]->accept(*this);
                 }
             }
 
             // -------------------------------------------------------------
-            // Invoke the constructor only when we can satisfy its
-            // parameter list (e.g. a no-arg constructor with no arguments).
+            // Invoke the constructor only when its whole parameter list can
+            // be satisfied (every parameter either was passed or has a
+            // default value).
             // FIXME: validate this at parse time, not runtime.
             // -------------------------------------------------------------
-            if (args.size() == static_cast<size_t>(constructor->params->paramsCount))
+            if (fullArgs.size() == paramsCount)
             {
                 // ---------------------------------------------------------
                 // Constructor parameters defined as
@@ -132,21 +166,21 @@ Value Interpreter::visitCreateInstanceExpr(const CreateInstanceExpr &expr)
                 if (!constructor->attributeNames.empty())
                 {
                     const auto paramNames = constructor->params->getVariableNames();
-                    for (size_t i = 0; i < args.size() && i < paramNames.size(); ++i)
+                    for (size_t i = 0; i < fullArgs.size() && i < paramNames.size(); ++i)
                     {
                         for (const auto &[attrName, access] : constructor->attributeNames)
                         {
                             if (paramNames[i] == attrName)
                             {
                                 auto address = instance->attributes->resolveVariableAddressInHierarchy(attrName);
-                                instance->setAttribute(address, args[i]);
+                                instance->setAttribute(address, fullArgs[i]);
                             }
                         }
                     }
                 }
 
                 Value instanceValue(instance);
-                constructor->call(*this, instanceValue, args);
+                constructor->call(*this, instanceValue, fullArgs);
             }
         }
     }
@@ -296,6 +330,43 @@ Value Interpreter::visitMethodCallExpr(const MethodCallExpr &expr)
     // Evaluate all arguments
     for (auto &argExpr : expr.args)
         args.push_back(argExpr->accept(*this));
+
+    // ---------------------------------------------------------------
+    // Parameters omitted by the caller are filled with their default
+    // values. Each provided argument holds its parameter index in
+    // `argIndices` (declaration order), so arguments survive reordering
+    // by named parameters.
+    // ---------------------------------------------------------------
+    if (auto method = std::dynamic_pointer_cast<Method>(expr.method))
+    {
+        if (method->definition && method->definition->defaultValues.size() >= expr.args.size())
+        {
+            const size_t paramsCount = static_cast<size_t>(method->params->paramsCount);
+            std::vector<Value> fullArgs(paramsCount);
+            std::vector<bool> paramFilled(paramsCount, false);
+
+            for (size_t i = 0; i < args.size(); ++i)
+            {
+                const size_t paramIdx = (!expr.argIndices.empty() && i < expr.argIndices.size())
+                                            ? expr.argIndices[i]
+                                            : i;
+                if (paramIdx < paramsCount)
+                {
+                    fullArgs[paramIdx] = args[i];
+                    paramFilled[paramIdx] = true;
+                }
+            }
+
+            const auto &defaults = method->definition->defaultValues;
+            for (size_t paramIdx = 0; paramIdx < paramsCount; ++paramIdx)
+            {
+                if (!paramFilled[paramIdx] && paramIdx < defaults.size() && defaults[paramIdx])
+                    fullArgs[paramIdx] = defaults[paramIdx]->accept(*this);
+            }
+
+            args = std::move(fullArgs);
+        }
+    }
 
     return expr.method->call(*this, object, args);
 }

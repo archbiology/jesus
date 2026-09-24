@@ -398,19 +398,27 @@ std::unique_ptr<Expr> MethodInliner::inlineMethodCall(
         // -----------------------------------------------
         if (auto retStmt = dynamic_cast<const ReturnStmt *>((*methodBody)[0].get()))
         {
-            if (retStmt->value)
+            if (retStmt->value && methodParams)
             {
+                const auto &paramNames = methodParams->getParameterNames();
+
+                // ------------------------------------------------------------------
+                // When the caller
+                // omits a parameter, the compressed argument list is no longer
+                // aligned with the parameter indices and the omission is filled
+                // with the default value at runtime; inlining would substitute
+                // the wrong (or no) value for the remaining parameters.
+                // ------------------------------------------------------------------
+                if (methodCall->args.size() != methodParams->paramsCount)
+                    return methodCall;
+
                 /**
                  * @brief argumentValues["x"] = LiteralExpr(2);
                  */
                 std::unordered_map<std::string, const Expr *> argumentValues;
-                if (methodParams)
+                for (size_t i = 0; i < paramNames.size(); ++i)
                 {
-                    const auto &paramNames = methodParams->getVariableNames();
-                    for (size_t i = 0; i < paramNames.size() && i < methodCall->args.size(); ++i)
-                    {
-                        argumentValues[paramNames[i]] = methodCall->args[i].get();
-                    }
+                    argumentValues[paramNames[i]] = methodCall->args[i].get();
                 }
 
                 auto inlined = cloneExpressionReplacingParamsWithArgs(
@@ -628,7 +636,8 @@ std::unique_ptr<Expr> MethodInliner::cloneExpressionReplacingParamsWithArgs(
                                               *createInst->constructorArgs, argumentValues, objectExpr, classAttributes)
                                         : nullptr;
 
-        return std::make_unique<CreateInstanceExpr>(createInst->name, createInst->klass, std::move(newArgs));
+        return std::make_unique<CreateInstanceExpr>(
+            createInst->name, createInst->klass, std::move(newArgs), createInst->argIndices);
     }
 
     if (auto convert = dynamic_cast<const ConvertToExpr *>(&expression))
@@ -653,7 +662,8 @@ std::unique_ptr<Expr> MethodInliner::cloneExpressionReplacingParamsWithArgs(
                 newArgs.push_back(
                     cloneExpressionReplacingParamsWithArgs(*a, argumentValues, objectExpr, classAttributes));
 
-        return std::make_unique<MethodCallExpr>(std::move(newObj), mc->method, std::move(newArgs), mc->interpreter);
+        return std::make_unique<MethodCallExpr>(
+            std::move(newObj), mc->method, std::move(newArgs), mc->interpreter, mc->argIndices);
     }
 
     if (auto fmt = dynamic_cast<const FormatExpr *>(&expression))

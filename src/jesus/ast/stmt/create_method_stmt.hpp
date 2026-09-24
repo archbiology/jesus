@@ -2,6 +2,7 @@
 
 #include "stmt.hpp"
 #include "../../spirit/heart.hpp"
+#include "../expr/expr.hpp"
 #include <string>
 #include <vector>
 #include <memory>
@@ -53,6 +54,15 @@ public:
      * Each entry is (name, access)
      */
     std::vector<std::pair<std::string, std::string>> attributeNames;
+
+    /**
+     * @brief Default value expression for each parameter, in declaration
+     * order. A nullptr entry (or a missing entry) means the parameter is
+     * required.
+     *
+     * "I give you good precepts: do not forsake my teaching." — Proverbs 4:2
+     */
+    std::vector<std::shared_ptr<Expr>> defaultValues;
 
     CreateMethodStmt(const std::string &name,
                      const std::shared_ptr<Heart> &params,
