@@ -1,0 +1,25 @@
+let there be Engine:
+    __alpha__():
+    amen
+amen
+
+let there be Car:
+    __alpha__():
+    amen
+
+    purpose fakeWork():
+        create counterfeit = Engine()
+    amen
+amen
+
+let there be Truck:
+    __alpha__():
+        create extra = Engine()
+    amen
+amen
+
+let there be Bomb:
+    __omega__():
+        create explosion = Engine()
+    amen
+amen

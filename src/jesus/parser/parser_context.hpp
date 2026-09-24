@@ -27,6 +27,24 @@ public:
     Interpreter *interpreter = nullptr;
     const std::string moduleName;
 
+    /**
+     * @brief Name of the method/constructor/destructor whose body is currently
+     * being parsed, or empty when parsing code outside any of them.
+     *
+     * When non-empty, instantiating a user class (`ClassName()`) is
+     * forbidden, enforcing Dependency Inversion.
+     *
+     * A sign that a class is tightly coupled:
+     *   when it contains '= SomeClass()' inside its method bodies.
+     *
+     * This string is managed exclusively by the `EnforceDependencyInversion`
+     * guard installed in `CreateMethodStmtRule::parse`. Storing the
+     * method name here lets the Dependency Inversion error message
+     * reference the actual method the user is editing, 
+     * so the fix example can be copy-pasted directly.
+     */
+    std::string dependencyInversionEnforcedScope;
+
     explicit ParserContext(std::vector<Token> tokens, Interpreter *interpreter, const std::string& moduleName = "core", int current = 0);
 
     /**

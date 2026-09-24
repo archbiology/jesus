@@ -1,0 +1,36 @@
+❌ Error: Dependency Inversion: 'Engine' cannot be instantiated inside 'fakeWork'.
+Inject the object through a parameter instead:
+
+    purpose fakeWork(engine: Engine):
+    amen
+
+or provide it as a parameter default value:
+
+    purpose fakeWork(engine: Engine = Engine()):
+    amen
+❌ Error: Unknown expression type (parser.cpp)
+❌ Error: Unknown expression type (parser.cpp)
+❌ Error: Dependency Inversion: 'Engine' cannot be instantiated inside '__alpha__'.
+Inject the object through a parameter instead:
+
+    __alpha__(public engine: Engine):
+    amen
+
+or provide it as a parameter default value:
+
+    __alpha__(public engine: Engine = Engine()):
+    amen
+❌ Error: Unknown expression type (parser.cpp)
+❌ Error: Unknown expression type (parser.cpp)
+❌ Error: Dependency Inversion: 'Engine' cannot be instantiated inside '__omega__'.
+Inject the object through a parameter instead:
+
+    __omega__(engine: Engine):
+    amen
+
+or provide it as a parameter default value:
+
+    __omega__(engine: Engine = Engine()):
+    amen
+❌ Error: Unknown expression type (parser.cpp)
+❌ Error: Unknown expression type (parser.cpp)
