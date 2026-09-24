@@ -85,6 +85,43 @@ void addMethodToClass(ParserContext &ctx, CreateMethodStmt *methodStmt)
             methodStmt->isConstructor ? methodStmt->attributeNames
                                       : std::vector<std::pair<std::string, std::string>>{}));
 }
+
+/**
+ * @brief Enforce Dependency Inversion by not allowing instantiations (`= SomeClass()`)
+ * inside a method/constructor/destructor body.
+ *
+ * It records the name of the method being parsed in
+ * `ParserContext::dependencyInversionEnforcedScope` so error messages can
+ * reference the actual method being written (`purpose praise()`,
+ * `__alpha__`, or `__omega__`).
+ *
+ * The restriction starts after the method signature is parsed.
+ * This keeps parameter default values such as `engine: Engine = Engine()`
+ * legal because they belong to the parameter list, not the body.
+ *
+ * The restriction is automatically removed when the body finishes,
+ * also when parsing stops because of an error.
+ */
+class EnforceDependencyInversion
+{
+public:
+    EnforceDependencyInversion(ParserContext &ctx, std::string parsedMethodName)
+        : m_ctx(ctx), m_previous(ctx.dependencyInversionEnforcedScope)
+    {
+        // Keeping the previous value (instead of clearing to "") lets a
+        // pathological nested method parse restore the outer ban correctly.
+        m_ctx.dependencyInversionEnforcedScope = std::move(parsedMethodName);
+    }
+
+    ~EnforceDependencyInversion()
+    {
+        m_ctx.dependencyInversionEnforcedScope = m_previous;
+    }
+
+private:
+    ParserContext &m_ctx;
+    const std::string m_previous;
+};
 } // namespace
 
 std::unique_ptr<Stmt> CreateMethodStmtRule::parse(ParserContext &ctx)
@@ -377,6 +414,14 @@ std::unique_ptr<Stmt> CreateMethodStmtRule::parse(ParserContext &ctx)
     // -----------
     if (!ctx.match(TokenType::COLON))
         throw std::runtime_error("Expected ':' after method signature.");
+
+    // ------------------------------------------------------------------
+    // Dependency Inversion: '= SomeClass()' must not appear inside a
+    // method/constructor/destructor body. Dependencies are injected through
+    // parameters (or provided as parameter default values), so the object is
+    // never created by the class that consumes it.
+    // ------------------------------------------------------------------
+    EnforceDependencyInversion guard(ctx, methodName);
 
     std::vector<std::unique_ptr<Stmt>> body;
 

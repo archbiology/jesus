@@ -1,0 +1,10 @@
+Dependency Inversion: 'Engine' cannot be instantiated inside 'fakeWork'.
+Inject the object through a parameter instead:
+
+    purpose fakeWork(engine: Engine):
+    amen
+
+or provide it as a parameter default value:
+
+    purpose fakeWork(engine: Engine = Engine()):
+    amen

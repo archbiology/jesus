@@ -50,6 +50,32 @@ std::unique_ptr<Expr> InstantiationRule::parse(ParserContext &ctx)
             "Unknown class: '" + className + "'. Make sure the class has been declared or imported.");
     }
 
+    // ------------------------------------------------------------------
+    // Dependency Inversion: a class must not instantiate ANOTHER class
+    // inside a method/constructor/destructor body.
+    // Dependencies must come through a parameter or a default value.
+    //
+    // `dependencyInversionEnforcedScope` is set (by EnforceDependencyInversion)
+    // only while a method body is being parsed.
+    // ------------------------------------------------------------------
+    if (!ctx.dependencyInversionEnforcedScope.empty())
+    {
+        const std::string &methodName = ctx.dependencyInversionEnforcedScope;
+        const bool isSpecialName = (methodName == "__alpha__" || methodName == "__omega__");
+        const std::string keywordPrefix = isSpecialName ? "" : "purpose ";
+        const std::string accessModifier = (methodName == "__alpha__") ? "public " : "";
+
+        throw std::runtime_error(
+            "Dependency Inversion: '" + className + "' cannot be instantiated inside '" + methodName + "'.\n"
+            "Inject the object through a parameter instead:\n\n"
+            "    " + keywordPrefix + methodName + "(" + accessModifier + "engine: " + className + "):\n"
+            "    amen\n\n"
+            "or provide it as a parameter default value:\n\n"
+            "    " + keywordPrefix + methodName + "(" + accessModifier + "engine: " + className + " = " +
+            className + "()):\n"
+            "    amen");
+    }
+
     // ---------------------------
     // Constructor parameters.
     // A class without a defined '__alpha__' constructor behaves like
