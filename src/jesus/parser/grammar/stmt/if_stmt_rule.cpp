@@ -7,6 +7,7 @@
 #include "ast/stmt/repeat_forever_stmt.hpp"
 #include "ast/stmt/skip_stmt.hpp"
 #include "ast/stmt/break_stmt.hpp"
+#include "ast/stmt/return_stmt.hpp"
 #include "ast/stmt/incomplete_block_stmt.hpp"
 #include "../jesus_grammar.hpp"
 #include <stdexcept>
@@ -64,6 +65,14 @@ std::unique_ptr<Stmt> IfStmtRule::parse(ParserContext &ctx)
             thenBranch.push_back(std::make_unique<SkipStmt>());
         else if (ctx.match(TokenType::BREAK))
             thenBranch.push_back(std::make_unique<BreakStmt>());
+        else if (ctx.match(TokenType::RETURN))
+        {
+            std::unique_ptr<Expr> returnExpr = nullptr;
+            if (!ctx.check(TokenType::NEWLINE) && !ctx.check(TokenType::AMEN) && !ctx.check(TokenType::OTHERWISE))
+                returnExpr = grammar::Expression->parse(ctx);
+
+            thenBranch.push_back(std::make_unique<ReturnStmt>(std::move(returnExpr)));
+        }
         else
             throw std::runtime_error("Unexpected statement inside 'if' body.");
 
@@ -91,13 +100,21 @@ std::unique_ptr<Stmt> IfStmtRule::parse(ParserContext &ctx)
             else if (auto stmt = grammar::RepeatWhile->parse(ctx))
                 otherwiseBranch.push_back(std::move(stmt));
             else if (auto stmt = grammar::Foreach->parse(ctx))
-                thenBranch.push_back(std::move(stmt));
+                otherwiseBranch.push_back(std::move(stmt));
             else if (auto stmt = grammar::ResistStmt->parse(ctx))
                 otherwiseBranch.push_back(std::move(stmt));
             else if (ctx.match(TokenType::SKIP))
                 otherwiseBranch.push_back(std::make_unique<SkipStmt>());
             else if (ctx.match(TokenType::BREAK))
                 otherwiseBranch.push_back(std::make_unique<BreakStmt>());
+            else if (ctx.match(TokenType::RETURN))
+            {
+                std::unique_ptr<Expr> returnExpr = nullptr;
+                if (!ctx.check(TokenType::NEWLINE) && !ctx.check(TokenType::AMEN) && !ctx.check(TokenType::OTHERWISE))
+                    returnExpr = grammar::Expression->parse(ctx);
+
+                otherwiseBranch.push_back(std::make_unique<ReturnStmt>(std::move(returnExpr)));
+            }
 
             else
                 throw std::runtime_error("Unexpected statement inside 'otherwise' body.");

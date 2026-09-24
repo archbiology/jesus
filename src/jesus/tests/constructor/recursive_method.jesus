@@ -1,0 +1,15 @@
+let there be MathHelper:
+  purpose fact(n: number) -> number:
+    if n <= 1:
+      return 1
+    otherwise:
+      create sub = myself fact (n - 1)
+      return n * sub
+    amen
+  amen
+
+amen
+
+create m = MathHelper()
+say m fact 5
+say m fact 1

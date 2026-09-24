@@ -1,7 +1,10 @@
 #include "create_method_stmt_rule.hpp"
 #include "../../../ast/stmt/create_method_stmt.hpp"
 #include "../../../ast/stmt/incomplete_block_stmt.hpp"
+#include "../../../ast/stmt/if_stmt.hpp"
+#include "../../../ast/stmt/print_stmt.hpp"
 #include "../../../ast/stmt/return_stmt.hpp"
+#include "../../../interpreter/runtime/method.hpp"
 #include "../../../types/creation_type.hpp"
 #include "../../parser_context.hpp"
 #include "../../../types/known_types.hpp"
@@ -10,6 +13,79 @@
 #include "lexer/keywords.hpp"
 #include "../jesus_grammar.hpp"
 #include <stdexcept>
+
+namespace
+{
+/**
+ * @brief Check if the method always have a `return`
+ */
+bool alwaysReturns(const Stmt *stmt)
+{
+    if (dynamic_cast<const ReturnStmt *>(stmt))
+        return true;
+
+    if (auto ifStmt = dynamic_cast<const IfStmt *>(stmt))
+    {
+        if (ifStmt->thenBranch.empty() || ifStmt->otherwiseBranch.empty())
+            return false;
+
+        return alwaysReturns(ifStmt->thenBranch.back().get()) && alwaysReturns(ifStmt->otherwiseBranch.back().get());
+    }
+
+    return false;
+}
+
+/**
+ * @brief Registers the method into the class currently being parsed, right after
+ * its signature is known but before its body — so the method can call itself
+ * (recursion) and any sibling at parse time. Also promotes public/protected/private
+ * constructor parameters into instance attributes.
+ */
+void addMethodToClass(ParserContext &ctx, CreateMethodStmt *methodStmt)
+{
+    auto klass = ctx.currentClassType();
+    if (!klass)
+    {
+        throw std::runtime_error("Method '" + methodStmt->name + "' must be declared inside a class body.");
+    }
+
+    // -----------------------------------
+    // Only one constructor / destructor
+    // -----------------------------------
+    if (methodStmt->isConstructor && klass->methods.count("__alpha__"))
+    {
+        throw std::runtime_error("Class '" + klass->name + "' already has a constructor '__alpha__'.");
+    }
+    if (methodStmt->isDestructor && klass->methods.count("__omega__"))
+    {
+        throw std::runtime_error("Class '" + klass->name + "' already has a destructor '__omega__'.");
+    }
+
+    // ----------------------------------------------------------------
+    // Promote public/protected/private constructor parameters to
+    // instance attributes as soon as the signature is known, so that
+    // methods parsed afterwards can reference them at parse time.
+    // ----------------------------------------------------------------
+    if (methodStmt->isConstructor)
+    {
+        for (const auto &[paramName, access] : methodStmt->attributeNames)
+        {
+            auto paramType = methodStmt->params->getVarType(paramName);
+            klass->class_attributes->createVar(paramType, paramName, Value(), /*isParam=*/false);
+        }
+    }
+
+    klass->addMethod(
+        methodStmt->name,
+        std::make_shared<Method>(
+            methodStmt->name,
+            methodStmt->params,
+            methodStmt,
+            methodStmt->returnType,
+            methodStmt->isConstructor ? methodStmt->attributeNames
+                                      : std::vector<std::pair<std::string, std::string>>{}));
+}
+} // namespace
 
 std::unique_ptr<Stmt> CreateMethodStmtRule::parse(ParserContext &ctx)
 {
@@ -263,6 +339,23 @@ std::unique_ptr<Stmt> CreateMethodStmtRule::parse(ParserContext &ctx)
         }
     }
 
+    // -------------------------------------------------------------------
+    // Build the AST node NOW — with an empty body — and make the method
+    // known to the class right away, before its body is parsed. A method
+    // can therefore call itself (recursion) and any sibling method at
+    // parse time, exactly like any other call.
+    // -------------------------------------------------------------------
+    auto stmt = std::make_unique<CreateMethodStmt>(
+        methodName,
+        params,
+        returnType,
+        std::vector<std::unique_ptr<Stmt>>{},
+        isConstructor,
+        isDestructor,
+        attributeNames);
+
+    addMethodToClass(ctx, stmt.get());
+
     // -----------
     // Method body
     // -----------
@@ -310,7 +403,21 @@ std::unique_ptr<Stmt> CreateMethodStmtRule::parse(ParserContext &ctx)
         }
         else
         {
-            throw std::runtime_error("Unexpected statement inside method body.");
+            // ----------------------------------------------------------------
+            // Bare expression statement (method call / member read) written in
+            // natural English, e.g.:
+            //   I love myself
+            //   you love me
+            //   my title
+            // ----------------------------------------------------------------
+            int snapshot = ctx.snapshot();
+            auto expr = grammar::Expression->parse(ctx);
+            if (!expr)
+            {
+                ctx.restore(snapshot);
+                throw std::runtime_error("Unexpected statement inside method body.");
+            }
+            body.push_back(std::make_unique<PrintStmt>(StmtType::WARN, std::move(expr)));
         }
 
         ctx.consumeAllNewLines();
@@ -356,16 +463,7 @@ std::unique_ptr<Stmt> CreateMethodStmtRule::parse(ParserContext &ctx)
             // -----------------------------
             if (!returnType->isVoid())
             {
-                if (body.empty())
-                {
-                    throw std::runtime_error(
-                        "Method '" + methodName + "' with return type '" + returnType->toString() +
-                        "' must end with an explicit return.");
-                }
-
-                auto lastStmt = body.back().get();
-                auto ret = dynamic_cast<ReturnStmt *>(lastStmt);
-                if (!ret)
+                if (body.empty() || !alwaysReturns(body.back().get()))
                 {
                     throw std::runtime_error(
                         "Method '" + methodName + "' with return type '" + returnType->toString() +
@@ -382,6 +480,6 @@ std::unique_ptr<Stmt> CreateMethodStmtRule::parse(ParserContext &ctx)
 
     ctx.popScope(); // </🟢️>
 
-    return std::make_unique<CreateMethodStmt>(
-        methodName, std::move(params), returnType, std::move(body), isConstructor, isDestructor, attributeNames);
+    stmt->body = std::move(body);
+    return std::move(stmt);
 }
