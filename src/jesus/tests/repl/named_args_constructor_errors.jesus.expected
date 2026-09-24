@@ -1,14 +1,13 @@
-(Jesus) (Jesus) (Jesus) ❌ Error: Multiple values given for argument 'first'.
-(Jesus) ❌ Error: Undefined variable: dup (scope: __jesus__)
-(Jesus) ❌ Error: Constructor 'Person' has no parameter named 'evil'.
-(Jesus) ❌ Error: Undefined variable: unk (scope: __jesus__)
-(Jesus) ❌ Error: Positional argument cannot follow a named argument in constructor 'Person'.
-(Jesus) ❌ Error: Undefined variable: pos (scope: __jesus__)
-(Jesus) ❌ Error: Constructor 'Person' expects 2 parameter(s), but got 1.
+❌ Error: Multiple values given for argument 'first'.
+❌ Error: Undefined variable: dup (scope: __jesus__)
+❌ Error: Constructor 'Person' has no parameter named 'evil'.
+❌ Error: Undefined variable: unk (scope: __jesus__)
+❌ Error: Positional argument cannot follow a named argument in constructor 'Person'.
+❌ Error: Undefined variable: pos (scope: __jesus__)
+❌ Error: Constructor 'Person' expects 2 parameter(s), but got 1.
 
 Missing parameter(s):
  - years: number
-(Jesus) ❌ Error: Undefined variable: miss (scope: __jesus__)
-(Jesus) (Jesus) John
-(Jesus) (int) 49
-(Jesus) 
+❌ Error: Undefined variable: miss (scope: __jesus__)
+John
+(int) 49

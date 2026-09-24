@@ -1,132 +1,132 @@
-(Jesus) (Jesus) (Jesus) (Jesus) (Jesus) (Jesus) (int) 33
-(Jesus) CreateVarStmt(light, LiteralExpr(Day))
+(int) 33
+CreateVarStmt(light, LiteralExpr(Day))
 CreateVarStmt(messiah, LiteralExpr(Jesus))
 CreateVarStmt(age, LiteralExpr((int) 33))
 CreateVarStmt(priest, LiteralExpr(me))
 CreateVarStmt(average, LiteralExpr((double) 2.300000))
 SayStmt(VariableExpr('age'))
-(Jesus) Jesus
-(Jesus) me
-(Jesus) (int) 33
-(Jesus) adult
-(Jesus) (int) 2
-(Jesus) (int) 9
-(Jesus) (int) 34
-(Jesus) (int) 37
-(Jesus) (int) 69
-(Jesus) (double) 22.000000
-(Jesus) (logic) 1
-(Jesus) (double) -1.000000
-(Jesus) (double) -33.000000
-(Jesus) (logic) 0
-(Jesus) (logic) 0
-(Jesus) (logic) 1
-(Jesus) (double) -5.300000
-(Jesus) (int) 33
-(Jesus) (int) 7
-(Jesus) (logic) 0
-(Jesus) (int) 0
-(Jesus) (int) 7
-(Jesus) (int) 33
-(Jesus) (int) 0
-(Jesus) (int) 0
-(Jesus) (int) 33
-(Jesus) (int) 32
-(Jesus) (int) 1
-(Jesus) (Jesus) null
-(Jesus) (int) 8
-(Jesus) final
-(Jesus) (int) 132
-(Jesus) adult
-(Jesus) (logic) 0
-(Jesus) (logic) 1
-(Jesus) (logic) 0
-(Jesus) (logic) 1
-(Jesus) (logic) 0
-(Jesus) (logic) 1
-(Jesus) (logic) 0
-(Jesus) (logic) 0
-(Jesus) (Jesus) ❌ Error: The variable 'age' already exists in this scope (__jesus__).
-(Jesus) adult
-(Jesus) (int) 2
-(Jesus) (int) 9
-(Jesus) (int) 34
-(Jesus) (int) 37
-(Jesus) (int) 69
-(Jesus) (int) 99
-(Jesus) (int) 0
-(Jesus) (int) 32
-(Jesus) (int) -32
-(Jesus) (double) -1.000000
-(Jesus) (double) 32.000000
-(Jesus) (double) -1.000000
-(Jesus) (int) 132
-(Jesus) (double) 16.500000
-(Jesus) (double) 11.000000
-(Jesus) (double) 23.000000
-(Jesus) (double) 22.000000
-(Jesus) (logic) 1
-(Jesus) (double) -1.000000
-(Jesus) (double) -33.000000
-(Jesus) (logic) 0
-(Jesus) (logic) 0
-(Jesus) (logic) 1
-(Jesus) (double) -5.300000
-(Jesus) (int) 33
-(Jesus) (int) 7
-(Jesus) (logic) 0
-(Jesus) (int) 0
-(Jesus) (int) 7
-(Jesus) (int) 33
-(Jesus) (int) 0
-(Jesus) (int) 0
-(Jesus) (int) 33
-(Jesus) (int) 32
-(Jesus) (int) 1
-(Jesus) (int) 0
-(Jesus) (int) 0
-(Jesus) (int) 8
-(Jesus) (int) 6
-(Jesus) (int) 6
-(Jesus) (int) 6
-(Jesus) ❌ Error: The variable 'name' already exists in this scope (__jesus__).
-(Jesus) null
-(Jesus) (int) 8
-(Jesus) final
-(Jesus) (int) 132
-(Jesus) adult
-(Jesus) (Jesus) ❌ Error: Expected an integer value.
-(Jesus) (Jesus) ❌ Error: Undefined variable: count (scope: __jesus__)
-(Jesus) (int) 1
-(Jesus) (Jesus) (int) 0
-(Jesus) (Jesus) (double) 3.140000
-(Jesus) (Jesus) (double) -6.000000
-(Jesus) ❌ Error: Unknown variable type: 'positive'
-(Jesus) ❌ Error: Undefined variable: elders (scope: __jesus__)
-(Jesus) ❌ Error: Unknown variable type: 'positive'
-(Jesus) ❌ Error: Undefined variable: sinful (scope: __jesus__)
-(Jesus) ❌ Error: Unknown variable type: 'negative'
-(Jesus) ❌ Error: Undefined variable: debt (scope: __jesus__)
-(Jesus) ❌ Error: Unknown variable type: 'negative'
-(Jesus) ❌ Error: Undefined variable: credit (scope: __jesus__)
-(Jesus) ❌ Error: Unknown variable type: 'negative'
-(Jesus) ❌ Error: Undefined variable: void (scope: __jesus__)
-(Jesus) (Jesus) (int) 7
-(Jesus) ❌ Error: Expected value >= (double) 0.000000
-(Jesus) ❌ Error: Undefined variable: darkness (scope: __jesus__)
-(Jesus) (Jesus) (double) 0.333000
-(Jesus) ❌ Error: Expected a number between 0 and 100.
-(Jesus) ❌ Error: Undefined variable: fallen_wise (scope: __jesus__)
-(Jesus) (Jesus) ❌ Error: Expected a number between 0 and 100.
-(Jesus) (int) 100
-(Jesus) (Jesus) 
-(Jesus) (Jesus) Jesus
-(Jesus) (Jesus) Sinful wise
-(Jesus) ❌ Error: Invalid value '(int) 6' for variable 'confusion' declared as type phrase
-(Jesus) ❌ Error: Undefined variable: confusion (scope: __jesus__)
-(Jesus) (Jesus) God does not see
-(Jesus) (Jesus) 
-(Jesus) Variable name 'rebellion' does not appear to reflect God's standards.
+Jesus
+me
+(int) 33
+adult
+(int) 2
+(int) 9
+(int) 34
+(int) 37
+(int) 69
+(double) 22.000000
+(logic) 1
+(double) -1.000000
+(double) -33.000000
+(logic) 0
+(logic) 0
+(logic) 1
+(double) -5.300000
+(int) 33
+(int) 7
+(logic) 0
+(int) 0
+(int) 7
+(int) 33
+(int) 0
+(int) 0
+(int) 33
+(int) 32
+(int) 1
+null
+(int) 8
+final
+(int) 132
+adult
+(logic) 0
+(logic) 1
+(logic) 0
+(logic) 1
+(logic) 0
+(logic) 1
+(logic) 0
+(logic) 0
+❌ Error: The variable 'age' already exists in this scope (__jesus__).
+adult
+(int) 2
+(int) 9
+(int) 34
+(int) 37
+(int) 69
+(int) 99
+(int) 0
+(int) 32
+(int) -32
+(double) -1.000000
+(double) 32.000000
+(double) -1.000000
+(int) 132
+(double) 16.500000
+(double) 11.000000
+(double) 23.000000
+(double) 22.000000
+(logic) 1
+(double) -1.000000
+(double) -33.000000
+(logic) 0
+(logic) 0
+(logic) 1
+(double) -5.300000
+(int) 33
+(int) 7
+(logic) 0
+(int) 0
+(int) 7
+(int) 33
+(int) 0
+(int) 0
+(int) 33
+(int) 32
+(int) 1
+(int) 0
+(int) 0
+(int) 8
+(int) 6
+(int) 6
+(int) 6
+❌ Error: The variable 'name' already exists in this scope (__jesus__).
+null
+(int) 8
+final
+(int) 132
+adult
+❌ Error: Expected an integer value.
+❌ Error: Undefined variable: count (scope: __jesus__)
+(int) 1
+(int) 0
+(double) 3.140000
+(double) -6.000000
+❌ Error: Unknown variable type: 'positive'
+❌ Error: Undefined variable: elders (scope: __jesus__)
+❌ Error: Unknown variable type: 'positive'
+❌ Error: Undefined variable: sinful (scope: __jesus__)
+❌ Error: Unknown variable type: 'negative'
+❌ Error: Undefined variable: debt (scope: __jesus__)
+❌ Error: Unknown variable type: 'negative'
+❌ Error: Undefined variable: credit (scope: __jesus__)
+❌ Error: Unknown variable type: 'negative'
+❌ Error: Undefined variable: void (scope: __jesus__)
+(int) 7
+❌ Error: Expected value >= (double) 0.000000
+❌ Error: Undefined variable: darkness (scope: __jesus__)
+(double) 0.333000
+❌ Error: Expected a number between 0 and 100.
+❌ Error: Undefined variable: fallen_wise (scope: __jesus__)
+❌ Error: Expected a number between 0 and 100.
+(int) 100
+
+Jesus
+Sinful wise
+❌ Error: Invalid value '(int) 6' for variable 'confusion' declared as type phrase
+❌ Error: Undefined variable: confusion (scope: __jesus__)
+God does not see
+
+Variable name 'rebellion' does not appear to reflect God's standards.
 To hide this warning, declare the symbol explicitly as 'ungodly'.
 
 Example:
@@ -135,60 +135,60 @@ Example:
 1 Samuel 15:23 — For rebellion is as the sin of divination, and presumption is as iniquity and idolatry. Because you have rejected the word of the Lord, he has also rejected you from being king.
 1 John 1:9 — If we confess our sins (to Jesus Christ, not to man), he is faithful and just and will forgive us our sins and purify us from all unrighteousness.
 ❌ Error: Invalid value '(int) 13' for variable 'rebellion' declared as type text
-(Jesus) ❌ Error: Undefined variable: rebellion (scope: __jesus__)
-(Jesus) ❌ Error: Unknown variable type: 'car'
-(Jesus) ❌ Error: Undefined variable: hilux (scope: __jesus__)
-(Jesus) (Jesus) (int) 490
-(Jesus) (Jesus) Jesus loves YOU
-(Jesus) ❌ Error: The variable 'age' already exists in this scope (__jesus__).
-(Jesus) (Jesus) ❌ Error: Expected value > (double) 0.000000
-(Jesus) ❌ Error: Undefined variable: abc (scope: __jesus__)
-(Jesus) (Jesus) (int) 9
-(Jesus) (Jesus) (Jesus) (double) -6.000000
-(Jesus) ❌ Error: Variable 'debit' expects a 'Negative', but got: 'number'.
-(Jesus) (Jesus) (Jesus) (int) 7
-(Jesus) ❌ Error: Expected value >= (double) 7.000000
-(Jesus) (Jesus) (Jesus) ❌ Error: Expected value <= (double) 12.000000
-(Jesus) (int) 12
-(Jesus) (Jesus) ❌ Error: Expected a string literal after 'matches', not a formatted string. (e.g., matches "IForgive")
-(Jesus) (Jesus) ❌ Error: Variable 'sure' expects a 'Confirm', but got: 'text'.
-(Jesus) Yes
-(Jesus) (Jesus) What is your age? (Jesus) (double) 18.000000
-(Jesus) Qual sua idade? Validation failed: Invalid number: 'seven'
+❌ Error: Undefined variable: rebellion (scope: __jesus__)
+❌ Error: Unknown variable type: 'car'
+❌ Error: Undefined variable: hilux (scope: __jesus__)
+(int) 490
+Jesus loves YOU
+❌ Error: The variable 'age' already exists in this scope (__jesus__).
+❌ Error: Expected value > (double) 0.000000
+❌ Error: Undefined variable: abc (scope: __jesus__)
+(int) 9
+(double) -6.000000
+❌ Error: Variable 'debit' expects a 'Negative', but got: 'number'.
+(int) 7
+❌ Error: Expected value >= (double) 7.000000
+❌ Error: Expected value <= (double) 12.000000
+(int) 12
+❌ Error: Expected a string literal after 'matches', not a formatted string. (e.g., matches "IForgive")
+❌ Error: Variable 'sure' expects a 'Confirm', but got: 'text'.
+Yes
+What is your age? (double) 18.000000
+Qual sua idade? Validation failed: Invalid number: 'seven'
 Qual sua idade? Validation failed: Invalid number: 'fourteen'
-Qual sua idade? (Jesus) (double) 33.000000
-(Jesus) ❌ Error: Error: 'ask' expects a variable of primitive type 'text' as its prompt, but received variable 'PI' of primitive type 'number'.
-(Jesus) ❌ Error: Error: 'ask' expects a variable of primitive type 'text' as its prompt, but received variable 'temperature' of primitive type 'number'.
-(Jesus) What is your age again (curent: (int) 33)? Validation failed: Invalid number: 'fourty'
+Qual sua idade? (double) 33.000000
+❌ Error: Error: 'ask' expects a variable of primitive type 'text' as its prompt, but received variable 'PI' of primitive type 'number'.
+❌ Error: Error: 'ask' expects a variable of primitive type 'text' as its prompt, but received variable 'temperature' of primitive type 'number'.
+What is your age again (curent: (int) 33)? Validation failed: Invalid number: 'fourty'
 What is your age again (curent: (int) 33)? Validation failed: Invalid number: 'eternal'
-What is your age again (curent: (int) 33)? (Jesus) (double) 2025.000000
-(Jesus) What is your age? (Jesus) What is the new question?
-(Jesus) (Jesus) (Jesus) {type: "instance",
+What is your age again (curent: (int) 33)? (double) 2025.000000
+What is your age? What is the new question?
+{type: "instance",
  class: "User",
  attributes: { }
 }
-(Jesus) (Jesus) (Jesus) {type: "instance",
+{type: "instance",
  class: "MultiLineClass",
  attributes: { }
 }
-(Jesus) igual
-(Jesus) (Jesus) (logic) 0
-(Jesus) (Jesus) (Jesus) (logic) 1
-(Jesus) (logic) 1
-(Jesus) (Jesus) (Jesus) {type: "instance",
+igual
+(logic) 0
+(logic) 1
+(logic) 1
+{type: "instance",
  class: "Luz",
  attributes: { }
 }
-(Jesus) (logic) 1
-(Jesus) (Jesus) (Jesus) {type: "instance",
+(logic) 1
+{type: "instance",
  class: "Canção",
  attributes: { }
 }
-(Jesus) (Jesus) ❌ Error: Undefined variable: wife (scope: __jesus__)
-(Jesus) (Jesus) Adam
-(Jesus) Eve
-(Jesus) (int) 930
-(Jesus) {type: "instance",
+❌ Error: Undefined variable: wife (scope: __jesus__)
+Adam
+Eve
+(int) 930
+{type: "instance",
  class: "Person",
  attributes: {
   name: "Adam",
@@ -196,16 +196,16 @@ What is your age again (curent: (int) 33)? (Jesus) (double) 2025.000000
   age: "(int) 930"
  }
 }
-(Jesus) I am inside functionWithoutParams
+I am inside functionWithoutParams
 null
-(Jesus) ❌ Error: Method 'aToB' expects 2 argument(s), but got 0.
+❌ Error: Method 'aToB' expects 2 argument(s), but got 0.
 
 Missing parameter(s):
  - a_: number
  - b: number
-(Jesus) The new name is: 
-(Jesus) Adam
-(Jesus) a before
+The new name is: 
+Adam
+a before
 (int) 7
 b before
 (int) 49
@@ -219,11 +219,11 @@ Adopted by Jesus Christ
 (int) 7
 (int) 930
 null
-(Jesus) The new name v2 is: 
-(Jesus) Adopted by Jesus Christ
-(Jesus) single-quote string
-(Jesus) Hi {adam} (single-quoted)
-(Jesus) Hi, {type: "instance",
+The new name v2 is: 
+Adopted by Jesus Christ
+single-quote string
+Hi {adam} (single-quoted)
+Hi, {type: "instance",
  class: "Person",
  attributes: {
   name: "Adopted by Jesus Christ",
@@ -231,86 +231,86 @@ null
   age: "(int) 930"
  }
 } (double-quoted)
-(Jesus) Your name is Adopted by Jesus Christ
-(Jesus) (Jesus) Adão
-(Jesus) ❌ Error: NasaRules: Only simple variables or attribute chains are allowed inside formatted strings. This restriction ensures code clarity and safety, following Object Calisthenics and the 10 NASA rules for maintainable software. Expression rejected: '600 + 60 + 6'.
-(Jesus) (Jesus) (Jesus) {type: "instance",
+Your name is Adopted by Jesus Christ
+Adão
+❌ Error: NasaRules: Only simple variables or attribute chains are allowed inside formatted strings. This restriction ensures code clarity and safety, following Object Calisthenics and the 10 NASA rules for maintainable software. Expression rejected: '600 + 60 + 6'.
+{type: "instance",
  class: "SonOfMan",
  attributes: { }
 }
-(Jesus) (int) 33
-(Jesus) I am the way, the truth, the life.
+(int) 33
+I am the way, the truth, the life.
 null
-(Jesus) forgive: seventy times seven
+forgive: seventy times seven
 (int) 490
-(Jesus) ❌ Error: Type mismatch in method 'promiseA': expected return type '{class: "number"}', but found '{class: "text"}'.
-(Jesus) ❌ Error: Unknown expression type (parser.cpp)
-(Jesus) (Jesus) La edad es: (int) 33
-(Jesus) ❌ Error: Invalid value type 'number' for variable 'ageStr' declared as type text
-(Jesus) (Jesus)  Naaman faith count: (int) 1
+❌ Error: Type mismatch in method 'promiseA': expected return type '{class: "number"}', but found '{class: "text"}'.
+❌ Error: Unknown expression type (parser.cpp)
+La edad es: (int) 33
+❌ Error: Invalid value type 'number' for variable 'ageStr' declared as type text
+ Naaman faith count: (int) 1
  Naaman faith count: (int) 2
  Naaman faith count: (int) 3
  Naaman faith count: (int) 4
  Naaman faith count: (int) 5
  Naaman faith count: (int) 6
  Naaman faith count: (int) 7
-(Jesus) Twice
 Twice
-(Jesus) (Jesus) two times
+Twice
 two times
-(Jesus) (Jesus) ❌ Error: NasaRule2: repeat times expects an integer variable or attribute, but '_two' is of type text
-(Jesus) This should not be printed
-(Jesus) ❌ Error: Unknown expression type (parser.cpp)
-(Jesus) (Jesus) Decreasing... (int) 2
+two times
+❌ Error: NasaRule2: repeat times expects an integer variable or attribute, but '_two' is of type text
+This should not be printed
+❌ Error: Unknown expression type (parser.cpp)
+Decreasing... (int) 2
 Decreasing... (int) 1
 Decreasing... (int) 0
-(Jesus) (Jesus) Even: (int) 4
+Even: (int) 4
 Odd:  (int) 5
 Even: (int) 6
 Odd:  (int) 7
 Even: (int) 8
 Odd:  (int) 9
 Even: (int) 10
-(Jesus) ❌ Error: Use 'not' for negation instead of '!'.
-(Jesus) (logic) 0
-(Jesus) ❌ Error: Use 'is not' for inequality instead of '!='.
-(Jesus) (logic) 1
-(Jesus) ❌ Error: Operator 'mod' not supported for given types
-(Jesus) ❌ Error: Use 'mod' for modulo instead of '%'.
-(Jesus) (int) 1
-(Jesus) (logic) 1
-(Jesus) (logic) 0
-(Jesus) (logic) 0
-(Jesus) (logic) 1
-(Jesus) ❌ Error: ❌ Error: Parity checks ('odd'/'even') only support integer types.
-(Jesus) (logic) 1
-(Jesus) (logic) 1
-(Jesus) (Jesus) (logic) 1
-(Jesus) (logic) 0
-(Jesus) (logic) 0
-(Jesus) (logic) 0
-(Jesus) (Jesus) (Jesus) (Jesus) (Jesus) (Jesus) (Jesus) (Jesus) (Jesus) (Jesus) (Jesus) Praise the LORD, oh my soul (Abraham Terahson),
+❌ Error: Use 'not' for negation instead of '!'.
+(logic) 0
+❌ Error: Use 'is not' for inequality instead of '!='.
+(logic) 1
+❌ Error: Operator 'mod' not supported for given types
+❌ Error: Use 'mod' for modulo instead of '%'.
+(int) 1
+(logic) 1
+(logic) 0
+(logic) 0
+(logic) 1
+❌ Error: ❌ Error: Parity checks ('odd'/'even') only support integer types.
+(logic) 1
+(logic) 1
+(logic) 1
+(logic) 0
+(logic) 0
+(logic) 0
+Praise the LORD, oh my soul (Abraham Terahson),
 null
-(Jesus) (Jesus) (Jesus) (Jesus) (Jesus) Praise the LORD, oh my soul (Isaac Abrahamson),
+Praise the LORD, oh my soul (Isaac Abrahamson),
 null
-(Jesus) ❌ Error: Cannot convert from 'Son' to 'Ishmael' since they share no inheritance.
-(Jesus) (Jesus) (Jesus) Bethel (Jacob Isaacson),
+❌ Error: Cannot convert from 'Son' to 'Ishmael' since they share no inheritance.
+Bethel (Jacob Isaacson),
 null
-(Jesus) Jesus
-(Jesus) I am Israel, previously named Jacob.
+Jesus
+I am Israel, previously named Jacob.
 null
-(Jesus) (Jesus) (Jesus) Judah is my lion, and my name is Jacob.
+Judah is my lion, and my name is Jacob.
 null
-(Jesus) (Jesus) (Jesus) Judah is my lion, and my name is Jacob.
+Judah is my lion, and my name is Jacob.
 null
-(Jesus) ❌ Error: Cannot convert from 'Parent -> GrandSon' to 'Ishmael' since they share no inheritance.
-(Jesus) (Jesus) (Jesus) (Jesus) Comments worked
-(Jesus) Special 
+❌ Error: Cannot convert from 'Parent -> GrandSon' to 'Ishmael' since they share no inheritance.
+Comments worked
+Special 
  chars 	 working \ here
-(Jesus) (Jesus) Inside try-repent.
+Inside try-repent.
 Pleas forgive my sins, Oh God Almighty.
 God always wins.
-(Jesus) (Jesus) CreateClassStmt(name: 'GrandSon', body: [
+CreateClassStmt(name: 'GrandSon', body: [
   CreateMethodStmt('__alpha__', body: []),
   CreateMethodStmt('praise', body: [
     UpdateVarStmt('name', value: LiteralExpr(Jacob)),
@@ -320,7 +320,7 @@ God always wins.
   CreateMethodStmt('generateJudah', body: [
     SayStmt(FormattedStringExpr("Judah is my lion, and my name is {name}.)")])])
 AST Memory: 8 bytes
-(Jesus) (Jesus) Class name 'Alien' does not appear to reflect God's standards.
+Class name 'Alien' does not appear to reflect God's standards.
 To hide this warning, declare the class explicitly as 'ungodly'.
 
 Example:
@@ -329,7 +329,7 @@ Example:
 
 Matthew 6:22-23 — The eye is the lamp of the body... So if the light within you is darkness — how deep is that darkness!
 1 John 4:2-3 — This is how you can recognize the Spirit of God: Every spirit that acknowledges that Jesus Christ has come in the flesh is from God, but every spirit that does not acknowledge Jesus is not from God. This is the spirit of the antichrist, which you have heard is coming and even now is already in the world.
-(Jesus) Method name 'kill' does not appear to reflect God's standards.
+Method name 'kill' does not appear to reflect God's standards.
 To hide this warning, declare the method explicitly as 'ungodly'.
 
 Example:
@@ -338,34 +338,33 @@ Example:
 
 Exodus 20:13 — You shall not murder. 1 Corinthians 3:17 — If anyone destroys God’s temple, God will destroy that person; for God’s temple is sacred, and you together are that temple.
 1 John 1:9 — If we confess our sins (to Jesus Christ, not to man), he is faithful and just and will forgive us our sins and purify us from all unrighteousness.
-(Jesus) (Jesus) (Jesus) (Jesus) (Jesus) For God so loved the world, that he gave his one and only Son, that whoever believes in him should not perish, but have eternal life.
+For God so loved the world, that he gave his one and only Son, that whoever believes in him should not perish, but have eternal life.
 
-(Jesus) (Jesus) In Christ we must: Always rejoice.
+In Christ we must: Always rejoice.
 
-(Jesus) (Jesus) Remember Lot's wife!
+Remember Lot's wife!
 
-(Jesus) (Jesus) (Jesus) (Jesus) (Jesus) (Jesus) (Jesus) (Jesus) ❌ Error: Port must be between 1 and 65535
-(Jesus) (Jesus) (Jesus) ❌ Error: Type 'number' does not support [ ].
-(Jesus) ❌ Error: Index -1 is not available in this list.
+❌ Error: Port must be between 1 and 65535
+❌ Error: Type 'number' does not support [ ].
+❌ Error: Index -1 is not available in this list.
 It has 3 elements (valid indexes: 0 to 2).
-(Jesus) ❌ Error: Index 3 is not available in this list.
+❌ Error: Index 3 is not available in this list.
 It has 3 elements (valid indexes: 0 to 2).
-(Jesus) Luke
-(Jesus) ❌ Error: List indexes must be integers. Got 'text' instead.
-(Jesus) (Jesus) [Matt, Marcos, Luke]
-(Jesus) (Jesus) (Jesus) (Jesus) [[{type: "instance",
+Luke
+❌ Error: List indexes must be integers. Got 'text' instead.
+[Matt, Marcos, Luke]
+[[{type: "instance",
  class: "Son",
  attributes: {
   name: "Isaac",
   surname: "Hijo"
  }
 }]]
-(Jesus) (Jesus) Apostle Matt
+Apostle Matt
 Apostle Marcos
 Apostle Luke
-(Jesus) null
-(Jesus) (Jesus) (Jesus) name -> Jesus
+null
+name -> Jesus
 surname -> Christ
 role -> Savior
-(Jesus) null
-(Jesus) 
+null

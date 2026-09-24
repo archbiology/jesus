@@ -3,14 +3,15 @@
 #include "../parser/grammar/expr/still_parsing_multiline_arguments.hpp"
 #include <iostream>
 
-Disciple::Disciple(Interpreter &interpreter) : jesus(interpreter) {}
+Disciple::Disciple(Interpreter &interpreter) : jesus(interpreter), showPrompt(isatty(STDIN_FILENO)) {}
 
 void Disciple::walk()
 {
     std::string buffer;
     std::string line;
 
-    std::cout << "(Jesus) ";
+    if (showPrompt)
+        std::cout << "(Jesus) ";
 
     while (std::getline(std::cin, line))
     {
@@ -29,7 +30,7 @@ void Disciple::walk()
             buffer.clear();
         }
 
-        if (buffer.empty())
+        if (showPrompt && buffer.empty())
             std::cout << "(Jesus) ";
     }
 }

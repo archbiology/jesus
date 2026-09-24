@@ -33,5 +33,12 @@ public:
 
 private:
     Interpreter &jesus;
+
+    /**
+     * @brief Whether the REPL should display the "(Jesus)" prompt.
+     *
+     * Disabled when input is redirected, such as `jesus < file.jesus`.
+     */
+    bool showPrompt;
     void processBuffer(std::string &buffer);
 };
