@@ -11,6 +11,7 @@
 #include "parser/grammar/argument_binding.hpp"
 #include "../still_parsing_multiline_arguments.hpp"
 #include "interpreter/runtime/method.hpp"
+#include "ast/stmt/create_method_stmt.hpp"
 #include <memory>
 #include <optional>
 
@@ -199,14 +200,30 @@ std::unique_ptr<Expr> GetAttributeRule::parse(ParserContext &ctx)
                         } while (ctx.match(TokenType::COMMA));
                 }
 
+                // -------------------------------------------------------
+                // Optional default values: parameters the caller omits are
+                // filled with their default at runtime. The binder therefore
+                // receives which parameters may be skipped (`defaultValues`)
+                // and reports which parameter each returned argument fills
+                // (`argIndices`).
+                // -------------------------------------------------------
+                std::vector<std::shared_ptr<Expr>> defaultValues;
+                if (auto userMethod = std::dynamic_pointer_cast<Method>(member->method))
+                    if (userMethod->definition)
+                        defaultValues = userMethod->definition->defaultValues;
+
+                std::vector<size_t> argIndices;
                 auto args = grammar::bindArgumentsToParameters(
                     std::move(rawArgs),
                     member->method->params->getParameterNames(),
                     member->method->params,
                     "Method",
-                    name);
+                    name,
+                    &defaultValues,
+                    &argIndices);
 
-                expr = std::make_unique<MethodCallExpr>(std::move(expr), member->method, std::move(args), ctx.interpreter);
+                expr = std::make_unique<MethodCallExpr>(
+                    std::move(expr), member->method, std::move(args), ctx.interpreter, std::move(argIndices));
                 expr->validate(ctx);
             }
             else

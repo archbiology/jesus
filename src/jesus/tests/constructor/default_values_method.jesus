@@ -1,0 +1,31 @@
+let there be Calculator:
+    __alpha__():
+    amen
+
+    purpose sum_values(first:number, second:number = 5, third:number = 2) -> number:
+        return first + second + third
+    amen
+amen
+
+create calc = Calculator()
+say calc sum_values 1
+say calc sum_values 1, 2
+say calc sum_values first=1, third=10
+say calc sum_values 1, 2, 3
+
+let there be Greeter:
+    __alpha__(public greeting:text = "Hello"):
+    amen
+
+    purpose greet(name:text = "world", punctuation:text = "!"):
+        say "{greeting}, {name}{punctuation}"
+    amen
+amen
+
+create you = Greeter()
+you greet
+you greet "Jesus"
+you greet "Jesus", "?"
+
+create them = Greeter(greeting="Hey")
+them greet "Moses", "!"

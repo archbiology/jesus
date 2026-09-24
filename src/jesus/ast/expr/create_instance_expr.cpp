@@ -3,6 +3,7 @@
 #include "interpreter/expr_visitor.hpp"
 #include "interpreter/runtime/method.hpp"
 #include "parser/helpers/member.hpp"
+#include "ast/stmt/create_method_stmt.hpp"
 
 Value CreateInstanceExpr::accept(ExprVisitor &visitor) const { return visitor.visitCreateInstanceExpr(*this); }
 
@@ -44,20 +45,42 @@ void CreateInstanceExpr::validate(ParserContext &ctx) const
     }
 
     // -------------------------------------------------------------
-    // The number of arguments must exactly match the constructor's
-    // parameter count.
+    // The number of arguments must match the constructor's parameter
+    // count. Parameters carrying a default value may be omitted.
     // -------------------------------------------------------------
-    if (arguments.size() != paramsCount)
+    std::vector<bool> hasDefault(paramsCount, false);
     {
-        std::string message = "Constructor '" + klass->name + "' expects " + std::to_string(paramsCount) +
-                              " parameter(s), but got " + std::to_string(arguments.size()) + ".";
+        auto methodCtor = std::dynamic_pointer_cast<Method>(constructor);
+        if (methodCtor && methodCtor->definition)
+        {
+            const auto &defaults = methodCtor->definition->defaultValues;
+            for (size_t i = 0; i < defaults.size() && i < paramsCount; ++i)
+                hasDefault[i] = defaults[i] != nullptr;
+        }
+    }
 
-        if (arguments.size() < paramsCount)
+    size_t requiredCount = 0;
+    for (size_t i = 0; i < paramsCount; ++i)
+        if (!hasDefault[i])
+            ++requiredCount;
+
+    if (arguments.size() < requiredCount || arguments.size() > paramsCount)
+    {
+        const std::string countDescription = (requiredCount == paramsCount)
+                                                 ? std::to_string(paramsCount) + " parameter(s)"
+                                                 : "at least " + std::to_string(requiredCount) + " parameter(s)";
+        std::string message = "Constructor '" + klass->name + "' expects " + countDescription +
+                              ", but got " + std::to_string(arguments.size()) + ".";
+
+        if (arguments.size() < requiredCount)
         {
             message += "\n\nMissing parameter(s):";
 
-            for (size_t i = arguments.size(); i < paramsCount; ++i)
+            for (size_t i = 0; i < paramsCount; ++i)
             {
+                if (hasDefault[i])
+                    continue;
+
                 auto paramType = constructor->params->getVarType(paramNames[i]);
                 message += "\n - " + paramNames[i] + ": " + paramType->name;
             }
@@ -71,8 +94,10 @@ void CreateInstanceExpr::validate(ParserContext &ctx) const
     // ----------------------------------------------------------------
     for (size_t i = 0; i < arguments.size(); ++i)
     {
+        const size_t paramIdx = (!argIndices.empty() && i < argIndices.size()) ? argIndices[i] : i;
+
         auto argType = arguments[i]->getReturnType(ctx);
-        auto paramType = constructor->params->getVarType(paramNames[i]);
+        auto paramType = constructor->params->getVarType(paramNames[paramIdx]);
 
         const bool assignable = (argType->isA(paramType) || paramType->isCompatibleWith(argType)) ||
                                 (argType->isPolymorphic() && argType->parent_class->isA(paramType));
@@ -80,7 +105,7 @@ void CreateInstanceExpr::validate(ParserContext &ctx) const
         if (!assignable)
         {
             throw std::runtime_error(
-                "Argument '" + paramNames[i] + "' for the '" + klass->name + "' constructor expects a '" +
+                "Argument '" + paramNames[paramIdx] + "' for the '" + klass->name + "' constructor expects a '" +
                 paramType->name + "', but got '" + argType->name + "'.");
         }
     }

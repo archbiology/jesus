@@ -574,6 +574,15 @@ std::unique_ptr<Expr> ConstantPropagator::replaceConstWithLiteralInExpression(
         // If the object is a CreateInstanceExpr rather than a variable, match
         // the requested attribute against the corresponding __alpha__ parameter
         // and propagate its constructor argument when it is provided.
+        //
+        // Mapping caveat: the constructor arguments are NOT necessarily in
+        // declaration order here. When a constructor parameter has a default
+        // value, the AST only keeps the arguments the caller provided (a
+        // compressed list), and `constructorArgs`/`argIndices` record which
+        // parameter index each provided argument fills. So the attribute name
+        // must be compared against paramNames[argIndices[i]], not against
+        // paramNames[i]. For a plain call without defaults `argIndices` is
+        // empty and every element i maps 1:1 to parameter i.
         // --------------------------------------------------------------------
         if (auto instance = dynamic_cast<CreateInstanceExpr *>(getAttr->object.get()))
         {
@@ -585,9 +594,13 @@ std::unique_ptr<Expr> ConstantPropagator::replaceConstWithLiteralInExpression(
                     auto paramNames = constructor->method->params->getParameterNames();
                     if (auto arguments = dynamic_cast<ListExpr *>(instance->constructorArgs.get()))
                     {
-                        for (size_t i = 0; i < paramNames.size() && i < arguments->elements.size(); ++i)
+                        for (size_t i = 0; i < arguments->elements.size(); ++i)
                         {
-                            if (paramNames[i] == getAttr->attribute && arguments->elements[i])
+                            const size_t paramIdx = (!instance->argIndices.empty() && i < instance->argIndices.size())
+                                                        ? instance->argIndices[i]
+                                                        : i;
+                            if (paramIdx < paramNames.size() && paramNames[paramIdx] == getAttr->attribute &&
+                                arguments->elements[i])
                             {
                                 auto cloned = cloneExpr(*arguments->elements[i]);
                                 if (cloned)
@@ -687,8 +700,15 @@ void ConstantPropagator::propagateConstructorArguments(const CreateVarStmt *crea
     //
     //   - the created value is actually an instance;
     //   - the class has an __alpha__ constructor with parameters;
-    //   - the constructor arguments are represented as a positional list;
-    //   - the corresponding constructor parameter is never modified.
+    //   - the constructor parameter is never modified.
+    //
+    // Argument/parameter mapping: when a constructor parameter has a
+    // default value, the AST keeps only the arguments the caller provided
+    // (compressed), and `instance->argIndices[i]` records which parameter
+    // index argument i fills. Argument i maps to parameter
+    // `argIndices.empty() ? i : argIndices[i]`, so propagation must use
+    // that index when looking up the parameter name. With no defaults
+    // involved `argIndices` is empty and the mapping is 1:1 positional.
     //
     // The values are cloned before being stored because the original AST
     // nodes remain owned by the instance creation expression.
@@ -703,13 +723,19 @@ void ConstantPropagator::propagateConstructorArguments(const CreateVarStmt *crea
                 auto paramNames = __alpha__->method->params->getParameterNames();
                 if (auto arguments = dynamic_cast<ListExpr *>(instance->constructorArgs.get()))
                 {
-                    // ---------------------------------------------------------------
-                    // Match each positional constructor argument with its
-                    // corresponding __alpha__ parameter and propagate it if constant.
-                    // ---------------------------------------------------------------
-                    for (size_t i = 0; i < paramNames.size() && i < arguments->elements.size(); ++i)
+                    // ---------------------------------------------------------
+                    // Match each constructor argument with its parameter
+                    // (via argIndices) and propagate it if constant.
+                    // ---------------------------------------------------------
+                    for (size_t i = 0; i < arguments->elements.size(); ++i)
                     {
-                        const std::string &paramName = paramNames[i];
+                        const size_t paramIdx = (!instance->argIndices.empty() && i < instance->argIndices.size())
+                                                    ? instance->argIndices[i]
+                                                    : i;
+                        if (paramIdx >= paramNames.size())
+                            continue;
+
+                        const std::string &paramName = paramNames[paramIdx];
                         if (!state.modifiedVars.contains(paramName) && arguments->elements[i])
                         {
                             auto clonedArg = cloneExpr(*arguments->elements[i]);

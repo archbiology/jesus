@@ -1,6 +1,7 @@
 #include "instantiation_rule.hpp"
 #include "ast/expr/create_instance_expr.hpp"
 #include "ast/expr/list_expr.hpp"
+#include "ast/stmt/create_method_stmt.hpp"
 #include "types/known_types.hpp"
 #include "parser/helpers/member.hpp"
 #include "interpreter/runtime/method.hpp"
@@ -55,12 +56,17 @@ std::unique_ptr<Expr> InstantiationRule::parse(ParserContext &ctx)
     // a constructor with zero parameters.
     // ---------------------------
     std::vector<std::string> paramNames;
+    std::vector<std::shared_ptr<Expr>> defaultValues;
     std::shared_ptr<Heart> constructorScope = nullptr;
     auto __alpha__ = klass->findMember("__alpha__", klass);
     if (__alpha__ && __alpha__->isMethod())
     {
         constructorScope = __alpha__->method->params;
         paramNames = constructorScope->getParameterNames();
+
+        if (auto constructor = std::dynamic_pointer_cast<Method>(__alpha__->method))
+            if (constructor->definition)
+                defaultValues = constructor->definition->defaultValues;
     }
 
     // ---------------------------------------------
@@ -128,12 +134,15 @@ std::unique_ptr<Expr> InstantiationRule::parse(ParserContext &ctx)
         throw std::runtime_error("Expected ')' to close class instantiation '" + className + "(...)'.");
     }
 
+    std::vector<size_t> argIndices;
     auto args =
-        grammar::bindArgumentsToParameters(std::move(rawArgs), paramNames, constructorScope, "Constructor", className);
+        grammar::bindArgumentsToParameters(std::move(rawArgs), paramNames, constructorScope, "Constructor", className,
+                                           &defaultValues, &argIndices);
 
     auto constructorArgs = std::make_unique<ListExpr>(std::move(args), KnownTypes::LIST);
 
-    auto instantiation = std::make_unique<CreateInstanceExpr>(className, std::move(klass), std::move(constructorArgs));
+    auto instantiation =
+        std::make_unique<CreateInstanceExpr>(className, std::move(klass), std::move(constructorArgs), std::move(argIndices));
     instantiation->validate(ctx);
 
     return instantiation;

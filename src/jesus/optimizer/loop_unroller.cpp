@@ -345,7 +345,8 @@ std::unique_ptr<Expr> LoopUnroller::cloneExpression(const Expr &expression) cons
             methodCall->object ? cloneExpression(*methodCall->object) : nullptr,
             methodCall->method,
             std::move(args),
-            methodCall->interpreter);
+            methodCall->interpreter,
+            methodCall->argIndices);
     }
 
     if (auto getAttr = dynamic_cast<const GetAttributeExpr *>(&expression))
@@ -371,7 +372,8 @@ std::unique_ptr<Expr> LoopUnroller::cloneExpression(const Expr &expression) cons
         return std::make_unique<CreateInstanceExpr>(
             createInst->name,
             createInst->klass,
-            createInst->constructorArgs ? cloneExpression(*createInst->constructorArgs) : nullptr);
+            createInst->constructorArgs ? cloneExpression(*createInst->constructorArgs) : nullptr,
+            createInst->argIndices);
 
     if (auto convert = dynamic_cast<const ConvertToExpr *>(&expression))
         return std::make_unique<ConvertToExpr>(
