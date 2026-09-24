@@ -1,4 +1,3 @@
-(Jesus) (Jesus) (int) 33
-(Jesus) CreateVarStmt(age, LiteralExpr((int) 33))
+(int) 33
+CreateVarStmt(age, LiteralExpr((int) 33))
 SayStmt(VariableExpr('age'))
-(Jesus) 

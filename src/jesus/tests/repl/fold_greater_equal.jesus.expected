@@ -1,7 +1,6 @@
-(Jesus) (Jesus) (Jesus) (logic) 1
-(Jesus) (logic) 0
-(Jesus) CreateVarStmt(value, BinaryExpr(operator: >=, left: LiteralExpr((int) 5), right: LiteralExpr((int) 5)))
+(logic) 1
+(logic) 0
+CreateVarStmt(value, BinaryExpr(operator: >=, left: LiteralExpr((int) 5), right: LiteralExpr((int) 5)))
 CreateVarStmt(value2, BinaryExpr(operator: >=, left: LiteralExpr((int) 5), right: LiteralExpr((int) 7)))
 SayStmt(VariableExpr('value'))
 SayStmt(VariableExpr('value2'))
-(Jesus) 

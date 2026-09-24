@@ -1,5 +1,4 @@
-(Jesus) ❌ Error: Undefined variable: whatever (scope: __jesus__)
-(Jesus) (int) 123
-(Jesus) ❌ Error: Undefined variable: whatever (scope: __jesus__)
-(Jesus) (int) 456
-(Jesus) 
+❌ Error: Undefined variable: whatever (scope: __jesus__)
+(int) 123
+❌ Error: Undefined variable: whatever (scope: __jesus__)
+(int) 456
