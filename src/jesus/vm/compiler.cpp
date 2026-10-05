@@ -1,5 +1,6 @@
 #include "compiler.hpp"
 #include "ast/stmt/create_method_stmt.hpp"
+#include "ast/expr/get_attr_expr.hpp"
 #include "interpreter/runtime/method.hpp"
 
 Chunk Compiler::compile(const std::vector<std::unique_ptr<Stmt>> &statements)
@@ -34,6 +35,12 @@ void Compiler::compileStmt(const Stmt &stmt)
     if (auto update_var = dynamic_cast<const UpdateVarStmt *>(&stmt))
     {
         compileUpdateVarStmt(*update_var);
+        return;
+    }
+
+    if (auto assign = dynamic_cast<const AssignStmt *>(&stmt))
+    {
+        compileAssignStmt(*assign);
         return;
     }
 
@@ -189,12 +196,6 @@ uint32_t Compiler::registerGlobalVar(const std::string &name)
 
 void Compiler::compileCreateVarStmt(const CreateVarStmt &stmt)
 {
-    if (auto instance = dynamic_cast<const CreateInstanceExpr *>(stmt.value.get()))
-    {
-        compileCreateInstanceExpr(*instance);
-        return;
-    }
-
     compileExpr(*stmt.value);
 
     uint32_t index = registerGlobalVar(stmt.name);
@@ -318,4 +319,30 @@ void Compiler::compileMethodCallExpr(const MethodCallExpr &expr)
     uint32_t methodIndex = addConstant(Value(expr.method));
 
     emit(OpCode::CALL, methodIndex);
+}
+
+void Compiler::compileAssignStmt(const AssignStmt &stmt)
+{
+    // ---------------------------------------------------------------
+    // Only attribute assignment is supported for now:
+    //
+    //     adam name = "Adam"
+    //
+    // An indexed target (`list[0] = 10`) needs its own instruction,
+    // since the index is an expression that has to be evaluated
+    // before the value is written.
+    // ---------------------------------------------------------------
+    auto attribute = dynamic_cast<const GetAttributeExpr *>(stmt.target.get());
+    if (!attribute)
+        throw std::runtime_error("Assignment target not supported by VM yet: " + stmt.target->toString());
+
+    // --------------------------------------------
+    // Stack layout for WRITE_ATTR:
+    //  first: the instance that owns the attribute,
+    //  then:  the value being written to it.
+    // --------------------------------------------
+    compileExpr(*attribute->object);
+    compileExpr(*stmt.value);
+
+    emit(OpCode::WRITE_ATTR, attribute->address.slot);
 }

@@ -11,6 +11,7 @@
 #include "ast/stmt/create_var_stmt.hpp"
 #include "ast/stmt/create_class_stmt.hpp"
 #include "ast/stmt/update_var_stmt.hpp"
+#include "ast/stmt/assign_stmt.hpp"
 #include "ast/stmt/print_stmt.hpp"
 #include "ast/stmt/repeat_while_stmt.hpp"
 
@@ -170,4 +171,5 @@ private:
     void compileCreateClassStmt(const CreateClassStmt &stmt);
     void compileCreateInstanceExpr(const CreateInstanceExpr &expr);
     void compileMethodCallExpr(const MethodCallExpr &expr);
+    void compileAssignStmt(const AssignStmt &stmt);
 };
