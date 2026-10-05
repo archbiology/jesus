@@ -61,17 +61,30 @@ std::unique_ptr<Expr> InstantiationRule::parse(ParserContext &ctx)
     if (!ctx.dependencyInversionEnforcedScope.empty())
     {
         const std::string &methodName = ctx.dependencyInversionEnforcedScope;
-        const bool isSpecialName = (methodName == "__alpha__" || methodName == "__omega__");
-        const std::string keywordPrefix = isSpecialName ? "" : "purpose ";
-        const std::string accessModifier = (methodName == "__alpha__") ? "public " : "";
+        const bool isConstructor = (methodName == "__alpha__");
+        const bool isDestructor = (methodName == "__omega__");
+
+        // -----------------------------------------------------
+        // A destructor ('__omega__') cannot receive parameters.
+        // If it is a destructor, we use __alpha__as example.
+        // -----------------------------------------------------
+        const std::string exampleName = isDestructor ? "__alpha__" : methodName;
+        const std::string keywordPrefix = (isConstructor || isDestructor) ? "" : "purpose ";
+        const std::string accessModifier = (isConstructor || isDestructor) ? "public " : "";
+
+        const std::string guidance =
+            isDestructor
+                ? "A destructor cannot receive parameters, so inject the dependency through the "
+                  "'__alpha__' constructor and keep it as an instance attribute:\n\n"
+                : "Inject the object through a parameter instead:\n\n";
 
         throw std::runtime_error(
-            "Dependency Inversion: '" + className + "' cannot be instantiated inside '" + methodName + "'.\n"
-            "Inject the object through a parameter instead:\n\n"
-            "    " + keywordPrefix + methodName + "(" + accessModifier + "engine: " + className + "):\n"
+            "Dependency Inversion: '" + className + "' cannot be instantiated inside '" + methodName + "'.\n" +
+            guidance +
+            "    " + keywordPrefix + exampleName + "(" + accessModifier + "engine: " + className + "):\n"
             "    amen\n\n"
             "or provide it as a parameter default value:\n\n"
-            "    " + keywordPrefix + methodName + "(" + accessModifier + "engine: " + className + " = " +
+            "    " + keywordPrefix + exampleName + "(" + accessModifier + "engine: " + className + " = " +
             className + "()):\n"
             "    amen");
     }
