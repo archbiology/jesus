@@ -44,6 +44,12 @@ void Compiler::compileStmt(const Stmt &stmt)
         return;
     }
 
+    if (auto if_stmt = dynamic_cast<const IfStmt *>(&stmt))
+    {
+        compileIfStmt(*if_stmt);
+        return;
+    }
+
     if (auto repeat_while = dynamic_cast<const RepeatWhileStmt *>(&stmt))
     {
         compileRepeatWhileStmt(*repeat_while);
@@ -345,4 +351,51 @@ void Compiler::compileAssignStmt(const AssignStmt &stmt)
     compileExpr(*stmt.value);
 
     emit(OpCode::WRITE_ATTR, attribute->address.slot);
+}
+
+void Compiler::compileIfStmt(const IfStmt &stmt)
+{
+    // ---------------------------------------------------------------
+    // Compiles:
+    //
+    //     if condition:
+    //         then
+    //     otherwise:
+    //         otherwise
+    //     amen
+    //
+    // Control flow shape:
+    //
+    //   evaluate condition
+    //   JUMP_IF_FALSE -> otherwise (or to the end when there is no 'othewise')
+    //   then
+    //   JUMP -> end         (only when there is an 'otherwise' branch)
+    //   otherwise
+    //   end:
+    // ---------------------------------------------------------------
+    compileExpr(*stmt.condition);
+
+    uint32_t jumpToOtherwise = emitPlaceholder(OpCode::JUMP_IF_FALSE);
+
+    for (const auto &thenStmt : stmt.thenBranch)
+    {
+        compileStmt(*thenStmt);
+    }
+
+    if (stmt.otherwiseBranch.empty())
+    {
+        // No 'otherwise'; let's end here.
+        patchJump(jumpToOtherwise);
+        return;
+    }
+
+    uint32_t jumpToEnd = emitPlaceholder(OpCode::JUMP);
+
+    patchJump(jumpToOtherwise);
+    for (const auto &otherwiseStmt : stmt.otherwiseBranch)
+    {
+        compileStmt(*otherwiseStmt);
+    }
+
+    patchJump(jumpToEnd);
 }
