@@ -23,14 +23,14 @@ or provide it as a parameter default value:
 ❌ Error: Unknown expression type (parser.cpp)
 ❌ Error: Unknown expression type (parser.cpp)
 ❌ Error: Dependency Inversion: 'Engine' cannot be instantiated inside '__omega__'.
-Inject the object through a parameter instead:
+A destructor cannot receive parameters, so inject the dependency through the '__alpha__' constructor and keep it as an instance attribute:
 
-    __omega__(engine: Engine):
+    __alpha__(public engine: Engine):
     amen
 
 or provide it as a parameter default value:
 
-    __omega__(engine: Engine = Engine()):
+    __alpha__(public engine: Engine = Engine()):
     amen
 ❌ Error: Unknown expression type (parser.cpp)
 ❌ Error: Unknown expression type (parser.cpp)

@@ -445,6 +445,8 @@ std::unique_ptr<Stmt> CreateMethodStmtRule::parse(ParserContext &ctx)
         {
             body.push_back(std::move(stmt));
         }
+        else if (auto stmt = grammar::RepeatWhile->parse(ctx))
+            body.push_back(std::move(stmt));
         else if (auto stmt = grammar::IfStmt->parse(ctx))
             body.push_back(std::move(stmt));
         else if (ctx.match(TokenType::RETURN))

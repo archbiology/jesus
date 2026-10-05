@@ -172,6 +172,22 @@ void VM::run(const Chunk &chunk)
             break;
         }
 
+        case OpCode::WRITE_ATTR:
+        {
+            Value value = stack.back();
+            stack.pop_back();
+
+            auto instance = stack.back().toInstance();
+            stack.pop_back();
+
+            uint32_t index = ip->operand;
+
+            instance->attributes->updateVar(index, value);
+
+            ++ip;
+            break;
+        }
+
         case OpCode::JUMP_IF_FALSE:
         {
             Value condition = stack.back();
