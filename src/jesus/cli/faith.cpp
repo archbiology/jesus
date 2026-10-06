@@ -28,7 +28,7 @@ void Faith::interpret(Interpreter &jesus, const std::string &source, const std::
     {
         Compiler compiler;
         Chunk chunk = compiler.compile(statements);
-        VM vm;
+        VM vm(compiler.compiledMethods());
 
         vm.run(chunk);
         return;

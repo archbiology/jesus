@@ -10,19 +10,32 @@
 #include "interpreter/runtime/instance.hpp"
 #include "interpreter/runtime/method.hpp"
 
+VM::VM(const std::unordered_map<const CreateMethodStmt *, Chunk> &methodChunks)
+    : methodChunks(methodChunks)
+{
+}
+
 void VM::run(const Chunk &chunk)
 {
     std::cout << "[VM]\n";
     auto begin = chunk.instructions.data();
     auto ip = begin;
 
+    // The main program is the bottom/first frame;
+    frames.push_back(CallFrame{&chunk, ip, /* locals =*/ {}});
+
     while (true)
     {
+        const size_t frameDepth = frames.size();
+
+        begin = frames.back().chunk->instructions.data();
+        ip = frames.back().ip;
+
         switch (ip->opcode)
         {
         case OpCode::PUSH_LITERAL:
         {
-            stack.push_back(chunk.literals[ip->operand]);
+            stack.push_back(frames.back().chunk->literals[ip->operand]);
 
             ++ip;
             break;
@@ -188,6 +201,29 @@ void VM::run(const Chunk &chunk)
             break;
         }
 
+        case OpCode::READ_LOCAL:
+        {
+            stack.push_back(frames.back().locals[ip->operand]);
+
+            ++ip;
+            break;
+        }
+
+        case OpCode::WRITE_LOCAL:
+        {
+            Value value = stack.back();
+            stack.pop_back();
+
+            auto &locals = frames.back().locals;
+            if (ip->operand >= locals.size())
+                locals.resize(ip->operand + 1);
+
+            locals[ip->operand] = value;
+
+            ++ip;
+            break;
+        }
+
         case OpCode::JUMP_IF_FALSE:
         {
             Value condition = stack.back();
@@ -227,38 +263,84 @@ void VM::run(const Chunk &chunk)
 
         case OpCode::CALL:
         {
-            auto instance = stack.back();
-            stack.pop_back();
-
-            auto method = chunk.literals[ip->operand].asMethod();
+            // -----------------------------------------------------------
+            // For a method call:
+            //
+            //     object.method(arg1, arg2, ..., argN)
+            //
+            // The compiler emits:
+            //
+            //     <object> <arg1> ... <argN> CALL <method>
+            //
+            // The object is the instance on which the method is called.
+            // Each argument becomes a local slot (1..N) of the new frame,
+            // and the object becomes slot 0, which is "$self".
+            //    ┌──────────────┬──────┐
+            //    │ "$self"      │  0   │
+            //    │ "name"       │  1   │
+            //    │ "message"    │  2   │
+            //    └──────────────┴──────┘
+            // -----------------------------------------------------------
+            auto method = frames.back().chunk->literals[ip->operand].asMethod();
 
             auto userMethod = std::dynamic_pointer_cast<Method>(method);
-            if (userMethod && userMethod->definition->body.size() == 1)
-            {
-                if (auto returnStmt = dynamic_cast<const ReturnStmt *>(userMethod->definition->body[0].get()))
-                {
-                    if (auto literalExpr = dynamic_cast<const LiteralExpr *>(returnStmt->value.get()))
-                    {
-                        stack.push_back(literalExpr->value);
-                        ++ip;
-                        break;
-                    }
+            if (!userMethod)
+                throw std::runtime_error("VM CALL: only user methodChunks are supported in VM mode currently.");
 
-                    if (auto getAttr = dynamic_cast<const VariableExpr *>(returnStmt->value.get()))
-                    {
-                        stack.push_back(instance.toInstance()->getAttribute(getAttr->address));
-                        ++ip;
-                        break;
-                    }
-                }
+            uint32_t paramsCount = userMethod->params ? userMethod->params->paramsCount : 0;
+
+            auto compiled = methodChunks.find(userMethod->definition);
+            if (compiled == methodChunks.end())
+                throw std::runtime_error("VM CALL: method body not compiled: " + userMethod->name);
+
+            // The last argument is on top of the stack. Let's put as last in `locals`.
+            //  bottom
+            //      ↓
+            //  ┌─────────┐
+            //  │ object  │  ← $self
+            //  ├─────────┤
+            //  │ arg1    │
+            //  ├─────────┤
+            //  │ arg2    │
+            //  ├─────────┤
+            //  │ arg3    │  ← stack.back()
+            //  └─────────┘
+            //      ↑
+            //     top
+            std::vector<Value> locals(paramsCount + 1);
+            for (uint32_t slot = paramsCount; slot > 0; --slot)
+            {
+                locals[slot] = stack.back();
+                stack.pop_back();
             }
 
-            throw std::runtime_error("VM CALL: only single literal and attribute returns are supported in VM mode currently.");
+            locals[0] = stack.back(); // "$self"
+            stack.pop_back();
+
+            const Chunk &body = compiled->second;
+            frames.push_back(CallFrame{&body, body.instructions.data(), std::move(locals)});
+            break;
         }
 
         case OpCode::RETURN:
         {
-            return;
+            if (frames.size() == 1)
+            {
+                // The program itself is returning, so finish execution.
+                return;
+            }
+
+            // A method is returning: hand the value back to the caller.
+            Value result = stack.back();
+            stack.pop_back();
+
+            frames.pop_back();
+
+            // Resume the caller right after the CALL that started this method.
+            ++frames.back().ip;
+
+            stack.push_back(result);
+            break;
         }
 
         default:
@@ -274,6 +356,18 @@ void VM::run(const Chunk &chunk)
 
             throw std::runtime_error(error.str());
         }
+        }
+
+        // ---------------------------------------------------------------
+        // Save the instruction pointer only if CALL/RETURN did not change
+        // the current frame.
+        //
+        // CALL pushes a new frame and RETURN removes one. After either
+        // operation, the local `ip` may no longer belong to `frames.back()`.
+        // ---------------------------------------------------------------
+        if (frames.size() == frameDepth)
+        {
+            frames.back().ip = ip;
         }
     }
 }

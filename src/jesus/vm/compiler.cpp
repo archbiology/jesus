@@ -2,11 +2,18 @@
 #include "ast/stmt/create_method_stmt.hpp"
 #include "ast/expr/get_attr_expr.hpp"
 #include "interpreter/runtime/method.hpp"
+#include "spirit/heart.hpp"
 
 Chunk Compiler::compile(const std::vector<std::unique_ptr<Stmt>> &statements)
 {
     chunk.instructions.clear();
     chunk.literals.clear();
+
+    methodChunks.clear();
+    localSlots.clear();
+    localCount = 0;
+    compilingMethodBody = false;
+    currentChunk = &chunk;
 
     for (const auto &stmt : statements)
     {
@@ -16,6 +23,11 @@ Chunk Compiler::compile(const std::vector<std::unique_ptr<Stmt>> &statements)
     emit(OpCode::RETURN);
 
     return chunk;
+}
+
+const std::unordered_map<const CreateMethodStmt *, Chunk> &Compiler::compiledMethods() const
+{
+    return methodChunks;
 }
 
 void Compiler::compileStmt(const Stmt &stmt)
@@ -47,6 +59,12 @@ void Compiler::compileStmt(const Stmt &stmt)
     if (auto if_stmt = dynamic_cast<const IfStmt *>(&stmt))
     {
         compileIfStmt(*if_stmt);
+        return;
+    }
+
+    if (auto return_stmt = dynamic_cast<const ReturnStmt *>(&stmt))
+    {
+        compileReturnStmt(*return_stmt);
         return;
     }
 
@@ -173,19 +191,19 @@ void Compiler::compileLiteralExpr(const LiteralExpr &expr)
 
 uint32_t Compiler::addConstant(const Value &value)
 {
-    chunk.literals.push_back(value);
+    currentChunk->literals.push_back(value);
 
-    return static_cast<uint32_t>(chunk.literals.size() - 1);
+    return static_cast<uint32_t>(currentChunk->literals.size() - 1);
 }
 
 void Compiler::emit(OpCode opcode)
 {
-    chunk.instructions.push_back({opcode, 0});
+    currentChunk->instructions.push_back({opcode, 0});
 }
 
 void Compiler::emit(OpCode opcode, uint32_t operand)
 {
-    chunk.instructions.push_back({opcode, operand});
+    currentChunk->instructions.push_back({opcode, operand});
 }
 
 uint32_t Compiler::registerGlobalVar(const std::string &name)
@@ -204,9 +222,27 @@ void Compiler::compileCreateVarStmt(const CreateVarStmt &stmt)
 {
     compileExpr(*stmt.value);
 
+    if (compilingMethodBody)
+    {
+        emit(OpCode::WRITE_LOCAL, localSlot(stmt.name));
+        return;
+    }
+
     uint32_t index = registerGlobalVar(stmt.name);
 
     emit(OpCode::CREATE_GLOBAL, index);
+}
+
+uint32_t Compiler::localSlot(const std::string &name)
+{
+    auto it = localSlots.find(name);
+    if (it != localSlots.end())
+        return it->second;
+
+    uint32_t slot = localCount++;
+    localSlots[name] = slot;
+
+    return slot;
 }
 
 uint32_t Compiler::getGlobalVar(const std::string &name)
@@ -221,6 +257,16 @@ uint32_t Compiler::getGlobalVar(const std::string &name)
 
 void Compiler::compileVariableExpr(const VariableExpr &expr)
 {
+    if (compilingMethodBody)
+    {
+        auto it = localSlots.find(expr.name);
+        if (it != localSlots.end())
+        {
+            emit(OpCode::READ_LOCAL, it->second);
+            return;
+        }
+    }
+
     uint32_t index = getGlobalVar(expr.name);
 
     emit(OpCode::READ_GLOBAL, index);
@@ -230,6 +276,16 @@ void Compiler::compileUpdateVarStmt(const UpdateVarStmt &stmt)
 {
     compileExpr(*stmt.value);
 
+    if (compilingMethodBody)
+    {
+        auto it = localSlots.find(stmt.name);
+        if (it != localSlots.end())
+        {
+            emit(OpCode::WRITE_LOCAL, it->second);
+            return;
+        }
+    }
+
     uint32_t index = getGlobalVar(stmt.name);
 
     emit(OpCode::WRITE_GLOBAL, index);
@@ -237,12 +293,12 @@ void Compiler::compileUpdateVarStmt(const UpdateVarStmt &stmt)
 
 uint32_t Compiler::currentOffset() const
 {
-    return chunk.instructions.size();
+    return currentChunk->instructions.size();
 }
 
 uint32_t Compiler::emitPlaceholder(OpCode opcode)
 {
-    uint32_t index = chunk.instructions.size();
+    uint32_t index = currentChunk->instructions.size();
 
     emit(opcode, 0);
 
@@ -251,7 +307,7 @@ uint32_t Compiler::emitPlaceholder(OpCode opcode)
 
 void Compiler::patchJump(uint32_t instructionIndex)
 {
-    chunk.instructions[instructionIndex].operand = chunk.instructions.size();
+    currentChunk->instructions[instructionIndex].operand = currentChunk->instructions.size();
 }
 
 void Compiler::compileRepeatWhileStmt(const RepeatWhileStmt &stmt)
@@ -294,6 +350,7 @@ void Compiler::compileCreateClassStmt(const CreateClassStmt &stmt)
         // --------------
         else if (auto methodStmt = dynamic_cast<CreateMethodStmt *>(member.get()))
         {
+            compileMethodBody(*methodStmt);
         }
         else
         {
@@ -313,18 +370,97 @@ void Compiler::compileCreateInstanceExpr(const CreateInstanceExpr &expr)
     uint32_t classIndex = addConstant(Value(it->second));
     emit(OpCode::PUSH_LITERAL, classIndex);
     emit(OpCode::CREATE_INSTANCE);
-
-    uint32_t varIndex = registerGlobalVar(expr.name);
-    emit(OpCode::CREATE_GLOBAL, varIndex);
 }
 
 void Compiler::compileMethodCallExpr(const MethodCallExpr &expr)
 {
+    // ---------------------------------------------------------------
+    // For a method call:
+    //
+    //     object.method(arg1, arg2, ..., argN)
+    //
+    // compile the object first, followed by the arguments:
+    //
+    //     <object> <arg1> ... <argN> CALL <method>
+    //
+    // The object is the instance on which the method is called.
+    // The VM binds the arguments to local slots 1..N, so every parameter
+    // must currently be provided. Calls relying on default values
+    // (argIndices) are not compiled yet.
+    // ---------------------------------------------------------------
     compileExpr(*expr.object);
+
+    auto method = std::dynamic_pointer_cast<Method>(expr.method);
+    if (method)
+    {
+        uint32_t paramsCount = method->params ? method->params->paramsCount : 0;
+
+        if (expr.args.size() != paramsCount)
+            throw std::runtime_error(
+                "Calls with default parameter values are not supported by the VM yet: " + method->name);
+    }
+
+    for (const auto &arg : expr.args)
+    {
+        compileExpr(*arg);
+    }
 
     uint32_t methodIndex = addConstant(Value(expr.method));
 
     emit(OpCode::CALL, methodIndex);
+}
+
+void Compiler::compileMethodBody(const CreateMethodStmt &method)
+{
+    // ---------------------------------------------------------------
+    // Every method body is compiled into its own Chunk, so the VM can
+    // run it with its own localSlots:
+    //
+    //     slot 0   -> "$self", the instance the method was called on
+    //     slot 1.. -> the parameters, then the vars created in the body
+    //
+    // Reaching the end of a body returns nothing;
+    // an explicit 'return' is not compiled by the VM yet.
+    // ---------------------------------------------------------------
+
+    // Saving the top-level context, so a method body does not leak its
+    // localSlots into the program being compiled.
+    auto previousChunk = currentChunk;
+    auto previousLocals = std::move(localSlots);
+    auto previouscompilingMethodBody = compilingMethodBody;
+    auto previousLocalCount = localCount;
+
+    Chunk bodyChunk;
+    currentChunk = &bodyChunk;
+    compilingMethodBody = true;
+    localSlots.clear();
+    localCount = 0;
+
+    localSlots[SELF_VARIABLE] = localCount++;
+
+    if (method.params)
+    {
+        for (const auto &paramName : method.params->getParameterNames())
+        {
+            localSlots[paramName] = localCount++;
+        }
+    }
+
+    for (const auto &stmt : method.body)
+    {
+        compileStmt(*stmt);
+    }
+
+    // The body ended without an explicit return, so it returns nothing.
+    emit(OpCode::PUSH_LITERAL, addConstant(Value::formless()));
+    emit(OpCode::RETURN);
+
+    methodChunks[&method] = std::move(bodyChunk);
+
+    currentChunk = previousChunk;
+    localSlots = std::move(previousLocals);
+    compilingMethodBody = previouscompilingMethodBody;
+    localCount = previousLocalCount;
 }
 
 void Compiler::compileAssignStmt(const AssignStmt &stmt)
@@ -398,4 +534,17 @@ void Compiler::compileIfStmt(const IfStmt &stmt)
     }
 
     patchJump(jumpToEnd);
+}
+
+void Compiler::compileReturnStmt(const ReturnStmt &stmt)
+{
+    if (stmt.value)
+    {
+        compileExpr(*stmt.value);
+    }
+    else
+    {
+        emit(OpCode::PUSH_LITERAL, addConstant(Value::formless()));
+    }
+    emit(OpCode::RETURN);
 }

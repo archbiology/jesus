@@ -10,9 +10,11 @@
 
 #include "ast/stmt/create_var_stmt.hpp"
 #include "ast/stmt/create_class_stmt.hpp"
+#include "ast/stmt/create_method_stmt.hpp"
 #include "ast/stmt/update_var_stmt.hpp"
 #include "ast/stmt/assign_stmt.hpp"
 #include "ast/stmt/if_stmt.hpp"
+#include "ast/stmt/return_stmt.hpp"
 #include "ast/stmt/print_stmt.hpp"
 #include "ast/stmt/repeat_while_stmt.hpp"
 
@@ -83,10 +85,46 @@ public:
      */
     Chunk compile(const std::vector<std::unique_ptr<Stmt>> &statements);
 
+    /**
+     * @brief The bytecode compiled from each method body.
+     */
+    const std::unordered_map<const CreateMethodStmt *, Chunk> &compiledMethods() const;
+
 private:
     Chunk chunk;
+    Chunk *currentChunk = nullptr;
+
     std::unordered_map<std::string, uint32_t> globals;
     std::unordered_map<std::string, std::shared_ptr<CreationType>> classes;
+    std::unordered_map<const CreateMethodStmt *, Chunk> methodChunks;
+
+    /**
+     * @brief Maps local variable names to their slots in the current method.
+     *
+     * Slot 0 is reserved for "$self", followed by the parameters
+     * and then the variables created inside the body. Example:
+     *
+     *   ┌──────────────┬──────┐
+     *   │ "$self"      │  0   │
+     *   │ "name"       │  1   │
+     *   │ "message"    │  2   │
+     *   └──────────────┴──────┘
+     *
+     * This map is COMPILER STATE and is discarded when method compilation
+     * finishes (again, used only during compilation)
+     */
+    std::unordered_map<std::string, uint32_t> localSlots;
+
+    /**
+     * @brief Number of local slots handed out so far in the current method.
+     */
+    uint32_t localCount = 0;
+
+    /**
+     * @brief True while a method body is being compiled, so that variables
+     * resolve to localSlots instead of globals.
+     */
+    bool compilingMethodBody = false;
 
     void compileStmt(const Stmt &stmt);
 
@@ -174,4 +212,12 @@ private:
     void compileMethodCallExpr(const MethodCallExpr &expr);
     void compileAssignStmt(const AssignStmt &stmt);
     void compileIfStmt(const IfStmt &stmt);
+    void compileMethodBody(const CreateMethodStmt &method);
+    void compileReturnStmt(const ReturnStmt &stmt);
+
+    /**
+     * @brief Returns the local slot of a name, handing out a new slot the
+     * first time the name is seen inside the current method.
+     */
+    uint32_t localSlot(const std::string &name);
 };
