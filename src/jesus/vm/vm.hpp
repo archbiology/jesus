@@ -2,6 +2,26 @@
 
 #include "chunk.hpp"
 
+#include "ast/stmt/create_method_stmt.hpp"
+
+#include <unordered_map>
+
+/**
+ * @brief Context of the current method being executed.
+ *
+ * Pushed by CALL and popped by RETURN. Each frame carries:
+ *
+ * - chunk:  the bytecode being executed (the program, or a method body).
+ * - ip:     the next instruction to execute inside that chunk.
+ * - locals: the local slots of the running method; slot 0 is "$self".
+ */
+struct CallFrame
+{
+    const Chunk *chunk;
+    const Instruction *ip;
+    std::vector<Value> locals;
+};
+
 /**
  * @brief Executes Jesus bytecode.
  *
@@ -38,16 +58,10 @@ class VM
 {
 private:
     /**
-     * Compiled bytecode currently being executed.
+     * The bytecode of each method body.
+     * Looked up on CALL through the Method's definition pointer.
      */
-    Chunk *chunk;
-
-    /**
-     * Instruction Pointer.
-     *
-     * Points to the next bytecode instruction to execute.
-     */
-    Instruction *ip;
+    const std::unordered_map<const CreateMethodStmt *, Chunk> &methodChunks;
 
     /**
      * Evaluation stack used by the VM.
@@ -57,7 +71,20 @@ private:
     std::vector<Value> stack;
     std::vector<Value> globals;
 
+    /**
+     * Active method invocations;
+     * the program itself (global context) is the bottom frame.
+     */
+    std::vector<CallFrame> frames;
+
 public:
+    /**
+     * @brief Default constructor
+     *
+     * @param methodChunks the bytecode of each method body
+     */
+    explicit VM(const std::unordered_map<const CreateMethodStmt *, Chunk> &methodChunks);
+
     /**
      * Executes the loaded Chunk until a RETURN
      * instruction is encountered.
