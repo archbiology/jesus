@@ -62,6 +62,12 @@ void Compiler::compileStmt(const Stmt &stmt)
         return;
     }
 
+    if (auto return_stmt = dynamic_cast<const ReturnStmt *>(&stmt))
+    {
+        compileReturnStmt(*return_stmt);
+        return;
+    }
+
     if (auto repeat_while = dynamic_cast<const RepeatWhileStmt *>(&stmt))
     {
         compileRepeatWhileStmt(*repeat_while);
@@ -528,4 +534,17 @@ void Compiler::compileIfStmt(const IfStmt &stmt)
     }
 
     patchJump(jumpToEnd);
+}
+
+void Compiler::compileReturnStmt(const ReturnStmt &stmt)
+{
+    if (stmt.value)
+    {
+        compileExpr(*stmt.value);
+    }
+    else
+    {
+        emit(OpCode::PUSH_LITERAL, addConstant(Value::formless()));
+    }
+    emit(OpCode::RETURN);
 }

@@ -14,6 +14,7 @@
 #include "ast/stmt/update_var_stmt.hpp"
 #include "ast/stmt/assign_stmt.hpp"
 #include "ast/stmt/if_stmt.hpp"
+#include "ast/stmt/return_stmt.hpp"
 #include "ast/stmt/print_stmt.hpp"
 #include "ast/stmt/repeat_while_stmt.hpp"
 
@@ -212,6 +213,7 @@ private:
     void compileAssignStmt(const AssignStmt &stmt);
     void compileIfStmt(const IfStmt &stmt);
     void compileMethodBody(const CreateMethodStmt &method);
+    void compileReturnStmt(const ReturnStmt &stmt);
 
     /**
      * @brief Returns the local slot of a name, handing out a new slot the
