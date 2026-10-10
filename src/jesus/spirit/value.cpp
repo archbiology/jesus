@@ -70,7 +70,7 @@ const std::shared_ptr<Instance> Value::toInstance() const
         throw std::runtime_error("Only instances have attributes.");
     }
 
-    return std::get<std::shared_ptr<Instance>>(value);
+    return std::get<std::shared_ptr<Instance>>(value->data);
 }
 
 bool operator==(const Value &left, const Value &right)
@@ -93,7 +93,7 @@ bool operator==(const Value &left, const Value &right)
         return left.AS_BOOLEAN == right.AS_BOOLEAN;
 
     if (left.IS_STRING && right.IS_STRING)
-        return std::get<std::string>(left.value) == std::get<std::string>(right.value);
+        return std::get<std::string>(left.value->data) == std::get<std::string>(right.value->data);
 
     if (left.IS_INSTANCE && right.IS_INSTANCE)
     {
@@ -133,7 +133,7 @@ const std::shared_ptr<IMethod> Value::asMethod() const
         throw std::runtime_error("Only methods can be returned as methods.");
     }
 
-    return std::get<std::shared_ptr<IMethod>>(value);
+    return std::get<std::shared_ptr<IMethod>>(value->data);
 }
 
 std::string Value::toString() const
@@ -153,5 +153,5 @@ std::string Value::toString() const
     if (IS_DOUBLE)
         return "(double) " + std::to_string(number);
 
-    return std::visit(make_string_functor(), value);
+    return std::visit(make_string_functor(), value->data);
 }
