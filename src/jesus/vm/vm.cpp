@@ -20,41 +20,66 @@ void VM::run(const Chunk &chunk)
     // The main program is the bottom/first frame; it has no locals.
     frames.push_back(CallFrame{&chunk, begin, 0});
 
-    while (true)
-    {
-        switch (ip->opcode)
-        {
-        case OpCode::PUSH_LITERAL:
+    // -----------------------------------------------------------------
+    // Computed-goto dispatch (GCC/Clang GNU extension).
+    //
+    // Every opcode gets a dedicated label in the interpreter loop; the
+    // dispatch table maps an opcode to the address of its label. This is
+    // faster than a plain switch/jump-table because the "next instruction"
+    // dispatch is folded into the tail of every case (no re-switching).
+    // -----------------------------------------------------------------
+    static const void *const dispatchTable[] = {
+        &&OP_PUSH_LITERAL,    // PUSH_LITERAL
+        &&OP_CREATE_GLOBAL,   // CREATE_GLOBAL
+        &&OP_READ_GLOBAL,     // READ_GLOBAL
+        &&OP_WRITE_GLOBAL,    // WRITE_GLOBAL
+        &&OP_READ_LOCAL,      // READ_LOCAL
+        &&OP_WRITE_LOCAL,     // WRITE_LOCAL
+        &&OP_CREATE_INSTANCE, // CREATE_INSTANCE
+        &&OP_DEFAULT,         // READ_ATTR (not implemented)
+        &&OP_WRITE_ATTR,      // WRITE_ATTR
+        &&OP_BINARY,          // ADD
+        &&OP_BINARY,          // SUBTRACT
+        &&OP_BINARY,          // MULTIPLY
+        &&OP_BINARY,          // DIVIDE
+        &&OP_BINARY,          // MODULO
+        &&OP_BINARY,          // EQUAL
+        &&OP_BINARY,          // NOT_EQUAL
+        &&OP_BINARY,          // LESS
+        &&OP_BINARY,          // LESS_EQUAL
+        &&OP_BINARY,          // GREATER
+        &&OP_BINARY,          // GREATER_EQUAL
+        &&OP_BINARY,          // OR
+        &&OP_BINARY,          // AND
+        &&OP_BINARY,          // XOR
+        &&OP_PRINT,           // PRINT
+        &&OP_JUMP,            // JUMP
+        &&OP_JUMP_IF_FALSE,   // JUMP_IF_FALSE
+        &&OP_CALL,            // CALL
+        &&OP_RETURN           // RETURN
+    };
+
+    // Dispatch to the main program's first instruction.
+    goto NEXT_OP;
+
+    OP_PUSH_LITERAL:
         {
             stack.push_back(currentChunk->literals[ip->operand]);
 
             ++ip;
-            break;
+            goto NEXT_OP;
         }
 
-        case OpCode::PRINT:
+    OP_PRINT:
         {
             std::cout << stack.back().toString() << std::endl;
             stack.pop_back();
 
             ++ip;
-            break;
+            goto NEXT_OP;
         }
 
-        case OpCode::ADD:
-        case OpCode::SUBTRACT:
-        case OpCode::MULTIPLY:
-        case OpCode::DIVIDE:
-        case OpCode::MODULO:
-        case OpCode::EQUAL:
-        case OpCode::NOT_EQUAL:
-        case OpCode::LESS:
-        case OpCode::LESS_EQUAL:
-        case OpCode::GREATER:
-        case OpCode::GREATER_EQUAL:
-        case OpCode::OR:
-        case OpCode::AND:
-        case OpCode::XOR:
+    OP_BINARY:
         {
             Value &left = stack[stack.size() - 2];
             Value &right = stack[stack.size() - 1];
@@ -72,76 +97,46 @@ void VM::run(const Chunk &chunk)
                     if (left.IS_DOUBLE || right.IS_DOUBLE)
                     {
                         const double res = left.number + right.number;
-                        left.value = res;
-                        left.number = res;
-                        left.IS_DOUBLE = true;
-                        left.IS_INT = false;
-                        left.IS_NUMBER = true;
-                        left.AS_BOOLEAN = (res != 0.0);
+                        left.setAsDouble(res);
                     }
                     else
                     {
-                        const int res = std::get<int>(left.value) + std::get<int>(right.value);
-                        left.value = res;
-                        left.number = res;
-                        left.IS_DOUBLE = false;
-                        left.IS_INT = true;
-                        left.IS_NUMBER = true;
-                        left.AS_BOOLEAN = (res != 0);
+                        const int res = left.intValue + right.intValue;
+                        left.setAsInt(res);
                     }
                     stack.pop_back();
                     ++ip;
-                    continue;
+                    goto NEXT_OP;
 
                 case OpCode::SUBTRACT:
                     if (left.IS_DOUBLE || right.IS_DOUBLE)
                     {
                         const double res = left.number - right.number;
-                        left.value = res;
-                        left.number = res;
-                        left.IS_DOUBLE = true;
-                        left.IS_INT = false;
-                        left.IS_NUMBER = true;
-                        left.AS_BOOLEAN = (res != 0.0);
+                        left.setAsDouble(res);
                     }
                     else
                     {
-                        const int res = std::get<int>(left.value) - std::get<int>(right.value);
-                        left.value = res;
-                        left.number = res;
-                        left.IS_DOUBLE = false;
-                        left.IS_INT = true;
-                        left.IS_NUMBER = true;
-                        left.AS_BOOLEAN = (res != 0);
+                        const int res = left.intValue - right.intValue;
+                        left.setAsInt(res);
                     }
                     stack.pop_back();
                     ++ip;
-                    continue;
+                    goto NEXT_OP;
 
                 case OpCode::MULTIPLY:
                     if (left.IS_DOUBLE || right.IS_DOUBLE)
                     {
                         const double res = left.number * right.number;
-                        left.value = res;
-                        left.number = res;
-                        left.IS_DOUBLE = true;
-                        left.IS_INT = false;
-                        left.IS_NUMBER = true;
-                        left.AS_BOOLEAN = (res != 0.0);
+                        left.setAsDouble(res);
                     }
                     else
                     {
-                        const int res = std::get<int>(left.value) * std::get<int>(right.value);
-                        left.value = res;
-                        left.number = res;
-                        left.IS_DOUBLE = false;
-                        left.IS_INT = true;
-                        left.IS_NUMBER = true;
-                        left.AS_BOOLEAN = (res != 0);
+                        const int res = left.intValue * right.intValue;
+                        left.setAsInt(res);
                     }
                     stack.pop_back();
                     ++ip;
-                    continue;
+                    goto NEXT_OP;
 
                 case OpCode::DIVIDE:
                 {
@@ -149,15 +144,10 @@ void VM::run(const Chunk &chunk)
                     if (divisor == 0.0)
                         throw std::runtime_error("Division by zero");
                     const double res = left.number / divisor;
-                    left.value = res;
-                    left.number = res;
-                    left.IS_DOUBLE = true;
-                    left.IS_INT = false;
-                    left.IS_NUMBER = true;
-                    left.AS_BOOLEAN = (res != 0.0);
+                    left.setAsDouble(res);
                     stack.pop_back();
                     ++ip;
-                    continue;
+                    goto NEXT_OP;
                 }
 
                 case OpCode::MODULO:
@@ -165,52 +155,47 @@ void VM::run(const Chunk &chunk)
                         throw std::runtime_error("'" + std::to_string(left.number) + " mod " + std::to_string(right.number) + "' invalid — 'mod' only supports integers.");
                     {
                         const int res = left.toInt() % right.toInt();
-                        left.value = res;
-                        left.number = res;
-                        left.IS_DOUBLE = false;
-                        left.IS_INT = true;
-                        left.IS_NUMBER = true;
-                        left.AS_BOOLEAN = (res != 0);
+                        left.setAsInt(res);
                         stack.pop_back();
                         ++ip;
-                        continue;
+                        goto NEXT_OP;
                     }
 
                 case OpCode::EQUAL:
                     left.setAsBoolean(left.number == right.number);
                     stack.pop_back();
                     ++ip;
-                    continue;
+                    goto NEXT_OP;
 
                 case OpCode::NOT_EQUAL:
                     left.setAsBoolean(left.number != right.number);
                     stack.pop_back();
                     ++ip;
-                    continue;
+                    goto NEXT_OP;
 
                 case OpCode::LESS:
                     left.setAsBoolean(left.number < right.number);
                     stack.pop_back();
                     ++ip;
-                    continue;
+                    goto NEXT_OP;
 
                 case OpCode::LESS_EQUAL:
                     left.setAsBoolean(left.number <= right.number);
                     stack.pop_back();
                     ++ip;
-                    continue;
+                    goto NEXT_OP;
 
                 case OpCode::GREATER:
                     left.setAsBoolean(left.number > right.number);
                     stack.pop_back();
                     ++ip;
-                    continue;
+                    goto NEXT_OP;
 
                 case OpCode::GREATER_EQUAL:
                     left.setAsBoolean(left.number >= right.number);
                     stack.pop_back();
                     ++ip;
-                    continue;
+                    goto NEXT_OP;
 
                 default:
                     break; // OR / AND / XOR fall through to the generic path
@@ -295,10 +280,10 @@ void VM::run(const Chunk &chunk)
             }
 
             ++ip;
-            break;
+            goto NEXT_OP;
         }
 
-        case OpCode::CREATE_GLOBAL:
+    OP_CREATE_GLOBAL:
         {
             Value value = std::move(stack.back());
             stack.pop_back();
@@ -311,20 +296,20 @@ void VM::run(const Chunk &chunk)
             globals[index] = value;
 
             ++ip;
-            break;
+            goto NEXT_OP;
         }
 
-        case OpCode::READ_GLOBAL:
+    OP_READ_GLOBAL:
         {
             uint32_t index = ip->operand;
 
             stack.push_back(globals[index]);
 
             ++ip;
-            break;
+            goto NEXT_OP;
         }
 
-        case OpCode::WRITE_GLOBAL:
+    OP_WRITE_GLOBAL:
         {
             uint32_t index = ip->operand;
             Value value = std::move(stack.back());
@@ -333,10 +318,10 @@ void VM::run(const Chunk &chunk)
             globals[index] = value;
 
             ++ip;
-            break;
+            goto NEXT_OP;
         }
 
-        case OpCode::WRITE_ATTR:
+    OP_WRITE_ATTR:
         {
             Value value = std::move(stack.back());
             stack.pop_back();
@@ -349,27 +334,27 @@ void VM::run(const Chunk &chunk)
             instance->attributes->updateVar(index, value);
 
             ++ip;
-            break;
+            goto NEXT_OP;
         }
 
-        case OpCode::READ_LOCAL:
+    OP_READ_LOCAL:
         {
             stack.push_back(stack[frames.back().localsBase + ip->operand]);
 
             ++ip;
-            break;
+            goto NEXT_OP;
         }
 
-        case OpCode::WRITE_LOCAL:
+    OP_WRITE_LOCAL:
         {
             stack[frames.back().localsBase + ip->operand] = std::move(stack.back());
             stack.pop_back();
 
             ++ip;
-            break;
+            goto NEXT_OP;
         }
 
-        case OpCode::JUMP_IF_FALSE:
+    OP_JUMP_IF_FALSE:
         {
             Value condition = std::move(stack.back());
             stack.pop_back();
@@ -385,17 +370,17 @@ void VM::run(const Chunk &chunk)
                 ++ip;
             }
 
-            break;
+            goto NEXT_OP;
         }
 
-        case OpCode::JUMP:
+    OP_JUMP:
         {
             // Back to the beginning of the loop
             ip = begin + ip->operand;
-            break;
+            goto NEXT_OP;
         }
 
-        case OpCode::CREATE_INSTANCE:
+    OP_CREATE_INSTANCE:
         {
             auto klass = std::move(stack.back()).asClass();
             stack.pop_back();
@@ -403,10 +388,10 @@ void VM::run(const Chunk &chunk)
             stack.push_back(Value(std::make_shared<Instance>(klass)));
 
             ++ip;
-            break;
+            goto NEXT_OP;
         }
 
-        case OpCode::CALL:
+    OP_CALL:
         {
             // -----------------------------------------------------------
             // For a method call:
@@ -468,10 +453,10 @@ void VM::run(const Chunk &chunk)
             begin = currentChunk->instructions.data();
             ip = begin;
             frames.push_back(CallFrame{&body, begin, base});
-            break;
+            goto NEXT_OP;
         }
 
-        case OpCode::RETURN:
+    OP_RETURN:
         {
             if (frames.size() == 1)
             {
@@ -497,10 +482,10 @@ void VM::run(const Chunk &chunk)
             ip = frames.back().ip;
 
             stack.push_back(std::move(result));
-            break;
+            goto NEXT_OP;
         }
 
-        default:
+    OP_DEFAULT:
         {
             auto offset = ip - begin;
             std::stringstream error;
@@ -513,6 +498,8 @@ void VM::run(const Chunk &chunk)
 
             throw std::runtime_error(error.str());
         }
-        }
-    }
+
+    // Re-dispatch on the (possibly updated) instruction pointer.
+    NEXT_OP:
+        goto *dispatchTable[static_cast<uint8_t>(ip->opcode)];
 }

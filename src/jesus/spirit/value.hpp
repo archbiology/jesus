@@ -66,19 +66,117 @@ public:
      */
     double number = 0.0;
 
-    Value() : value(std::monostate{}), IS_FORMLESS(true), AS_BOOLEAN(false) {}
-    explicit Value(std::monostate) : value(std::monostate{}), IS_FORMLESS(true), AS_BOOLEAN(false) {}
-    explicit Value(int v) : value(v), number(static_cast<double>(v)), IS_INT(true), IS_NUMBER(true), AS_BOOLEAN(v != 0) {}
-    explicit Value(double v) : value(v), number(v), IS_DOUBLE(true), IS_NUMBER(true), AS_BOOLEAN(v != 0.0) {}
-    explicit Value(bool v) : value(v), IS_BOOLEAN(true), AS_BOOLEAN(v) {}
-    explicit Value(const std::string &v) : value(v), IS_STRING(true), AS_BOOLEAN(v != "") {}
-    explicit Value(const char *v) : value(std::string(v)), IS_STRING(true), AS_BOOLEAN(std::string(v) != "") {}
-    explicit Value(const std::shared_ptr<Module> &v) : value(v), IS_MODULE(true), AS_BOOLEAN(true) {}
-    explicit Value(const std::shared_ptr<CreationType> &v) : value(v), IS_CLASS(true), AS_BOOLEAN(true) {}
-    explicit Value(const std::shared_ptr<Instance> &v) : value(v), IS_INSTANCE(true), AS_BOOLEAN(static_cast<bool>(v)) {}
-    explicit Value(const std::shared_ptr<IMethod> &v) : value(v), IS_METHOD(true), AS_BOOLEAN(true) {}
-    explicit Value(const std::shared_ptr<ListValue> &v) : value(std::move(v)), IS_LIST(true), AS_BOOLEAN(!v->empty()) {}
-    explicit Value(const std::shared_ptr<DictValue> &v) : value(std::move(v)), IS_DICT(true), AS_BOOLEAN(!v->empty()) {}
+    /**
+     * Cached integer payload for IS_INT values. Like `number`, it is stored
+     * outside the variant so integer copies never touch the variant.
+     */
+    int intValue = 0;
+
+    Value() : IS_FORMLESS(true), AS_BOOLEAN(false) {}
+    explicit Value(std::monostate) : IS_FORMLESS(true), AS_BOOLEAN(false) {}
+    explicit Value(int v) : IS_INT(true), IS_NUMBER(true), AS_BOOLEAN(v != 0), number(static_cast<double>(v)), intValue(v) {}
+    explicit Value(double v) : IS_DOUBLE(true), IS_NUMBER(true), AS_BOOLEAN(v != 0.0), number(v), intValue(static_cast<int>(v)) {}
+    explicit Value(bool v) : IS_BOOLEAN(true), AS_BOOLEAN(v) {}
+    explicit Value(const std::string &v) : IS_STRING(true), AS_BOOLEAN(v != ""), value(v) {}
+    explicit Value(const char *v) : IS_STRING(true), AS_BOOLEAN(std::string(v) != ""), value(std::string(v)) {}
+    explicit Value(const std::shared_ptr<Module> &v) : IS_MODULE(true), AS_BOOLEAN(true), value(v) {}
+    explicit Value(const std::shared_ptr<CreationType> &v) : IS_CLASS(true), AS_BOOLEAN(true), value(v) {}
+    explicit Value(const std::shared_ptr<Instance> &v) : IS_INSTANCE(true), AS_BOOLEAN(static_cast<bool>(v)), value(v) {}
+    explicit Value(const std::shared_ptr<IMethod> &v) : IS_METHOD(true), AS_BOOLEAN(true), value(v) {}
+    explicit Value(const std::shared_ptr<ListValue> &v) : IS_LIST(true), AS_BOOLEAN(!v->empty()), value(std::move(v)) {}
+    explicit Value(const std::shared_ptr<DictValue> &v) : IS_DICT(true), AS_BOOLEAN(!v->empty()), value(std::move(v)) {}
+
+    /**
+     * @brief True when this Value carries a scalar payload (null/bool/int/
+     * double) that lives in the cached fields rather than inside `value`.
+     *
+     * Scalars deliberately keep the variant default-initialised (a trivial
+     * bool), so copying/destroying them never runs the variant's visitor.
+     */
+    bool storesAsScalar() const
+    {
+        return IS_NUMBER || IS_BOOLEAN || IS_FORMLESS;
+    }
+
+    Value(const Value &other)
+        : IS_FORMLESS(other.IS_FORMLESS), IS_INT(other.IS_INT), IS_DOUBLE(other.IS_DOUBLE),
+          IS_NUMBER(other.IS_NUMBER), IS_BOOLEAN(other.IS_BOOLEAN), IS_STRING(other.IS_STRING),
+          IS_LIST(other.IS_LIST), IS_DICT(other.IS_DICT), IS_MODULE(other.IS_MODULE),
+          IS_CLASS(other.IS_CLASS), IS_INSTANCE(other.IS_INSTANCE), IS_METHOD(other.IS_METHOD),
+          AS_BOOLEAN(other.AS_BOOLEAN), number(other.number), intValue(other.intValue)
+    {
+        if (!other.storesAsScalar())
+            value = other.value;
+    }
+
+    Value(Value &&other) noexcept
+        : IS_FORMLESS(other.IS_FORMLESS), IS_INT(other.IS_INT), IS_DOUBLE(other.IS_DOUBLE),
+          IS_NUMBER(other.IS_NUMBER), IS_BOOLEAN(other.IS_BOOLEAN), IS_STRING(other.IS_STRING),
+          IS_LIST(other.IS_LIST), IS_DICT(other.IS_DICT), IS_MODULE(other.IS_MODULE),
+          IS_CLASS(other.IS_CLASS), IS_INSTANCE(other.IS_INSTANCE), IS_METHOD(other.IS_METHOD),
+          AS_BOOLEAN(other.AS_BOOLEAN), number(other.number), intValue(other.intValue)
+    {
+        if (!other.storesAsScalar())
+            value = std::move(other.value);
+    }
+
+    Value &operator=(const Value &other)
+    {
+        if (this == &other)
+            return *this;
+
+        IS_FORMLESS = other.IS_FORMLESS;
+        IS_INT = other.IS_INT;
+        IS_DOUBLE = other.IS_DOUBLE;
+        IS_NUMBER = other.IS_NUMBER;
+        IS_BOOLEAN = other.IS_BOOLEAN;
+        IS_STRING = other.IS_STRING;
+        IS_LIST = other.IS_LIST;
+        IS_DICT = other.IS_DICT;
+        IS_MODULE = other.IS_MODULE;
+        IS_CLASS = other.IS_CLASS;
+        IS_INSTANCE = other.IS_INSTANCE;
+        IS_METHOD = other.IS_METHOD;
+        AS_BOOLEAN = other.AS_BOOLEAN;
+        number = other.number;
+        intValue = other.intValue;
+
+        if (other.storesAsScalar())
+            value = std::monostate{};
+        else
+            value = other.value;
+
+        return *this;
+    }
+
+    Value &operator=(Value &&other) noexcept
+    {
+        if (this == &other)
+            return *this;
+
+        IS_FORMLESS = other.IS_FORMLESS;
+        IS_INT = other.IS_INT;
+        IS_DOUBLE = other.IS_DOUBLE;
+        IS_NUMBER = other.IS_NUMBER;
+        IS_BOOLEAN = other.IS_BOOLEAN;
+        IS_STRING = other.IS_STRING;
+        IS_LIST = other.IS_LIST;
+        IS_DICT = other.IS_DICT;
+        IS_MODULE = other.IS_MODULE;
+        IS_CLASS = other.IS_CLASS;
+        IS_INSTANCE = other.IS_INSTANCE;
+        IS_METHOD = other.IS_METHOD;
+        AS_BOOLEAN = other.AS_BOOLEAN;
+        number = other.number;
+        intValue = other.intValue;
+
+        if (other.storesAsScalar())
+            value = std::monostate{};
+        else
+            value = std::move(other.value);
+
+        return *this;
+    }
 
     /**
      * @brief Create a NONE/NULL/monostate Value.
@@ -109,14 +207,47 @@ public:
      */
     void setAsBoolean(bool v)
     {
-        value = v;
+        value = std::monostate{};
         number = 0.0;
+        intValue = 0;
         IS_FORMLESS = false;
         IS_INT = false;
         IS_DOUBLE = false;
         IS_NUMBER = false;
         IS_BOOLEAN = true;
         AS_BOOLEAN = v;
+    }
+
+    /**
+     * @brief Overwrites this Value in place with an integer result.
+     */
+    void setAsInt(int v)
+    {
+        value = std::monostate{};
+        number = static_cast<double>(v);
+        intValue = v;
+        IS_FORMLESS = false;
+        IS_BOOLEAN = false;
+        IS_DOUBLE = false;
+        IS_INT = true;
+        IS_NUMBER = true;
+        AS_BOOLEAN = (v != 0);
+    }
+
+    /**
+     * @brief Overwrites this Value in place with a double result.
+     */
+    void setAsDouble(double v)
+    {
+        value = std::monostate{};
+        number = v;
+        intValue = static_cast<int>(v);
+        IS_FORMLESS = false;
+        IS_BOOLEAN = false;
+        IS_INT = false;
+        IS_DOUBLE = true;
+        IS_NUMBER = true;
+        AS_BOOLEAN = (v != 0.0);
     }
 
     int toInt() const
@@ -194,7 +325,7 @@ public:
                 return Value(left.toNumber() + right.toNumber());
             }
 
-            return Value(std::get<int>(left.value) + std::get<int>(right.value));
+            return Value(left.intValue + right.intValue);
         }
 
         if (left.IS_STRING || right.IS_STRING)
@@ -214,7 +345,7 @@ public:
                 return Value(left.toNumber() - right.toNumber());
             }
 
-            return Value(std::get<int>(left.value) - std::get<int>(right.value));
+            return Value(left.intValue - right.intValue);
         }
 
         throw std::runtime_error("Operator '-' not supported for given types");
@@ -228,7 +359,7 @@ public:
             {
                 return Value(left.toNumber() * right.toNumber());
             }
-            return Value(std::get<int>(left.value) * std::get<int>(right.value));
+            return Value(left.intValue * right.intValue);
         }
 
         // TODO: Allow STR * NUMBER, like in Python
