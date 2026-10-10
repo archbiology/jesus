@@ -455,6 +455,7 @@ void Compiler::compileMethodBody(const CreateMethodStmt &method)
     emit(OpCode::PUSH_LITERAL, addConstant(Value::formless()));
     emit(OpCode::RETURN);
 
+    bodyChunk.localCount = localCount;
     methodChunks[&method] = std::move(bodyChunk);
 
     currentChunk = previousChunk;

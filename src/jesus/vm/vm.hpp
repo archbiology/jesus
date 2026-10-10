@@ -11,15 +11,16 @@
  *
  * Pushed by CALL and popped by RETURN. Each frame carries:
  *
- * - chunk:  the bytecode being executed (the program, or a method body).
- * - ip:     the next instruction to execute inside that chunk.
- * - locals: the local slots of the running method; slot 0 is "$self".
+ * - chunk:       the bytecode being executed (the program, or a method body).
+ * - ip:          the next instruction to execute inside that chunk.
+ * - localsBase:  this frame's region inside the shared `locals` array;
+ *                slot 0 of the method ("$self") lives at that index.
  */
 struct CallFrame
 {
     const Chunk *chunk;
     const Instruction *ip;
-    std::vector<Value> locals;
+    std::size_t localsBase;
 };
 
 /**
@@ -66,7 +67,9 @@ private:
     /**
      * Evaluation stack used by the VM.
      *
-     * Instructions push and pop values from this stack.
+     * Instructions push and pop values from this stack. The active frame's
+     * locals also live here, at the bottom of the stack region owned by
+     * that frame (see CallFrame::localsBase).
      */
     std::vector<Value> stack;
     std::vector<Value> globals;

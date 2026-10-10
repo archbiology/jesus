@@ -56,10 +56,20 @@ public:
 
     bool AS_BOOLEAN = false;
 
+    /**
+     * @brief Cached numeric value, filled in when the Value is constructed.
+     *
+     * Reading the number is the hottest operation in the VM's arithmetic,
+     * and reaching it through std::variant (std::get) is measurably the
+     * dominant cost. Values are effectively immutable once constructed,
+     * so the numeric payload can be cached here and copied for free.
+     */
+    double number = 0.0;
+
     Value() : value(std::monostate{}), IS_FORMLESS(true), AS_BOOLEAN(false) {}
     explicit Value(std::monostate) : value(std::monostate{}), IS_FORMLESS(true), AS_BOOLEAN(false) {}
-    explicit Value(int v) : value(v), IS_INT(true), IS_NUMBER(true), AS_BOOLEAN(v != 0) {}
-    explicit Value(double v) : value(v), IS_DOUBLE(true), IS_NUMBER(true), AS_BOOLEAN(v != 0.0) {}
+    explicit Value(int v) : value(v), number(static_cast<double>(v)), IS_INT(true), IS_NUMBER(true), AS_BOOLEAN(v != 0) {}
+    explicit Value(double v) : value(v), number(v), IS_DOUBLE(true), IS_NUMBER(true), AS_BOOLEAN(v != 0.0) {}
     explicit Value(bool v) : value(v), IS_BOOLEAN(true), AS_BOOLEAN(v) {}
     explicit Value(const std::string &v) : value(v), IS_STRING(true), AS_BOOLEAN(v != "") {}
     explicit Value(const char *v) : value(std::string(v)), IS_STRING(true), AS_BOOLEAN(std::string(v) != "") {}
@@ -85,14 +95,9 @@ public:
 
     double toNumber() const
     {
-        if (IS_INT)
+        if (IS_NUMBER)
         {
-            return std::get<int>(value);
-        }
-
-        if (IS_DOUBLE)
-        {
-            return std::get<double>(value);
+            return number;
         }
 
         throw std::runtime_error("Value is not a number");
@@ -100,7 +105,12 @@ public:
 
     int toInt() const
     {
-        return (int)toNumber();
+        // if (IS_NUMBER)
+        // {
+            return (int)number;
+        // }
+
+        // throw std::runtime_error("Value is not a number");
     }
 
     const std::shared_ptr<Instance> toInstance() const;

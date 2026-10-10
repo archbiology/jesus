@@ -21,8 +21,8 @@ void VM::run(const Chunk &chunk)
     auto begin = chunk.instructions.data();
     auto ip = begin;
 
-    // The main program is the bottom/first frame;
-    frames.push_back(CallFrame{&chunk, ip, /* locals =*/ {}});
+    // The main program is the bottom/first frame; it has no locals.
+    frames.push_back(CallFrame{&chunk, ip, 0});
 
     while (true)
     {
@@ -65,10 +65,10 @@ void VM::run(const Chunk &chunk)
         case OpCode::AND:
         case OpCode::XOR:
         {
-            Value right = stack.back();
+            Value right = std::move(stack.back());
             stack.pop_back();
-            Value left = stack.back();
-            stack.pop_back();
+            Value left = std::move(stack.back());
+            // stack.pop_back();
 
             switch (ip->opcode)
             {
@@ -76,67 +76,67 @@ void VM::run(const Chunk &chunk)
             // Arithmetic
             // ----------
             case OpCode::ADD:
-                stack.push_back(left + right);
+                stack.back() = (left + right);
                 break;
             case OpCode::SUBTRACT:
-                stack.push_back(left - right);
+                stack.back() = (left - right);
                 break;
             case OpCode::MULTIPLY:
-                stack.push_back(left * right);
+                stack.back() = (left * right);
                 break;
             case OpCode::DIVIDE:
-                stack.push_back(left / right);
+                stack.back() = (left / right);
                 break;
             case OpCode::MODULO:
-                stack.push_back(left % right);
+                stack.back() = (left % right);
                 break;
             // -----------------------
             // Relational / Comparison
             // -----------------------
             case OpCode::EQUAL:
-                stack.push_back(Value(left == right));
+                stack.back() = (Value(left == right));
                 break;
             case OpCode::NOT_EQUAL:
-                stack.push_back(Value(left != right));
+                stack.back() = (Value(left != right));
                 break;
             case OpCode::LESS:
-                stack.push_back(Value(left < right));
+                stack.back() = (Value(left < right));
                 break;
             case OpCode::LESS_EQUAL:
-                stack.push_back(Value(left <= right));
+                stack.back() = (Value(left <= right));
                 break;
             case OpCode::GREATER:
-                stack.push_back(Value(left > right));
+                stack.back() = (Value(left > right));
                 break;
             case OpCode::GREATER_EQUAL:
-                stack.push_back(Value(left >= right));
+                stack.back() = (Value(left >= right));
                 break;
             // -----
             // Logic
             // -----
             case OpCode::OR:
-                stack.push_back(left.AS_BOOLEAN ? left : right);
+                stack.back() = (left.AS_BOOLEAN ? left : right);
                 break;
             case OpCode::AND:
-                stack.push_back(left.AS_BOOLEAN ? right : left);
+                stack.back() = (left.AS_BOOLEAN ? right : left);
                 break;
 
             case OpCode::XOR:
                 if (left.IS_BOOLEAN && right.IS_BOOLEAN)
                 {
                     // Logical XOR
-                    stack.push_back(Value(left.AS_BOOLEAN != right.AS_BOOLEAN));
+                    stack.back() = (Value(left.AS_BOOLEAN != right.AS_BOOLEAN));
                     break;
                 }
 
                 if (left.IS_NUMBER && right.IS_NUMBER)
                 {
                     // Bitwise XOR
-                    stack.push_back(Value(left.toInt() ^ right.toInt()));
+                    stack.back() = (Value(left.toInt() ^ right.toInt()));
                     break;
                 }
 
-                stack.push_back(Value::formless()); // fallback if types mismatch
+                stack.back() = (Value::formless()); // fallback if types mismatch
                 break;
 
             default:
@@ -149,7 +149,7 @@ void VM::run(const Chunk &chunk)
 
         case OpCode::CREATE_GLOBAL:
         {
-            Value value = stack.back();
+            Value value = std::move(stack.back());
             stack.pop_back();
 
             uint32_t index = ip->operand;
@@ -176,7 +176,7 @@ void VM::run(const Chunk &chunk)
         case OpCode::WRITE_GLOBAL:
         {
             uint32_t index = ip->operand;
-            Value value = stack.back();
+            Value value = std::move(stack.back());
 
             stack.pop_back();
             globals[index] = value;
@@ -187,10 +187,10 @@ void VM::run(const Chunk &chunk)
 
         case OpCode::WRITE_ATTR:
         {
-            Value value = stack.back();
+            Value value = std::move(stack.back());
             stack.pop_back();
 
-            auto instance = stack.back().toInstance();
+            auto instance = std::move(stack.back()).toInstance();
             stack.pop_back();
 
             uint32_t index = ip->operand;
@@ -203,7 +203,7 @@ void VM::run(const Chunk &chunk)
 
         case OpCode::READ_LOCAL:
         {
-            stack.push_back(frames.back().locals[ip->operand]);
+            stack.push_back(stack[frames.back().localsBase + ip->operand]);
 
             ++ip;
             break;
@@ -211,14 +211,8 @@ void VM::run(const Chunk &chunk)
 
         case OpCode::WRITE_LOCAL:
         {
-            Value value = stack.back();
+            stack[frames.back().localsBase + ip->operand] = std::move(stack.back());
             stack.pop_back();
-
-            auto &locals = frames.back().locals;
-            if (ip->operand >= locals.size())
-                locals.resize(ip->operand + 1);
-
-            locals[ip->operand] = value;
 
             ++ip;
             break;
@@ -226,7 +220,7 @@ void VM::run(const Chunk &chunk)
 
         case OpCode::JUMP_IF_FALSE:
         {
-            Value condition = stack.back();
+            Value condition = std::move(stack.back());
             stack.pop_back();
 
             if (!condition.AS_BOOLEAN)
@@ -252,7 +246,7 @@ void VM::run(const Chunk &chunk)
 
         case OpCode::CREATE_INSTANCE:
         {
-            auto klass = stack.back().asClass();
+            auto klass = std::move(stack.back()).asClass();
             stack.pop_back();
 
             stack.push_back(Value(std::make_shared<Instance>(klass)));
@@ -293,11 +287,12 @@ void VM::run(const Chunk &chunk)
             if (compiled == methodChunks.end())
                 throw std::runtime_error("VM CALL: method body not compiled: " + userMethod->name);
 
-            // The last argument is on top of the stack. Let's put as last in `locals`.
+            // The object and arguments are already on the evaluation stack:
+            //
             //  bottom
             //      ↓
             //  ┌─────────┐
-            //  │ object  │  ← $self
+            //  │ object  │  ← $self  (slot 0, at `base`)
             //  ├─────────┤
             //  │ arg1    │
             //  ├─────────┤
@@ -307,18 +302,15 @@ void VM::run(const Chunk &chunk)
             //  └─────────┘
             //      ↑
             //     top
-            std::vector<Value> locals(paramsCount + 1);
-            for (uint32_t slot = paramsCount; slot > 0; --slot)
-            {
-                locals[slot] = stack.back();
-                stack.pop_back();
-            }
-
-            locals[0] = stack.back(); // "$self"
-            stack.pop_back();
-
             const Chunk &body = compiled->second;
-            frames.push_back(CallFrame{&body, body.instructions.data(), std::move(locals)});
+
+            // The frame's locals region starts at the object, and its slots
+            // stay at the bottom of the evaluation stack for the frame's
+            // whole lifetime. Reserve room for created vars beyond the params.
+            const std::size_t base = stack.size() - (paramsCount + 1);
+            stack.resize(base + body.localCount);
+
+            frames.push_back(CallFrame{&body, body.instructions.data(), base});
             break;
         }
 
@@ -331,15 +323,19 @@ void VM::run(const Chunk &chunk)
             }
 
             // A method is returning: hand the value back to the caller.
-            Value result = stack.back();
-            stack.pop_back();
+            Value result = std::move(stack.back());
+
+            // Discard the returning frame's locals and temporaries,
+            // restoring the stack to the caller's pre-call height.
+            const std::size_t base = frames.back().localsBase;
+            stack.resize(base);
 
             frames.pop_back();
 
             // Resume the caller right after the CALL that started this method.
             ++frames.back().ip;
 
-            stack.push_back(result);
+            stack.push_back(std::move(result));
             break;
         }
 
