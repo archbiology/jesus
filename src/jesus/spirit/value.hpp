@@ -103,6 +103,22 @@ public:
         throw std::runtime_error("Value is not a number");
     }
 
+    /**
+     * @brief Converts this Value in place into a boolean, keeping the
+     * existing object identity on the VM stack (no variant re-construction).
+     */
+    void setAsBoolean(bool v)
+    {
+        value = v;
+        number = 0.0;
+        IS_FORMLESS = false;
+        IS_INT = false;
+        IS_DOUBLE = false;
+        IS_NUMBER = false;
+        IS_BOOLEAN = true;
+        AS_BOOLEAN = v;
+    }
+
     int toInt() const
     {
         // if (IS_NUMBER)
@@ -301,5 +317,6 @@ public:
     }
 
 private:
+    friend class VM;
     Dust value;
 };
