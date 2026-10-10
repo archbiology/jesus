@@ -10,11 +10,6 @@
 #include "interpreter/runtime/instance.hpp"
 #include "interpreter/runtime/method.hpp"
 
-VM::VM(const std::unordered_map<const CreateMethodStmt *, Chunk> &methodChunks)
-    : methodChunks(methodChunks)
-{
-}
-
 void VM::run(const Chunk &chunk)
 {
     std::cout << "[VM]\n";
@@ -283,8 +278,8 @@ void VM::run(const Chunk &chunk)
 
             uint32_t paramsCount = userMethod->params ? userMethod->params->paramsCount : 0;
 
-            auto compiled = methodChunks.find(userMethod->definition);
-            if (compiled == methodChunks.end())
+            const Chunk *compiledBody = userMethod->definition->compiledBody.get();
+            if (compiledBody == nullptr)
                 throw std::runtime_error("VM CALL: method body not compiled: " + userMethod->name);
 
             // The object and arguments are already on the evaluation stack:
@@ -302,7 +297,7 @@ void VM::run(const Chunk &chunk)
             //  └─────────┘
             //      ↑
             //     top
-            const Chunk &body = compiled->second;
+            const Chunk &body = *compiledBody;
 
             // The frame's locals region starts at the object, and its slots
             // stay at the bottom of the evaluation stack for the frame's

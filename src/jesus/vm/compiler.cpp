@@ -9,7 +9,6 @@ Chunk Compiler::compile(const std::vector<std::unique_ptr<Stmt>> &statements)
     chunk.instructions.clear();
     chunk.literals.clear();
 
-    methodChunks.clear();
     localSlots.clear();
     localCount = 0;
     compilingMethodBody = false;
@@ -23,11 +22,6 @@ Chunk Compiler::compile(const std::vector<std::unique_ptr<Stmt>> &statements)
     emit(OpCode::RETURN);
 
     return chunk;
-}
-
-const std::unordered_map<const CreateMethodStmt *, Chunk> &Compiler::compiledMethods() const
-{
-    return methodChunks;
 }
 
 void Compiler::compileStmt(const Stmt &stmt)
@@ -456,7 +450,7 @@ void Compiler::compileMethodBody(const CreateMethodStmt &method)
     emit(OpCode::RETURN);
 
     bodyChunk.localCount = localCount;
-    methodChunks[&method] = std::move(bodyChunk);
+    method.compiledBody = std::make_unique<Chunk>(std::move(bodyChunk));
 
     currentChunk = previousChunk;
     localSlots = std::move(previousLocals);

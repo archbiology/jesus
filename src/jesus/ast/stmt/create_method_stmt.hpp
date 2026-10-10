@@ -3,6 +3,7 @@
 #include "stmt.hpp"
 #include "../../spirit/heart.hpp"
 #include "../expr/expr.hpp"
+#include "../../vm/chunk.hpp"
 #include <string>
 #include <vector>
 #include <memory>
@@ -63,6 +64,15 @@ public:
      * "I give you good precepts: do not forsake my teaching." — Proverbs 4:2
      */
     std::vector<std::shared_ptr<Expr>> defaultValues;
+
+    /**
+     * @brief Bytecode compiled for this method body by the VM Compiler.
+     *
+     * null until the VM path compiles the program. Storing it on the AST
+     * node lets the VM reach the chunk through Method::definition with a
+     * single pointer dereference, instead of a hash-map lookup per CALL.
+     */
+    mutable std::unique_ptr<Chunk> compiledBody;
 
     CreateMethodStmt(const std::string &name,
                      const std::shared_ptr<Heart> &params,

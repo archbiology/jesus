@@ -85,18 +85,12 @@ public:
      */
     Chunk compile(const std::vector<std::unique_ptr<Stmt>> &statements);
 
-    /**
-     * @brief The bytecode compiled from each method body.
-     */
-    const std::unordered_map<const CreateMethodStmt *, Chunk> &compiledMethods() const;
-
 private:
     Chunk chunk;
     Chunk *currentChunk = nullptr;
 
     std::unordered_map<std::string, uint32_t> globals;
     std::unordered_map<std::string, std::shared_ptr<CreationType>> classes;
-    std::unordered_map<const CreateMethodStmt *, Chunk> methodChunks;
 
     /**
      * @brief Maps local variable names to their slots in the current method.
