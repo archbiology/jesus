@@ -5,13 +5,20 @@
 #include <optional>
 #include "utils/file_utils.hpp"
 
-std::string runJesusInterpreter(const std::string &inputFile, bool useRepl, bool keepAst)
+std::string runJesusInterpreter(const std::string &inputFile, bool useRepl, bool keepAst, bool useVm)
 {
-    std::string command =
-        std::string("jesus") + (keepAst ? " --keep-ast " : " ") + "'" + inputFile + "' 2>&1";
+    std::string command = "jesus";
+
+    if (useVm)
+        command += " --vm";
+
+    if (keepAst)
+        command += " --keep-ast";
 
     if (useRepl)
         command = "jesus --quiet < '" + inputFile + "' 2>&1";
+    else
+        command += " '" + inputFile + "' 2>&1";
 
     std::string result;
 
@@ -27,6 +34,17 @@ std::string runJesusInterpreter(const std::string &inputFile, bool useRepl, bool
     pclose(pipe);
 
     return result;
+}
+
+bool shouldUseVm(const std::filesystem::path &path)
+{
+    for (const auto &part : path)
+    {
+        if (part == "benchmark")
+            return true;
+    }
+
+    return false;
 }
 
 bool shouldUseRepl(const std::filesystem::path &path)
@@ -107,7 +125,8 @@ int main()
             }
 
             bool keepAst = shouldKeepAst(fullInputFile);
-            std::string output = runJesusInterpreter(inputFile, useRepl, keepAst);
+            bool useVm = shouldUseVm(entry.path());
+            std::string output = runJesusInterpreter(inputFile, useRepl, keepAst, useVm);
             auto expectedOpt = loadFile(expectedFile);
 
             if (!expectedOpt.has_value())
@@ -117,9 +136,22 @@ int main()
                 std::cout << "    " << fullExpectedFile << "\n\n";
 
                 std::cout << "    Create it with:\n";
-                std::cout << "      jesus "
-                          << (useRepl ? "--quiet < " : (keepAst ? "--keep-ast " : "")) << "'"
-                          << fullInputFile << "' &> '" << fullExpectedFile << "'\n\n";
+                std::cout << "      jesus ";
+
+                if (useRepl)
+                {
+                    std::cout << "--quiet < '" << fullInputFile << "' &> '" << fullExpectedFile << "'\n\n";
+                }
+                else
+                {
+                    if (useVm)
+                        std::cout << "--vm ";
+
+                    if (keepAst)
+                        std::cout << "--keep-ast ";
+
+                    std::cout << "'" << fullInputFile << "' &> '" << fullExpectedFile << "'\n\n";
+                }
 
                 allPassed = false;
                 continue;
