@@ -174,7 +174,8 @@ void VM::run(const Chunk &chunk)
         &&OP_JUMP_IF_NOT_ADD_LOCAL_LOCAL_GREATER_LITERAL,       // JUMP_IF_NOT_ADD_LOCAL_LOCAL_GREATER_LITERAL
         &&OP_JUMP_IF_NOT_ADD_LOCAL_LOCAL_GREATER_EQUAL_LITERAL, // JUMP_IF_NOT_ADD_LOCAL_LOCAL_GREATER_EQUAL_LITERAL
         &&OP_MULTIPLY_ADD_LOCAL_RIGHT_STORE,                    // MULTIPLY_ADD_LOCAL_RIGHT_STORE
-        &&OP_ADD_LOCAL_LITERAL_STORE_JUMP                       // ADD_LOCAL_LITERAL_STORE_JUMP
+        &&OP_ADD_LOCAL_LITERAL_STORE_JUMP,                      // ADD_LOCAL_LITERAL_STORE_JUMP
+        &&OP_SUBTRACT_ADD_LOCAL_LOCAL_LOCAL_STORE               // SUBTRACT_ADD_LOCAL_LOCAL_LOCAL_STORE
     };
 
     // Dispatch to the main program's first instruction.
@@ -1021,6 +1022,36 @@ void VM::run(const Chunk &chunk)
                 dest = a + b;
             }
             ip = begin + (ip + 1)->operand;
+            goto NEXT_OP;
+        }
+
+    // -----------------------------------------------------------------
+    // Fused `dest = a - b + c` store. Reads a, b and c before writing dest,
+    // so it also handles the case where c aliases the destination (which the
+    // two chained in-place stores cannot).
+    // -----------------------------------------------------------------
+    OP_SUBTRACT_ADD_LOCAL_LOCAL_LOCAL_STORE:
+        {
+            const uint32_t packed = ip->operand;
+            const std::size_t lb = currentLocalsBase;
+            const Value &a = stack[lb + (packed & 0xFF)];
+            const Value &b = stack[lb + ((packed >> 8) & 0xFF)];
+            const Value &c = stack[lb + ((packed >> 16) & 0xFF)];
+            Value &dest = stack[lb + ((packed >> 24) & 0xFF)];
+
+            if (a.IS_NUMBER && b.IS_NUMBER && c.IS_NUMBER)
+            {
+                if (a.IS_DOUBLE || b.IS_DOUBLE || c.IS_DOUBLE)
+                    dest.setAsDouble(a.number - b.number + c.number);
+                else
+                    dest.setAsInt(a.intValue - b.intValue + c.intValue);
+            }
+            else
+            {
+                dest = a - b + c;
+            }
+
+            ++ip;
             goto NEXT_OP;
         }
 

@@ -638,11 +638,29 @@ void Compiler::emitStoreToLocal(uint32_t slot)
             const uint32_t b = inner.operand >> 16;
             const uint32_t c = outer.operand & 0xFFFF;
 
-            if (a < 0x100 && b < 0x100 && c < 0x100 && slot != c)
+            if (a < 0x100 && b < 0x100 && c < 0x100)
             {
-                inner = {innerStore, a | (b << 8) | (slot << 16)};
-                outer = {outerStore, slot | (c << 8) | (slot << 16)};
-                return;
+                // `dest = (a - b) + c` collapses into one instruction. Because
+                // the fused handler reads a, b and c before storing, it stays
+                // correct even when `c` aliases the destination.
+                if (innerStore == OpCode::SUBTRACT_LOCAL_LOCAL_STORE &&
+                    outerStore == OpCode::ADD_LOCAL_LOCAL_STORE)
+                {
+                    ins.pop_back();
+                    ins.back() = {OpCode::SUBTRACT_ADD_LOCAL_LOCAL_LOCAL_STORE,
+                                  a | (b << 8) | (c << 16) | (slot << 24)};
+                    return;
+                }
+
+                // Two chained in-place stores are only safe when `c` is not
+                // the destination itself, which the second store would
+                // otherwise overwrite before the first read.
+                if (slot != c)
+                {
+                    inner = {innerStore, a | (b << 8) | (slot << 16)};
+                    outer = {outerStore, slot | (c << 8) | (slot << 16)};
+                    return;
+                }
             }
         }
     }

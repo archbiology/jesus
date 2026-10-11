@@ -389,6 +389,9 @@ std::string opcodeToString(OpCode opcode)
     case OpCode::ADD_LOCAL_LITERAL_STORE_JUMP:
         return "ADD_LOCAL_LITERAL_STORE_JUMP";
 
+    case OpCode::SUBTRACT_ADD_LOCAL_LOCAL_LOCAL_STORE:
+        return "SUBTRACT_ADD_LOCAL_LOCAL_LOCAL_STORE";
+
     default:
         return "UNKNOWN_OPCODE";
     }

@@ -240,7 +240,14 @@ enum class OpCode : uint8_t
     // that follows it. The operand has the ADD_LOCAL_LITERAL_STORE layout and
     // the jump target is the operand of the instruction that immediately
     // follows (the original JUMP, now only a target holder).
-    ADD_LOCAL_LITERAL_STORE_JUMP
+    ADD_LOCAL_LITERAL_STORE_JUMP,
+
+    // Fused three-local store for the shape `dest = a - b + c` (e.g. the
+    // `x = x2 - y2 + cx` step of a Mandelbrot iteration). Unlike a pair of
+    // chained in-place stores it reads every operand before writing `dest`,
+    // so it is correct even when `c` (or `a`, `b`) aliases the destination.
+    // Operand packs: a bits 0-7, b bits 8-15, c bits 16-23, dest bits 24-31.
+    SUBTRACT_ADD_LOCAL_LOCAL_LOCAL_STORE
 };
 
 /**
