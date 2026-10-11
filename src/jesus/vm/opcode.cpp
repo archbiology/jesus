@@ -88,38 +88,53 @@ std::string opcodeToString(OpCode opcode)
     case OpCode::RETURN:
         return "RETURN";
 
-    case OpCode::ADD_LL:
-        return "ADD_LL";
+    case OpCode::ADD_LOCAL_LOCAL:
+        return "ADD_LOCAL_LOCAL";
 
-    case OpCode::SUBTRACT_LL:
-        return "SUBTRACT_LL";
+    case OpCode::SUBTRACT_LOCAL_LOCAL:
+        return "SUBTRACT_LOCAL_LOCAL";
 
-    case OpCode::MULTIPLY_LL:
-        return "MULTIPLY_LL";
+    case OpCode::MULTIPLY_LOCAL_LOCAL:
+        return "MULTIPLY_LOCAL_LOCAL";
 
-    case OpCode::DIVIDE_LL:
-        return "DIVIDE_LL";
+    case OpCode::DIVIDE_LOCAL_LOCAL:
+        return "DIVIDE_LOCAL_LOCAL";
 
-    case OpCode::MODULO_LL:
-        return "MODULO_LL";
+    case OpCode::MODULO_LOCAL_LOCAL:
+        return "MODULO_LOCAL_LOCAL";
 
-    case OpCode::EQUAL_LL:
-        return "EQUAL_LL";
+    case OpCode::EQUAL_LOCAL_LOCAL:
+        return "EQUAL_LOCAL_LOCAL";
 
-    case OpCode::NOT_EQUAL_LL:
-        return "NOT_EQUAL_LL";
+    case OpCode::NOT_EQUAL_LOCAL_LOCAL:
+        return "NOT_EQUAL_LOCAL_LOCAL";
 
-    case OpCode::LESS_LL:
-        return "LESS_LL";
+    case OpCode::LESS_LOCAL_LOCAL:
+        return "LESS_LOCAL_LOCAL";
 
-    case OpCode::LESS_EQUAL_LL:
-        return "LESS_EQUAL_LL";
+    case OpCode::LESS_EQUAL_LOCAL_LOCAL:
+        return "LESS_EQUAL_LOCAL_LOCAL";
 
-    case OpCode::GREATER_LL:
-        return "GREATER_LL";
+    case OpCode::GREATER_LOCAL_LOCAL:
+        return "GREATER_LOCAL_LOCAL";
 
-    case OpCode::GREATER_EQUAL_LL:
-        return "GREATER_EQUAL_LL";
+    case OpCode::GREATER_EQUAL_LOCAL_LOCAL:
+        return "GREATER_EQUAL_LOCAL_LOCAL";
+
+    case OpCode::ADD_LOCAL_LOCAL_STORE:
+        return "ADD_LOCAL_LOCAL_STORE";
+
+    case OpCode::SUBTRACT_LOCAL_LOCAL_STORE:
+        return "SUBTRACT_LOCAL_LOCAL_STORE";
+
+    case OpCode::MULTIPLY_LOCAL_LOCAL_STORE:
+        return "MULTIPLY_LOCAL_LOCAL_STORE";
+
+    case OpCode::DIVIDE_LOCAL_LOCAL_STORE:
+        return "DIVIDE_LOCAL_LOCAL_STORE";
+
+    case OpCode::MODULO_LOCAL_LOCAL_STORE:
+        return "MODULO_LOCAL_LOCAL_STORE";
 
     default:
         return "UNKNOWN_OPCODE";

@@ -146,6 +146,18 @@ private:
      */
     void emit(OpCode opcode, uint32_t operand);
 
+    /**
+     * @brief Stores the value currently on top of the operand stack into a
+     * local slot, fusing when possible.
+     *
+     * If the most recently emitted instruction is a fused arithmetic opcode
+     * (e.g. MULTIPLY_LOCAL_LOCAL), it is rewritten into its store form
+     * (MULTIPLY_LOCAL_LOCAL_STORE) so the result goes straight into the slot
+     * without ever touching the operand stack. Otherwise a plain WRITE_LOCAL
+     * is emitted.
+     */
+    void emitStoreToLocal(uint32_t slot);
+
     uint32_t registerGlobalVar(const std::string &name);
     void compileCreateVarStmt(const CreateVarStmt &stmt);
     uint32_t getGlobalVar(const std::string &name);

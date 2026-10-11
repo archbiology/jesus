@@ -62,17 +62,22 @@ void VM::run(const Chunk &chunk)
         &&OP_JUMP_IF_FALSE,   // JUMP_IF_FALSE
         &&OP_CALL,            // CALL
         &&OP_RETURN,          // RETURN
-        &&OP_ADD_LL,          // ADD_LL
-        &&OP_SUBTRACT_LL,     // SUBTRACT_LL
-        &&OP_MULTIPLY_LL,     // MULTIPLY_LL
-        &&OP_DIVIDE_LL,       // DIVIDE_LL
-        &&OP_MODULO_LL,       // MODULO_LL
-        &&OP_EQUAL_LL,        // EQUAL_LL
-        &&OP_NOT_EQUAL_LL,    // NOT_EQUAL_LL
-        &&OP_LESS_LL,         // LESS_LL
-        &&OP_LESS_EQUAL_LL,   // LESS_EQUAL_LL
-        &&OP_GREATER_LL,      // GREATER_LL
-        &&OP_GREATER_EQUAL_LL // GREATER_EQUAL_LL
+        &&OP_ADD_LOCAL_LOCAL,             // ADD_LOCAL_LOCAL
+        &&OP_SUBTRACT_LOCAL_LOCAL,        // SUBTRACT_LOCAL_LOCAL
+        &&OP_MULTIPLY_LOCAL_LOCAL,        // MULTIPLY_LOCAL_LOCAL
+        &&OP_DIVIDE_LOCAL_LOCAL,          // DIVIDE_LOCAL_LOCAL
+        &&OP_MODULO_LOCAL_LOCAL,          // MODULO_LOCAL_LOCAL
+        &&OP_EQUAL_LOCAL_LOCAL,           // EQUAL_LOCAL_LOCAL
+        &&OP_NOT_EQUAL_LOCAL_LOCAL,       // NOT_EQUAL_LOCAL_LOCAL
+        &&OP_LESS_LOCAL_LOCAL,            // LESS_LOCAL_LOCAL
+        &&OP_LESS_EQUAL_LOCAL_LOCAL,      // LESS_EQUAL_LOCAL_LOCAL
+        &&OP_GREATER_LOCAL_LOCAL,         // GREATER_LOCAL_LOCAL
+        &&OP_GREATER_EQUAL_LOCAL_LOCAL,   // GREATER_EQUAL_LOCAL_LOCAL
+        &&OP_ADD_LOCAL_LOCAL_STORE,       // ADD_LOCAL_LOCAL_STORE
+        &&OP_SUBTRACT_LOCAL_LOCAL_STORE,  // SUBTRACT_LOCAL_LOCAL_STORE
+        &&OP_MULTIPLY_LOCAL_LOCAL_STORE,  // MULTIPLY_LOCAL_LOCAL_STORE
+        &&OP_DIVIDE_LOCAL_LOCAL_STORE,    // DIVIDE_LOCAL_LOCAL_STORE
+        &&OP_MODULO_LOCAL_LOCAL_STORE     // MODULO_LOCAL_LOCAL_STORE
     };
 
     // Dispatch to the main program's first instruction.
@@ -180,13 +185,13 @@ void VM::run(const Chunk &chunk)
     CMP_BINARY(GREATER_EQUAL, >=)
 
     // -----------------------------------------------------------------
-    // Fused "READ_LOCAL a; READ_LOCAL b; <binary op>" handlers.
+    // Fused LOCAL_LOCAL handlers.
     //
-    // The operand packs the two local slots: `a` in the low 16 bits and
-    // `b` in the high 16 bits. The result is pushed directly onto the
-    // stack, so the two operand pushes and the subsequent pop disappear.
-    // Non-numeric operands fall back to the regular operator overloads
-    // (which handle strings, booleans and so on).
+    // The operand packs the two source local slots: `a` in the low 16 bits
+    // and `b` in the high 16 bits. The result is pushed directly onto the
+    // stack, so the two operand reads, pushes and the following pop
+    // disappear. Non-numeric operands fall back to the regular operator
+    // overloads (which handle strings, booleans and so on).
     // -----------------------------------------------------------------
 #define FUSED_OPERANDS \
     const uint32_t packed = ip->operand; \
@@ -194,7 +199,7 @@ void VM::run(const Chunk &chunk)
     const Value &a = stack[lb + (packed & 0xFFFF)]; \
     const Value &b = stack[lb + (packed >> 16)];
 
-#define FUSED_ARITH_LL(label, op) \
+#define FUSED_ARITH_LOCAL_LOCAL(label, op) \
     OP_##label: \
     { \
         FUSED_OPERANDS \
@@ -221,11 +226,11 @@ void VM::run(const Chunk &chunk)
         goto NEXT_OP; \
     }
 
-    FUSED_ARITH_LL(ADD_LL, +)
-    FUSED_ARITH_LL(SUBTRACT_LL, -)
-    FUSED_ARITH_LL(MULTIPLY_LL, *)
+    FUSED_ARITH_LOCAL_LOCAL(ADD_LOCAL_LOCAL, +)
+    FUSED_ARITH_LOCAL_LOCAL(SUBTRACT_LOCAL_LOCAL, -)
+    FUSED_ARITH_LOCAL_LOCAL(MULTIPLY_LOCAL_LOCAL, *)
 
-    OP_DIVIDE_LL:
+    OP_DIVIDE_LOCAL_LOCAL:
         {
             FUSED_OPERANDS
             if (a.IS_NUMBER && b.IS_NUMBER)
@@ -244,7 +249,7 @@ void VM::run(const Chunk &chunk)
             goto NEXT_OP;
         }
 
-    OP_MODULO_LL:
+    OP_MODULO_LOCAL_LOCAL:
         {
             FUSED_OPERANDS
             if (a.IS_NUMBER && b.IS_NUMBER)
@@ -263,7 +268,7 @@ void VM::run(const Chunk &chunk)
             goto NEXT_OP;
         }
 
-#define FUSED_CMP_LL(label, op) \
+#define FUSED_CMP_LOCAL_LOCAL(label, op) \
     OP_##label: \
     { \
         FUSED_OPERANDS \
@@ -281,12 +286,86 @@ void VM::run(const Chunk &chunk)
         goto NEXT_OP; \
     }
 
-    FUSED_CMP_LL(EQUAL_LL, ==)
-    FUSED_CMP_LL(NOT_EQUAL_LL, !=)
-    FUSED_CMP_LL(LESS_LL, <)
-    FUSED_CMP_LL(LESS_EQUAL_LL, <=)
-    FUSED_CMP_LL(GREATER_LL, >)
-    FUSED_CMP_LL(GREATER_EQUAL_LL, >=)
+    FUSED_CMP_LOCAL_LOCAL(EQUAL_LOCAL_LOCAL, ==)
+    FUSED_CMP_LOCAL_LOCAL(NOT_EQUAL_LOCAL_LOCAL, !=)
+    FUSED_CMP_LOCAL_LOCAL(LESS_LOCAL_LOCAL, <)
+    FUSED_CMP_LOCAL_LOCAL(LESS_EQUAL_LOCAL_LOCAL, <=)
+    FUSED_CMP_LOCAL_LOCAL(GREATER_LOCAL_LOCAL, >)
+    FUSED_CMP_LOCAL_LOCAL(GREATER_EQUAL_LOCAL_LOCAL, >=)
+
+    // -----------------------------------------------------------------
+    // Fused LOCAL_LOCAL_STORE handlers.
+    //
+    // These handle patterns like `x2 = x * x`, where a two-local arithmetic
+    // operation is immediately written to a local. The operand packs three
+    // 8-bit slots: `a`, `b` and the destination. Writing the result straight
+    // into the destination removes all operand-stack traffic. The public
+    // setters are used (not the VM-only ones) because the destination may
+    // already hold a heap-backed value that has to be released.
+    // -----------------------------------------------------------------
+#define FUSED_STORE_OPERANDS \
+    const uint32_t packed = ip->operand; \
+    const std::size_t lb = currentLocalsBase; \
+    const Value &a = stack[lb + (packed & 0xFF)]; \
+    const Value &b = stack[lb + ((packed >> 8) & 0xFF)]; \
+    Value &dest = stack[lb + (packed >> 16)];
+
+#define FUSED_ARITH_LOCAL_LOCAL_STORE(label, op) \
+    OP_##label: \
+    { \
+        FUSED_STORE_OPERANDS \
+        if (a.IS_NUMBER && b.IS_NUMBER) \
+        { \
+            if (a.IS_DOUBLE || b.IS_DOUBLE) \
+                dest.setAsDouble(a.number op b.number); \
+            else \
+                dest.setAsInt(a.intValue op b.intValue); \
+        } \
+        else \
+        { \
+            dest = a op b; \
+        } \
+        ++ip; \
+        goto NEXT_OP; \
+    }
+
+    FUSED_ARITH_LOCAL_LOCAL_STORE(ADD_LOCAL_LOCAL_STORE, +)
+    FUSED_ARITH_LOCAL_LOCAL_STORE(SUBTRACT_LOCAL_LOCAL_STORE, -)
+    FUSED_ARITH_LOCAL_LOCAL_STORE(MULTIPLY_LOCAL_LOCAL_STORE, *)
+
+    OP_DIVIDE_LOCAL_LOCAL_STORE:
+        {
+            FUSED_STORE_OPERANDS
+            if (a.IS_NUMBER && b.IS_NUMBER)
+            {
+                if (b.number == 0.0)
+                    throw std::runtime_error("Division by zero");
+                dest.setAsDouble(a.number / b.number);
+            }
+            else
+            {
+                dest = a / b;
+            }
+            ++ip;
+            goto NEXT_OP;
+        }
+
+    OP_MODULO_LOCAL_LOCAL_STORE:
+        {
+            FUSED_STORE_OPERANDS
+            if (a.IS_NUMBER && b.IS_NUMBER)
+            {
+                if (a.IS_DOUBLE || b.IS_DOUBLE)
+                    throw std::runtime_error("'" + std::to_string(a.number) + " mod " + std::to_string(b.number) + "' invalid — 'mod' only supports integers.");
+                dest.setAsInt(a.intValue % b.intValue);
+            }
+            else
+            {
+                dest = a % b;
+            }
+            ++ip;
+            goto NEXT_OP;
+        }
 
     OP_OR:
         {

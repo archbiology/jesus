@@ -126,37 +126,64 @@ static bool fusedLocalLocalOpcode(TokenType type, OpCode &out)
     switch (type)
     {
     case TokenType::PLUS:
-        out = OpCode::ADD_LL;
+        out = OpCode::ADD_LOCAL_LOCAL;
         return true;
     case TokenType::MINUS:
-        out = OpCode::SUBTRACT_LL;
+        out = OpCode::SUBTRACT_LOCAL_LOCAL;
         return true;
     case TokenType::STAR:
-        out = OpCode::MULTIPLY_LL;
+        out = OpCode::MULTIPLY_LOCAL_LOCAL;
         return true;
     case TokenType::SLASH:
-        out = OpCode::DIVIDE_LL;
+        out = OpCode::DIVIDE_LOCAL_LOCAL;
         return true;
     case TokenType::MOD:
-        out = OpCode::MODULO_LL;
+        out = OpCode::MODULO_LOCAL_LOCAL;
         return true;
     case TokenType::IS:
-        out = OpCode::EQUAL_LL;
+        out = OpCode::EQUAL_LOCAL_LOCAL;
         return true;
     case TokenType::NOT_EQUAL:
-        out = OpCode::NOT_EQUAL_LL;
+        out = OpCode::NOT_EQUAL_LOCAL_LOCAL;
         return true;
     case TokenType::LESS:
-        out = OpCode::LESS_LL;
+        out = OpCode::LESS_LOCAL_LOCAL;
         return true;
     case TokenType::LESS_EQUAL:
-        out = OpCode::LESS_EQUAL_LL;
+        out = OpCode::LESS_EQUAL_LOCAL_LOCAL;
         return true;
     case TokenType::GREATER:
-        out = OpCode::GREATER_LL;
+        out = OpCode::GREATER_LOCAL_LOCAL;
         return true;
     case TokenType::GREATER_EQUAL:
-        out = OpCode::GREATER_EQUAL_LL;
+        out = OpCode::GREATER_EQUAL_LOCAL_LOCAL;
+        return true;
+    default:
+        return false;
+    }
+}
+
+// Maps a fused two-locals opcode to its "store result into a local" form.
+// Returns false for comparison opcodes, which have no store form (their
+// result is consumed by a conditional jump rather than stored).
+static bool localLocalStoreOpcode(OpCode fused, OpCode &out)
+{
+    switch (fused)
+    {
+    case OpCode::ADD_LOCAL_LOCAL:
+        out = OpCode::ADD_LOCAL_LOCAL_STORE;
+        return true;
+    case OpCode::SUBTRACT_LOCAL_LOCAL:
+        out = OpCode::SUBTRACT_LOCAL_LOCAL_STORE;
+        return true;
+    case OpCode::MULTIPLY_LOCAL_LOCAL:
+        out = OpCode::MULTIPLY_LOCAL_LOCAL_STORE;
+        return true;
+    case OpCode::DIVIDE_LOCAL_LOCAL:
+        out = OpCode::DIVIDE_LOCAL_LOCAL_STORE;
+        return true;
+    case OpCode::MODULO_LOCAL_LOCAL:
+        out = OpCode::MODULO_LOCAL_LOCAL_STORE;
         return true;
     default:
         return false;
@@ -269,6 +296,30 @@ void Compiler::emit(OpCode opcode, uint32_t operand)
     currentChunk->instructions.push_back({opcode, operand});
 }
 
+void Compiler::emitStoreToLocal(uint32_t slot)
+{
+    auto &ins = currentChunk->instructions;
+
+    // Only the arithmetic fused forms have a store variant; comparison
+    // results are consumed by conditional jumps instead of being stored.
+    if (OpCode store; !ins.empty() && slot < 0x100 &&
+                      localLocalStoreOpcode(ins.back().opcode, store))
+    {
+        // LOCAL_LOCAL packs its two source slots as 16-bit fields; the store
+        // form repacks them as 8-bit fields plus the destination slot.
+        const uint32_t left = ins.back().operand & 0xFFFF;
+        const uint32_t right = ins.back().operand >> 16;
+
+        if (left < 0x100 && right < 0x100)
+        {
+            ins.back() = {store, left | (right << 8) | (slot << 16)};
+            return;
+        }
+    }
+
+    emit(OpCode::WRITE_LOCAL, slot);
+}
+
 uint32_t Compiler::registerGlobalVar(const std::string &name)
 {
     auto it = globals.find(name);
@@ -287,7 +338,7 @@ void Compiler::compileCreateVarStmt(const CreateVarStmt &stmt)
 
     if (compilingMethodBody)
     {
-        emit(OpCode::WRITE_LOCAL, localSlot(stmt.name));
+        emitStoreToLocal(localSlot(stmt.name));
         return;
     }
 
@@ -344,7 +395,7 @@ void Compiler::compileUpdateVarStmt(const UpdateVarStmt &stmt)
         auto it = localSlots.find(stmt.name);
         if (it != localSlots.end())
         {
-            emit(OpCode::WRITE_LOCAL, it->second);
+            emitStoreToLocal(it->second);
             return;
         }
     }
