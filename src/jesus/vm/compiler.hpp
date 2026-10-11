@@ -189,6 +189,20 @@ private:
     uint32_t emitPlaceholder(OpCode opcode);
 
     /**
+     * @brief Emits a conditional jump that leaves when the last emitted
+     * comparison is false.
+     *
+     * When the previous instruction is a fused comparison the call fuses it
+     * with the jump (the comparison becomes a comparison-and-branch opcode
+     * that skips materialising a boolean); otherwise it emits a plain
+     * JUMP_IF_FALSE.
+     *
+     * @return uint32_t the index of the instruction whose operand is patched
+     *                  with the jump target.
+     */
+    uint32_t emitConditionalJump();
+
+    /**
      * @brief Patches a previously emitted jump instruction with the current instruction position.
      *
      * @param instructionIndex the index of the instruction to be patched

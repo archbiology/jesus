@@ -126,7 +126,37 @@ void VM::run(const Chunk &chunk)
         &&OP_LESS_LITERAL_RIGHT,          // LESS_LITERAL_RIGHT
         &&OP_LESS_EQUAL_LITERAL_RIGHT,    // LESS_EQUAL_LITERAL_RIGHT
         &&OP_GREATER_LITERAL_RIGHT,       // GREATER_LITERAL_RIGHT
-        &&OP_GREATER_EQUAL_LITERAL_RIGHT  // GREATER_EQUAL_LITERAL_RIGHT
+        &&OP_GREATER_EQUAL_LITERAL_RIGHT, // GREATER_EQUAL_LITERAL_RIGHT
+        &&OP_JUMP_IF_NOT_EQUAL_LOCAL_LOCAL,           // JUMP_IF_NOT_EQUAL_LOCAL_LOCAL
+        &&OP_JUMP_IF_NOT_NOT_EQUAL_LOCAL_LOCAL,       // JUMP_IF_NOT_NOT_EQUAL_LOCAL_LOCAL
+        &&OP_JUMP_IF_NOT_LESS_LOCAL_LOCAL,            // JUMP_IF_NOT_LESS_LOCAL_LOCAL
+        &&OP_JUMP_IF_NOT_LESS_EQUAL_LOCAL_LOCAL,      // JUMP_IF_NOT_LESS_EQUAL_LOCAL_LOCAL
+        &&OP_JUMP_IF_NOT_GREATER_LOCAL_LOCAL,         // JUMP_IF_NOT_GREATER_LOCAL_LOCAL
+        &&OP_JUMP_IF_NOT_GREATER_EQUAL_LOCAL_LOCAL,   // JUMP_IF_NOT_GREATER_EQUAL_LOCAL_LOCAL
+        &&OP_JUMP_IF_NOT_EQUAL_LOCAL_LITERAL,         // JUMP_IF_NOT_EQUAL_LOCAL_LITERAL
+        &&OP_JUMP_IF_NOT_NOT_EQUAL_LOCAL_LITERAL,     // JUMP_IF_NOT_NOT_EQUAL_LOCAL_LITERAL
+        &&OP_JUMP_IF_NOT_LESS_LOCAL_LITERAL,          // JUMP_IF_NOT_LESS_LOCAL_LITERAL
+        &&OP_JUMP_IF_NOT_LESS_EQUAL_LOCAL_LITERAL,    // JUMP_IF_NOT_LESS_EQUAL_LOCAL_LITERAL
+        &&OP_JUMP_IF_NOT_GREATER_LOCAL_LITERAL,       // JUMP_IF_NOT_GREATER_LOCAL_LITERAL
+        &&OP_JUMP_IF_NOT_GREATER_EQUAL_LOCAL_LITERAL, // JUMP_IF_NOT_GREATER_EQUAL_LOCAL_LITERAL
+        &&OP_JUMP_IF_NOT_EQUAL_LITERAL_LOCAL,         // JUMP_IF_NOT_EQUAL_LITERAL_LOCAL
+        &&OP_JUMP_IF_NOT_NOT_EQUAL_LITERAL_LOCAL,     // JUMP_IF_NOT_NOT_EQUAL_LITERAL_LOCAL
+        &&OP_JUMP_IF_NOT_LESS_LITERAL_LOCAL,          // JUMP_IF_NOT_LESS_LITERAL_LOCAL
+        &&OP_JUMP_IF_NOT_LESS_EQUAL_LITERAL_LOCAL,    // JUMP_IF_NOT_LESS_EQUAL_LITERAL_LOCAL
+        &&OP_JUMP_IF_NOT_GREATER_LITERAL_LOCAL,       // JUMP_IF_NOT_GREATER_LITERAL_LOCAL
+        &&OP_JUMP_IF_NOT_GREATER_EQUAL_LITERAL_LOCAL, // JUMP_IF_NOT_GREATER_EQUAL_LITERAL_LOCAL
+        &&OP_JUMP_IF_NOT_EQUAL_LOCAL_RIGHT,           // JUMP_IF_NOT_EQUAL_LOCAL_RIGHT
+        &&OP_JUMP_IF_NOT_NOT_EQUAL_LOCAL_RIGHT,       // JUMP_IF_NOT_NOT_EQUAL_LOCAL_RIGHT
+        &&OP_JUMP_IF_NOT_LESS_LOCAL_RIGHT,            // JUMP_IF_NOT_LESS_LOCAL_RIGHT
+        &&OP_JUMP_IF_NOT_LESS_EQUAL_LOCAL_RIGHT,      // JUMP_IF_NOT_LESS_EQUAL_LOCAL_RIGHT
+        &&OP_JUMP_IF_NOT_GREATER_LOCAL_RIGHT,         // JUMP_IF_NOT_GREATER_LOCAL_RIGHT
+        &&OP_JUMP_IF_NOT_GREATER_EQUAL_LOCAL_RIGHT,   // JUMP_IF_NOT_GREATER_EQUAL_LOCAL_RIGHT
+        &&OP_JUMP_IF_NOT_EQUAL_LITERAL_RIGHT,         // JUMP_IF_NOT_EQUAL_LITERAL_RIGHT
+        &&OP_JUMP_IF_NOT_NOT_EQUAL_LITERAL_RIGHT,     // JUMP_IF_NOT_NOT_EQUAL_LITERAL_RIGHT
+        &&OP_JUMP_IF_NOT_LESS_LITERAL_RIGHT,          // JUMP_IF_NOT_LESS_LITERAL_RIGHT
+        &&OP_JUMP_IF_NOT_LESS_EQUAL_LITERAL_RIGHT,    // JUMP_IF_NOT_LESS_EQUAL_LITERAL_RIGHT
+        &&OP_JUMP_IF_NOT_GREATER_LITERAL_RIGHT,       // JUMP_IF_NOT_GREATER_LITERAL_RIGHT
+        &&OP_JUMP_IF_NOT_GREATER_EQUAL_LITERAL_RIGHT  // JUMP_IF_NOT_GREATER_EQUAL_LITERAL_RIGHT
     };
 
     // Dispatch to the main program's first instruction.
@@ -780,6 +810,106 @@ void VM::run(const Chunk &chunk)
     FUSED_CMP_RIGHT_OP(LESS_EQUAL_LITERAL_RIGHT, FUSED_LITERAL_RIGHT_OPERANDS, <=)
     FUSED_CMP_RIGHT_OP(GREATER_LITERAL_RIGHT, FUSED_LITERAL_RIGHT_OPERANDS, >)
     FUSED_CMP_RIGHT_OP(GREATER_EQUAL_LITERAL_RIGHT, FUSED_LITERAL_RIGHT_OPERANDS, >=)
+
+    // -----------------------------------------------------------------
+    // Comparison-and-branch handlers.
+    //
+    // A comparison whose only consumer is a conditional jump does not need
+    // to materialise a boolean on the stack. The operand packs the same
+    // operands as the matching comparison opcode and the jump target is the
+    // operand of the instruction immediately after this one. When the
+    // comparison is false control jumps to the target, otherwise execution
+    // skips the target word. The *_RIGHT forms also drop the left operand
+    // they consumed from the stack.
+    // -----------------------------------------------------------------
+#define BRANCH_IF_NOT(cond) \
+    if (!(cond)) \
+        ip = begin + (ip + 1)->operand; \
+    else \
+        ip += 2; \
+    goto NEXT_OP;
+
+#define CMP_IS_TRUE(a, b, cmpop) \
+    (((a).IS_NUMBER && (b).IS_NUMBER) ? ((a).number cmpop (b).number) : Value((a) cmpop (b)).AS_BOOLEAN)
+
+#define BRANCH_LOCAL_LOCAL(label, cmpop) \
+    OP_##label: \
+    { \
+        const Value &a = stack[currentLocalsBase + (ip->operand & 0xFFFF)]; \
+        const Value &b = stack[currentLocalsBase + ((ip->operand >> 16) & 0xFFFF)]; \
+        BRANCH_IF_NOT(CMP_IS_TRUE(a, b, cmpop)) \
+    }
+
+#define BRANCH_LOCAL_LITERAL(label, cmpop) \
+    OP_##label: \
+    { \
+        const Value &a = stack[currentLocalsBase + (ip->operand & 0xFFFF)]; \
+        const Value &b = currentChunk->literals[(ip->operand >> 16) & 0xFFFF]; \
+        BRANCH_IF_NOT(CMP_IS_TRUE(a, b, cmpop)) \
+    }
+
+#define BRANCH_LITERAL_LOCAL(label, cmpop) \
+    OP_##label: \
+    { \
+        const Value &a = currentChunk->literals[(ip->operand >> 16) & 0xFFFF]; \
+        const Value &b = stack[currentLocalsBase + (ip->operand & 0xFFFF)]; \
+        BRANCH_IF_NOT(CMP_IS_TRUE(a, b, cmpop)) \
+    }
+
+#define BRANCH_LOCAL_RIGHT(label, cmpop) \
+    OP_##label: \
+    { \
+        const Value &a = stack.back(); \
+        const Value &b = stack[currentLocalsBase + (ip->operand & 0xFFFF)]; \
+        const bool cond = CMP_IS_TRUE(a, b, cmpop); \
+        stack.pop_back(); \
+        BRANCH_IF_NOT(cond) \
+    }
+
+#define BRANCH_LITERAL_RIGHT(label, cmpop) \
+    OP_##label: \
+    { \
+        const Value &a = stack.back(); \
+        const Value &b = currentChunk->literals[ip->operand & 0xFFFF]; \
+        const bool cond = CMP_IS_TRUE(a, b, cmpop); \
+        stack.pop_back(); \
+        BRANCH_IF_NOT(cond) \
+    }
+
+    BRANCH_LOCAL_LOCAL(JUMP_IF_NOT_EQUAL_LOCAL_LOCAL, ==)
+    BRANCH_LOCAL_LOCAL(JUMP_IF_NOT_NOT_EQUAL_LOCAL_LOCAL, !=)
+    BRANCH_LOCAL_LOCAL(JUMP_IF_NOT_LESS_LOCAL_LOCAL, <)
+    BRANCH_LOCAL_LOCAL(JUMP_IF_NOT_LESS_EQUAL_LOCAL_LOCAL, <=)
+    BRANCH_LOCAL_LOCAL(JUMP_IF_NOT_GREATER_LOCAL_LOCAL, >)
+    BRANCH_LOCAL_LOCAL(JUMP_IF_NOT_GREATER_EQUAL_LOCAL_LOCAL, >=)
+
+    BRANCH_LOCAL_LITERAL(JUMP_IF_NOT_EQUAL_LOCAL_LITERAL, ==)
+    BRANCH_LOCAL_LITERAL(JUMP_IF_NOT_NOT_EQUAL_LOCAL_LITERAL, !=)
+    BRANCH_LOCAL_LITERAL(JUMP_IF_NOT_LESS_LOCAL_LITERAL, <)
+    BRANCH_LOCAL_LITERAL(JUMP_IF_NOT_LESS_EQUAL_LOCAL_LITERAL, <=)
+    BRANCH_LOCAL_LITERAL(JUMP_IF_NOT_GREATER_LOCAL_LITERAL, >)
+    BRANCH_LOCAL_LITERAL(JUMP_IF_NOT_GREATER_EQUAL_LOCAL_LITERAL, >=)
+
+    BRANCH_LITERAL_LOCAL(JUMP_IF_NOT_EQUAL_LITERAL_LOCAL, ==)
+    BRANCH_LITERAL_LOCAL(JUMP_IF_NOT_NOT_EQUAL_LITERAL_LOCAL, !=)
+    BRANCH_LITERAL_LOCAL(JUMP_IF_NOT_LESS_LITERAL_LOCAL, <)
+    BRANCH_LITERAL_LOCAL(JUMP_IF_NOT_LESS_EQUAL_LITERAL_LOCAL, <=)
+    BRANCH_LITERAL_LOCAL(JUMP_IF_NOT_GREATER_LITERAL_LOCAL, >)
+    BRANCH_LITERAL_LOCAL(JUMP_IF_NOT_GREATER_EQUAL_LITERAL_LOCAL, >=)
+
+    BRANCH_LOCAL_RIGHT(JUMP_IF_NOT_EQUAL_LOCAL_RIGHT, ==)
+    BRANCH_LOCAL_RIGHT(JUMP_IF_NOT_NOT_EQUAL_LOCAL_RIGHT, !=)
+    BRANCH_LOCAL_RIGHT(JUMP_IF_NOT_LESS_LOCAL_RIGHT, <)
+    BRANCH_LOCAL_RIGHT(JUMP_IF_NOT_LESS_EQUAL_LOCAL_RIGHT, <=)
+    BRANCH_LOCAL_RIGHT(JUMP_IF_NOT_GREATER_LOCAL_RIGHT, >)
+    BRANCH_LOCAL_RIGHT(JUMP_IF_NOT_GREATER_EQUAL_LOCAL_RIGHT, >=)
+
+    BRANCH_LITERAL_RIGHT(JUMP_IF_NOT_EQUAL_LITERAL_RIGHT, ==)
+    BRANCH_LITERAL_RIGHT(JUMP_IF_NOT_NOT_EQUAL_LITERAL_RIGHT, !=)
+    BRANCH_LITERAL_RIGHT(JUMP_IF_NOT_LESS_LITERAL_RIGHT, <)
+    BRANCH_LITERAL_RIGHT(JUMP_IF_NOT_LESS_EQUAL_LITERAL_RIGHT, <=)
+    BRANCH_LITERAL_RIGHT(JUMP_IF_NOT_GREATER_LITERAL_RIGHT, >)
+    BRANCH_LITERAL_RIGHT(JUMP_IF_NOT_GREATER_EQUAL_LITERAL_RIGHT, >=)
 
     OP_OR:
         {

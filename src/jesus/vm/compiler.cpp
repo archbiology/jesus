@@ -200,6 +200,65 @@ static const OpCode kLiteralRightOps[FUSED_OP_COUNT] = {
     OpCode::NOT_EQUAL_LITERAL_RIGHT, OpCode::LESS_LITERAL_RIGHT, OpCode::LESS_EQUAL_LITERAL_RIGHT,
     OpCode::GREATER_LITERAL_RIGHT, OpCode::GREATER_EQUAL_LITERAL_RIGHT};
 
+// Maps a fused comparison opcode to its comparison-and-branch counterpart.
+// Returns false for anything that is not a comparison.
+static bool branchVariant(OpCode comparison, OpCode &branch)
+{
+    struct Pair
+    {
+        OpCode comparison;
+        OpCode branch;
+    };
+
+    static const Pair kBranches[] = {
+        {OpCode::EQUAL_LOCAL_LOCAL, OpCode::JUMP_IF_NOT_EQUAL_LOCAL_LOCAL},
+        {OpCode::NOT_EQUAL_LOCAL_LOCAL, OpCode::JUMP_IF_NOT_NOT_EQUAL_LOCAL_LOCAL},
+        {OpCode::LESS_LOCAL_LOCAL, OpCode::JUMP_IF_NOT_LESS_LOCAL_LOCAL},
+        {OpCode::LESS_EQUAL_LOCAL_LOCAL, OpCode::JUMP_IF_NOT_LESS_EQUAL_LOCAL_LOCAL},
+        {OpCode::GREATER_LOCAL_LOCAL, OpCode::JUMP_IF_NOT_GREATER_LOCAL_LOCAL},
+        {OpCode::GREATER_EQUAL_LOCAL_LOCAL, OpCode::JUMP_IF_NOT_GREATER_EQUAL_LOCAL_LOCAL},
+
+        {OpCode::EQUAL_LOCAL_LITERAL, OpCode::JUMP_IF_NOT_EQUAL_LOCAL_LITERAL},
+        {OpCode::NOT_EQUAL_LOCAL_LITERAL, OpCode::JUMP_IF_NOT_NOT_EQUAL_LOCAL_LITERAL},
+        {OpCode::LESS_LOCAL_LITERAL, OpCode::JUMP_IF_NOT_LESS_LOCAL_LITERAL},
+        {OpCode::LESS_EQUAL_LOCAL_LITERAL, OpCode::JUMP_IF_NOT_LESS_EQUAL_LOCAL_LITERAL},
+        {OpCode::GREATER_LOCAL_LITERAL, OpCode::JUMP_IF_NOT_GREATER_LOCAL_LITERAL},
+        {OpCode::GREATER_EQUAL_LOCAL_LITERAL, OpCode::JUMP_IF_NOT_GREATER_EQUAL_LOCAL_LITERAL},
+
+        {OpCode::EQUAL_LITERAL_LOCAL, OpCode::JUMP_IF_NOT_EQUAL_LITERAL_LOCAL},
+        {OpCode::NOT_EQUAL_LITERAL_LOCAL, OpCode::JUMP_IF_NOT_NOT_EQUAL_LITERAL_LOCAL},
+        {OpCode::LESS_LITERAL_LOCAL, OpCode::JUMP_IF_NOT_LESS_LITERAL_LOCAL},
+        {OpCode::LESS_EQUAL_LITERAL_LOCAL, OpCode::JUMP_IF_NOT_LESS_EQUAL_LITERAL_LOCAL},
+        {OpCode::GREATER_LITERAL_LOCAL, OpCode::JUMP_IF_NOT_GREATER_LITERAL_LOCAL},
+        {OpCode::GREATER_EQUAL_LITERAL_LOCAL, OpCode::JUMP_IF_NOT_GREATER_EQUAL_LITERAL_LOCAL},
+
+        {OpCode::EQUAL_LOCAL_RIGHT, OpCode::JUMP_IF_NOT_EQUAL_LOCAL_RIGHT},
+        {OpCode::NOT_EQUAL_LOCAL_RIGHT, OpCode::JUMP_IF_NOT_NOT_EQUAL_LOCAL_RIGHT},
+        {OpCode::LESS_LOCAL_RIGHT, OpCode::JUMP_IF_NOT_LESS_LOCAL_RIGHT},
+        {OpCode::LESS_EQUAL_LOCAL_RIGHT, OpCode::JUMP_IF_NOT_LESS_EQUAL_LOCAL_RIGHT},
+        {OpCode::GREATER_LOCAL_RIGHT, OpCode::JUMP_IF_NOT_GREATER_LOCAL_RIGHT},
+        {OpCode::GREATER_EQUAL_LOCAL_RIGHT, OpCode::JUMP_IF_NOT_GREATER_EQUAL_LOCAL_RIGHT},
+
+        {OpCode::EQUAL_LITERAL_RIGHT, OpCode::JUMP_IF_NOT_EQUAL_LITERAL_RIGHT},
+        {OpCode::NOT_EQUAL_LITERAL_RIGHT, OpCode::JUMP_IF_NOT_NOT_EQUAL_LITERAL_RIGHT},
+        {OpCode::LESS_LITERAL_RIGHT, OpCode::JUMP_IF_NOT_LESS_LITERAL_RIGHT},
+        {OpCode::LESS_EQUAL_LITERAL_RIGHT, OpCode::JUMP_IF_NOT_LESS_EQUAL_LITERAL_RIGHT},
+        {OpCode::GREATER_LITERAL_RIGHT, OpCode::JUMP_IF_NOT_GREATER_LITERAL_RIGHT},
+        {OpCode::GREATER_EQUAL_LITERAL_RIGHT, OpCode::JUMP_IF_NOT_GREATER_EQUAL_LITERAL_RIGHT},
+    };
+
+    for (const auto &pair : kBranches)
+    {
+        if (pair.comparison == comparison)
+        {
+            branch = pair.branch;
+            return true;
+        }
+    }
+
+    return false;
+}
+
 // Looks up the opcode for `type` in a family table. Returns false for
 // operators without a fused form (OR/AND/XOR).
 static bool fusedOp(const OpCode *table, TokenType type, OpCode &out)
@@ -574,6 +633,28 @@ uint32_t Compiler::emitPlaceholder(OpCode opcode)
     return index;
 }
 
+uint32_t Compiler::emitConditionalJump()
+{
+    auto &instructions = currentChunk->instructions;
+
+    if (!instructions.empty())
+    {
+        OpCode branch;
+
+        if (branchVariant(instructions.back().opcode, branch))
+        {
+            // Turn the comparison into a comparison-and-branch. It keeps its
+            // packed operands and reads the jump target from the operand of
+            // the instruction emitted just below.
+            instructions.back().opcode = branch;
+
+            return emitPlaceholder(OpCode::JUMP);
+        }
+    }
+
+    return emitPlaceholder(OpCode::JUMP_IF_FALSE);
+}
+
 void Compiler::patchJump(uint32_t instructionIndex)
 {
     currentChunk->instructions[instructionIndex].operand = currentChunk->instructions.size();
@@ -585,7 +666,7 @@ void Compiler::compileRepeatWhileStmt(const RepeatWhileStmt &stmt)
 
     compileExpr(*stmt.condition);
 
-    uint32_t jumpOut = emitPlaceholder(OpCode::JUMP_IF_FALSE);
+    uint32_t jumpOut = emitConditionalJump();
 
     for (const auto &bodyStmt : stmt.body)
     {
@@ -781,7 +862,7 @@ void Compiler::compileIfStmt(const IfStmt &stmt)
     // ---------------------------------------------------------------
     compileExpr(*stmt.condition);
 
-    uint32_t jumpToOtherwise = emitPlaceholder(OpCode::JUMP_IF_FALSE);
+    uint32_t jumpToOtherwise = emitConditionalJump();
 
     for (const auto &thenStmt : stmt.thenBranch)
     {
