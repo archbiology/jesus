@@ -90,7 +90,44 @@ enum class OpCode : uint8_t
     SUBTRACT_LOCAL_LOCAL_STORE,
     MULTIPLY_LOCAL_LOCAL_STORE,
     DIVIDE_LOCAL_LOCAL_STORE,
-    MODULO_LOCAL_LOCAL_STORE
+    MODULO_LOCAL_LOCAL_STORE,
+
+    // Operand is a local and a literal constant, in the order named by the
+    // opcode (LOCAL_LITERAL = local on the left, LITERAL_LOCAL = literal on
+    // the left). Packed as: local slot in the low 16 bits, constant index in
+    // the high 16 bits.
+    ADD_LOCAL_LITERAL,
+    SUBTRACT_LOCAL_LITERAL,
+    MULTIPLY_LOCAL_LITERAL,
+    DIVIDE_LOCAL_LITERAL,
+    MODULO_LOCAL_LITERAL,
+    EQUAL_LOCAL_LITERAL,
+    NOT_EQUAL_LOCAL_LITERAL,
+    LESS_LOCAL_LITERAL,
+    LESS_EQUAL_LOCAL_LITERAL,
+    GREATER_LOCAL_LITERAL,
+    GREATER_EQUAL_LOCAL_LITERAL,
+
+    ADD_LITERAL_LOCAL,
+    SUBTRACT_LITERAL_LOCAL,
+    MULTIPLY_LITERAL_LOCAL,
+    DIVIDE_LITERAL_LOCAL,
+    MODULO_LITERAL_LOCAL,
+    EQUAL_LITERAL_LOCAL,
+    NOT_EQUAL_LITERAL_LOCAL,
+    LESS_LITERAL_LOCAL,
+    LESS_EQUAL_LITERAL_LOCAL,
+    GREATER_LITERAL_LOCAL,
+    GREATER_EQUAL_LITERAL_LOCAL,
+
+    // Arithmetic forms that write their result straight into a local, for
+    // patterns like `i = i + 1`. A LOCAL_LITERAL_STORE operand packs:
+    // local slot (bits 0-7), constant index (bits 8-23), destination (24-31).
+    ADD_LOCAL_LITERAL_STORE,
+    SUBTRACT_LOCAL_LITERAL_STORE,
+    MULTIPLY_LOCAL_LITERAL_STORE,
+    DIVIDE_LOCAL_LITERAL_STORE,
+    MODULO_LOCAL_LITERAL_STORE
 };
 
 /**

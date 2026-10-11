@@ -77,7 +77,34 @@ void VM::run(const Chunk &chunk)
         &&OP_SUBTRACT_LOCAL_LOCAL_STORE,  // SUBTRACT_LOCAL_LOCAL_STORE
         &&OP_MULTIPLY_LOCAL_LOCAL_STORE,  // MULTIPLY_LOCAL_LOCAL_STORE
         &&OP_DIVIDE_LOCAL_LOCAL_STORE,    // DIVIDE_LOCAL_LOCAL_STORE
-        &&OP_MODULO_LOCAL_LOCAL_STORE     // MODULO_LOCAL_LOCAL_STORE
+        &&OP_MODULO_LOCAL_LOCAL_STORE,    // MODULO_LOCAL_LOCAL_STORE
+        &&OP_ADD_LOCAL_LITERAL,           // ADD_LOCAL_LITERAL
+        &&OP_SUBTRACT_LOCAL_LITERAL,      // SUBTRACT_LOCAL_LITERAL
+        &&OP_MULTIPLY_LOCAL_LITERAL,      // MULTIPLY_LOCAL_LITERAL
+        &&OP_DIVIDE_LOCAL_LITERAL,        // DIVIDE_LOCAL_LITERAL
+        &&OP_MODULO_LOCAL_LITERAL,        // MODULO_LOCAL_LITERAL
+        &&OP_EQUAL_LOCAL_LITERAL,         // EQUAL_LOCAL_LITERAL
+        &&OP_NOT_EQUAL_LOCAL_LITERAL,     // NOT_EQUAL_LOCAL_LITERAL
+        &&OP_LESS_LOCAL_LITERAL,          // LESS_LOCAL_LITERAL
+        &&OP_LESS_EQUAL_LOCAL_LITERAL,    // LESS_EQUAL_LOCAL_LITERAL
+        &&OP_GREATER_LOCAL_LITERAL,       // GREATER_LOCAL_LITERAL
+        &&OP_GREATER_EQUAL_LOCAL_LITERAL, // GREATER_EQUAL_LOCAL_LITERAL
+        &&OP_ADD_LITERAL_LOCAL,           // ADD_LITERAL_LOCAL
+        &&OP_SUBTRACT_LITERAL_LOCAL,      // SUBTRACT_LITERAL_LOCAL
+        &&OP_MULTIPLY_LITERAL_LOCAL,      // MULTIPLY_LITERAL_LOCAL
+        &&OP_DIVIDE_LITERAL_LOCAL,        // DIVIDE_LITERAL_LOCAL
+        &&OP_MODULO_LITERAL_LOCAL,        // MODULO_LITERAL_LOCAL
+        &&OP_EQUAL_LITERAL_LOCAL,         // EQUAL_LITERAL_LOCAL
+        &&OP_NOT_EQUAL_LITERAL_LOCAL,     // NOT_EQUAL_LITERAL_LOCAL
+        &&OP_LESS_LITERAL_LOCAL,          // LESS_LITERAL_LOCAL
+        &&OP_LESS_EQUAL_LITERAL_LOCAL,    // LESS_EQUAL_LITERAL_LOCAL
+        &&OP_GREATER_LITERAL_LOCAL,       // GREATER_LITERAL_LOCAL
+        &&OP_GREATER_EQUAL_LITERAL_LOCAL, // GREATER_EQUAL_LITERAL_LOCAL
+        &&OP_ADD_LOCAL_LITERAL_STORE,     // ADD_LOCAL_LITERAL_STORE
+        &&OP_SUBTRACT_LOCAL_LITERAL_STORE,// SUBTRACT_LOCAL_LITERAL_STORE
+        &&OP_MULTIPLY_LOCAL_LITERAL_STORE,// MULTIPLY_LOCAL_LITERAL_STORE
+        &&OP_DIVIDE_LOCAL_LITERAL_STORE,  // DIVIDE_LOCAL_LITERAL_STORE
+        &&OP_MODULO_LOCAL_LITERAL_STORE   // MODULO_LOCAL_LITERAL_STORE
     };
 
     // Dispatch to the main program's first instruction.
@@ -294,6 +321,163 @@ void VM::run(const Chunk &chunk)
     FUSED_CMP_LOCAL_LOCAL(GREATER_EQUAL_LOCAL_LOCAL, >=)
 
     // -----------------------------------------------------------------
+    // Fused LOCAL_LITERAL / LITERAL_LOCAL handlers.
+    //
+    // These cover binary operations where one operand is a local and the
+    // other is a literal constant, e.g. `i < 100` or `2.0 * x`. The
+    // operand packs the local slot in the low 16 bits and the constant
+    // index in the high 16 bits; the opcode name fixes which side is which.
+    // -----------------------------------------------------------------
+#define FUSED_LOCAL_LITERAL_OPERANDS \
+    const uint32_t packed = ip->operand; \
+    const Value &a = stack[currentLocalsBase + (packed & 0xFFFF)]; \
+    const Value &b = currentChunk->literals[packed >> 16];
+
+#define FUSED_LITERAL_LOCAL_OPERANDS \
+    const uint32_t packed = ip->operand; \
+    const Value &a = currentChunk->literals[packed >> 16]; \
+    const Value &b = stack[currentLocalsBase + (packed & 0xFFFF)];
+
+#define FUSED_ARITH_OP(label, operands, op) \
+    OP_##label: \
+    { \
+        operands \
+        if (a.IS_NUMBER && b.IS_NUMBER) \
+        { \
+            if (a.IS_DOUBLE || b.IS_DOUBLE) \
+            { \
+                const double result = a.number op b.number; \
+                stack.emplace_back(); \
+                stack.back().vmSetAsDouble(result); \
+            } \
+            else \
+            { \
+                const int result = a.intValue op b.intValue; \
+                stack.emplace_back(); \
+                stack.back().vmSetAsInt(result); \
+            } \
+        } \
+        else \
+        { \
+            stack.push_back(a op b); \
+        } \
+        ++ip; \
+        goto NEXT_OP; \
+    }
+
+#define FUSED_CMP_OP(label, operands, op) \
+    OP_##label: \
+    { \
+        operands \
+        if (a.IS_NUMBER && b.IS_NUMBER) \
+        { \
+            const bool result = a.number op b.number; \
+            stack.emplace_back(); \
+            stack.back().vmSetAsBoolean(result); \
+        } \
+        else \
+        { \
+            stack.push_back(Value(a op b)); \
+        } \
+        ++ip; \
+        goto NEXT_OP; \
+    }
+
+    FUSED_ARITH_OP(ADD_LOCAL_LITERAL, FUSED_LOCAL_LITERAL_OPERANDS, +)
+    FUSED_ARITH_OP(SUBTRACT_LOCAL_LITERAL, FUSED_LOCAL_LITERAL_OPERANDS, -)
+    FUSED_ARITH_OP(MULTIPLY_LOCAL_LITERAL, FUSED_LOCAL_LITERAL_OPERANDS, *)
+
+    OP_DIVIDE_LOCAL_LITERAL:
+        {
+            FUSED_LOCAL_LITERAL_OPERANDS
+            if (a.IS_NUMBER && b.IS_NUMBER)
+            {
+                if (b.number == 0.0)
+                    throw std::runtime_error("Division by zero");
+                stack.emplace_back();
+                stack.back().vmSetAsDouble(a.number / b.number);
+            }
+            else
+            {
+                stack.push_back(a / b);
+            }
+            ++ip;
+            goto NEXT_OP;
+        }
+
+    OP_MODULO_LOCAL_LITERAL:
+        {
+            FUSED_LOCAL_LITERAL_OPERANDS
+            if (a.IS_NUMBER && b.IS_NUMBER)
+            {
+                if (a.IS_DOUBLE || b.IS_DOUBLE)
+                    throw std::runtime_error("'" + std::to_string(a.number) + " mod " + std::to_string(b.number) + "' invalid — 'mod' only supports integers.");
+                stack.emplace_back();
+                stack.back().vmSetAsInt(a.intValue % b.intValue);
+            }
+            else
+            {
+                stack.push_back(a % b);
+            }
+            ++ip;
+            goto NEXT_OP;
+        }
+
+    FUSED_CMP_OP(EQUAL_LOCAL_LITERAL, FUSED_LOCAL_LITERAL_OPERANDS, ==)
+    FUSED_CMP_OP(NOT_EQUAL_LOCAL_LITERAL, FUSED_LOCAL_LITERAL_OPERANDS, !=)
+    FUSED_CMP_OP(LESS_LOCAL_LITERAL, FUSED_LOCAL_LITERAL_OPERANDS, <)
+    FUSED_CMP_OP(LESS_EQUAL_LOCAL_LITERAL, FUSED_LOCAL_LITERAL_OPERANDS, <=)
+    FUSED_CMP_OP(GREATER_LOCAL_LITERAL, FUSED_LOCAL_LITERAL_OPERANDS, >)
+    FUSED_CMP_OP(GREATER_EQUAL_LOCAL_LITERAL, FUSED_LOCAL_LITERAL_OPERANDS, >=)
+
+    FUSED_ARITH_OP(ADD_LITERAL_LOCAL, FUSED_LITERAL_LOCAL_OPERANDS, +)
+    FUSED_ARITH_OP(SUBTRACT_LITERAL_LOCAL, FUSED_LITERAL_LOCAL_OPERANDS, -)
+    FUSED_ARITH_OP(MULTIPLY_LITERAL_LOCAL, FUSED_LITERAL_LOCAL_OPERANDS, *)
+
+    OP_DIVIDE_LITERAL_LOCAL:
+        {
+            FUSED_LITERAL_LOCAL_OPERANDS
+            if (a.IS_NUMBER && b.IS_NUMBER)
+            {
+                if (b.number == 0.0)
+                    throw std::runtime_error("Division by zero");
+                stack.emplace_back();
+                stack.back().vmSetAsDouble(a.number / b.number);
+            }
+            else
+            {
+                stack.push_back(a / b);
+            }
+            ++ip;
+            goto NEXT_OP;
+        }
+
+    OP_MODULO_LITERAL_LOCAL:
+        {
+            FUSED_LITERAL_LOCAL_OPERANDS
+            if (a.IS_NUMBER && b.IS_NUMBER)
+            {
+                if (a.IS_DOUBLE || b.IS_DOUBLE)
+                    throw std::runtime_error("'" + std::to_string(a.number) + " mod " + std::to_string(b.number) + "' invalid — 'mod' only supports integers.");
+                stack.emplace_back();
+                stack.back().vmSetAsInt(a.intValue % b.intValue);
+            }
+            else
+            {
+                stack.push_back(a % b);
+            }
+            ++ip;
+            goto NEXT_OP;
+        }
+
+    FUSED_CMP_OP(EQUAL_LITERAL_LOCAL, FUSED_LITERAL_LOCAL_OPERANDS, ==)
+    FUSED_CMP_OP(NOT_EQUAL_LITERAL_LOCAL, FUSED_LITERAL_LOCAL_OPERANDS, !=)
+    FUSED_CMP_OP(LESS_LITERAL_LOCAL, FUSED_LITERAL_LOCAL_OPERANDS, <)
+    FUSED_CMP_OP(LESS_EQUAL_LITERAL_LOCAL, FUSED_LITERAL_LOCAL_OPERANDS, <=)
+    FUSED_CMP_OP(GREATER_LITERAL_LOCAL, FUSED_LITERAL_LOCAL_OPERANDS, >)
+    FUSED_CMP_OP(GREATER_EQUAL_LITERAL_LOCAL, FUSED_LITERAL_LOCAL_OPERANDS, >=)
+
+    // -----------------------------------------------------------------
     // Fused LOCAL_LOCAL_STORE handlers.
     //
     // These handle patterns like `x2 = x * x`, where a two-local arithmetic
@@ -353,6 +537,75 @@ void VM::run(const Chunk &chunk)
     OP_MODULO_LOCAL_LOCAL_STORE:
         {
             FUSED_STORE_OPERANDS
+            if (a.IS_NUMBER && b.IS_NUMBER)
+            {
+                if (a.IS_DOUBLE || b.IS_DOUBLE)
+                    throw std::runtime_error("'" + std::to_string(a.number) + " mod " + std::to_string(b.number) + "' invalid — 'mod' only supports integers.");
+                dest.setAsInt(a.intValue % b.intValue);
+            }
+            else
+            {
+                dest = a % b;
+            }
+            ++ip;
+            goto NEXT_OP;
+        }
+
+    // -----------------------------------------------------------------
+    // Fused LOCAL_LITERAL_STORE handlers, for patterns like `i = i + 1`.
+    // The operand packs the local slot (bits 0-7), the constant index
+    // (bits 8-23) and the destination slot (bits 24-31).
+    // -----------------------------------------------------------------
+#define FUSED_LOCAL_LITERAL_STORE_OPERANDS \
+    const uint32_t packed = ip->operand; \
+    const std::size_t lb = currentLocalsBase; \
+    const Value &a = stack[lb + (packed & 0xFF)]; \
+    const Value &b = currentChunk->literals[(packed >> 8) & 0xFFFF]; \
+    Value &dest = stack[lb + (packed >> 24)];
+
+#define FUSED_ARITH_STORE_OP(label, operands, op) \
+    OP_##label: \
+    { \
+        operands \
+        if (a.IS_NUMBER && b.IS_NUMBER) \
+        { \
+            if (a.IS_DOUBLE || b.IS_DOUBLE) \
+                dest.setAsDouble(a.number op b.number); \
+            else \
+                dest.setAsInt(a.intValue op b.intValue); \
+        } \
+        else \
+        { \
+            dest = a op b; \
+        } \
+        ++ip; \
+        goto NEXT_OP; \
+    }
+
+    FUSED_ARITH_STORE_OP(ADD_LOCAL_LITERAL_STORE, FUSED_LOCAL_LITERAL_STORE_OPERANDS, +)
+    FUSED_ARITH_STORE_OP(SUBTRACT_LOCAL_LITERAL_STORE, FUSED_LOCAL_LITERAL_STORE_OPERANDS, -)
+    FUSED_ARITH_STORE_OP(MULTIPLY_LOCAL_LITERAL_STORE, FUSED_LOCAL_LITERAL_STORE_OPERANDS, *)
+
+    OP_DIVIDE_LOCAL_LITERAL_STORE:
+        {
+            FUSED_LOCAL_LITERAL_STORE_OPERANDS
+            if (a.IS_NUMBER && b.IS_NUMBER)
+            {
+                if (b.number == 0.0)
+                    throw std::runtime_error("Division by zero");
+                dest.setAsDouble(a.number / b.number);
+            }
+            else
+            {
+                dest = a / b;
+            }
+            ++ip;
+            goto NEXT_OP;
+        }
+
+    OP_MODULO_LOCAL_LITERAL_STORE:
+        {
+            FUSED_LOCAL_LITERAL_STORE_OPERANDS
             if (a.IS_NUMBER && b.IS_NUMBER)
             {
                 if (a.IS_DOUBLE || b.IS_DOUBLE)

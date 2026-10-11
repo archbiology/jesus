@@ -136,6 +136,87 @@ std::string opcodeToString(OpCode opcode)
     case OpCode::MODULO_LOCAL_LOCAL_STORE:
         return "MODULO_LOCAL_LOCAL_STORE";
 
+    case OpCode::ADD_LOCAL_LITERAL:
+        return "ADD_LOCAL_LITERAL";
+
+    case OpCode::SUBTRACT_LOCAL_LITERAL:
+        return "SUBTRACT_LOCAL_LITERAL";
+
+    case OpCode::MULTIPLY_LOCAL_LITERAL:
+        return "MULTIPLY_LOCAL_LITERAL";
+
+    case OpCode::DIVIDE_LOCAL_LITERAL:
+        return "DIVIDE_LOCAL_LITERAL";
+
+    case OpCode::MODULO_LOCAL_LITERAL:
+        return "MODULO_LOCAL_LITERAL";
+
+    case OpCode::EQUAL_LOCAL_LITERAL:
+        return "EQUAL_LOCAL_LITERAL";
+
+    case OpCode::NOT_EQUAL_LOCAL_LITERAL:
+        return "NOT_EQUAL_LOCAL_LITERAL";
+
+    case OpCode::LESS_LOCAL_LITERAL:
+        return "LESS_LOCAL_LITERAL";
+
+    case OpCode::LESS_EQUAL_LOCAL_LITERAL:
+        return "LESS_EQUAL_LOCAL_LITERAL";
+
+    case OpCode::GREATER_LOCAL_LITERAL:
+        return "GREATER_LOCAL_LITERAL";
+
+    case OpCode::GREATER_EQUAL_LOCAL_LITERAL:
+        return "GREATER_EQUAL_LOCAL_LITERAL";
+
+    case OpCode::ADD_LITERAL_LOCAL:
+        return "ADD_LITERAL_LOCAL";
+
+    case OpCode::SUBTRACT_LITERAL_LOCAL:
+        return "SUBTRACT_LITERAL_LOCAL";
+
+    case OpCode::MULTIPLY_LITERAL_LOCAL:
+        return "MULTIPLY_LITERAL_LOCAL";
+
+    case OpCode::DIVIDE_LITERAL_LOCAL:
+        return "DIVIDE_LITERAL_LOCAL";
+
+    case OpCode::MODULO_LITERAL_LOCAL:
+        return "MODULO_LITERAL_LOCAL";
+
+    case OpCode::EQUAL_LITERAL_LOCAL:
+        return "EQUAL_LITERAL_LOCAL";
+
+    case OpCode::NOT_EQUAL_LITERAL_LOCAL:
+        return "NOT_EQUAL_LITERAL_LOCAL";
+
+    case OpCode::LESS_LITERAL_LOCAL:
+        return "LESS_LITERAL_LOCAL";
+
+    case OpCode::LESS_EQUAL_LITERAL_LOCAL:
+        return "LESS_EQUAL_LITERAL_LOCAL";
+
+    case OpCode::GREATER_LITERAL_LOCAL:
+        return "GREATER_LITERAL_LOCAL";
+
+    case OpCode::GREATER_EQUAL_LITERAL_LOCAL:
+        return "GREATER_EQUAL_LITERAL_LOCAL";
+
+    case OpCode::ADD_LOCAL_LITERAL_STORE:
+        return "ADD_LOCAL_LITERAL_STORE";
+
+    case OpCode::SUBTRACT_LOCAL_LITERAL_STORE:
+        return "SUBTRACT_LOCAL_LITERAL_STORE";
+
+    case OpCode::MULTIPLY_LOCAL_LITERAL_STORE:
+        return "MULTIPLY_LOCAL_LITERAL_STORE";
+
+    case OpCode::DIVIDE_LOCAL_LITERAL_STORE:
+        return "DIVIDE_LOCAL_LITERAL_STORE";
+
+    case OpCode::MODULO_LOCAL_LITERAL_STORE:
+        return "MODULO_LOCAL_LITERAL_STORE";
+
     default:
         return "UNKNOWN_OPCODE";
     }
