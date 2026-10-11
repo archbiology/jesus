@@ -195,7 +195,25 @@ enum class OpCode : uint8_t
     JUMP_IF_NOT_LESS_LITERAL_RIGHT,
     JUMP_IF_NOT_LESS_EQUAL_LITERAL_RIGHT,
     JUMP_IF_NOT_GREATER_LITERAL_RIGHT,
-    JUMP_IF_NOT_GREATER_EQUAL_LITERAL_RIGHT
+    JUMP_IF_NOT_GREATER_EQUAL_LITERAL_RIGHT,
+
+    // Store variants of the *_RIGHT arithmetic forms. The left operand is on
+    // top of the stack (as for *_RIGHT), the right operand is fetched from a
+    // local or constant in the low 16 bits, and the low 16 bits of the
+    // destination local slot are the high 16 bits. The result is written
+    // straight to the destination and the left operand is discarded, so
+    // `x = (x2 - y2) + cx` needs no WRITE_LOCAL.
+    ADD_LOCAL_RIGHT_STORE,
+    SUBTRACT_LOCAL_RIGHT_STORE,
+    MULTIPLY_LOCAL_RIGHT_STORE,
+    DIVIDE_LOCAL_RIGHT_STORE,
+    MODULO_LOCAL_RIGHT_STORE,
+
+    ADD_LITERAL_RIGHT_STORE,
+    SUBTRACT_LITERAL_RIGHT_STORE,
+    MULTIPLY_LITERAL_RIGHT_STORE,
+    DIVIDE_LITERAL_RIGHT_STORE,
+    MODULO_LITERAL_RIGHT_STORE
 };
 
 /**

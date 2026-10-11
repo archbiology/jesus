@@ -324,6 +324,56 @@ static bool localLiteralStoreOpcode(OpCode fused, OpCode &out)
     }
 }
 
+// For the *_RIGHT family, where the result currently replaces a value on the
+// stack (e.g. `x = (x2 - y2) + cx`).
+static bool localRightStoreOpcode(OpCode fused, OpCode &out)
+{
+    switch (fused)
+    {
+    case OpCode::ADD_LOCAL_RIGHT:
+        out = OpCode::ADD_LOCAL_RIGHT_STORE;
+        return true;
+    case OpCode::SUBTRACT_LOCAL_RIGHT:
+        out = OpCode::SUBTRACT_LOCAL_RIGHT_STORE;
+        return true;
+    case OpCode::MULTIPLY_LOCAL_RIGHT:
+        out = OpCode::MULTIPLY_LOCAL_RIGHT_STORE;
+        return true;
+    case OpCode::DIVIDE_LOCAL_RIGHT:
+        out = OpCode::DIVIDE_LOCAL_RIGHT_STORE;
+        return true;
+    case OpCode::MODULO_LOCAL_RIGHT:
+        out = OpCode::MODULO_LOCAL_RIGHT_STORE;
+        return true;
+    default:
+        return false;
+    }
+}
+
+static bool literalRightStoreOpcode(OpCode fused, OpCode &out)
+{
+    switch (fused)
+    {
+    case OpCode::ADD_LITERAL_RIGHT:
+        out = OpCode::ADD_LITERAL_RIGHT_STORE;
+        return true;
+    case OpCode::SUBTRACT_LITERAL_RIGHT:
+        out = OpCode::SUBTRACT_LITERAL_RIGHT_STORE;
+        return true;
+    case OpCode::MULTIPLY_LITERAL_RIGHT:
+        out = OpCode::MULTIPLY_LITERAL_RIGHT_STORE;
+        return true;
+    case OpCode::DIVIDE_LITERAL_RIGHT:
+        out = OpCode::DIVIDE_LITERAL_RIGHT_STORE;
+        return true;
+    case OpCode::MODULO_LITERAL_RIGHT:
+        out = OpCode::MODULO_LITERAL_RIGHT_STORE;
+        return true;
+    default:
+        return false;
+    }
+}
+
 void Compiler::compileBinaryExpr(const BinaryExpr &expr)
 {
     compileExpr(*expr.left);
@@ -529,6 +579,19 @@ void Compiler::emitStoreToLocal(uint32_t slot)
             ins.back() = {store, local | (constant << 8) | (slot << 24)};
             return;
         }
+    }
+    else if (OpCode store; localRightStoreOpcode(last, store))
+    {
+        // The *_RIGHT form already holds the right-hand slot in the low 16
+        // bits; add the destination slot in the high 16 bits.
+        ins.back() = {store, ins.back().operand | (slot << 16)};
+        return;
+    }
+    else if (OpCode store; literalRightStoreOpcode(last, store))
+    {
+        // Same, but the low 16 bits hold a constant index.
+        ins.back() = {store, ins.back().operand | (slot << 16)};
+        return;
     }
 
     emit(OpCode::WRITE_LOCAL, slot);

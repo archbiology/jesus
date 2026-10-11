@@ -156,7 +156,17 @@ void VM::run(const Chunk &chunk)
         &&OP_JUMP_IF_NOT_LESS_LITERAL_RIGHT,          // JUMP_IF_NOT_LESS_LITERAL_RIGHT
         &&OP_JUMP_IF_NOT_LESS_EQUAL_LITERAL_RIGHT,    // JUMP_IF_NOT_LESS_EQUAL_LITERAL_RIGHT
         &&OP_JUMP_IF_NOT_GREATER_LITERAL_RIGHT,       // JUMP_IF_NOT_GREATER_LITERAL_RIGHT
-        &&OP_JUMP_IF_NOT_GREATER_EQUAL_LITERAL_RIGHT  // JUMP_IF_NOT_GREATER_EQUAL_LITERAL_RIGHT
+        &&OP_JUMP_IF_NOT_GREATER_EQUAL_LITERAL_RIGHT, // JUMP_IF_NOT_GREATER_EQUAL_LITERAL_RIGHT
+        &&OP_ADD_LOCAL_RIGHT_STORE,                   // ADD_LOCAL_RIGHT_STORE
+        &&OP_SUBTRACT_LOCAL_RIGHT_STORE,              // SUBTRACT_LOCAL_RIGHT_STORE
+        &&OP_MULTIPLY_LOCAL_RIGHT_STORE,              // MULTIPLY_LOCAL_RIGHT_STORE
+        &&OP_DIVIDE_LOCAL_RIGHT_STORE,                // DIVIDE_LOCAL_RIGHT_STORE
+        &&OP_MODULO_LOCAL_RIGHT_STORE,                // MODULO_LOCAL_RIGHT_STORE
+        &&OP_ADD_LITERAL_RIGHT_STORE,                 // ADD_LITERAL_RIGHT_STORE
+        &&OP_SUBTRACT_LITERAL_RIGHT_STORE,            // SUBTRACT_LITERAL_RIGHT_STORE
+        &&OP_MULTIPLY_LITERAL_RIGHT_STORE,            // MULTIPLY_LITERAL_RIGHT_STORE
+        &&OP_DIVIDE_LITERAL_RIGHT_STORE,              // DIVIDE_LITERAL_RIGHT_STORE
+        &&OP_MODULO_LITERAL_RIGHT_STORE               // MODULO_LITERAL_RIGHT_STORE
     };
 
     // Dispatch to the main program's first instruction.
@@ -910,6 +920,124 @@ void VM::run(const Chunk &chunk)
     BRANCH_LITERAL_RIGHT(JUMP_IF_NOT_LESS_EQUAL_LITERAL_RIGHT, <=)
     BRANCH_LITERAL_RIGHT(JUMP_IF_NOT_GREATER_LITERAL_RIGHT, >)
     BRANCH_LITERAL_RIGHT(JUMP_IF_NOT_GREATER_EQUAL_LITERAL_RIGHT, >=)
+
+    // -----------------------------------------------------------------
+    // Store variants of the *_RIGHT arithmetic forms.
+    //
+    // The left operand is on top of the stack, the right operand is a local
+    // or constant in the low 16 bits of the operand and the destination
+    // local slot is in the high 16 bits. The result is written straight to
+    // the destination and the left operand is popped.
+    // -----------------------------------------------------------------
+#define FUSED_LOCAL_RIGHT_STORE_OPERANDS \
+    Value &left = stack.back(); \
+    const Value &b = stack[currentLocalsBase + (ip->operand & 0xFFFF)]; \
+    Value &dest = stack[currentLocalsBase + ((ip->operand >> 16) & 0xFFFF)];
+
+#define FUSED_LITERAL_RIGHT_STORE_OPERANDS \
+    Value &left = stack.back(); \
+    const Value &b = currentChunk->literals[ip->operand & 0xFFFF]; \
+    Value &dest = stack[currentLocalsBase + ((ip->operand >> 16) & 0xFFFF)];
+
+#define FUSED_ARITH_RIGHT_STORE_OP(label, operands, op) \
+    OP_##label: \
+    { \
+        operands \
+        if (left.IS_NUMBER && b.IS_NUMBER) \
+        { \
+            if (left.IS_DOUBLE || b.IS_DOUBLE) \
+                dest.setAsDouble(left.number op b.number); \
+            else \
+                dest.setAsInt(left.intValue op b.intValue); \
+        } \
+        else \
+        { \
+            dest = left op b; \
+        } \
+        stack.pop_back(); \
+        ++ip; \
+        goto NEXT_OP; \
+    }
+
+    FUSED_ARITH_RIGHT_STORE_OP(ADD_LOCAL_RIGHT_STORE, FUSED_LOCAL_RIGHT_STORE_OPERANDS, +)
+    FUSED_ARITH_RIGHT_STORE_OP(SUBTRACT_LOCAL_RIGHT_STORE, FUSED_LOCAL_RIGHT_STORE_OPERANDS, -)
+    FUSED_ARITH_RIGHT_STORE_OP(MULTIPLY_LOCAL_RIGHT_STORE, FUSED_LOCAL_RIGHT_STORE_OPERANDS, *)
+
+    OP_DIVIDE_LOCAL_RIGHT_STORE:
+        {
+            FUSED_LOCAL_RIGHT_STORE_OPERANDS
+            if (left.IS_NUMBER && b.IS_NUMBER)
+            {
+                if (b.number == 0.0)
+                    throw std::runtime_error("Division by zero");
+                dest.setAsDouble(left.number / b.number);
+            }
+            else
+            {
+                dest = left / b;
+            }
+            stack.pop_back();
+            ++ip;
+            goto NEXT_OP;
+        }
+
+    OP_MODULO_LOCAL_RIGHT_STORE:
+        {
+            FUSED_LOCAL_RIGHT_STORE_OPERANDS
+            if (left.IS_NUMBER && b.IS_NUMBER)
+            {
+                if (left.IS_DOUBLE || b.IS_DOUBLE)
+                    throw std::runtime_error("'" + std::to_string(left.number) + " mod " + std::to_string(b.number) + "' invalid — 'mod' only supports integers.");
+                dest.setAsInt(left.intValue % b.intValue);
+            }
+            else
+            {
+                dest = left % b;
+            }
+            stack.pop_back();
+            ++ip;
+            goto NEXT_OP;
+        }
+
+    FUSED_ARITH_RIGHT_STORE_OP(ADD_LITERAL_RIGHT_STORE, FUSED_LITERAL_RIGHT_STORE_OPERANDS, +)
+    FUSED_ARITH_RIGHT_STORE_OP(SUBTRACT_LITERAL_RIGHT_STORE, FUSED_LITERAL_RIGHT_STORE_OPERANDS, -)
+    FUSED_ARITH_RIGHT_STORE_OP(MULTIPLY_LITERAL_RIGHT_STORE, FUSED_LITERAL_RIGHT_STORE_OPERANDS, *)
+
+    OP_DIVIDE_LITERAL_RIGHT_STORE:
+        {
+            FUSED_LITERAL_RIGHT_STORE_OPERANDS
+            if (left.IS_NUMBER && b.IS_NUMBER)
+            {
+                if (b.number == 0.0)
+                    throw std::runtime_error("Division by zero");
+                dest.setAsDouble(left.number / b.number);
+            }
+            else
+            {
+                dest = left / b;
+            }
+            stack.pop_back();
+            ++ip;
+            goto NEXT_OP;
+        }
+
+    OP_MODULO_LITERAL_RIGHT_STORE:
+        {
+            FUSED_LITERAL_RIGHT_STORE_OPERANDS
+            if (left.IS_NUMBER && b.IS_NUMBER)
+            {
+                if (left.IS_DOUBLE || b.IS_DOUBLE)
+                    throw std::runtime_error("'" + std::to_string(left.number) + " mod " + std::to_string(b.number) + "' invalid — 'mod' only supports integers.");
+                dest.setAsInt(left.intValue % b.intValue);
+            }
+            else
+            {
+                dest = left % b;
+            }
+            stack.pop_back();
+            ++ip;
+            goto NEXT_OP;
+        }
 
     OP_OR:
         {

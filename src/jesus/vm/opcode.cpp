@@ -348,6 +348,28 @@ std::string opcodeToString(OpCode opcode)
     case OpCode::JUMP_IF_NOT_GREATER_EQUAL_LITERAL_RIGHT:
         return "JUMP_IF_NOT_GREATER_EQUAL_LITERAL_RIGHT";
 
+    case OpCode::ADD_LOCAL_RIGHT_STORE:
+        return "ADD_LOCAL_RIGHT_STORE";
+    case OpCode::SUBTRACT_LOCAL_RIGHT_STORE:
+        return "SUBTRACT_LOCAL_RIGHT_STORE";
+    case OpCode::MULTIPLY_LOCAL_RIGHT_STORE:
+        return "MULTIPLY_LOCAL_RIGHT_STORE";
+    case OpCode::DIVIDE_LOCAL_RIGHT_STORE:
+        return "DIVIDE_LOCAL_RIGHT_STORE";
+    case OpCode::MODULO_LOCAL_RIGHT_STORE:
+        return "MODULO_LOCAL_RIGHT_STORE";
+
+    case OpCode::ADD_LITERAL_RIGHT_STORE:
+        return "ADD_LITERAL_RIGHT_STORE";
+    case OpCode::SUBTRACT_LITERAL_RIGHT_STORE:
+        return "SUBTRACT_LITERAL_RIGHT_STORE";
+    case OpCode::MULTIPLY_LITERAL_RIGHT_STORE:
+        return "MULTIPLY_LITERAL_RIGHT_STORE";
+    case OpCode::DIVIDE_LITERAL_RIGHT_STORE:
+        return "DIVIDE_LITERAL_RIGHT_STORE";
+    case OpCode::MODULO_LITERAL_RIGHT_STORE:
+        return "MODULO_LITERAL_RIGHT_STORE";
+
     default:
         return "UNKNOWN_OPCODE";
     }
