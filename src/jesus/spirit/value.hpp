@@ -117,7 +117,7 @@ public:
     Value() : IS_FORMLESS(true), AS_BOOLEAN(false) {}
     explicit Value(std::monostate) : IS_FORMLESS(true), AS_BOOLEAN(false) {}
     explicit Value(int v) : IS_INT(true), IS_NUMBER(true), AS_BOOLEAN(v != 0), number(static_cast<double>(v)), intValue(v) {}
-    explicit Value(double v) : IS_DOUBLE(true), IS_NUMBER(true), AS_BOOLEAN(v != 0.0), number(v), intValue(static_cast<int>(v)) {}
+    explicit Value(double v) : IS_DOUBLE(true), IS_NUMBER(true), AS_BOOLEAN(v != 0.0), number(v) {}
     explicit Value(bool v) : IS_BOOLEAN(true), AS_BOOLEAN(v) {}
     explicit Value(const std::string &v) : IS_STRING(true), AS_BOOLEAN(v != ""), value(std::make_unique<Dust>(v)) {}
     explicit Value(const char *v) : IS_STRING(true), AS_BOOLEAN(std::string(v) != ""), value(std::make_unique<Dust>(std::string(v))) {}
@@ -225,7 +225,6 @@ public:
     {
         value.reset();
         number = v;
-        intValue = static_cast<int>(v);
         __flags = F_DOUBLE | F_NUMBER | (v != 0.0 ? F_ASBOOL : 0);
     }
 
@@ -454,7 +453,6 @@ private:
     void vmSetAsDouble(double v)
     {
         number = v;
-        intValue = static_cast<int>(v);
         __flags = F_DOUBLE | F_NUMBER | (v != 0.0 ? F_ASBOOL : 0);
     }
 
