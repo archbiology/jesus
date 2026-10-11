@@ -405,6 +405,33 @@ static bool literalRightStoreOpcode(OpCode fused, OpCode &out)
     }
 }
 
+// Maps a *_LOCAL_RIGHT arithmetic op to the two-locals store form of the
+// same operator, used to split `dest = (a <op> b) <op> c` into two in-place
+// stores (see emitStoreToLocal).
+static bool rightToLocalLocalStore(OpCode right, OpCode &out)
+{
+    switch (right)
+    {
+    case OpCode::ADD_LOCAL_RIGHT:
+        out = OpCode::ADD_LOCAL_LOCAL_STORE;
+        return true;
+    case OpCode::SUBTRACT_LOCAL_RIGHT:
+        out = OpCode::SUBTRACT_LOCAL_LOCAL_STORE;
+        return true;
+    case OpCode::MULTIPLY_LOCAL_RIGHT:
+        out = OpCode::MULTIPLY_LOCAL_LOCAL_STORE;
+        return true;
+    case OpCode::DIVIDE_LOCAL_RIGHT:
+        out = OpCode::DIVIDE_LOCAL_LOCAL_STORE;
+        return true;
+    case OpCode::MODULO_LOCAL_RIGHT:
+        out = OpCode::MODULO_LOCAL_LOCAL_STORE;
+        return true;
+    default:
+        return false;
+    }
+}
+
 void Compiler::compileBinaryExpr(const BinaryExpr &expr)
 {
     compileExpr(*expr.left);
@@ -582,6 +609,43 @@ void Compiler::emitStoreToLocal(uint32_t slot)
     }
 
     const OpCode last = ins.back().opcode;
+
+    // -----------------------------------------------------------------
+    // Split `dest = (a <op> b) <op2> c` into two in-place stores:
+    //
+    //     dest = a <op> b        (LOCAL_LOCAL_STORE)
+    //     dest = dest <op2> c    (LOCAL_LOCAL_STORE, dest on both sides)
+    //
+    // The original sequence pushes the intermediate onto the operand stack
+    // and pops it again; here neither operation touches the stack. This is
+    // the `x = x2 - y2 + cx` shape common to numeric kernels, keeping the
+    // same operation order (so no floating-point reassociation). It is only
+    // safe when `c` is not the destination itself, which the store would
+    // otherwise overwrite before the second read.
+    // -----------------------------------------------------------------
+    if (ins.size() >= 2)
+    {
+        Instruction &outer = ins.back();
+        Instruction &inner = ins[ins.size() - 2];
+
+        OpCode innerStore;
+        OpCode outerStore;
+
+        if (localLocalStoreOpcode(inner.opcode, innerStore) &&
+            rightToLocalLocalStore(outer.opcode, outerStore))
+        {
+            const uint32_t a = inner.operand & 0xFFFF;
+            const uint32_t b = inner.operand >> 16;
+            const uint32_t c = outer.operand & 0xFFFF;
+
+            if (a < 0x100 && b < 0x100 && c < 0x100 && slot != c)
+            {
+                inner = {innerStore, a | (b << 8) | (slot << 16)};
+                outer = {outerStore, slot | (c << 8) | (slot << 16)};
+                return;
+            }
+        }
+    }
 
     // Arithmetic fused forms have a store variant; comparison results are
     // consumed by conditional jumps instead of being stored.
