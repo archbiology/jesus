@@ -70,7 +70,7 @@ const std::shared_ptr<Instance> Value::toInstance() const
         throw std::runtime_error("Only instances have attributes.");
     }
 
-    return std::get<std::shared_ptr<Instance>>(value);
+    return std::get<std::shared_ptr<Instance>>(value->data);
 }
 
 bool operator==(const Value &left, const Value &right)
@@ -90,10 +90,10 @@ bool operator==(const Value &left, const Value &right)
     }
 
     if (left.IS_BOOLEAN && right.IS_BOOLEAN)
-        return std::get<bool>(left.value) == std::get<bool>(right.value);
+        return left.AS_BOOLEAN == right.AS_BOOLEAN;
 
     if (left.IS_STRING && right.IS_STRING)
-        return std::get<std::string>(left.value) == std::get<std::string>(right.value);
+        return std::get<std::string>(left.value->data) == std::get<std::string>(right.value->data);
 
     if (left.IS_INSTANCE && right.IS_INSTANCE)
     {
@@ -133,10 +133,25 @@ const std::shared_ptr<IMethod> Value::asMethod() const
         throw std::runtime_error("Only methods can be returned as methods.");
     }
 
-    return std::get<std::shared_ptr<IMethod>>(value);
+    return std::get<std::shared_ptr<IMethod>>(value->data);
 }
 
 std::string Value::toString() const
 {
-    return std::visit(make_string_functor(), value);
+    // Scalars carry their payload in the cached fields, not in `value`
+    // (which stays default-initialised for them). Handle them directly so
+    // no variant visit is needed on the hot path.
+    if (IS_FORMLESS)
+        return "null";
+
+    if (IS_BOOLEAN)
+        return "(logic) " + std::to_string(AS_BOOLEAN);
+
+    if (IS_INT)
+        return "(int) " + std::to_string(intValue);
+
+    if (IS_DOUBLE)
+        return "(double) " + std::to_string(number);
+
+    return std::visit(make_string_functor(), value->data);
 }

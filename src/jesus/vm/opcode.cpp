@@ -88,6 +88,39 @@ std::string opcodeToString(OpCode opcode)
     case OpCode::RETURN:
         return "RETURN";
 
+    case OpCode::ADD_LL:
+        return "ADD_LL";
+
+    case OpCode::SUBTRACT_LL:
+        return "SUBTRACT_LL";
+
+    case OpCode::MULTIPLY_LL:
+        return "MULTIPLY_LL";
+
+    case OpCode::DIVIDE_LL:
+        return "DIVIDE_LL";
+
+    case OpCode::MODULO_LL:
+        return "MODULO_LL";
+
+    case OpCode::EQUAL_LL:
+        return "EQUAL_LL";
+
+    case OpCode::NOT_EQUAL_LL:
+        return "NOT_EQUAL_LL";
+
+    case OpCode::LESS_LL:
+        return "LESS_LL";
+
+    case OpCode::LESS_EQUAL_LL:
+        return "LESS_EQUAL_LL";
+
+    case OpCode::GREATER_LL:
+        return "GREATER_LL";
+
+    case OpCode::GREATER_EQUAL_LL:
+        return "GREATER_EQUAL_LL";
+
     default:
         return "UNKNOWN_OPCODE";
     }

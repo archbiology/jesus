@@ -5,6 +5,7 @@
 #include <iostream>
 #include <vector>
 #include <memory>
+#include <cstdint>
 
 class Value;                // Forward declaration, since it is used on Dust.
 struct make_string_functor; // Forward declaration
@@ -17,58 +18,159 @@ using ListValue = std::vector<std::shared_ptr<Value>>;
 using DictValue = std::vector<std::pair<std::shared_ptr<Value>, std::shared_ptr<Value>>>;
 
 /**
- * @brief Represents any value in the interpreted language:
- * string, number, boolean, or null (as monostate).
+ * @brief Heap payload for "heavy" Values (everything that is not a scalar).
  *
- * `std::monostate` is used to represent "null" or "no value"
- *
- * "then the Lord God formed the man of dust from the ground and breathed into his nostrils the breath of life, and the man became a living creature."
- * — Genesis 2:7
+ * Scalars (null, bool, number) are stored directly in Value's cached fields,
+ * so a scalar Value never allocates and never touches a std::variant. Only
+ * strings, modules, classes, instances, methods, lists and dicts use this
+ * payload. Because these are rare on tight numeric hot loops, the variant
+ * machinery here stays off the critical path.
  */
-using Dust = std::variant<
-    bool,
-    int,
-    double,
-    std::string,
-    std::monostate,
-    std::shared_ptr<Module>,
-    std::shared_ptr<Instance>,
-    std::shared_ptr<IMethod>,
-    std::shared_ptr<CreationType>,
-    std::shared_ptr<ListValue>,
-    std::shared_ptr<DictValue>>;
+struct Dust
+{
+    std::variant<
+        std::string,
+        std::shared_ptr<Module>,
+        std::shared_ptr<Instance>,
+        std::shared_ptr<IMethod>,
+        std::shared_ptr<CreationType>,
+        std::shared_ptr<ListValue>,
+        std::shared_ptr<DictValue>> data;
+
+    Dust(const Dust &) = default;
+    Dust(Dust &&) = default;
+
+    template <typename T>
+        requires (!std::is_same_v<std::decay_t<T>, Dust>)
+    explicit Dust(T &&v) : data(std::forward<T>(v)) {}
+};
 
 class Value
 {
 public:
-    bool IS_FORMLESS = false;
-    bool IS_INT = false;
-    bool IS_DOUBLE = false;
-    bool IS_NUMBER = false;
-    bool IS_BOOLEAN = false;
-    bool IS_STRING = false;
-    bool IS_LIST = false;
-    bool IS_DICT = false;
-    bool IS_MODULE = false;
-    bool IS_CLASS = false;
-    bool IS_INSTANCE = false;
-    bool IS_METHOD = false;
+    /**
+     * @brief Type/truthiness flags, packed one bit per flag into a single
+     * 16-bit word.
+     *
+     * The individual names remain directly accessible (e.g. `v.IS_NUMBER`),
+     * but every copy/move/assign now transfers all flags with a single 16-bit
+     * load/store instead of a dozen separate byte copies. This keeps the
+     * per-operand overhead of the VM's value stack low.
+     *
+     * The anonymous struct-inside-union is a GNU/clang extension, consistent
+     * with the computed-goto dispatch the VM already relies on.
+     */
+    union
+    {
+        uint16_t __flags;
+        struct
+        {
+            bool IS_FORMLESS : 1 = false;
+            bool IS_INT : 1 = false;
+            bool IS_DOUBLE : 1 = false;
+            bool IS_NUMBER : 1 = false;
+            bool IS_BOOLEAN : 1 = false;
+            bool IS_STRING : 1 = false;
+            bool IS_LIST : 1 = false;
+            bool IS_DICT : 1 = false;
+            bool IS_MODULE : 1 = false;
+            bool IS_CLASS : 1 = false;
+            bool IS_INSTANCE : 1 = false;
+            bool IS_METHOD : 1 = false;
+            bool AS_BOOLEAN : 1 = false;
+        };
+    };
 
-    bool AS_BOOLEAN = false;
+    // Bit positions of the individual flags inside __flags, in declaration
+    // order (GCC/Clang pack bool bit-fields LSB-first). Assigning the whole
+    // word at once lets setAs*() update every flag with a single store.
+    static constexpr uint16_t F_FORMLESS = 1u << 0;
+    static constexpr uint16_t F_INT      = 1u << 1;
+    static constexpr uint16_t F_DOUBLE   = 1u << 2;
+    static constexpr uint16_t F_NUMBER   = 1u << 3;
+    static constexpr uint16_t F_BOOLEAN  = 1u << 4;
+    static constexpr uint16_t F_STRING   = 1u << 5;
+    static constexpr uint16_t F_LIST     = 1u << 6;
+    static constexpr uint16_t F_DICT     = 1u << 7;
+    static constexpr uint16_t F_MODULE   = 1u << 8;
+    static constexpr uint16_t F_CLASS    = 1u << 9;
+    static constexpr uint16_t F_INSTANCE = 1u << 10;
+    static constexpr uint16_t F_METHOD   = 1u << 11;
+    static constexpr uint16_t F_ASBOOL   = 1u << 12;
 
-    Value() : value(std::monostate{}), IS_FORMLESS(true), AS_BOOLEAN(false) {}
-    explicit Value(std::monostate) : value(std::monostate{}), IS_FORMLESS(true), AS_BOOLEAN(false) {}
-    explicit Value(int v) : value(v), IS_INT(true), IS_NUMBER(true), AS_BOOLEAN(v != 0) {}
-    explicit Value(double v) : value(v), IS_DOUBLE(true), IS_NUMBER(true), AS_BOOLEAN(v != 0.0) {}
-    explicit Value(bool v) : value(v), IS_BOOLEAN(true), AS_BOOLEAN(v) {}
-    explicit Value(const std::string &v) : value(v), IS_STRING(true), AS_BOOLEAN(v != "") {}
-    explicit Value(const char *v) : value(std::string(v)), IS_STRING(true), AS_BOOLEAN(std::string(v) != "") {}
-    explicit Value(const std::shared_ptr<Module> &v) : value(v), IS_MODULE(true), AS_BOOLEAN(true) {}
-    explicit Value(const std::shared_ptr<CreationType> &v) : value(v), IS_CLASS(true), AS_BOOLEAN(true) {}
-    explicit Value(const std::shared_ptr<Instance> &v) : value(v), IS_INSTANCE(true), AS_BOOLEAN(static_cast<bool>(v)) {}
-    explicit Value(const std::shared_ptr<IMethod> &v) : value(v), IS_METHOD(true), AS_BOOLEAN(true) {}
-    explicit Value(const std::shared_ptr<ListValue> &v) : value(std::move(v)), IS_LIST(true), AS_BOOLEAN(!v->empty()) {}
-    explicit Value(const std::shared_ptr<DictValue> &v) : value(std::move(v)), IS_DICT(true), AS_BOOLEAN(!v->empty()) {}
+    /**
+     * @brief Cached numeric value, filled in when the Value is constructed.
+     *
+     * Reading the number is the hottest operation in the VM's arithmetic,
+     * and reaching it through std::variant (std::get) is measurably the
+     * dominant cost. Values are effectively immutable once constructed,
+     * so the numeric payload can be cached here and copied for free.
+     */
+    double number = 0.0;
+
+    /**
+     * Cached integer payload for IS_INT values. Like `number`, it is stored
+     * outside the variant so integer copies never touch the variant.
+     */
+    int intValue = 0;
+
+    Value() : IS_FORMLESS(true), AS_BOOLEAN(false) {}
+    explicit Value(std::monostate) : IS_FORMLESS(true), AS_BOOLEAN(false) {}
+    explicit Value(int v) : IS_INT(true), IS_NUMBER(true), AS_BOOLEAN(v != 0), number(static_cast<double>(v)), intValue(v) {}
+    explicit Value(double v) : IS_DOUBLE(true), IS_NUMBER(true), AS_BOOLEAN(v != 0.0), number(v) {}
+    explicit Value(bool v) : IS_BOOLEAN(true), AS_BOOLEAN(v) {}
+    explicit Value(const std::string &v) : IS_STRING(true), AS_BOOLEAN(v != ""), value(std::make_unique<Dust>(v)) {}
+    explicit Value(const char *v) : IS_STRING(true), AS_BOOLEAN(std::string(v) != ""), value(std::make_unique<Dust>(std::string(v))) {}
+    explicit Value(const std::shared_ptr<Module> &v) : IS_MODULE(true), AS_BOOLEAN(true), value(std::make_unique<Dust>(v)) {}
+    explicit Value(const std::shared_ptr<CreationType> &v) : IS_CLASS(true), AS_BOOLEAN(true), value(std::make_unique<Dust>(v)) {}
+    explicit Value(const std::shared_ptr<Instance> &v) : IS_INSTANCE(true), AS_BOOLEAN(static_cast<bool>(v)), value(std::make_unique<Dust>(v)) {}
+    explicit Value(const std::shared_ptr<IMethod> &v) : IS_METHOD(true), AS_BOOLEAN(true), value(std::make_unique<Dust>(v)) {}
+    explicit Value(const std::shared_ptr<ListValue> &v) : IS_LIST(true), AS_BOOLEAN(!v->empty()), value(std::make_unique<Dust>(v)) {}
+    explicit Value(const std::shared_ptr<DictValue> &v) : IS_DICT(true), AS_BOOLEAN(!v->empty()), value(std::make_unique<Dust>(v)) {}
+
+    Value(const Value &other)
+        : __flags(other.__flags), number(other.number), intValue(other.intValue)
+    {
+        // Scalars leave `value` null; only heavy payloads are cloned.
+        if (other.value)
+            value = std::make_unique<Dust>(*other.value);
+    }
+
+    Value(Value &&other) noexcept
+        : __flags(other.__flags), number(other.number), intValue(other.intValue),
+          value(std::move(other.value))
+    {
+    }
+
+    Value &operator=(const Value &other)
+    {
+        if (this == &other)
+            return *this;
+
+        __flags = other.__flags;
+        number = other.number;
+        intValue = other.intValue;
+
+        if (other.value)
+            value = std::make_unique<Dust>(*other.value);
+        else
+            value.reset();
+
+        return *this;
+    }
+
+    Value &operator=(Value &&other) noexcept
+    {
+        if (this == &other)
+            return *this;
+
+        __flags = other.__flags;
+        number = other.number;
+        intValue = other.intValue;
+        value = std::move(other.value);
+
+        return *this;
+    }
 
     /**
      * @brief Create a NONE/NULL/monostate Value.
@@ -85,22 +187,55 @@ public:
 
     double toNumber() const
     {
-        if (IS_INT)
+        if (IS_NUMBER)
         {
-            return std::get<int>(value);
-        }
-
-        if (IS_DOUBLE)
-        {
-            return std::get<double>(value);
+            return number;
         }
 
         throw std::runtime_error("Value is not a number");
     }
 
+    /**
+     * @brief Converts this Value in place into a boolean, keeping the
+     * existing object identity on the VM stack (no variant re-construction).
+     */
+    void setAsBoolean(bool v)
+    {
+        value.reset();
+        number = 0.0;
+        intValue = 0;
+        __flags = F_BOOLEAN | (v ? F_ASBOOL : 0);
+    }
+
+    /**
+     * @brief Overwrites this Value in place with an integer result.
+     */
+    void setAsInt(int v)
+    {
+        value.reset();
+        number = static_cast<double>(v);
+        intValue = v;
+        __flags = F_INT | F_NUMBER | (v != 0 ? F_ASBOOL : 0);
+    }
+
+    /**
+     * @brief Overwrites this Value in place with a double result.
+     */
+    void setAsDouble(double v)
+    {
+        value.reset();
+        number = v;
+        __flags = F_DOUBLE | F_NUMBER | (v != 0.0 ? F_ASBOOL : 0);
+    }
+
     int toInt() const
     {
-        return (int)toNumber();
+        // if (IS_NUMBER)
+        // {
+            return (int)number;
+        // }
+
+        // throw std::runtime_error("Value is not a number");
     }
 
     const std::shared_ptr<Instance> toInstance() const;
@@ -113,7 +248,7 @@ public:
         if (!IS_LIST)
             throw std::runtime_error("This value is not a list.");
 
-        return *std::get<std::shared_ptr<ListValue>>(value);
+        return *std::get<std::shared_ptr<ListValue>>(value->data);
     }
 
     const ListValue &asList() const
@@ -121,7 +256,7 @@ public:
         if (!IS_LIST)
             throw std::runtime_error("This value is not a list.");
 
-        return *std::get<std::shared_ptr<ListValue>>(value);
+        return *std::get<std::shared_ptr<ListValue>>(value->data);
     }
 
     DictValue &asDict()
@@ -129,7 +264,7 @@ public:
         if (!IS_DICT)
             throw std::runtime_error("This value is not a dict.");
 
-        return *std::get<std::shared_ptr<DictValue>>(value);
+        return *std::get<std::shared_ptr<DictValue>>(value->data);
     }
 
     const DictValue &asDict() const
@@ -137,12 +272,12 @@ public:
         if (!IS_DICT)
             throw std::runtime_error("This value is not a dict.");
 
-        return *std::get<std::shared_ptr<DictValue>>(value);
+        return *std::get<std::shared_ptr<DictValue>>(value->data);
     }
 
     std::shared_ptr<CreationType> asClass() const
     {
-        return std::get<std::shared_ptr<CreationType>>(value);
+        return std::get<std::shared_ptr<CreationType>>(value->data);
     }
 
     /**
@@ -168,7 +303,7 @@ public:
                 return Value(left.toNumber() + right.toNumber());
             }
 
-            return Value(std::get<int>(left.value) + std::get<int>(right.value));
+            return Value(left.intValue + right.intValue);
         }
 
         if (left.IS_STRING || right.IS_STRING)
@@ -188,7 +323,7 @@ public:
                 return Value(left.toNumber() - right.toNumber());
             }
 
-            return Value(std::get<int>(left.value) - std::get<int>(right.value));
+            return Value(left.intValue - right.intValue);
         }
 
         throw std::runtime_error("Operator '-' not supported for given types");
@@ -202,7 +337,7 @@ public:
             {
                 return Value(left.toNumber() * right.toNumber());
             }
-            return Value(std::get<int>(left.value) * std::get<int>(right.value));
+            return Value(left.intValue * right.intValue);
         }
 
         // TODO: Allow STR * NUMBER, like in Python
@@ -248,7 +383,7 @@ public:
             return left.toNumber() < right.toNumber();
 
         if (left.IS_STRING && right.IS_STRING)
-            return std::get<std::string>(left.value) < std::get<std::string>(right.value);
+            return std::get<std::string>(left.value->data) < std::get<std::string>(right.value->data);
 
         throw std::runtime_error("Cannot compare values of different or unsupported types");
     }
@@ -291,5 +426,40 @@ public:
     }
 
 private:
-    Dust value;
+    friend class VM;
+    std::unique_ptr<Dust> value;
+
+    /**
+     * @brief Unchecked, VM-only setters — DO NOT call outside the VM.
+     *
+     * Unlike the public setAs*() methods these skip `value.reset()`, because
+     * they assume the Value is already a scalar (no heap payload). That
+     * precondition is guaranteed by the compiler/parser: the VM only reaches
+     * them after an `IS_NUMBER`/`IS_BOOLEAN` check, and a scalar Value always
+     * leaves `value` null by construction. They exist solely to remove the
+     * redundant null-check from the interpreter's hottest path.
+     *
+     * Weed these out with care: they are `private` and `friend class VM` so
+     * that only the virtual machine can use them. If a future change needs a
+     * checked variant, use the public setAs*() methods instead.
+     */
+    void vmSetAsInt(int v)
+    {
+        number = static_cast<double>(v);
+        intValue = v;
+        __flags = F_INT | F_NUMBER | (v != 0 ? F_ASBOOL : 0);
+    }
+
+    void vmSetAsDouble(double v)
+    {
+        number = v;
+        __flags = F_DOUBLE | F_NUMBER | (v != 0.0 ? F_ASBOOL : 0);
+    }
+
+    void vmSetAsBoolean(bool v)
+    {
+        number = 0.0;
+        intValue = 0;
+        __flags = F_BOOLEAN | (v ? F_ASBOOL : 0);
+    }
 };

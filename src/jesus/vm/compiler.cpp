@@ -9,7 +9,6 @@ Chunk Compiler::compile(const std::vector<std::unique_ptr<Stmt>> &statements)
     chunk.instructions.clear();
     chunk.literals.clear();
 
-    methodChunks.clear();
     localSlots.clear();
     localCount = 0;
     compilingMethodBody = false;
@@ -23,11 +22,6 @@ Chunk Compiler::compile(const std::vector<std::unique_ptr<Stmt>> &statements)
     emit(OpCode::RETURN);
 
     return chunk;
-}
-
-const std::unordered_map<const CreateMethodStmt *, Chunk> &Compiler::compiledMethods() const
-{
-    return methodChunks;
 }
 
 void Compiler::compileStmt(const Stmt &stmt)
@@ -125,10 +119,79 @@ void Compiler::compileExpr(const Expr &expr)
     throw std::runtime_error("Expression not supported by VM yet: " + expr.toString());
 }
 
+// Maps a binary operator token to its fused two-locals opcode. Returns
+// false for operators that have no fused form (OR/AND/XOR).
+static bool fusedLocalLocalOpcode(TokenType type, OpCode &out)
+{
+    switch (type)
+    {
+    case TokenType::PLUS:
+        out = OpCode::ADD_LL;
+        return true;
+    case TokenType::MINUS:
+        out = OpCode::SUBTRACT_LL;
+        return true;
+    case TokenType::STAR:
+        out = OpCode::MULTIPLY_LL;
+        return true;
+    case TokenType::SLASH:
+        out = OpCode::DIVIDE_LL;
+        return true;
+    case TokenType::MOD:
+        out = OpCode::MODULO_LL;
+        return true;
+    case TokenType::IS:
+        out = OpCode::EQUAL_LL;
+        return true;
+    case TokenType::NOT_EQUAL:
+        out = OpCode::NOT_EQUAL_LL;
+        return true;
+    case TokenType::LESS:
+        out = OpCode::LESS_LL;
+        return true;
+    case TokenType::LESS_EQUAL:
+        out = OpCode::LESS_EQUAL_LL;
+        return true;
+    case TokenType::GREATER:
+        out = OpCode::GREATER_LL;
+        return true;
+    case TokenType::GREATER_EQUAL:
+        out = OpCode::GREATER_EQUAL_LL;
+        return true;
+    default:
+        return false;
+    }
+}
+
 void Compiler::compileBinaryExpr(const BinaryExpr &expr)
 {
     compileExpr(*expr.left);
     compileExpr(*expr.right);
+
+    // -----------------------------------------------------------------
+    // Peephole: fold "READ_LOCAL a; READ_LOCAL b; <binary op>" into a
+    // single fused opcode carrying both local slots in its operand. This
+    // is the dominant pattern in tight numeric loops (e.g. `x * x`).
+    // -----------------------------------------------------------------
+    if (OpCode fused; fusedLocalLocalOpcode(expr.op.type, fused))
+    {
+        auto &ins = currentChunk->instructions;
+        if (ins.size() >= 2 &&
+            ins[ins.size() - 2].opcode == OpCode::READ_LOCAL &&
+            ins[ins.size() - 1].opcode == OpCode::READ_LOCAL)
+        {
+            const uint32_t slotA = ins[ins.size() - 2].operand;
+            const uint32_t slotB = ins[ins.size() - 1].operand;
+
+            if (slotA < 0x10000 && slotB < 0x10000)
+            {
+                ins.pop_back();
+                ins.pop_back();
+                emit(fused, slotA | (slotB << 16));
+                return;
+            }
+        }
+    }
 
     switch (expr.op.type)
     {
@@ -455,7 +518,8 @@ void Compiler::compileMethodBody(const CreateMethodStmt &method)
     emit(OpCode::PUSH_LITERAL, addConstant(Value::formless()));
     emit(OpCode::RETURN);
 
-    methodChunks[&method] = std::move(bodyChunk);
+    bodyChunk.localCount = localCount;
+    method.compiledBody = std::make_unique<Chunk>(std::move(bodyChunk));
 
     currentChunk = previousChunk;
     localSlots = std::move(previousLocals);
