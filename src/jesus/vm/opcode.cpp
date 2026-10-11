@@ -217,6 +217,72 @@ std::string opcodeToString(OpCode opcode)
     case OpCode::MODULO_LOCAL_LITERAL_STORE:
         return "MODULO_LOCAL_LITERAL_STORE";
 
+    case OpCode::ADD_LOCAL_RIGHT:
+        return "ADD_LOCAL_RIGHT";
+
+    case OpCode::SUBTRACT_LOCAL_RIGHT:
+        return "SUBTRACT_LOCAL_RIGHT";
+
+    case OpCode::MULTIPLY_LOCAL_RIGHT:
+        return "MULTIPLY_LOCAL_RIGHT";
+
+    case OpCode::DIVIDE_LOCAL_RIGHT:
+        return "DIVIDE_LOCAL_RIGHT";
+
+    case OpCode::MODULO_LOCAL_RIGHT:
+        return "MODULO_LOCAL_RIGHT";
+
+    case OpCode::EQUAL_LOCAL_RIGHT:
+        return "EQUAL_LOCAL_RIGHT";
+
+    case OpCode::NOT_EQUAL_LOCAL_RIGHT:
+        return "NOT_EQUAL_LOCAL_RIGHT";
+
+    case OpCode::LESS_LOCAL_RIGHT:
+        return "LESS_LOCAL_RIGHT";
+
+    case OpCode::LESS_EQUAL_LOCAL_RIGHT:
+        return "LESS_EQUAL_LOCAL_RIGHT";
+
+    case OpCode::GREATER_LOCAL_RIGHT:
+        return "GREATER_LOCAL_RIGHT";
+
+    case OpCode::GREATER_EQUAL_LOCAL_RIGHT:
+        return "GREATER_EQUAL_LOCAL_RIGHT";
+
+    case OpCode::ADD_LITERAL_RIGHT:
+        return "ADD_LITERAL_RIGHT";
+
+    case OpCode::SUBTRACT_LITERAL_RIGHT:
+        return "SUBTRACT_LITERAL_RIGHT";
+
+    case OpCode::MULTIPLY_LITERAL_RIGHT:
+        return "MULTIPLY_LITERAL_RIGHT";
+
+    case OpCode::DIVIDE_LITERAL_RIGHT:
+        return "DIVIDE_LITERAL_RIGHT";
+
+    case OpCode::MODULO_LITERAL_RIGHT:
+        return "MODULO_LITERAL_RIGHT";
+
+    case OpCode::EQUAL_LITERAL_RIGHT:
+        return "EQUAL_LITERAL_RIGHT";
+
+    case OpCode::NOT_EQUAL_LITERAL_RIGHT:
+        return "NOT_EQUAL_LITERAL_RIGHT";
+
+    case OpCode::LESS_LITERAL_RIGHT:
+        return "LESS_LITERAL_RIGHT";
+
+    case OpCode::LESS_EQUAL_LITERAL_RIGHT:
+        return "LESS_EQUAL_LITERAL_RIGHT";
+
+    case OpCode::GREATER_LITERAL_RIGHT:
+        return "GREATER_LITERAL_RIGHT";
+
+    case OpCode::GREATER_EQUAL_LITERAL_RIGHT:
+        return "GREATER_EQUAL_LITERAL_RIGHT";
+
     default:
         return "UNKNOWN_OPCODE";
     }

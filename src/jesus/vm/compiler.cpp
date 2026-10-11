@@ -188,6 +188,18 @@ static const OpCode kLiteralLocalOps[FUSED_OP_COUNT] = {
     OpCode::NOT_EQUAL_LITERAL_LOCAL, OpCode::LESS_LITERAL_LOCAL, OpCode::LESS_EQUAL_LITERAL_LOCAL,
     OpCode::GREATER_LITERAL_LOCAL, OpCode::GREATER_EQUAL_LITERAL_LOCAL};
 
+static const OpCode kLocalRightOps[FUSED_OP_COUNT] = {
+    OpCode::ADD_LOCAL_RIGHT, OpCode::SUBTRACT_LOCAL_RIGHT, OpCode::MULTIPLY_LOCAL_RIGHT,
+    OpCode::DIVIDE_LOCAL_RIGHT, OpCode::MODULO_LOCAL_RIGHT, OpCode::EQUAL_LOCAL_RIGHT,
+    OpCode::NOT_EQUAL_LOCAL_RIGHT, OpCode::LESS_LOCAL_RIGHT, OpCode::LESS_EQUAL_LOCAL_RIGHT,
+    OpCode::GREATER_LOCAL_RIGHT, OpCode::GREATER_EQUAL_LOCAL_RIGHT};
+
+static const OpCode kLiteralRightOps[FUSED_OP_COUNT] = {
+    OpCode::ADD_LITERAL_RIGHT, OpCode::SUBTRACT_LITERAL_RIGHT, OpCode::MULTIPLY_LITERAL_RIGHT,
+    OpCode::DIVIDE_LITERAL_RIGHT, OpCode::MODULO_LITERAL_RIGHT, OpCode::EQUAL_LITERAL_RIGHT,
+    OpCode::NOT_EQUAL_LITERAL_RIGHT, OpCode::LESS_LITERAL_RIGHT, OpCode::LESS_EQUAL_LITERAL_RIGHT,
+    OpCode::GREATER_LITERAL_RIGHT, OpCode::GREATER_EQUAL_LITERAL_RIGHT};
+
 // Looks up the opcode for `type` in a family table. Returns false for
 // operators without a fused form (OR/AND/XOR).
 static bool fusedOp(const OpCode *table, TokenType type, OpCode &out)
@@ -259,55 +271,84 @@ void Compiler::compileBinaryExpr(const BinaryExpr &expr)
     compileExpr(*expr.right);
 
     // -----------------------------------------------------------------
-    // Peephole: fold the two operand-producing instructions plus the binary
-    // op into a single fused opcode that carries the operands in its own
-    // operand. This is the dominant pattern in tight numeric loops.
+    // Peephole: fold operand fetches plus the binary op into a single fused
+    // opcode that carries the operands in its own operand. This is the
+    // dominant pattern in tight numeric loops.
     //
-    //   READ_LOCAL a; READ_LOCAL b; <op>  ->  <OP>_LOCAL_LOCAL  (a, b)
+    // When both operands are simple fetches:
+    //   READ_LOCAL a; READ_LOCAL b; <op>   -> <OP>_LOCAL_LOCAL   (a, b)
     //   READ_LOCAL a; PUSH_LITERAL k; <op> -> <OP>_LOCAL_LITERAL (a, k)
     //   PUSH_LITERAL k; READ_LOCAL b; <op> -> <OP>_LITERAL_LOCAL (k, b)
+    //
+    // When only the right operand is a fetch, the left one is already on
+    // the stack and the operation reuses its slot:
+    //   ...; READ_LOCAL b; <op>   -> ...; <OP>_LOCAL_RIGHT   (b)
+    //   ...; PUSH_LITERAL k; <op> -> ...; <OP>_LITERAL_RIGHT (k)
     // -----------------------------------------------------------------
     {
         auto &ins = currentChunk->instructions;
 
-        if (ins.size() >= 2)
+        if (!ins.empty())
         {
-            const Instruction &beforeLast = ins[ins.size() - 2];
             const Instruction &last = ins[ins.size() - 1];
 
             OpCode fused;
             bool matched = false;
             uint32_t packed = 0;
+            int pops = 0;
 
-            if (fusedOp(kLocalLocalOps, expr.op.type, fused) &&
-                beforeLast.opcode == OpCode::READ_LOCAL &&
-                last.opcode == OpCode::READ_LOCAL &&
-                beforeLast.operand < 0x10000 && last.operand < 0x10000)
+            if (ins.size() >= 2)
             {
-                packed = beforeLast.operand | (last.operand << 16);
-                matched = true;
+                const Instruction &beforeLast = ins[ins.size() - 2];
+
+                if (fusedOp(kLocalLocalOps, expr.op.type, fused) &&
+                    beforeLast.opcode == OpCode::READ_LOCAL &&
+                    last.opcode == OpCode::READ_LOCAL &&
+                    beforeLast.operand < 0x10000 && last.operand < 0x10000)
+                {
+                    packed = beforeLast.operand | (last.operand << 16);
+                    matched = true;
+                    pops = 2;
+                }
+                else if (fusedOp(kLocalLiteralOps, expr.op.type, fused) &&
+                         beforeLast.opcode == OpCode::READ_LOCAL &&
+                         last.opcode == OpCode::PUSH_LITERAL &&
+                         beforeLast.operand < 0x10000 && last.operand < 0x10000)
+                {
+                    packed = beforeLast.operand | (last.operand << 16);
+                    matched = true;
+                    pops = 2;
+                }
+                else if (fusedOp(kLiteralLocalOps, expr.op.type, fused) &&
+                         beforeLast.opcode == OpCode::PUSH_LITERAL &&
+                         last.opcode == OpCode::READ_LOCAL &&
+                         beforeLast.operand < 0x10000 && last.operand < 0x10000)
+                {
+                    packed = last.operand | (beforeLast.operand << 16);
+                    matched = true;
+                    pops = 2;
+                }
             }
-            else if (fusedOp(kLocalLiteralOps, expr.op.type, fused) &&
-                     beforeLast.opcode == OpCode::READ_LOCAL &&
-                     last.opcode == OpCode::PUSH_LITERAL &&
-                     beforeLast.operand < 0x10000 && last.operand < 0x10000)
+
+            if (!matched && last.opcode == OpCode::READ_LOCAL &&
+                fusedOp(kLocalRightOps, expr.op.type, fused) && last.operand < 0x10000)
             {
-                packed = beforeLast.operand | (last.operand << 16);
+                packed = last.operand;
                 matched = true;
+                pops = 1;
             }
-            else if (fusedOp(kLiteralLocalOps, expr.op.type, fused) &&
-                     beforeLast.opcode == OpCode::PUSH_LITERAL &&
-                     last.opcode == OpCode::READ_LOCAL &&
-                     beforeLast.operand < 0x10000 && last.operand < 0x10000)
+
+            if (!matched && last.opcode == OpCode::PUSH_LITERAL &&
+                fusedOp(kLiteralRightOps, expr.op.type, fused) && last.operand < 0x10000)
             {
-                packed = last.operand | (beforeLast.operand << 16);
+                packed = last.operand;
                 matched = true;
+                pops = 1;
             }
 
             if (matched)
             {
-                ins.pop_back();
-                ins.pop_back();
+                ins.resize(ins.size() - pops);
                 emit(fused, packed);
                 return;
             }

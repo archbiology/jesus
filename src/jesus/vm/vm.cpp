@@ -104,7 +104,29 @@ void VM::run(const Chunk &chunk)
         &&OP_SUBTRACT_LOCAL_LITERAL_STORE,// SUBTRACT_LOCAL_LITERAL_STORE
         &&OP_MULTIPLY_LOCAL_LITERAL_STORE,// MULTIPLY_LOCAL_LITERAL_STORE
         &&OP_DIVIDE_LOCAL_LITERAL_STORE,  // DIVIDE_LOCAL_LITERAL_STORE
-        &&OP_MODULO_LOCAL_LITERAL_STORE   // MODULO_LOCAL_LITERAL_STORE
+        &&OP_MODULO_LOCAL_LITERAL_STORE,  // MODULO_LOCAL_LITERAL_STORE
+        &&OP_ADD_LOCAL_RIGHT,             // ADD_LOCAL_RIGHT
+        &&OP_SUBTRACT_LOCAL_RIGHT,        // SUBTRACT_LOCAL_RIGHT
+        &&OP_MULTIPLY_LOCAL_RIGHT,        // MULTIPLY_LOCAL_RIGHT
+        &&OP_DIVIDE_LOCAL_RIGHT,          // DIVIDE_LOCAL_RIGHT
+        &&OP_MODULO_LOCAL_RIGHT,          // MODULO_LOCAL_RIGHT
+        &&OP_EQUAL_LOCAL_RIGHT,           // EQUAL_LOCAL_RIGHT
+        &&OP_NOT_EQUAL_LOCAL_RIGHT,       // NOT_EQUAL_LOCAL_RIGHT
+        &&OP_LESS_LOCAL_RIGHT,            // LESS_LOCAL_RIGHT
+        &&OP_LESS_EQUAL_LOCAL_RIGHT,      // LESS_EQUAL_LOCAL_RIGHT
+        &&OP_GREATER_LOCAL_RIGHT,         // GREATER_LOCAL_RIGHT
+        &&OP_GREATER_EQUAL_LOCAL_RIGHT,   // GREATER_EQUAL_LOCAL_RIGHT
+        &&OP_ADD_LITERAL_RIGHT,           // ADD_LITERAL_RIGHT
+        &&OP_SUBTRACT_LITERAL_RIGHT,      // SUBTRACT_LITERAL_RIGHT
+        &&OP_MULTIPLY_LITERAL_RIGHT,      // MULTIPLY_LITERAL_RIGHT
+        &&OP_DIVIDE_LITERAL_RIGHT,        // DIVIDE_LITERAL_RIGHT
+        &&OP_MODULO_LITERAL_RIGHT,        // MODULO_LITERAL_RIGHT
+        &&OP_EQUAL_LITERAL_RIGHT,         // EQUAL_LITERAL_RIGHT
+        &&OP_NOT_EQUAL_LITERAL_RIGHT,     // NOT_EQUAL_LITERAL_RIGHT
+        &&OP_LESS_LITERAL_RIGHT,          // LESS_LITERAL_RIGHT
+        &&OP_LESS_EQUAL_LITERAL_RIGHT,    // LESS_EQUAL_LITERAL_RIGHT
+        &&OP_GREATER_LITERAL_RIGHT,       // GREATER_LITERAL_RIGHT
+        &&OP_GREATER_EQUAL_LITERAL_RIGHT  // GREATER_EQUAL_LITERAL_RIGHT
     };
 
     // Dispatch to the main program's first instruction.
@@ -619,6 +641,145 @@ void VM::run(const Chunk &chunk)
             ++ip;
             goto NEXT_OP;
         }
+
+    // -----------------------------------------------------------------
+    // Fused LOCAL_RIGHT / LITERAL_RIGHT handlers.
+    //
+    // Here the LEFT operand is already on top of the stack (produced by the
+    // preceding instruction) and only the RIGHT operand is fetched, from a
+    // local or a constant. The result overwrites the left operand in place,
+    // so the stack depth is unchanged and no extra Value is constructed.
+    // The in-place setters are safe because the left slot was just checked
+    // to hold a number.
+    // -----------------------------------------------------------------
+#define FUSED_LOCAL_RIGHT_OPERANDS \
+    Value &left = stack.back(); \
+    const Value &b = stack[currentLocalsBase + (ip->operand & 0xFFFF)];
+
+#define FUSED_LITERAL_RIGHT_OPERANDS \
+    Value &left = stack.back(); \
+    const Value &b = currentChunk->literals[ip->operand & 0xFFFF];
+
+#define FUSED_ARITH_RIGHT_OP(label, operands, op) \
+    OP_##label: \
+    { \
+        operands \
+        if (left.IS_NUMBER && b.IS_NUMBER) \
+        { \
+            if (left.IS_DOUBLE || b.IS_DOUBLE) \
+                left.vmSetAsDouble(left.number op b.number); \
+            else \
+                left.vmSetAsInt(left.intValue op b.intValue); \
+        } \
+        else \
+        { \
+            left = left op b; \
+        } \
+        ++ip; \
+        goto NEXT_OP; \
+    }
+
+#define FUSED_CMP_RIGHT_OP(label, operands, op) \
+    OP_##label: \
+    { \
+        operands \
+        if (left.IS_NUMBER && b.IS_NUMBER) \
+            left.vmSetAsBoolean(left.number op b.number); \
+        else \
+            left = Value(left op b); \
+        ++ip; \
+        goto NEXT_OP; \
+    }
+
+    FUSED_ARITH_RIGHT_OP(ADD_LOCAL_RIGHT, FUSED_LOCAL_RIGHT_OPERANDS, +)
+    FUSED_ARITH_RIGHT_OP(SUBTRACT_LOCAL_RIGHT, FUSED_LOCAL_RIGHT_OPERANDS, -)
+    FUSED_ARITH_RIGHT_OP(MULTIPLY_LOCAL_RIGHT, FUSED_LOCAL_RIGHT_OPERANDS, *)
+
+    OP_DIVIDE_LOCAL_RIGHT:
+        {
+            FUSED_LOCAL_RIGHT_OPERANDS
+            if (left.IS_NUMBER && b.IS_NUMBER)
+            {
+                if (b.number == 0.0)
+                    throw std::runtime_error("Division by zero");
+                left.vmSetAsDouble(left.number / b.number);
+            }
+            else
+            {
+                left = left / b;
+            }
+            ++ip;
+            goto NEXT_OP;
+        }
+
+    OP_MODULO_LOCAL_RIGHT:
+        {
+            FUSED_LOCAL_RIGHT_OPERANDS
+            if (left.IS_NUMBER && b.IS_NUMBER)
+            {
+                if (left.IS_DOUBLE || b.IS_DOUBLE)
+                    throw std::runtime_error("'" + std::to_string(left.number) + " mod " + std::to_string(b.number) + "' invalid — 'mod' only supports integers.");
+                left.vmSetAsInt(left.intValue % b.intValue);
+            }
+            else
+            {
+                left = left % b;
+            }
+            ++ip;
+            goto NEXT_OP;
+        }
+
+    FUSED_CMP_RIGHT_OP(EQUAL_LOCAL_RIGHT, FUSED_LOCAL_RIGHT_OPERANDS, ==)
+    FUSED_CMP_RIGHT_OP(NOT_EQUAL_LOCAL_RIGHT, FUSED_LOCAL_RIGHT_OPERANDS, !=)
+    FUSED_CMP_RIGHT_OP(LESS_LOCAL_RIGHT, FUSED_LOCAL_RIGHT_OPERANDS, <)
+    FUSED_CMP_RIGHT_OP(LESS_EQUAL_LOCAL_RIGHT, FUSED_LOCAL_RIGHT_OPERANDS, <=)
+    FUSED_CMP_RIGHT_OP(GREATER_LOCAL_RIGHT, FUSED_LOCAL_RIGHT_OPERANDS, >)
+    FUSED_CMP_RIGHT_OP(GREATER_EQUAL_LOCAL_RIGHT, FUSED_LOCAL_RIGHT_OPERANDS, >=)
+
+    FUSED_ARITH_RIGHT_OP(ADD_LITERAL_RIGHT, FUSED_LITERAL_RIGHT_OPERANDS, +)
+    FUSED_ARITH_RIGHT_OP(SUBTRACT_LITERAL_RIGHT, FUSED_LITERAL_RIGHT_OPERANDS, -)
+    FUSED_ARITH_RIGHT_OP(MULTIPLY_LITERAL_RIGHT, FUSED_LITERAL_RIGHT_OPERANDS, *)
+
+    OP_DIVIDE_LITERAL_RIGHT:
+        {
+            FUSED_LITERAL_RIGHT_OPERANDS
+            if (left.IS_NUMBER && b.IS_NUMBER)
+            {
+                if (b.number == 0.0)
+                    throw std::runtime_error("Division by zero");
+                left.vmSetAsDouble(left.number / b.number);
+            }
+            else
+            {
+                left = left / b;
+            }
+            ++ip;
+            goto NEXT_OP;
+        }
+
+    OP_MODULO_LITERAL_RIGHT:
+        {
+            FUSED_LITERAL_RIGHT_OPERANDS
+            if (left.IS_NUMBER && b.IS_NUMBER)
+            {
+                if (left.IS_DOUBLE || b.IS_DOUBLE)
+                    throw std::runtime_error("'" + std::to_string(left.number) + " mod " + std::to_string(b.number) + "' invalid — 'mod' only supports integers.");
+                left.vmSetAsInt(left.intValue % b.intValue);
+            }
+            else
+            {
+                left = left % b;
+            }
+            ++ip;
+            goto NEXT_OP;
+        }
+
+    FUSED_CMP_RIGHT_OP(EQUAL_LITERAL_RIGHT, FUSED_LITERAL_RIGHT_OPERANDS, ==)
+    FUSED_CMP_RIGHT_OP(NOT_EQUAL_LITERAL_RIGHT, FUSED_LITERAL_RIGHT_OPERANDS, !=)
+    FUSED_CMP_RIGHT_OP(LESS_LITERAL_RIGHT, FUSED_LITERAL_RIGHT_OPERANDS, <)
+    FUSED_CMP_RIGHT_OP(LESS_EQUAL_LITERAL_RIGHT, FUSED_LITERAL_RIGHT_OPERANDS, <=)
+    FUSED_CMP_RIGHT_OP(GREATER_LITERAL_RIGHT, FUSED_LITERAL_RIGHT_OPERANDS, >)
+    FUSED_CMP_RIGHT_OP(GREATER_EQUAL_LITERAL_RIGHT, FUSED_LITERAL_RIGHT_OPERANDS, >=)
 
     OP_OR:
         {

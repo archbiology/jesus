@@ -127,7 +127,35 @@ enum class OpCode : uint8_t
     SUBTRACT_LOCAL_LITERAL_STORE,
     MULTIPLY_LOCAL_LITERAL_STORE,
     DIVIDE_LOCAL_LITERAL_STORE,
-    MODULO_LOCAL_LITERAL_STORE
+    MODULO_LOCAL_LITERAL_STORE,
+
+    // Forms where the LEFT operand is already on top of the operand stack
+    // and only the RIGHT operand has to be fetched. The result replaces the
+    // left operand in place, so no extra stack slot is created. Operand is
+    // the right-hand local slot / constant index in the low 16 bits.
+    ADD_LOCAL_RIGHT,
+    SUBTRACT_LOCAL_RIGHT,
+    MULTIPLY_LOCAL_RIGHT,
+    DIVIDE_LOCAL_RIGHT,
+    MODULO_LOCAL_RIGHT,
+    EQUAL_LOCAL_RIGHT,
+    NOT_EQUAL_LOCAL_RIGHT,
+    LESS_LOCAL_RIGHT,
+    LESS_EQUAL_LOCAL_RIGHT,
+    GREATER_LOCAL_RIGHT,
+    GREATER_EQUAL_LOCAL_RIGHT,
+
+    ADD_LITERAL_RIGHT,
+    SUBTRACT_LITERAL_RIGHT,
+    MULTIPLY_LITERAL_RIGHT,
+    DIVIDE_LITERAL_RIGHT,
+    MODULO_LITERAL_RIGHT,
+    EQUAL_LITERAL_RIGHT,
+    NOT_EQUAL_LITERAL_RIGHT,
+    LESS_LITERAL_RIGHT,
+    LESS_EQUAL_LITERAL_RIGHT,
+    GREATER_LITERAL_RIGHT,
+    GREATER_EQUAL_LITERAL_RIGHT
 };
 
 /**
