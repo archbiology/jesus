@@ -56,7 +56,18 @@ void VM::run(const Chunk &chunk)
         &&OP_JUMP,            // JUMP
         &&OP_JUMP_IF_FALSE,   // JUMP_IF_FALSE
         &&OP_CALL,            // CALL
-        &&OP_RETURN           // RETURN
+        &&OP_RETURN,          // RETURN
+        &&OP_ADD_LL,          // ADD_LL
+        &&OP_SUBTRACT_LL,     // SUBTRACT_LL
+        &&OP_MULTIPLY_LL,     // MULTIPLY_LL
+        &&OP_DIVIDE_LL,       // DIVIDE_LL
+        &&OP_MODULO_LL,       // MODULO_LL
+        &&OP_EQUAL_LL,        // EQUAL_LL
+        &&OP_NOT_EQUAL_LL,    // NOT_EQUAL_LL
+        &&OP_LESS_LL,         // LESS_LL
+        &&OP_LESS_EQUAL_LL,   // LESS_EQUAL_LL
+        &&OP_GREATER_LL,      // GREATER_LL
+        &&OP_GREATER_EQUAL_LL // GREATER_EQUAL_LL
     };
 
     // Dispatch to the main program's first instruction.
@@ -162,6 +173,115 @@ void VM::run(const Chunk &chunk)
     CMP_BINARY(LESS_EQUAL, <=)
     CMP_BINARY(GREATER, >)
     CMP_BINARY(GREATER_EQUAL, >=)
+
+    // -----------------------------------------------------------------
+    // Fused "READ_LOCAL a; READ_LOCAL b; <binary op>" handlers.
+    //
+    // The operand packs the two local slots: `a` in the low 16 bits and
+    // `b` in the high 16 bits. The result is pushed directly onto the
+    // stack, so the two operand pushes and the subsequent pop disappear.
+    // Non-numeric operands fall back to the regular operator overloads
+    // (which handle strings, booleans and so on).
+    // -----------------------------------------------------------------
+#define FUSED_OPERANDS \
+    const uint32_t packed = ip->operand; \
+    const std::size_t lb = frames.back().localsBase; \
+    const Value &a = stack[lb + (packed & 0xFFFF)]; \
+    const Value &b = stack[lb + (packed >> 16)];
+
+#define FUSED_ARITH_LL(label, op) \
+    OP_##label: \
+    { \
+        FUSED_OPERANDS \
+        if (a.IS_NUMBER && b.IS_NUMBER) \
+        { \
+            if (a.IS_DOUBLE || b.IS_DOUBLE) \
+            { \
+                const double result = a.number op b.number; \
+                stack.emplace_back(); \
+                stack.back().vmSetAsDouble(result); \
+            } \
+            else \
+            { \
+                const int result = a.intValue op b.intValue; \
+                stack.emplace_back(); \
+                stack.back().vmSetAsInt(result); \
+            } \
+        } \
+        else \
+        { \
+            stack.push_back(a op b); \
+        } \
+        ++ip; \
+        goto NEXT_OP; \
+    }
+
+    FUSED_ARITH_LL(ADD_LL, +)
+    FUSED_ARITH_LL(SUBTRACT_LL, -)
+    FUSED_ARITH_LL(MULTIPLY_LL, *)
+
+    OP_DIVIDE_LL:
+        {
+            FUSED_OPERANDS
+            if (a.IS_NUMBER && b.IS_NUMBER)
+            {
+                if (b.number == 0.0)
+                    throw std::runtime_error("Division by zero");
+                const double result = a.number / b.number;
+                stack.emplace_back();
+                stack.back().vmSetAsDouble(result);
+            }
+            else
+            {
+                stack.push_back(a / b);
+            }
+            ++ip;
+            goto NEXT_OP;
+        }
+
+    OP_MODULO_LL:
+        {
+            FUSED_OPERANDS
+            if (a.IS_NUMBER && b.IS_NUMBER)
+            {
+                if (a.IS_DOUBLE || b.IS_DOUBLE)
+                    throw std::runtime_error("'" + std::to_string(a.number) + " mod " + std::to_string(b.number) + "' invalid — 'mod' only supports integers.");
+                const int result = a.intValue % b.intValue;
+                stack.emplace_back();
+                stack.back().vmSetAsInt(result);
+            }
+            else
+            {
+                stack.push_back(a % b);
+            }
+            ++ip;
+            goto NEXT_OP;
+        }
+
+#define FUSED_CMP_LL(label, op) \
+    OP_##label: \
+    { \
+        FUSED_OPERANDS \
+        if (a.IS_NUMBER && b.IS_NUMBER) \
+        { \
+            const bool result = a.number op b.number; \
+            stack.emplace_back(); \
+            stack.back().vmSetAsBoolean(result); \
+        } \
+        else \
+        { \
+            stack.push_back(Value(a op b)); \
+        } \
+        ++ip; \
+        goto NEXT_OP; \
+    }
+
+    FUSED_CMP_LL(EQUAL_LL, ==)
+    FUSED_CMP_LL(NOT_EQUAL_LL, !=)
+    FUSED_CMP_LL(LESS_LL, <)
+    FUSED_CMP_LL(LESS_EQUAL_LL, <=)
+    FUSED_CMP_LL(GREATER_LL, >)
+    FUSED_CMP_LL(GREATER_EQUAL_LL, >=)
 
     OP_OR:
         {

@@ -56,7 +56,32 @@ enum class OpCode : uint8_t
     JUMP_IF_FALSE,
 
     CALL,
-    RETURN
+    RETURN,
+
+    // -----------------------------------------------------------------
+    // Fused "read local, read local, binary op" opcodes.
+    //
+    // The compiler folds the common sequence
+    //
+    //     READ_LOCAL a
+    //     READ_LOCAL b
+    //     <binary op>
+    //
+    // into a single instruction whose operand packs both local slots as
+    // (a in the low 16 bits, b in the high 16 bits). This removes two
+    // stack pushes and two dispatches from the hottest loops.
+    // -----------------------------------------------------------------
+    ADD_LL,
+    SUBTRACT_LL,
+    MULTIPLY_LL,
+    DIVIDE_LL,
+    MODULO_LL,
+    EQUAL_LL,
+    NOT_EQUAL_LL,
+    LESS_LL,
+    LESS_EQUAL_LL,
+    GREATER_LL,
+    GREATER_EQUAL_LL
 };
 
 /**
