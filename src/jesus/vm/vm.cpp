@@ -401,13 +401,15 @@ void VM::run(const Chunk &chunk)
     // -----------------------------------------------------------------
 #define FUSED_LOCAL_LITERAL_OPERANDS \
     const uint32_t packed = ip->operand; \
-    const Value &a = stack[currentLocalsBase + (packed & 0xFFFF)]; \
+    Value *const lb = stack.data() + currentLocalsBase; \
+    const Value &a = lb[packed & 0xFFFF]; \
     const Value &b = currentChunk->literals[packed >> 16];
 
 #define FUSED_LITERAL_LOCAL_OPERANDS \
     const uint32_t packed = ip->operand; \
     const Value &a = currentChunk->literals[packed >> 16]; \
-    const Value &b = stack[currentLocalsBase + (packed & 0xFFFF)];
+    Value *const lb = stack.data() + currentLocalsBase; \
+    const Value &b = lb[packed & 0xFFFF];
 
 #define FUSED_ARITH_OP(label, operands, op) \
     OP_##label: \
@@ -560,10 +562,10 @@ void VM::run(const Chunk &chunk)
     // -----------------------------------------------------------------
 #define FUSED_STORE_OPERANDS \
     const uint32_t packed = ip->operand; \
-    const std::size_t lb = currentLocalsBase; \
-    const Value &a = stack[lb + (packed & 0xFF)]; \
-    const Value &b = stack[lb + ((packed >> 8) & 0xFF)]; \
-    Value &dest = stack[lb + (packed >> 16)];
+    Value *const lb = stack.data() + currentLocalsBase; \
+    const Value &a = lb[packed & 0xFF]; \
+    const Value &b = lb[(packed >> 8) & 0xFF]; \
+    Value &dest = lb[packed >> 16];
 
 #define FUSED_ARITH_LOCAL_LOCAL_STORE(label, op) \
     OP_##label: \
@@ -629,10 +631,10 @@ void VM::run(const Chunk &chunk)
     // -----------------------------------------------------------------
 #define FUSED_LOCAL_LITERAL_STORE_OPERANDS \
     const uint32_t packed = ip->operand; \
-    const std::size_t lb = currentLocalsBase; \
-    const Value &a = stack[lb + (packed & 0xFF)]; \
+    Value *const lb = stack.data() + currentLocalsBase; \
+    const Value &a = lb[packed & 0xFF]; \
     const Value &b = currentChunk->literals[(packed >> 8) & 0xFFFF]; \
-    Value &dest = stack[lb + (packed >> 24)];
+    Value &dest = lb[packed >> 24];
 
 #define FUSED_ARITH_STORE_OP(label, operands, op) \
     OP_##label: \
@@ -703,7 +705,8 @@ void VM::run(const Chunk &chunk)
     // -----------------------------------------------------------------
 #define FUSED_LOCAL_RIGHT_OPERANDS \
     Value &left = stack.back(); \
-    const Value &b = stack[currentLocalsBase + (ip->operand & 0xFFFF)];
+    Value *const lb = stack.data() + currentLocalsBase; \
+    const Value &b = lb[ip->operand & 0xFFFF];
 
 #define FUSED_LITERAL_RIGHT_OPERANDS \
     Value &left = stack.back(); \
@@ -980,9 +983,10 @@ void VM::run(const Chunk &chunk)
     OP_MULTIPLY_ADD_LOCAL_RIGHT_STORE:
         {
             Value &left = stack.back();
-            const Value &b = stack[currentLocalsBase + (ip->operand & 0xFF)];
-            const Value &c = stack[currentLocalsBase + ((ip->operand >> 8) & 0xFF)];
-            Value &dest = stack[currentLocalsBase + ((ip->operand >> 16) & 0xFF)];
+            Value *const lb = stack.data() + currentLocalsBase;
+            const Value &b = lb[ip->operand & 0xFF];
+            const Value &c = lb[(ip->operand >> 8) & 0xFF];
+            Value &dest = lb[(ip->operand >> 16) & 0xFF];
 
             if (left.IS_NUMBER && b.IS_NUMBER && c.IS_NUMBER)
             {
@@ -1033,11 +1037,11 @@ void VM::run(const Chunk &chunk)
     OP_SUBTRACT_ADD_LOCAL_LOCAL_LOCAL_STORE:
         {
             const uint32_t packed = ip->operand;
-            const std::size_t lb = currentLocalsBase;
-            const Value &a = stack[lb + (packed & 0xFF)];
-            const Value &b = stack[lb + ((packed >> 8) & 0xFF)];
-            const Value &c = stack[lb + ((packed >> 16) & 0xFF)];
-            Value &dest = stack[lb + ((packed >> 24) & 0xFF)];
+            Value *const lb = stack.data() + currentLocalsBase;
+            const Value &a = lb[packed & 0xFF];
+            const Value &b = lb[(packed >> 8) & 0xFF];
+            const Value &c = lb[(packed >> 16) & 0xFF];
+            Value &dest = lb[(packed >> 24) & 0xFF];
 
             if (a.IS_NUMBER && b.IS_NUMBER && c.IS_NUMBER)
             {
@@ -1065,13 +1069,15 @@ void VM::run(const Chunk &chunk)
     // -----------------------------------------------------------------
 #define FUSED_LOCAL_RIGHT_STORE_OPERANDS \
     Value &left = stack.back(); \
-    const Value &b = stack[currentLocalsBase + (ip->operand & 0xFFFF)]; \
-    Value &dest = stack[currentLocalsBase + ((ip->operand >> 16) & 0xFFFF)];
+    Value *const lb = stack.data() + currentLocalsBase; \
+    const Value &b = lb[ip->operand & 0xFFFF]; \
+    Value &dest = lb[(ip->operand >> 16) & 0xFFFF];
 
 #define FUSED_LITERAL_RIGHT_STORE_OPERANDS \
     Value &left = stack.back(); \
     const Value &b = currentChunk->literals[ip->operand & 0xFFFF]; \
-    Value &dest = stack[currentLocalsBase + ((ip->operand >> 16) & 0xFFFF)];
+    Value *const lb = stack.data() + currentLocalsBase; \
+    Value &dest = lb[(ip->operand >> 16) & 0xFFFF];
 
 #define FUSED_ARITH_RIGHT_STORE_OP(label, operands, op) \
     OP_##label: \
