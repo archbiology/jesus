@@ -891,6 +891,18 @@ void Compiler::compileRepeatWhileStmt(const RepeatWhileStmt &stmt)
 
     emit(OpCode::JUMP, loopStart);
 
+    // Fuse the loop's usual trailing increment (`i = i + k`) with the
+    // back-edge JUMP, saving a dispatch per iteration. The JUMP instruction
+    // stays as the target holder for the fused store; it is never executed.
+    {
+        auto &ins = currentChunk->instructions;
+        if (ins.size() >= 2 &&
+            ins[ins.size() - 2].opcode == OpCode::ADD_LOCAL_LITERAL_STORE)
+        {
+            ins[ins.size() - 2].opcode = OpCode::ADD_LOCAL_LITERAL_STORE_JUMP;
+        }
+    }
+
     patchJump(jumpOut);
 }
 

@@ -386,6 +386,9 @@ std::string opcodeToString(OpCode opcode)
     case OpCode::MULTIPLY_ADD_LOCAL_RIGHT_STORE:
         return "MULTIPLY_ADD_LOCAL_RIGHT_STORE";
 
+    case OpCode::ADD_LOCAL_LITERAL_STORE_JUMP:
+        return "ADD_LOCAL_LITERAL_STORE_JUMP";
+
     default:
         return "UNKNOWN_OPCODE";
     }

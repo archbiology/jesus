@@ -234,7 +234,13 @@ enum class OpCode : uint8_t
     // replaces the trailing MULTIPLY_LOCAL_RIGHT and ADD_LOCAL_RIGHT_STORE
     // pair with a single instruction. Operand packs: `b` local slot in bits
     // 0-7, `c` local slot in bits 8-15, destination slot in bits 16-23.
-    MULTIPLY_ADD_LOCAL_RIGHT_STORE
+    MULTIPLY_ADD_LOCAL_RIGHT_STORE,
+
+    // A counted-loop increment (`i = i + k`) fused with the back-edge JUMP
+    // that follows it. The operand has the ADD_LOCAL_LITERAL_STORE layout and
+    // the jump target is the operand of the instruction that immediately
+    // follows (the original JUMP, now only a target holder).
+    ADD_LOCAL_LITERAL_STORE_JUMP
 };
 
 /**

@@ -173,7 +173,8 @@ void VM::run(const Chunk &chunk)
         &&OP_JUMP_IF_NOT_ADD_LOCAL_LOCAL_LESS_EQUAL_LITERAL,    // JUMP_IF_NOT_ADD_LOCAL_LOCAL_LESS_EQUAL_LITERAL
         &&OP_JUMP_IF_NOT_ADD_LOCAL_LOCAL_GREATER_LITERAL,       // JUMP_IF_NOT_ADD_LOCAL_LOCAL_GREATER_LITERAL
         &&OP_JUMP_IF_NOT_ADD_LOCAL_LOCAL_GREATER_EQUAL_LITERAL, // JUMP_IF_NOT_ADD_LOCAL_LOCAL_GREATER_EQUAL_LITERAL
-        &&OP_MULTIPLY_ADD_LOCAL_RIGHT_STORE                     // MULTIPLY_ADD_LOCAL_RIGHT_STORE
+        &&OP_MULTIPLY_ADD_LOCAL_RIGHT_STORE,                    // MULTIPLY_ADD_LOCAL_RIGHT_STORE
+        &&OP_ADD_LOCAL_LITERAL_STORE_JUMP                       // ADD_LOCAL_LITERAL_STORE_JUMP
     };
 
     // Dispatch to the main program's first instruction.
@@ -996,6 +997,30 @@ void VM::run(const Chunk &chunk)
 
             stack.pop_back();
             ++ip;
+            goto NEXT_OP;
+        }
+
+    // -----------------------------------------------------------------
+    // Counted-loop increment (`i = i + k`) fused with the back-edge JUMP,
+    // removing one dispatch per iteration. Same operand layout as
+    // ADD_LOCAL_LITERAL_STORE; the jump target is read from the operand of
+    // the following instruction (the original JUMP, kept as a target slot).
+    // -----------------------------------------------------------------
+    OP_ADD_LOCAL_LITERAL_STORE_JUMP:
+        {
+            FUSED_LOCAL_LITERAL_STORE_OPERANDS
+            if (a.IS_NUMBER && b.IS_NUMBER)
+            {
+                if (a.IS_DOUBLE || b.IS_DOUBLE)
+                    dest.setAsDouble(a.number + b.number);
+                else
+                    dest.setAsInt(a.intValue + b.intValue);
+            }
+            else
+            {
+                dest = a + b;
+            }
+            ip = begin + (ip + 1)->operand;
             goto NEXT_OP;
         }
 
