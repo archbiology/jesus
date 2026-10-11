@@ -90,7 +90,7 @@ bool operator==(const Value &left, const Value &right)
     }
 
     if (left.IS_BOOLEAN && right.IS_BOOLEAN)
-        return left.AS_BOOLEAN == right.AS_BOOLEAN;
+        return left.truthy() == right.truthy();
 
     if (left.IS_STRING && right.IS_STRING)
         return std::get<std::string>(left.value->data) == std::get<std::string>(right.value->data);

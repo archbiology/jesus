@@ -108,12 +108,12 @@ public:
 
         if (op.type == TokenType::OR)
         {
-            return leftVal.AS_BOOLEAN ? leftVal : rightVal;
+            return leftVal.truthy() ? leftVal : rightVal;
         }
 
         if (op.type == TokenType::AND)
         {
-            return leftVal.AS_BOOLEAN ? rightVal : leftVal;
+            return leftVal.truthy() ? rightVal : leftVal;
         }
 
         if (op.type == TokenType::VERSUS)
@@ -121,7 +121,7 @@ public:
             if (leftVal.IS_BOOLEAN && rightVal.IS_BOOLEAN)
             {
                 // Logical XOR
-                return Value(leftVal.AS_BOOLEAN != rightVal.AS_BOOLEAN);
+                return Value(leftVal.truthy() != rightVal.truthy());
             }
 
             if (leftVal.IS_NUMBER && rightVal.IS_NUMBER)

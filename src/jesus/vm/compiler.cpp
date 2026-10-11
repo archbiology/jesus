@@ -119,44 +119,313 @@ void Compiler::compileExpr(const Expr &expr)
     throw std::runtime_error("Expression not supported by VM yet: " + expr.toString());
 }
 
-// Maps a binary operator token to its fused two-locals opcode. Returns
-// false for operators that have no fused form (OR/AND/XOR).
-static bool fusedLocalLocalOpcode(TokenType type, OpCode &out)
+// Fused binary operations come in families that share one opcode per
+// operator and differ only in where the operands live. fusedOpIndex() maps
+// an operator token to its position inside a family; the tables below map
+// that position to the concrete opcode of each family.
+enum
+{
+    FUSED_ADD = 0,
+    FUSED_SUBTRACT,
+    FUSED_MULTIPLY,
+    FUSED_DIVIDE,
+    FUSED_MODULO,
+    FUSED_EQUAL,
+    FUSED_NOT_EQUAL,
+    FUSED_LESS,
+    FUSED_LESS_EQUAL,
+    FUSED_GREATER,
+    FUSED_GREATER_EQUAL,
+    FUSED_OP_COUNT
+};
+
+static int fusedOpIndex(TokenType type)
 {
     switch (type)
     {
     case TokenType::PLUS:
-        out = OpCode::ADD_LL;
-        return true;
+        return FUSED_ADD;
     case TokenType::MINUS:
-        out = OpCode::SUBTRACT_LL;
-        return true;
+        return FUSED_SUBTRACT;
     case TokenType::STAR:
-        out = OpCode::MULTIPLY_LL;
-        return true;
+        return FUSED_MULTIPLY;
     case TokenType::SLASH:
-        out = OpCode::DIVIDE_LL;
-        return true;
+        return FUSED_DIVIDE;
     case TokenType::MOD:
-        out = OpCode::MODULO_LL;
-        return true;
+        return FUSED_MODULO;
     case TokenType::IS:
-        out = OpCode::EQUAL_LL;
-        return true;
+        return FUSED_EQUAL;
     case TokenType::NOT_EQUAL:
-        out = OpCode::NOT_EQUAL_LL;
-        return true;
+        return FUSED_NOT_EQUAL;
     case TokenType::LESS:
-        out = OpCode::LESS_LL;
-        return true;
+        return FUSED_LESS;
     case TokenType::LESS_EQUAL:
-        out = OpCode::LESS_EQUAL_LL;
-        return true;
+        return FUSED_LESS_EQUAL;
     case TokenType::GREATER:
-        out = OpCode::GREATER_LL;
-        return true;
+        return FUSED_GREATER;
     case TokenType::GREATER_EQUAL:
-        out = OpCode::GREATER_EQUAL_LL;
+        return FUSED_GREATER_EQUAL;
+    default:
+        return -1;
+    }
+}
+
+static const OpCode kLocalLocalOps[FUSED_OP_COUNT] = {
+    OpCode::ADD_LOCAL_LOCAL, OpCode::SUBTRACT_LOCAL_LOCAL, OpCode::MULTIPLY_LOCAL_LOCAL,
+    OpCode::DIVIDE_LOCAL_LOCAL, OpCode::MODULO_LOCAL_LOCAL, OpCode::EQUAL_LOCAL_LOCAL,
+    OpCode::NOT_EQUAL_LOCAL_LOCAL, OpCode::LESS_LOCAL_LOCAL, OpCode::LESS_EQUAL_LOCAL_LOCAL,
+    OpCode::GREATER_LOCAL_LOCAL, OpCode::GREATER_EQUAL_LOCAL_LOCAL};
+
+static const OpCode kLocalLiteralOps[FUSED_OP_COUNT] = {
+    OpCode::ADD_LOCAL_LITERAL, OpCode::SUBTRACT_LOCAL_LITERAL, OpCode::MULTIPLY_LOCAL_LITERAL,
+    OpCode::DIVIDE_LOCAL_LITERAL, OpCode::MODULO_LOCAL_LITERAL, OpCode::EQUAL_LOCAL_LITERAL,
+    OpCode::NOT_EQUAL_LOCAL_LITERAL, OpCode::LESS_LOCAL_LITERAL, OpCode::LESS_EQUAL_LOCAL_LITERAL,
+    OpCode::GREATER_LOCAL_LITERAL, OpCode::GREATER_EQUAL_LOCAL_LITERAL};
+
+static const OpCode kLiteralLocalOps[FUSED_OP_COUNT] = {
+    OpCode::ADD_LITERAL_LOCAL, OpCode::SUBTRACT_LITERAL_LOCAL, OpCode::MULTIPLY_LITERAL_LOCAL,
+    OpCode::DIVIDE_LITERAL_LOCAL, OpCode::MODULO_LITERAL_LOCAL, OpCode::EQUAL_LITERAL_LOCAL,
+    OpCode::NOT_EQUAL_LITERAL_LOCAL, OpCode::LESS_LITERAL_LOCAL, OpCode::LESS_EQUAL_LITERAL_LOCAL,
+    OpCode::GREATER_LITERAL_LOCAL, OpCode::GREATER_EQUAL_LITERAL_LOCAL};
+
+static const OpCode kLocalRightOps[FUSED_OP_COUNT] = {
+    OpCode::ADD_LOCAL_RIGHT, OpCode::SUBTRACT_LOCAL_RIGHT, OpCode::MULTIPLY_LOCAL_RIGHT,
+    OpCode::DIVIDE_LOCAL_RIGHT, OpCode::MODULO_LOCAL_RIGHT, OpCode::EQUAL_LOCAL_RIGHT,
+    OpCode::NOT_EQUAL_LOCAL_RIGHT, OpCode::LESS_LOCAL_RIGHT, OpCode::LESS_EQUAL_LOCAL_RIGHT,
+    OpCode::GREATER_LOCAL_RIGHT, OpCode::GREATER_EQUAL_LOCAL_RIGHT};
+
+static const OpCode kLiteralRightOps[FUSED_OP_COUNT] = {
+    OpCode::ADD_LITERAL_RIGHT, OpCode::SUBTRACT_LITERAL_RIGHT, OpCode::MULTIPLY_LITERAL_RIGHT,
+    OpCode::DIVIDE_LITERAL_RIGHT, OpCode::MODULO_LITERAL_RIGHT, OpCode::EQUAL_LITERAL_RIGHT,
+    OpCode::NOT_EQUAL_LITERAL_RIGHT, OpCode::LESS_LITERAL_RIGHT, OpCode::LESS_EQUAL_LITERAL_RIGHT,
+    OpCode::GREATER_LITERAL_RIGHT, OpCode::GREATER_EQUAL_LITERAL_RIGHT};
+
+// Maps a fused comparison opcode to its comparison-and-branch counterpart.
+// Returns false for anything that is not a comparison.
+static bool branchVariant(OpCode comparison, OpCode &branch)
+{
+    struct Pair
+    {
+        OpCode comparison;
+        OpCode branch;
+    };
+
+    static const Pair kBranches[] = {
+        {OpCode::EQUAL_LOCAL_LOCAL, OpCode::JUMP_IF_NOT_EQUAL_LOCAL_LOCAL},
+        {OpCode::NOT_EQUAL_LOCAL_LOCAL, OpCode::JUMP_IF_NOT_NOT_EQUAL_LOCAL_LOCAL},
+        {OpCode::LESS_LOCAL_LOCAL, OpCode::JUMP_IF_NOT_LESS_LOCAL_LOCAL},
+        {OpCode::LESS_EQUAL_LOCAL_LOCAL, OpCode::JUMP_IF_NOT_LESS_EQUAL_LOCAL_LOCAL},
+        {OpCode::GREATER_LOCAL_LOCAL, OpCode::JUMP_IF_NOT_GREATER_LOCAL_LOCAL},
+        {OpCode::GREATER_EQUAL_LOCAL_LOCAL, OpCode::JUMP_IF_NOT_GREATER_EQUAL_LOCAL_LOCAL},
+
+        {OpCode::EQUAL_LOCAL_LITERAL, OpCode::JUMP_IF_NOT_EQUAL_LOCAL_LITERAL},
+        {OpCode::NOT_EQUAL_LOCAL_LITERAL, OpCode::JUMP_IF_NOT_NOT_EQUAL_LOCAL_LITERAL},
+        {OpCode::LESS_LOCAL_LITERAL, OpCode::JUMP_IF_NOT_LESS_LOCAL_LITERAL},
+        {OpCode::LESS_EQUAL_LOCAL_LITERAL, OpCode::JUMP_IF_NOT_LESS_EQUAL_LOCAL_LITERAL},
+        {OpCode::GREATER_LOCAL_LITERAL, OpCode::JUMP_IF_NOT_GREATER_LOCAL_LITERAL},
+        {OpCode::GREATER_EQUAL_LOCAL_LITERAL, OpCode::JUMP_IF_NOT_GREATER_EQUAL_LOCAL_LITERAL},
+
+        {OpCode::EQUAL_LITERAL_LOCAL, OpCode::JUMP_IF_NOT_EQUAL_LITERAL_LOCAL},
+        {OpCode::NOT_EQUAL_LITERAL_LOCAL, OpCode::JUMP_IF_NOT_NOT_EQUAL_LITERAL_LOCAL},
+        {OpCode::LESS_LITERAL_LOCAL, OpCode::JUMP_IF_NOT_LESS_LITERAL_LOCAL},
+        {OpCode::LESS_EQUAL_LITERAL_LOCAL, OpCode::JUMP_IF_NOT_LESS_EQUAL_LITERAL_LOCAL},
+        {OpCode::GREATER_LITERAL_LOCAL, OpCode::JUMP_IF_NOT_GREATER_LITERAL_LOCAL},
+        {OpCode::GREATER_EQUAL_LITERAL_LOCAL, OpCode::JUMP_IF_NOT_GREATER_EQUAL_LITERAL_LOCAL},
+
+        {OpCode::EQUAL_LOCAL_RIGHT, OpCode::JUMP_IF_NOT_EQUAL_LOCAL_RIGHT},
+        {OpCode::NOT_EQUAL_LOCAL_RIGHT, OpCode::JUMP_IF_NOT_NOT_EQUAL_LOCAL_RIGHT},
+        {OpCode::LESS_LOCAL_RIGHT, OpCode::JUMP_IF_NOT_LESS_LOCAL_RIGHT},
+        {OpCode::LESS_EQUAL_LOCAL_RIGHT, OpCode::JUMP_IF_NOT_LESS_EQUAL_LOCAL_RIGHT},
+        {OpCode::GREATER_LOCAL_RIGHT, OpCode::JUMP_IF_NOT_GREATER_LOCAL_RIGHT},
+        {OpCode::GREATER_EQUAL_LOCAL_RIGHT, OpCode::JUMP_IF_NOT_GREATER_EQUAL_LOCAL_RIGHT},
+
+        {OpCode::EQUAL_LITERAL_RIGHT, OpCode::JUMP_IF_NOT_EQUAL_LITERAL_RIGHT},
+        {OpCode::NOT_EQUAL_LITERAL_RIGHT, OpCode::JUMP_IF_NOT_NOT_EQUAL_LITERAL_RIGHT},
+        {OpCode::LESS_LITERAL_RIGHT, OpCode::JUMP_IF_NOT_LESS_LITERAL_RIGHT},
+        {OpCode::LESS_EQUAL_LITERAL_RIGHT, OpCode::JUMP_IF_NOT_LESS_EQUAL_LITERAL_RIGHT},
+        {OpCode::GREATER_LITERAL_RIGHT, OpCode::JUMP_IF_NOT_GREATER_LITERAL_RIGHT},
+        {OpCode::GREATER_EQUAL_LITERAL_RIGHT, OpCode::JUMP_IF_NOT_GREATER_EQUAL_LITERAL_RIGHT},
+    };
+
+    for (const auto &pair : kBranches)
+    {
+        if (pair.comparison == comparison)
+        {
+            branch = pair.branch;
+            return true;
+        }
+    }
+
+    return false;
+}
+
+// Maps a comparison whose LEFT operand is on the stack (the *_LITERAL_RIGHT
+// forms) to the branch that folds in the ADD which produced that operand.
+// This recognises the divergence test `if x2 + y2 > 4.0` and turns the ADD
+// plus the comparison-branch into a single instruction.
+static bool sumLiteralBranch(OpCode comparison, OpCode &branch)
+{
+    switch (comparison)
+    {
+    case OpCode::EQUAL_LITERAL_RIGHT:
+        branch = OpCode::JUMP_IF_NOT_ADD_LOCAL_LOCAL_EQUAL_LITERAL;
+        return true;
+    case OpCode::NOT_EQUAL_LITERAL_RIGHT:
+        branch = OpCode::JUMP_IF_NOT_ADD_LOCAL_LOCAL_NOT_EQUAL_LITERAL;
+        return true;
+    case OpCode::LESS_LITERAL_RIGHT:
+        branch = OpCode::JUMP_IF_NOT_ADD_LOCAL_LOCAL_LESS_LITERAL;
+        return true;
+    case OpCode::LESS_EQUAL_LITERAL_RIGHT:
+        branch = OpCode::JUMP_IF_NOT_ADD_LOCAL_LOCAL_LESS_EQUAL_LITERAL;
+        return true;
+    case OpCode::GREATER_LITERAL_RIGHT:
+        branch = OpCode::JUMP_IF_NOT_ADD_LOCAL_LOCAL_GREATER_LITERAL;
+        return true;
+    case OpCode::GREATER_EQUAL_LITERAL_RIGHT:
+        branch = OpCode::JUMP_IF_NOT_ADD_LOCAL_LOCAL_GREATER_EQUAL_LITERAL;
+        return true;
+    default:
+        return false;
+    }
+}
+
+// Looks up the opcode for `type` in a family table. Returns false for
+// operators without a fused form (OR/AND/XOR).
+static bool fusedOp(const OpCode *table, TokenType type, OpCode &out)
+{
+    const int index = fusedOpIndex(type);
+
+    if (index < 0)
+        return false;
+
+    out = table[index];
+    return true;
+}
+
+// Maps a fused two-locals opcode to its "store result into a local" form.
+// Returns false for comparison opcodes, which have no store form (their
+// result is consumed by a conditional jump rather than stored).
+static bool localLocalStoreOpcode(OpCode fused, OpCode &out)
+{
+    switch (fused)
+    {
+    case OpCode::ADD_LOCAL_LOCAL:
+        out = OpCode::ADD_LOCAL_LOCAL_STORE;
+        return true;
+    case OpCode::SUBTRACT_LOCAL_LOCAL:
+        out = OpCode::SUBTRACT_LOCAL_LOCAL_STORE;
+        return true;
+    case OpCode::MULTIPLY_LOCAL_LOCAL:
+        out = OpCode::MULTIPLY_LOCAL_LOCAL_STORE;
+        return true;
+    case OpCode::DIVIDE_LOCAL_LOCAL:
+        out = OpCode::DIVIDE_LOCAL_LOCAL_STORE;
+        return true;
+    case OpCode::MODULO_LOCAL_LOCAL:
+        out = OpCode::MODULO_LOCAL_LOCAL_STORE;
+        return true;
+    default:
+        return false;
+    }
+}
+
+// Same idea for the local/literal family (e.g. `i = i + 1`).
+static bool localLiteralStoreOpcode(OpCode fused, OpCode &out)
+{
+    switch (fused)
+    {
+    case OpCode::ADD_LOCAL_LITERAL:
+        out = OpCode::ADD_LOCAL_LITERAL_STORE;
+        return true;
+    case OpCode::SUBTRACT_LOCAL_LITERAL:
+        out = OpCode::SUBTRACT_LOCAL_LITERAL_STORE;
+        return true;
+    case OpCode::MULTIPLY_LOCAL_LITERAL:
+        out = OpCode::MULTIPLY_LOCAL_LITERAL_STORE;
+        return true;
+    case OpCode::DIVIDE_LOCAL_LITERAL:
+        out = OpCode::DIVIDE_LOCAL_LITERAL_STORE;
+        return true;
+    case OpCode::MODULO_LOCAL_LITERAL:
+        out = OpCode::MODULO_LOCAL_LITERAL_STORE;
+        return true;
+    default:
+        return false;
+    }
+}
+
+// For the *_RIGHT family, where the result currently replaces a value on the
+// stack (e.g. `x = (x2 - y2) + cx`).
+static bool localRightStoreOpcode(OpCode fused, OpCode &out)
+{
+    switch (fused)
+    {
+    case OpCode::ADD_LOCAL_RIGHT:
+        out = OpCode::ADD_LOCAL_RIGHT_STORE;
+        return true;
+    case OpCode::SUBTRACT_LOCAL_RIGHT:
+        out = OpCode::SUBTRACT_LOCAL_RIGHT_STORE;
+        return true;
+    case OpCode::MULTIPLY_LOCAL_RIGHT:
+        out = OpCode::MULTIPLY_LOCAL_RIGHT_STORE;
+        return true;
+    case OpCode::DIVIDE_LOCAL_RIGHT:
+        out = OpCode::DIVIDE_LOCAL_RIGHT_STORE;
+        return true;
+    case OpCode::MODULO_LOCAL_RIGHT:
+        out = OpCode::MODULO_LOCAL_RIGHT_STORE;
+        return true;
+    default:
+        return false;
+    }
+}
+
+static bool literalRightStoreOpcode(OpCode fused, OpCode &out)
+{
+    switch (fused)
+    {
+    case OpCode::ADD_LITERAL_RIGHT:
+        out = OpCode::ADD_LITERAL_RIGHT_STORE;
+        return true;
+    case OpCode::SUBTRACT_LITERAL_RIGHT:
+        out = OpCode::SUBTRACT_LITERAL_RIGHT_STORE;
+        return true;
+    case OpCode::MULTIPLY_LITERAL_RIGHT:
+        out = OpCode::MULTIPLY_LITERAL_RIGHT_STORE;
+        return true;
+    case OpCode::DIVIDE_LITERAL_RIGHT:
+        out = OpCode::DIVIDE_LITERAL_RIGHT_STORE;
+        return true;
+    case OpCode::MODULO_LITERAL_RIGHT:
+        out = OpCode::MODULO_LITERAL_RIGHT_STORE;
+        return true;
+    default:
+        return false;
+    }
+}
+
+// Maps a *_LOCAL_RIGHT arithmetic op to the two-locals store form of the
+// same operator, used to split `dest = (a <op> b) <op> c` into two in-place
+// stores (see emitStoreToLocal).
+static bool rightToLocalLocalStore(OpCode right, OpCode &out)
+{
+    switch (right)
+    {
+    case OpCode::ADD_LOCAL_RIGHT:
+        out = OpCode::ADD_LOCAL_LOCAL_STORE;
+        return true;
+    case OpCode::SUBTRACT_LOCAL_RIGHT:
+        out = OpCode::SUBTRACT_LOCAL_LOCAL_STORE;
+        return true;
+    case OpCode::MULTIPLY_LOCAL_RIGHT:
+        out = OpCode::MULTIPLY_LOCAL_LOCAL_STORE;
+        return true;
+    case OpCode::DIVIDE_LOCAL_RIGHT:
+        out = OpCode::DIVIDE_LOCAL_LOCAL_STORE;
+        return true;
+    case OpCode::MODULO_LOCAL_RIGHT:
+        out = OpCode::MODULO_LOCAL_LOCAL_STORE;
         return true;
     default:
         return false;
@@ -169,25 +438,85 @@ void Compiler::compileBinaryExpr(const BinaryExpr &expr)
     compileExpr(*expr.right);
 
     // -----------------------------------------------------------------
-    // Peephole: fold "READ_LOCAL a; READ_LOCAL b; <binary op>" into a
-    // single fused opcode carrying both local slots in its operand. This
-    // is the dominant pattern in tight numeric loops (e.g. `x * x`).
+    // Peephole: fold operand fetches plus the binary op into a single fused
+    // opcode that carries the operands in its own operand. This is the
+    // dominant pattern in tight numeric loops.
+    //
+    // When both operands are simple fetches:
+    //   READ_LOCAL a; READ_LOCAL b; <op>   -> <OP>_LOCAL_LOCAL   (a, b)
+    //   READ_LOCAL a; PUSH_LITERAL k; <op> -> <OP>_LOCAL_LITERAL (a, k)
+    //   PUSH_LITERAL k; READ_LOCAL b; <op> -> <OP>_LITERAL_LOCAL (k, b)
+    //
+    // When only the right operand is a fetch, the left one is already on
+    // the stack and the operation reuses its slot:
+    //   ...; READ_LOCAL b; <op>   -> ...; <OP>_LOCAL_RIGHT   (b)
+    //   ...; PUSH_LITERAL k; <op> -> ...; <OP>_LITERAL_RIGHT (k)
     // -----------------------------------------------------------------
-    if (OpCode fused; fusedLocalLocalOpcode(expr.op.type, fused))
     {
         auto &ins = currentChunk->instructions;
-        if (ins.size() >= 2 &&
-            ins[ins.size() - 2].opcode == OpCode::READ_LOCAL &&
-            ins[ins.size() - 1].opcode == OpCode::READ_LOCAL)
-        {
-            const uint32_t slotA = ins[ins.size() - 2].operand;
-            const uint32_t slotB = ins[ins.size() - 1].operand;
 
-            if (slotA < 0x10000 && slotB < 0x10000)
+        if (!ins.empty())
+        {
+            const Instruction &last = ins[ins.size() - 1];
+
+            OpCode fused;
+            bool matched = false;
+            uint32_t packed = 0;
+            int pops = 0;
+
+            if (ins.size() >= 2)
             {
-                ins.pop_back();
-                ins.pop_back();
-                emit(fused, slotA | (slotB << 16));
+                const Instruction &beforeLast = ins[ins.size() - 2];
+
+                if (fusedOp(kLocalLocalOps, expr.op.type, fused) &&
+                    beforeLast.opcode == OpCode::READ_LOCAL &&
+                    last.opcode == OpCode::READ_LOCAL &&
+                    beforeLast.operand < 0x10000 && last.operand < 0x10000)
+                {
+                    packed = beforeLast.operand | (last.operand << 16);
+                    matched = true;
+                    pops = 2;
+                }
+                else if (fusedOp(kLocalLiteralOps, expr.op.type, fused) &&
+                         beforeLast.opcode == OpCode::READ_LOCAL &&
+                         last.opcode == OpCode::PUSH_LITERAL &&
+                         beforeLast.operand < 0x10000 && last.operand < 0x10000)
+                {
+                    packed = beforeLast.operand | (last.operand << 16);
+                    matched = true;
+                    pops = 2;
+                }
+                else if (fusedOp(kLiteralLocalOps, expr.op.type, fused) &&
+                         beforeLast.opcode == OpCode::PUSH_LITERAL &&
+                         last.opcode == OpCode::READ_LOCAL &&
+                         beforeLast.operand < 0x10000 && last.operand < 0x10000)
+                {
+                    packed = last.operand | (beforeLast.operand << 16);
+                    matched = true;
+                    pops = 2;
+                }
+            }
+
+            if (!matched && last.opcode == OpCode::READ_LOCAL &&
+                fusedOp(kLocalRightOps, expr.op.type, fused) && last.operand < 0x10000)
+            {
+                packed = last.operand;
+                matched = true;
+                pops = 1;
+            }
+
+            if (!matched && last.opcode == OpCode::PUSH_LITERAL &&
+                fusedOp(kLiteralRightOps, expr.op.type, fused) && last.operand < 0x10000)
+            {
+                packed = last.operand;
+                matched = true;
+                pops = 1;
+            }
+
+            if (matched)
+            {
+                ins.resize(ins.size() - pops);
+                emit(fused, packed);
                 return;
             }
         }
@@ -269,6 +598,148 @@ void Compiler::emit(OpCode opcode, uint32_t operand)
     currentChunk->instructions.push_back({opcode, operand});
 }
 
+void Compiler::emitStoreToLocal(uint32_t slot)
+{
+    auto &ins = currentChunk->instructions;
+
+    if (ins.empty() || slot >= 0x100)
+    {
+        emit(OpCode::WRITE_LOCAL, slot);
+        return;
+    }
+
+    const OpCode last = ins.back().opcode;
+
+    // -----------------------------------------------------------------
+    // Split `dest = (a <op> b) <op2> c` into two in-place stores:
+    //
+    //     dest = a <op> b        (LOCAL_LOCAL_STORE)
+    //     dest = dest <op2> c    (LOCAL_LOCAL_STORE, dest on both sides)
+    //
+    // The original sequence pushes the intermediate onto the operand stack
+    // and pops it again; here neither operation touches the stack. This is
+    // the `x = x2 - y2 + cx` shape common to numeric kernels, keeping the
+    // same operation order (so no floating-point reassociation). It is only
+    // safe when `c` is not the destination itself, which the store would
+    // otherwise overwrite before the second read.
+    // -----------------------------------------------------------------
+    if (ins.size() >= 2)
+    {
+        Instruction &outer = ins.back();
+        Instruction &inner = ins[ins.size() - 2];
+
+        OpCode innerStore;
+        OpCode outerStore;
+
+        if (localLocalStoreOpcode(inner.opcode, innerStore) &&
+            rightToLocalLocalStore(outer.opcode, outerStore))
+        {
+            const uint32_t a = inner.operand & 0xFFFF;
+            const uint32_t b = inner.operand >> 16;
+            const uint32_t c = outer.operand & 0xFFFF;
+
+            if (a < 0x100 && b < 0x100 && c < 0x100)
+            {
+                // `dest = (a - b) + c` collapses into one instruction. Because
+                // the fused handler reads a, b and c before storing, it stays
+                // correct even when `c` aliases the destination.
+                if (innerStore == OpCode::SUBTRACT_LOCAL_LOCAL_STORE &&
+                    outerStore == OpCode::ADD_LOCAL_LOCAL_STORE)
+                {
+                    ins.pop_back();
+                    ins.back() = {OpCode::SUBTRACT_ADD_LOCAL_LOCAL_LOCAL_STORE,
+                                  a | (b << 8) | (c << 16) | (slot << 24)};
+                    return;
+                }
+
+                // Two chained in-place stores are only safe when `c` is not
+                // the destination itself, which the second store would
+                // otherwise overwrite before the first read.
+                if (slot != c)
+                {
+                    inner = {innerStore, a | (b << 8) | (slot << 16)};
+                    outer = {outerStore, slot | (c << 8) | (slot << 16)};
+                    return;
+                }
+            }
+        }
+    }
+
+    // -----------------------------------------------------------------
+    // Fuse `dest = (left * b) + c` (left already on the stack) — the tail of
+    // `y = 2.0 * x * y + cy`. The MULTIPLY_LOCAL_RIGHT and the following
+    // ADD_LOCAL_RIGHT collapse into a single MULTIPLY_ADD_LOCAL_RIGHT_STORE,
+    // saving a dispatch and the intervening stack traffic. Because the fused
+    // handler reads every operand before writing the destination, aliasing is
+    // always safe here.
+    // -----------------------------------------------------------------
+    if (ins.size() >= 2)
+    {
+        Instruction &outer = ins.back();
+        Instruction &inner = ins[ins.size() - 2];
+
+        if (inner.opcode == OpCode::MULTIPLY_LOCAL_RIGHT &&
+            outer.opcode == OpCode::ADD_LOCAL_RIGHT)
+        {
+            const uint32_t b = inner.operand & 0xFFFF;
+            const uint32_t c = outer.operand & 0xFFFF;
+
+            if (b < 0x100 && c < 0x100)
+            {
+                // Drop the add; rewrite the multiply as the fused store.
+                ins.pop_back();
+                ins.back() = {OpCode::MULTIPLY_ADD_LOCAL_RIGHT_STORE,
+                              b | (c << 8) | (slot << 16)};
+                return;
+            }
+        }
+    }
+
+    // Arithmetic fused forms have a store variant; comparison results are
+    // consumed by conditional jumps instead of being stored.
+    if (OpCode store; localLocalStoreOpcode(last, store))
+    {
+        // LOCAL_LOCAL packs its two source slots as 16-bit fields; the store
+        // form repacks them as 8-bit fields plus the destination slot.
+        const uint32_t left = ins.back().operand & 0xFFFF;
+        const uint32_t right = ins.back().operand >> 16;
+
+        if (left < 0x100 && right < 0x100)
+        {
+            ins.back() = {store, left | (right << 8) | (slot << 16)};
+            return;
+        }
+    }
+    else if (OpCode store; localLiteralStoreOpcode(last, store))
+    {
+        // LOCAL_LITERAL packs a 16-bit slot and a 16-bit constant; the store
+        // form uses 8 bits for the slot and 24 for the constant plus dest.
+        const uint32_t local = ins.back().operand & 0xFFFF;
+        const uint32_t constant = ins.back().operand >> 16;
+
+        if (local < 0x100 && constant < 0x10000)
+        {
+            ins.back() = {store, local | (constant << 8) | (slot << 24)};
+            return;
+        }
+    }
+    else if (OpCode store; localRightStoreOpcode(last, store))
+    {
+        // The *_RIGHT form already holds the right-hand slot in the low 16
+        // bits; add the destination slot in the high 16 bits.
+        ins.back() = {store, ins.back().operand | (slot << 16)};
+        return;
+    }
+    else if (OpCode store; literalRightStoreOpcode(last, store))
+    {
+        // Same, but the low 16 bits hold a constant index.
+        ins.back() = {store, ins.back().operand | (slot << 16)};
+        return;
+    }
+
+    emit(OpCode::WRITE_LOCAL, slot);
+}
+
 uint32_t Compiler::registerGlobalVar(const std::string &name)
 {
     auto it = globals.find(name);
@@ -287,7 +758,7 @@ void Compiler::compileCreateVarStmt(const CreateVarStmt &stmt)
 
     if (compilingMethodBody)
     {
-        emit(OpCode::WRITE_LOCAL, localSlot(stmt.name));
+        emitStoreToLocal(localSlot(stmt.name));
         return;
     }
 
@@ -344,7 +815,7 @@ void Compiler::compileUpdateVarStmt(const UpdateVarStmt &stmt)
         auto it = localSlots.find(stmt.name);
         if (it != localSlots.end())
         {
-            emit(OpCode::WRITE_LOCAL, it->second);
+            emitStoreToLocal(it->second);
             return;
         }
     }
@@ -368,6 +839,56 @@ uint32_t Compiler::emitPlaceholder(OpCode opcode)
     return index;
 }
 
+uint32_t Compiler::emitConditionalJump()
+{
+    auto &instructions = currentChunk->instructions;
+
+    if (!instructions.empty())
+    {
+        // Fold `(a + b) CMP constant` — the ADD that produced the comparison's
+        // left operand and the comparison itself become one branch.
+        if (instructions.size() >= 2)
+        {
+            const Instruction &cmp = instructions.back();
+            const Instruction &add = instructions[instructions.size() - 2];
+
+            OpCode sumBranch;
+
+            if (add.opcode == OpCode::ADD_LOCAL_LOCAL &&
+                sumLiteralBranch(cmp.opcode, sumBranch))
+            {
+                const uint32_t a = add.operand & 0xFFFF;
+                const uint32_t b = add.operand >> 16;
+                const uint32_t constant = cmp.operand & 0xFFFF;
+
+                if (a < 0x100 && b < 0x100 && constant < 0x10000)
+                {
+                    // Drop the comparison; rewrite the ADD in place as the
+                    // combined branch, packing a, b and the constant.
+                    instructions.pop_back();
+                    instructions.back() = {sumBranch, a | (b << 8) | (constant << 16)};
+
+                    return emitPlaceholder(OpCode::JUMP);
+                }
+            }
+        }
+
+        OpCode branch;
+
+        if (branchVariant(instructions.back().opcode, branch))
+        {
+            // Turn the comparison into a comparison-and-branch. It keeps its
+            // packed operands and reads the jump target from the operand of
+            // the instruction emitted just below.
+            instructions.back().opcode = branch;
+
+            return emitPlaceholder(OpCode::JUMP);
+        }
+    }
+
+    return emitPlaceholder(OpCode::JUMP_IF_FALSE);
+}
+
 void Compiler::patchJump(uint32_t instructionIndex)
 {
     currentChunk->instructions[instructionIndex].operand = currentChunk->instructions.size();
@@ -379,7 +900,7 @@ void Compiler::compileRepeatWhileStmt(const RepeatWhileStmt &stmt)
 
     compileExpr(*stmt.condition);
 
-    uint32_t jumpOut = emitPlaceholder(OpCode::JUMP_IF_FALSE);
+    uint32_t jumpOut = emitConditionalJump();
 
     for (const auto &bodyStmt : stmt.body)
     {
@@ -387,6 +908,18 @@ void Compiler::compileRepeatWhileStmt(const RepeatWhileStmt &stmt)
     }
 
     emit(OpCode::JUMP, loopStart);
+
+    // Fuse the loop's usual trailing increment (`i = i + k`) with the
+    // back-edge JUMP, saving a dispatch per iteration. The JUMP instruction
+    // stays as the target holder for the fused store; it is never executed.
+    {
+        auto &ins = currentChunk->instructions;
+        if (ins.size() >= 2 &&
+            ins[ins.size() - 2].opcode == OpCode::ADD_LOCAL_LITERAL_STORE)
+        {
+            ins[ins.size() - 2].opcode = OpCode::ADD_LOCAL_LITERAL_STORE_JUMP;
+        }
+    }
 
     patchJump(jumpOut);
 }
@@ -575,7 +1108,7 @@ void Compiler::compileIfStmt(const IfStmt &stmt)
     // ---------------------------------------------------------------
     compileExpr(*stmt.condition);
 
-    uint32_t jumpToOtherwise = emitPlaceholder(OpCode::JUMP_IF_FALSE);
+    uint32_t jumpToOtherwise = emitConditionalJump();
 
     for (const auto &thenStmt : stmt.thenBranch)
     {

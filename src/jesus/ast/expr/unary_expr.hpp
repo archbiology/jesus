@@ -72,7 +72,7 @@ public:
 
         if (op.type == TokenType::NOT)
         {
-            return Value(!rightVal.AS_BOOLEAN);
+            return Value(!rightVal.truthy());
         }
 
         throw std::runtime_error("Unknown unary operator: " + op.lexeme);

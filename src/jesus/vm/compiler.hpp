@@ -146,6 +146,18 @@ private:
      */
     void emit(OpCode opcode, uint32_t operand);
 
+    /**
+     * @brief Stores the value currently on top of the operand stack into a
+     * local slot, fusing when possible.
+     *
+     * If the most recently emitted instruction is a fused arithmetic opcode
+     * (e.g. MULTIPLY_LOCAL_LOCAL), it is rewritten into its store form
+     * (MULTIPLY_LOCAL_LOCAL_STORE) so the result goes straight into the slot
+     * without ever touching the operand stack. Otherwise a plain WRITE_LOCAL
+     * is emitted.
+     */
+    void emitStoreToLocal(uint32_t slot);
+
     uint32_t registerGlobalVar(const std::string &name);
     void compileCreateVarStmt(const CreateVarStmt &stmt);
     uint32_t getGlobalVar(const std::string &name);
@@ -175,6 +187,20 @@ private:
      * @return uint32_t the instruction index so it can be patched.
      */
     uint32_t emitPlaceholder(OpCode opcode);
+
+    /**
+     * @brief Emits a conditional jump that leaves when the last emitted
+     * comparison is false.
+     *
+     * When the previous instruction is a fused comparison the call fuses it
+     * with the jump (the comparison becomes a comparison-and-branch opcode
+     * that skips materialising a boolean); otherwise it emits a plain
+     * JUMP_IF_FALSE.
+     *
+     * @return uint32_t the index of the instruction whose operand is patched
+     *                  with the jump target.
+     */
+    uint32_t emitConditionalJump();
 
     /**
      * @brief Patches a previously emitted jump instruction with the current instruction position.
