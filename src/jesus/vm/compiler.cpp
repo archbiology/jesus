@@ -259,6 +259,37 @@ static bool branchVariant(OpCode comparison, OpCode &branch)
     return false;
 }
 
+// Maps a comparison whose LEFT operand is on the stack (the *_LITERAL_RIGHT
+// forms) to the branch that folds in the ADD which produced that operand.
+// This recognises the divergence test `if x2 + y2 > 4.0` and turns the ADD
+// plus the comparison-branch into a single instruction.
+static bool sumLiteralBranch(OpCode comparison, OpCode &branch)
+{
+    switch (comparison)
+    {
+    case OpCode::EQUAL_LITERAL_RIGHT:
+        branch = OpCode::JUMP_IF_NOT_ADD_LOCAL_LOCAL_EQUAL_LITERAL;
+        return true;
+    case OpCode::NOT_EQUAL_LITERAL_RIGHT:
+        branch = OpCode::JUMP_IF_NOT_ADD_LOCAL_LOCAL_NOT_EQUAL_LITERAL;
+        return true;
+    case OpCode::LESS_LITERAL_RIGHT:
+        branch = OpCode::JUMP_IF_NOT_ADD_LOCAL_LOCAL_LESS_LITERAL;
+        return true;
+    case OpCode::LESS_EQUAL_LITERAL_RIGHT:
+        branch = OpCode::JUMP_IF_NOT_ADD_LOCAL_LOCAL_LESS_EQUAL_LITERAL;
+        return true;
+    case OpCode::GREATER_LITERAL_RIGHT:
+        branch = OpCode::JUMP_IF_NOT_ADD_LOCAL_LOCAL_GREATER_LITERAL;
+        return true;
+    case OpCode::GREATER_EQUAL_LITERAL_RIGHT:
+        branch = OpCode::JUMP_IF_NOT_ADD_LOCAL_LOCAL_GREATER_EQUAL_LITERAL;
+        return true;
+    default:
+        return false;
+    }
+}
+
 // Looks up the opcode for `type` in a family table. Returns false for
 // operators without a fused form (OR/AND/XOR).
 static bool fusedOp(const OpCode *table, TokenType type, OpCode &out)
@@ -702,6 +733,34 @@ uint32_t Compiler::emitConditionalJump()
 
     if (!instructions.empty())
     {
+        // Fold `(a + b) CMP constant` — the ADD that produced the comparison's
+        // left operand and the comparison itself become one branch.
+        if (instructions.size() >= 2)
+        {
+            const Instruction &cmp = instructions.back();
+            const Instruction &add = instructions[instructions.size() - 2];
+
+            OpCode sumBranch;
+
+            if (add.opcode == OpCode::ADD_LOCAL_LOCAL &&
+                sumLiteralBranch(cmp.opcode, sumBranch))
+            {
+                const uint32_t a = add.operand & 0xFFFF;
+                const uint32_t b = add.operand >> 16;
+                const uint32_t constant = cmp.operand & 0xFFFF;
+
+                if (a < 0x100 && b < 0x100 && constant < 0x10000)
+                {
+                    // Drop the comparison; rewrite the ADD in place as the
+                    // combined branch, packing a, b and the constant.
+                    instructions.pop_back();
+                    instructions.back() = {sumBranch, a | (b << 8) | (constant << 16)};
+
+                    return emitPlaceholder(OpCode::JUMP);
+                }
+            }
+        }
+
         OpCode branch;
 
         if (branchVariant(instructions.back().opcode, branch))

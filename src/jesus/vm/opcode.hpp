@@ -213,7 +213,20 @@ enum class OpCode : uint8_t
     SUBTRACT_LITERAL_RIGHT_STORE,
     MULTIPLY_LITERAL_RIGHT_STORE,
     DIVIDE_LITERAL_RIGHT_STORE,
-    MODULO_LITERAL_RIGHT_STORE
+    MODULO_LITERAL_RIGHT_STORE,
+
+    // Comparison-and-branch over a sum of two locals, e.g. the classic
+    // divergence test `if x2 + y2 > 4.0`. The compiler folds the ADD that
+    // produced the left operand and the following comparison into a single
+    // branch, so neither the sum nor a boolean is ever materialised. Operand
+    // packs: left local slot (bits 0-7), right local slot (bits 8-15),
+    // constant index (bits 16-31). The jump target follows as usual.
+    JUMP_IF_NOT_ADD_LOCAL_LOCAL_EQUAL_LITERAL,
+    JUMP_IF_NOT_ADD_LOCAL_LOCAL_NOT_EQUAL_LITERAL,
+    JUMP_IF_NOT_ADD_LOCAL_LOCAL_LESS_LITERAL,
+    JUMP_IF_NOT_ADD_LOCAL_LOCAL_LESS_EQUAL_LITERAL,
+    JUMP_IF_NOT_ADD_LOCAL_LOCAL_GREATER_LITERAL,
+    JUMP_IF_NOT_ADD_LOCAL_LOCAL_GREATER_EQUAL_LITERAL
 };
 
 /**

@@ -166,7 +166,13 @@ void VM::run(const Chunk &chunk)
         &&OP_SUBTRACT_LITERAL_RIGHT_STORE,            // SUBTRACT_LITERAL_RIGHT_STORE
         &&OP_MULTIPLY_LITERAL_RIGHT_STORE,            // MULTIPLY_LITERAL_RIGHT_STORE
         &&OP_DIVIDE_LITERAL_RIGHT_STORE,              // DIVIDE_LITERAL_RIGHT_STORE
-        &&OP_MODULO_LITERAL_RIGHT_STORE               // MODULO_LITERAL_RIGHT_STORE
+        &&OP_MODULO_LITERAL_RIGHT_STORE,              // MODULO_LITERAL_RIGHT_STORE
+        &&OP_JUMP_IF_NOT_ADD_LOCAL_LOCAL_EQUAL_LITERAL,         // JUMP_IF_NOT_ADD_LOCAL_LOCAL_EQUAL_LITERAL
+        &&OP_JUMP_IF_NOT_ADD_LOCAL_LOCAL_NOT_EQUAL_LITERAL,     // JUMP_IF_NOT_ADD_LOCAL_LOCAL_NOT_EQUAL_LITERAL
+        &&OP_JUMP_IF_NOT_ADD_LOCAL_LOCAL_LESS_LITERAL,          // JUMP_IF_NOT_ADD_LOCAL_LOCAL_LESS_LITERAL
+        &&OP_JUMP_IF_NOT_ADD_LOCAL_LOCAL_LESS_EQUAL_LITERAL,    // JUMP_IF_NOT_ADD_LOCAL_LOCAL_LESS_EQUAL_LITERAL
+        &&OP_JUMP_IF_NOT_ADD_LOCAL_LOCAL_GREATER_LITERAL,       // JUMP_IF_NOT_ADD_LOCAL_LOCAL_GREATER_LITERAL
+        &&OP_JUMP_IF_NOT_ADD_LOCAL_LOCAL_GREATER_EQUAL_LITERAL  // JUMP_IF_NOT_ADD_LOCAL_LOCAL_GREATER_EQUAL_LITERAL
     };
 
     // Dispatch to the main program's first instruction.
@@ -920,6 +926,44 @@ void VM::run(const Chunk &chunk)
     BRANCH_LITERAL_RIGHT(JUMP_IF_NOT_LESS_EQUAL_LITERAL_RIGHT, <=)
     BRANCH_LITERAL_RIGHT(JUMP_IF_NOT_GREATER_LITERAL_RIGHT, >)
     BRANCH_LITERAL_RIGHT(JUMP_IF_NOT_GREATER_EQUAL_LITERAL_RIGHT, >=)
+
+    // -----------------------------------------------------------------
+    // Comparison-and-branch over a sum of two locals against a constant.
+    //
+    // Matches the divergence test `if x2 + y2 > 4.0`: the sum never reaches
+    // the stack, so this replaces the ADD plus the comparison-branch with a
+    // single dispatch. The comparison mirrors the two separate operations
+    // exactly (integer addition wraps like vmSetAsInt, and non-numeric
+    // operands fall back to Value's comparison operators).
+    // -----------------------------------------------------------------
+#define BRANCH_SUM_LOCAL_LOCAL_LITERAL(label, cmpop) \
+    OP_##label: \
+    { \
+        const Value &a = stack[currentLocalsBase + (ip->operand & 0xFF)]; \
+        const Value &b = stack[currentLocalsBase + ((ip->operand >> 8) & 0xFF)]; \
+        const Value &lit = currentChunk->literals[(ip->operand >> 16) & 0xFFFF]; \
+        bool cond; \
+        if (a.IS_NUMBER && b.IS_NUMBER && lit.IS_NUMBER) \
+        { \
+            const double sum = (a.IS_DOUBLE || b.IS_DOUBLE) \
+                                   ? a.number + b.number \
+                                   : static_cast<double>(a.intValue + b.intValue); \
+            cond = sum cmpop lit.number; \
+        } \
+        else \
+        { \
+            const Value sum = a + b; \
+            cond = CMP_IS_TRUE(sum, lit, cmpop); \
+        } \
+        BRANCH_IF_NOT(cond) \
+    }
+
+    BRANCH_SUM_LOCAL_LOCAL_LITERAL(JUMP_IF_NOT_ADD_LOCAL_LOCAL_EQUAL_LITERAL, ==)
+    BRANCH_SUM_LOCAL_LOCAL_LITERAL(JUMP_IF_NOT_ADD_LOCAL_LOCAL_NOT_EQUAL_LITERAL, !=)
+    BRANCH_SUM_LOCAL_LOCAL_LITERAL(JUMP_IF_NOT_ADD_LOCAL_LOCAL_LESS_LITERAL, <)
+    BRANCH_SUM_LOCAL_LOCAL_LITERAL(JUMP_IF_NOT_ADD_LOCAL_LOCAL_LESS_EQUAL_LITERAL, <=)
+    BRANCH_SUM_LOCAL_LOCAL_LITERAL(JUMP_IF_NOT_ADD_LOCAL_LOCAL_GREATER_LITERAL, >)
+    BRANCH_SUM_LOCAL_LOCAL_LITERAL(JUMP_IF_NOT_ADD_LOCAL_LOCAL_GREATER_EQUAL_LITERAL, >=)
 
     // -----------------------------------------------------------------
     // Store variants of the *_RIGHT arithmetic forms.
