@@ -116,8 +116,8 @@ public:
 
     Value() : IS_FORMLESS(true), AS_BOOLEAN(false) {}
     explicit Value(std::monostate) : IS_FORMLESS(true), AS_BOOLEAN(false) {}
-    explicit Value(int v) : IS_INT(true), IS_NUMBER(true), AS_BOOLEAN(v != 0), number(static_cast<double>(v)), intValue(v) {}
-    explicit Value(double v) : IS_DOUBLE(true), IS_NUMBER(true), AS_BOOLEAN(v != 0.0), number(v) {}
+    explicit Value(int v) : IS_INT(true), IS_NUMBER(true), number(static_cast<double>(v)), intValue(v) {}
+    explicit Value(double v) : IS_DOUBLE(true), IS_NUMBER(true), number(v) {}
     explicit Value(bool v) : IS_BOOLEAN(true), AS_BOOLEAN(v) {}
     explicit Value(const std::string &v) : IS_STRING(true), AS_BOOLEAN(v != ""), value(std::make_unique<Dust>(v)) {}
     explicit Value(const char *v) : IS_STRING(true), AS_BOOLEAN(std::string(v) != ""), value(std::make_unique<Dust>(std::string(v))) {}
@@ -196,6 +196,22 @@ public:
     }
 
     /**
+     * @brief Truthiness of this Value, used by conditions and logic operators.
+     *
+     * For numbers this is computed from the cached payload on demand instead
+     * of being stored in AS_BOOLEAN. That keeps the numeric setters (the VM's
+     * hottest path) down to a single constant flag store. The stored
+     * AS_BOOLEAN bit is still authoritative for every non-numeric type.
+     */
+    [[gnu::always_inline]] bool truthy() const
+    {
+        if (IS_NUMBER)
+            return number != 0.0;
+
+        return AS_BOOLEAN;
+    }
+
+    /**
      * @brief Converts this Value in place into a boolean, keeping the
      * existing object identity on the VM stack (no variant re-construction).
      */
@@ -215,7 +231,7 @@ public:
         value.reset();
         number = static_cast<double>(v);
         intValue = v;
-        __flags = F_INT | F_NUMBER | (v != 0 ? F_ASBOOL : 0);
+        __flags = F_INT | F_NUMBER;
     }
 
     /**
@@ -225,7 +241,7 @@ public:
     {
         value.reset();
         number = v;
-        __flags = F_DOUBLE | F_NUMBER | (v != 0.0 ? F_ASBOOL : 0);
+        __flags = F_DOUBLE | F_NUMBER;
     }
 
     int toInt() const
@@ -447,13 +463,13 @@ private:
     {
         number = static_cast<double>(v);
         intValue = v;
-        __flags = F_INT | F_NUMBER | (v != 0 ? F_ASBOOL : 0);
+        __flags = F_INT | F_NUMBER;
     }
 
     void vmSetAsDouble(double v)
     {
         number = v;
-        __flags = F_DOUBLE | F_NUMBER | (v != 0.0 ? F_ASBOOL : 0);
+        __flags = F_DOUBLE | F_NUMBER;
     }
 
     void vmSetAsBoolean(bool v)

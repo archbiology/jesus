@@ -840,7 +840,7 @@ void VM::run(const Chunk &chunk)
     goto NEXT_OP;
 
 #define CMP_IS_TRUE(a, b, cmpop) \
-    (((a).IS_NUMBER && (b).IS_NUMBER) ? ((a).number cmpop (b).number) : Value((a) cmpop (b)).AS_BOOLEAN)
+    (((a).IS_NUMBER && (b).IS_NUMBER) ? ((a).number cmpop (b).number) : Value((a) cmpop (b)).truthy())
 
 #define BRANCH_LOCAL_LOCAL(label, cmpop) \
     OP_##label: \
@@ -1045,7 +1045,7 @@ void VM::run(const Chunk &chunk)
             Value r = std::move(right);
             stack.pop_back();
             Value l = std::move(left);
-            stack.back() = (l.AS_BOOLEAN ? l : r);
+            stack.back() = (l.truthy() ? l : r);
             ++ip;
             goto NEXT_OP;
         }
@@ -1056,7 +1056,7 @@ void VM::run(const Chunk &chunk)
             Value r = std::move(right);
             stack.pop_back();
             Value l = std::move(left);
-            stack.back() = (l.AS_BOOLEAN ? r : l);
+            stack.back() = (l.truthy() ? r : l);
             ++ip;
             goto NEXT_OP;
         }
@@ -1113,17 +1113,17 @@ void VM::run(const Chunk &chunk)
             // Logic
             // -----
             case OpCode::OR:
-                stack.back() = (left2.AS_BOOLEAN ? left2 : right2);
+                stack.back() = (left2.truthy() ? left2 : right2);
                 break;
             case OpCode::AND:
-                stack.back() = (left2.AS_BOOLEAN ? right2 : left2);
+                stack.back() = (left2.truthy() ? right2 : left2);
                 break;
 
             case OpCode::XOR:
                 if (left2.IS_BOOLEAN && right2.IS_BOOLEAN)
                 {
                     // Logical XOR
-                    stack.back() = (Value(left2.AS_BOOLEAN != right2.AS_BOOLEAN));
+                    stack.back() = (Value(left2.truthy() != right2.truthy()));
                     break;
                 }
 
@@ -1221,7 +1221,7 @@ void VM::run(const Chunk &chunk)
             Value condition = std::move(stack.back());
             stack.pop_back();
 
-            if (!condition.AS_BOOLEAN)
+            if (!condition.truthy())
             {
                 // false ? jump to end of the loop
                 ip = begin + ip->operand;

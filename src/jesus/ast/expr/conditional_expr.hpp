@@ -63,7 +63,7 @@ public:
     {
         Value result = condition->evaluate(heart);
 
-        if (result.AS_BOOLEAN)
+        if (result.truthy())
         {
             return thenBranch->evaluate(heart);
         }

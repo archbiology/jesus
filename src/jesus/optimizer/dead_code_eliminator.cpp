@@ -1148,7 +1148,7 @@ std::vector<std::unique_ptr<Stmt>> DeadCodeEliminator::optimizeStatement(
             try
             {
                 Value val = ifStmt->condition->evaluate(nullptr);
-                if (val.AS_BOOLEAN)
+                if (val.truthy())
                 {
                     for (auto &s : ifStmt->thenBranch)
                     {
@@ -1194,7 +1194,7 @@ std::vector<std::unique_ptr<Stmt>> DeadCodeEliminator::optimizeStatement(
             try
             {
                 Value val = repeatWhile->condition->evaluate(nullptr);
-                if (!val.AS_BOOLEAN)
+                if (!val.truthy())
                 {
                     return result;
                 }

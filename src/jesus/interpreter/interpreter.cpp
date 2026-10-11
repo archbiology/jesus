@@ -508,7 +508,7 @@ Value Interpreter::visitConditional(const ConditionalExpr &expr)
     Value conditionValue = evaluate(expr.condition);
 
     // Interpret the condition as boolean
-    if (conditionValue.AS_BOOLEAN)
+    if (conditionValue.truthy())
     {
         return evaluate(expr.thenBranch);
     }
@@ -728,7 +728,7 @@ void Interpreter::visitPrintStmt(const PrintStmt &stmt)
 
 void Interpreter::visitRepeatWhile(const RepeatWhileStmt &stmt)
 {
-    while (evaluate(stmt.condition).AS_BOOLEAN)
+    while (evaluate(stmt.condition).truthy())
     {
         try
         {
@@ -888,7 +888,7 @@ void Interpreter::visitIfStmt(const IfStmt &stmt)
 {
     Value conditionValue = evaluate(stmt.condition);
 
-    if (conditionValue.AS_BOOLEAN)
+    if (conditionValue.truthy())
     {
         for (auto &stmt : stmt.thenBranch)
             execute(stmt);
