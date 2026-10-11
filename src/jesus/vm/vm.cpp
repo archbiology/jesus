@@ -87,8 +87,8 @@ void VM::run(const Chunk &chunk)
     // operands fall through to OP_BINARY_GENERIC.
     // -----------------------------------------------------------------
 #define BINARY_OPERANDS \
-    Value &left = stack[stack.size() - 2]; \
-    Value &right = stack[stack.size() - 1];
+    Value &right = stack.back(); \
+    Value &left = *(stack.end() - 2);
 
 #define ARITH_BINARY(label, dblop, intop) \
     OP_##label: \
