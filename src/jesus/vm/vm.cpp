@@ -17,6 +17,11 @@ void VM::run(const Chunk &chunk)
     const Instruction *ip = begin;
     const Chunk *currentChunk = &chunk;
 
+    // Cached copy of frames.back().localsBase. Reloading it through the
+    // frame vector on every local access was pure overhead; the value only
+    // changes on CALL/RETURN, which refresh this cache.
+    std::size_t currentLocalsBase = 0;
+
     // The main program is the bottom/first frame; it has no locals.
     frames.push_back(CallFrame{&chunk, begin, 0});
 
@@ -185,7 +190,7 @@ void VM::run(const Chunk &chunk)
     // -----------------------------------------------------------------
 #define FUSED_OPERANDS \
     const uint32_t packed = ip->operand; \
-    const std::size_t lb = frames.back().localsBase; \
+    const std::size_t lb = currentLocalsBase; \
     const Value &a = stack[lb + (packed & 0xFFFF)]; \
     const Value &b = stack[lb + (packed >> 16)];
 
@@ -445,7 +450,7 @@ void VM::run(const Chunk &chunk)
 
     OP_READ_LOCAL:
         {
-            stack.push_back(stack[frames.back().localsBase + ip->operand]);
+            stack.push_back(stack[currentLocalsBase + ip->operand]);
 
             ++ip;
             goto NEXT_OP;
@@ -453,7 +458,7 @@ void VM::run(const Chunk &chunk)
 
     OP_WRITE_LOCAL:
         {
-            stack[frames.back().localsBase + ip->operand] = std::move(stack.back());
+            stack[currentLocalsBase + ip->operand] = std::move(stack.back());
             stack.pop_back();
 
             ++ip;
@@ -559,6 +564,7 @@ void VM::run(const Chunk &chunk)
             begin = currentChunk->instructions.data();
             ip = begin;
             frames.push_back(CallFrame{&body, begin, base});
+            currentLocalsBase = base;
             goto NEXT_OP;
         }
 
@@ -579,6 +585,7 @@ void VM::run(const Chunk &chunk)
             stack.resize(base);
 
             frames.pop_back();
+            currentLocalsBase = frames.back().localsBase;
 
             // Resume the caller right after the CALL that started this method.
             ++frames.back().ip;
