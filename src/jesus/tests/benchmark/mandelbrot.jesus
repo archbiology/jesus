@@ -1,0 +1,81 @@
+# Benchmark: mandelbrot.jesus
+
+# C++:               2.314 s
+# PHP 8.3:          10.634 s
+# Python 3.12.3:    31.952 s
+#
+# Jesus benchmark history
+#
+# Milestones:
+#   [7408178] Step 124 — Initial benchmark
+#   [4eb29ca] Step 125 — Beating Python (Fused local operations; goto; Smaller Value representation; shared locals)
+#   [769020f] Step 126 — Beating PHP (Reduced stack traffic; fused comparisons and arithmetic; Optimized hot paths)
+#
+#
+# Results:
+#   AST [7408178]:   2m51.114 s
+#   AST [4eb29ca]:   2m15.984 s
+#   AST [769020f]:   2m19.251 s
+#
+#   VM  [7408178]:    3m6.766 s
+#   VM  [a1c663c]:     30.652 s
+#   VM  [769020f]:      6.891 s
+#
+#
+# Machine:
+#   CPU: AMD Ryzen 7 5825U with Radeon Graphics
+#   Cores: 8 physical / 16 logical
+#   RAM: 32 GB
+#   OS: Ubuntu 24.04.4 LTS
+
+let there be Mandelbrot:
+    purpose mandelbrot(cx: number, cy: number) -> number:
+        create x: number = 0.0
+        create y: number = 0.0
+        create i = 0
+
+        repeat while i < 1000:
+            create x2: number = x * x
+            create y2: number = y * y
+
+            if x2 + y2 > 4.0:
+                return i
+            amen
+
+            y = 2.0 * x * y + cy
+            x = x2 - y2 + cx
+            i = i + 1
+        amen
+
+        return 1000
+    amen
+
+
+    purpose benchmark():
+        create total: number = 0
+
+        create width: number = 1200
+        create height: number = 1200
+
+        create y: number = 0
+        repeat while y < height:
+            create x: number = 0
+
+            repeat while x < width:
+                create cx: number = -2.0 + x * 3.0 / width
+                create cy: number = -1.0 + y * 2.0 / height
+
+                total = total + my mandelbrot cx, cy
+
+                x = x + 1
+            amen
+
+            y = y + 1
+        amen
+
+        say total
+    amen
+amen
+
+create m = Mandelbrot()
+m benchmark
