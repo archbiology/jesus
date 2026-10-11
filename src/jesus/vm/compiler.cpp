@@ -647,6 +647,36 @@ void Compiler::emitStoreToLocal(uint32_t slot)
         }
     }
 
+    // -----------------------------------------------------------------
+    // Fuse `dest = (left * b) + c` (left already on the stack) — the tail of
+    // `y = 2.0 * x * y + cy`. The MULTIPLY_LOCAL_RIGHT and the following
+    // ADD_LOCAL_RIGHT collapse into a single MULTIPLY_ADD_LOCAL_RIGHT_STORE,
+    // saving a dispatch and the intervening stack traffic. Because the fused
+    // handler reads every operand before writing the destination, aliasing is
+    // always safe here.
+    // -----------------------------------------------------------------
+    if (ins.size() >= 2)
+    {
+        Instruction &outer = ins.back();
+        Instruction &inner = ins[ins.size() - 2];
+
+        if (inner.opcode == OpCode::MULTIPLY_LOCAL_RIGHT &&
+            outer.opcode == OpCode::ADD_LOCAL_RIGHT)
+        {
+            const uint32_t b = inner.operand & 0xFFFF;
+            const uint32_t c = outer.operand & 0xFFFF;
+
+            if (b < 0x100 && c < 0x100)
+            {
+                // Drop the add; rewrite the multiply as the fused store.
+                ins.pop_back();
+                ins.back() = {OpCode::MULTIPLY_ADD_LOCAL_RIGHT_STORE,
+                              b | (c << 8) | (slot << 16)};
+                return;
+            }
+        }
+    }
+
     // Arithmetic fused forms have a store variant; comparison results are
     // consumed by conditional jumps instead of being stored.
     if (OpCode store; localLocalStoreOpcode(last, store))

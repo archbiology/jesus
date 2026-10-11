@@ -226,7 +226,15 @@ enum class OpCode : uint8_t
     JUMP_IF_NOT_ADD_LOCAL_LOCAL_LESS_LITERAL,
     JUMP_IF_NOT_ADD_LOCAL_LOCAL_LESS_EQUAL_LITERAL,
     JUMP_IF_NOT_ADD_LOCAL_LOCAL_GREATER_LITERAL,
-    JUMP_IF_NOT_ADD_LOCAL_LOCAL_GREATER_EQUAL_LITERAL
+    JUMP_IF_NOT_ADD_LOCAL_LOCAL_GREATER_EQUAL_LITERAL,
+
+    // Fused multiply-then-add store for the shape
+    // `dest = (left * b) + c`, where `left` is already on top of the operand
+    // stack (e.g. the `2.0 * x * y + cy` step of a Mandelbrot iteration). It
+    // replaces the trailing MULTIPLY_LOCAL_RIGHT and ADD_LOCAL_RIGHT_STORE
+    // pair with a single instruction. Operand packs: `b` local slot in bits
+    // 0-7, `c` local slot in bits 8-15, destination slot in bits 16-23.
+    MULTIPLY_ADD_LOCAL_RIGHT_STORE
 };
 
 /**

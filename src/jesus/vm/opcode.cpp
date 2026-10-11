@@ -383,6 +383,9 @@ std::string opcodeToString(OpCode opcode)
     case OpCode::JUMP_IF_NOT_ADD_LOCAL_LOCAL_GREATER_EQUAL_LITERAL:
         return "JUMP_IF_NOT_ADD_LOCAL_LOCAL_GREATER_EQUAL_LITERAL";
 
+    case OpCode::MULTIPLY_ADD_LOCAL_RIGHT_STORE:
+        return "MULTIPLY_ADD_LOCAL_RIGHT_STORE";
+
     default:
         return "UNKNOWN_OPCODE";
     }

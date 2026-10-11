@@ -172,7 +172,8 @@ void VM::run(const Chunk &chunk)
         &&OP_JUMP_IF_NOT_ADD_LOCAL_LOCAL_LESS_LITERAL,          // JUMP_IF_NOT_ADD_LOCAL_LOCAL_LESS_LITERAL
         &&OP_JUMP_IF_NOT_ADD_LOCAL_LOCAL_LESS_EQUAL_LITERAL,    // JUMP_IF_NOT_ADD_LOCAL_LOCAL_LESS_EQUAL_LITERAL
         &&OP_JUMP_IF_NOT_ADD_LOCAL_LOCAL_GREATER_LITERAL,       // JUMP_IF_NOT_ADD_LOCAL_LOCAL_GREATER_LITERAL
-        &&OP_JUMP_IF_NOT_ADD_LOCAL_LOCAL_GREATER_EQUAL_LITERAL  // JUMP_IF_NOT_ADD_LOCAL_LOCAL_GREATER_EQUAL_LITERAL
+        &&OP_JUMP_IF_NOT_ADD_LOCAL_LOCAL_GREATER_EQUAL_LITERAL, // JUMP_IF_NOT_ADD_LOCAL_LOCAL_GREATER_EQUAL_LITERAL
+        &&OP_MULTIPLY_ADD_LOCAL_RIGHT_STORE                     // MULTIPLY_ADD_LOCAL_RIGHT_STORE
     };
 
     // Dispatch to the main program's first instruction.
@@ -964,6 +965,39 @@ void VM::run(const Chunk &chunk)
     BRANCH_SUM_LOCAL_LOCAL_LITERAL(JUMP_IF_NOT_ADD_LOCAL_LOCAL_LESS_EQUAL_LITERAL, <=)
     BRANCH_SUM_LOCAL_LOCAL_LITERAL(JUMP_IF_NOT_ADD_LOCAL_LOCAL_GREATER_LITERAL, >)
     BRANCH_SUM_LOCAL_LOCAL_LITERAL(JUMP_IF_NOT_ADD_LOCAL_LOCAL_GREATER_EQUAL_LITERAL, >=)
+
+    // -----------------------------------------------------------------
+    // Fused multiply-then-add store: `dest = (left * b) + c`.
+    //
+    // `left` is on top of the stack; `b`, `c` and `dest` are locals. This is
+    // the `2.0 * x * y + cy` step of the Mandelbrot inner loop, where the
+    // trailing multiply-in-place and add-and-store collapse into one
+    // instruction. All operands are read before `dest` is written, so any
+    // aliasing between them stays correct.
+    // -----------------------------------------------------------------
+    OP_MULTIPLY_ADD_LOCAL_RIGHT_STORE:
+        {
+            Value &left = stack.back();
+            const Value &b = stack[currentLocalsBase + (ip->operand & 0xFF)];
+            const Value &c = stack[currentLocalsBase + ((ip->operand >> 8) & 0xFF)];
+            Value &dest = stack[currentLocalsBase + ((ip->operand >> 16) & 0xFF)];
+
+            if (left.IS_NUMBER && b.IS_NUMBER && c.IS_NUMBER)
+            {
+                if (left.IS_DOUBLE || b.IS_DOUBLE || c.IS_DOUBLE)
+                    dest.setAsDouble(left.number * b.number + c.number);
+                else
+                    dest.setAsInt(left.intValue * b.intValue + c.intValue);
+            }
+            else
+            {
+                dest = left * b + c;
+            }
+
+            stack.pop_back();
+            ++ip;
+            goto NEXT_OP;
+        }
 
     // -----------------------------------------------------------------
     // Store variants of the *_RIGHT arithmetic forms.
