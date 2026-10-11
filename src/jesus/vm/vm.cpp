@@ -38,20 +38,20 @@ void VM::run(const Chunk &chunk)
         &&OP_CREATE_INSTANCE, // CREATE_INSTANCE
         &&OP_DEFAULT,         // READ_ATTR (not implemented)
         &&OP_WRITE_ATTR,      // WRITE_ATTR
-        &&OP_BINARY,          // ADD
-        &&OP_BINARY,          // SUBTRACT
-        &&OP_BINARY,          // MULTIPLY
-        &&OP_BINARY,          // DIVIDE
-        &&OP_BINARY,          // MODULO
-        &&OP_BINARY,          // EQUAL
-        &&OP_BINARY,          // NOT_EQUAL
-        &&OP_BINARY,          // LESS
-        &&OP_BINARY,          // LESS_EQUAL
-        &&OP_BINARY,          // GREATER
-        &&OP_BINARY,          // GREATER_EQUAL
-        &&OP_BINARY,          // OR
-        &&OP_BINARY,          // AND
-        &&OP_BINARY,          // XOR
+        &&OP_ADD,             // ADD
+        &&OP_SUBTRACT,        // SUBTRACT
+        &&OP_MULTIPLY,        // MULTIPLY
+        &&OP_DIVIDE,          // DIVIDE
+        &&OP_MODULO,          // MODULO
+        &&OP_EQUAL,           // EQUAL
+        &&OP_NOT_EQUAL,       // NOT_EQUAL
+        &&OP_LESS,            // LESS
+        &&OP_LESS_EQUAL,      // LESS_EQUAL
+        &&OP_GREATER,         // GREATER
+        &&OP_GREATER_EQUAL,   // GREATER_EQUAL
+        &&OP_OR,              // OR
+        &&OP_AND,             // AND
+        &&OP_BINARY_GENERIC,  // XOR
         &&OP_PRINT,           // PRINT
         &&OP_JUMP,            // JUMP
         &&OP_JUMP_IF_FALSE,   // JUMP_IF_FALSE
@@ -79,128 +79,114 @@ void VM::run(const Chunk &chunk)
             goto NEXT_OP;
         }
 
-    OP_BINARY:
-        {
-            Value &left = stack[stack.size() - 2];
-            Value &right = stack[stack.size() - 1];
+    // -----------------------------------------------------------------
+    // Binary operators: each opcode dispatches to its own label, so the
+    // interpreter never needs a second switch on ip->opcode. The common
+    // numeric case is handled in place with the raw setters (the IS_NUMBER
+    // check above already proved the operands are scalars); non-numeric
+    // operands fall through to OP_BINARY_GENERIC.
+    // -----------------------------------------------------------------
+#define BINARY_OPERANDS \
+    Value &left = stack[stack.size() - 2]; \
+    Value &right = stack[stack.size() - 1];
 
-            // -------------------------------------------------------
-            // Fast path: both operands are numbers. Write the result
-            // into the left slot in place and drop the right one,
-            // avoiding the std::variant temporaries the operators create.
-            // -------------------------------------------------------
+#define ARITH_BINARY(label, dblop, intop) \
+    OP_##label: \
+    { \
+        BINARY_OPERANDS \
+        if (left.IS_NUMBER && right.IS_NUMBER) \
+        { \
+            if (left.IS_DOUBLE || right.IS_DOUBLE) \
+                left.vmSetAsDouble(left.number dblop right.number); \
+            else \
+                left.vmSetAsInt(left.intValue intop right.intValue); \
+            stack.pop_back(); \
+            ++ip; \
+            goto NEXT_OP; \
+        } \
+        goto OP_BINARY_GENERIC; \
+    }
+
+    ARITH_BINARY(ADD, +, +)
+    ARITH_BINARY(SUBTRACT, -, -)
+    ARITH_BINARY(MULTIPLY, *, *)
+
+    OP_DIVIDE:
+        {
+            BINARY_OPERANDS
             if (left.IS_NUMBER && right.IS_NUMBER)
             {
-                switch (ip->opcode)
-                {
-                case OpCode::ADD:
-                    if (left.IS_DOUBLE || right.IS_DOUBLE)
-                    {
-                        const double res = left.number + right.number;
-                        left.setAsDouble(res);
-                    }
-                    else
-                    {
-                        const int res = left.intValue + right.intValue;
-                        left.setAsInt(res);
-                    }
-                    stack.pop_back();
-                    ++ip;
-                    goto NEXT_OP;
-
-                case OpCode::SUBTRACT:
-                    if (left.IS_DOUBLE || right.IS_DOUBLE)
-                    {
-                        const double res = left.number - right.number;
-                        left.setAsDouble(res);
-                    }
-                    else
-                    {
-                        const int res = left.intValue - right.intValue;
-                        left.setAsInt(res);
-                    }
-                    stack.pop_back();
-                    ++ip;
-                    goto NEXT_OP;
-
-                case OpCode::MULTIPLY:
-                    if (left.IS_DOUBLE || right.IS_DOUBLE)
-                    {
-                        const double res = left.number * right.number;
-                        left.setAsDouble(res);
-                    }
-                    else
-                    {
-                        const int res = left.intValue * right.intValue;
-                        left.setAsInt(res);
-                    }
-                    stack.pop_back();
-                    ++ip;
-                    goto NEXT_OP;
-
-                case OpCode::DIVIDE:
-                {
-                    const double divisor = right.number;
-                    if (divisor == 0.0)
-                        throw std::runtime_error("Division by zero");
-                    const double res = left.number / divisor;
-                    left.setAsDouble(res);
-                    stack.pop_back();
-                    ++ip;
-                    goto NEXT_OP;
-                }
-
-                case OpCode::MODULO:
-                    if (left.IS_DOUBLE || right.IS_DOUBLE)
-                        throw std::runtime_error("'" + std::to_string(left.number) + " mod " + std::to_string(right.number) + "' invalid — 'mod' only supports integers.");
-                    {
-                        const int res = left.toInt() % right.toInt();
-                        left.setAsInt(res);
-                        stack.pop_back();
-                        ++ip;
-                        goto NEXT_OP;
-                    }
-
-                case OpCode::EQUAL:
-                    left.setAsBoolean(left.number == right.number);
-                    stack.pop_back();
-                    ++ip;
-                    goto NEXT_OP;
-
-                case OpCode::NOT_EQUAL:
-                    left.setAsBoolean(left.number != right.number);
-                    stack.pop_back();
-                    ++ip;
-                    goto NEXT_OP;
-
-                case OpCode::LESS:
-                    left.setAsBoolean(left.number < right.number);
-                    stack.pop_back();
-                    ++ip;
-                    goto NEXT_OP;
-
-                case OpCode::LESS_EQUAL:
-                    left.setAsBoolean(left.number <= right.number);
-                    stack.pop_back();
-                    ++ip;
-                    goto NEXT_OP;
-
-                case OpCode::GREATER:
-                    left.setAsBoolean(left.number > right.number);
-                    stack.pop_back();
-                    ++ip;
-                    goto NEXT_OP;
-
-                case OpCode::GREATER_EQUAL:
-                    left.setAsBoolean(left.number >= right.number);
-                    stack.pop_back();
-                    ++ip;
-                    goto NEXT_OP;
-
-                default:
-                    break; // OR / AND / XOR fall through to the generic path
-                }
+                const double divisor = right.number;
+                if (divisor == 0.0)
+                    throw std::runtime_error("Division by zero");
+                left.vmSetAsDouble(left.number / divisor);
+                stack.pop_back();
+                ++ip;
+                goto NEXT_OP;
             }
+            goto OP_BINARY_GENERIC;
+        }
+
+    OP_MODULO:
+        {
+            BINARY_OPERANDS
+            if (left.IS_NUMBER && right.IS_NUMBER)
+            {
+                if (left.IS_DOUBLE || right.IS_DOUBLE)
+                    throw std::runtime_error("'" + std::to_string(left.number) + " mod " + std::to_string(right.number) + "' invalid — 'mod' only supports integers.");
+                left.vmSetAsInt(left.toInt() % right.toInt());
+                stack.pop_back();
+                ++ip;
+                goto NEXT_OP;
+            }
+            goto OP_BINARY_GENERIC;
+        }
+
+#define CMP_BINARY(label, dblop) \
+    OP_##label: \
+    { \
+        BINARY_OPERANDS \
+        if (left.IS_NUMBER && right.IS_NUMBER) \
+        { \
+            left.vmSetAsBoolean(left.number dblop right.number); \
+            stack.pop_back(); \
+            ++ip; \
+            goto NEXT_OP; \
+        } \
+        goto OP_BINARY_GENERIC; \
+    }
+
+    CMP_BINARY(EQUAL, ==)
+    CMP_BINARY(NOT_EQUAL, !=)
+    CMP_BINARY(LESS, <)
+    CMP_BINARY(LESS_EQUAL, <=)
+    CMP_BINARY(GREATER, >)
+    CMP_BINARY(GREATER_EQUAL, >=)
+
+    OP_OR:
+        {
+            BINARY_OPERANDS
+            Value r = std::move(right);
+            stack.pop_back();
+            Value l = std::move(left);
+            stack.back() = (l.AS_BOOLEAN ? l : r);
+            ++ip;
+            goto NEXT_OP;
+        }
+
+    OP_AND:
+        {
+            BINARY_OPERANDS
+            Value r = std::move(right);
+            stack.pop_back();
+            Value l = std::move(left);
+            stack.back() = (l.AS_BOOLEAN ? r : l);
+            ++ip;
+            goto NEXT_OP;
+        }
+
+    OP_BINARY_GENERIC:
+        {
 
             Value right2 = std::move(stack.back());
             stack.pop_back();

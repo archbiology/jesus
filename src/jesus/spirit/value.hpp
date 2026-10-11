@@ -429,4 +429,39 @@ public:
 private:
     friend class VM;
     std::unique_ptr<Dust> value;
+
+    /**
+     * @brief Unchecked, VM-only setters — DO NOT call outside the VM.
+     *
+     * Unlike the public setAs*() methods these skip `value.reset()`, because
+     * they assume the Value is already a scalar (no heap payload). That
+     * precondition is guaranteed by the compiler/parser: the VM only reaches
+     * them after an `IS_NUMBER`/`IS_BOOLEAN` check, and a scalar Value always
+     * leaves `value` null by construction. They exist solely to remove the
+     * redundant null-check from the interpreter's hottest path.
+     *
+     * Weed these out with care: they are `private` and `friend class VM` so
+     * that only the virtual machine can use them. If a future change needs a
+     * checked variant, use the public setAs*() methods instead.
+     */
+    void vmSetAsInt(int v)
+    {
+        number = static_cast<double>(v);
+        intValue = v;
+        __flags = F_INT | F_NUMBER | (v != 0 ? F_ASBOOL : 0);
+    }
+
+    void vmSetAsDouble(double v)
+    {
+        number = v;
+        intValue = static_cast<int>(v);
+        __flags = F_DOUBLE | F_NUMBER | (v != 0.0 ? F_ASBOOL : 0);
+    }
+
+    void vmSetAsBoolean(bool v)
+    {
+        number = 0.0;
+        intValue = 0;
+        __flags = F_BOOLEAN | (v ? F_ASBOOL : 0);
+    }
 };
