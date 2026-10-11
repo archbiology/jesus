@@ -199,7 +199,7 @@ public:
      * @brief Converts this Value in place into a boolean, keeping the
      * existing object identity on the VM stack (no variant re-construction).
      */
-    void setAsBoolean(bool v)
+    [[gnu::always_inline]] void setAsBoolean(bool v)
     {
         value.reset();
         number = 0.0;
@@ -210,7 +210,7 @@ public:
     /**
      * @brief Overwrites this Value in place with an integer result.
      */
-    void setAsInt(int v)
+    [[gnu::always_inline]] void setAsInt(int v)
     {
         value.reset();
         number = static_cast<double>(v);
@@ -221,7 +221,7 @@ public:
     /**
      * @brief Overwrites this Value in place with a double result.
      */
-    void setAsDouble(double v)
+    [[gnu::always_inline]] void setAsDouble(double v)
     {
         value.reset();
         number = v;
