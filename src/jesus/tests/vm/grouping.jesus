@@ -1,0 +1,16 @@
+# GroupingExpr on the VM: `(expression)` compiles transparently —
+# parentheses only affect precedence at parse time, so the compiler
+# emits the inner expression's code and keeps its join status
+# (a parenthesized conditional still suppresses peepholes around it).
+
+create flag: truth = yes
+create other: truth = no
+create n: number = 7
+
+say ("b" if other otherwise "c")
+say ("b" if other otherwise "c") if flag otherwise "z"
+say (n + 1) if flag otherwise 0
+say ((n * 2) if other otherwise (n - 1)) if flag otherwise 0
+
+flag = (other if flag otherwise yes)
+say flag

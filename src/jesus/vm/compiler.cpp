@@ -1,6 +1,7 @@
 #include "compiler.hpp"
 #include "ast/stmt/create_method_stmt.hpp"
 #include "ast/expr/get_attr_expr.hpp"
+#include "ast/expr/grouping_expr.hpp"
 #include "interpreter/runtime/method.hpp"
 #include "spirit/heart.hpp"
 
@@ -108,6 +109,13 @@ bool Compiler::compileExpr(const Expr &expr)
     {
         compileConditionalExpr(*conditional);
         return true;
+    }
+
+    if (auto grouping = dynamic_cast<const GroupingExpr *>(&expr))
+    {
+        // Transparent: parentheses only affect precedence during parsing,
+        // so compile the inner expression and keep its join status.
+        return compileExpr(*grouping->expression);
     }
 
     if (auto var = dynamic_cast<const VariableExpr *>(&expr))
