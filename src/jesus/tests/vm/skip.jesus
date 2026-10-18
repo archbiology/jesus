@@ -1,0 +1,59 @@
+# SkipStmt (`skip` = continue) on the VM: jumps back to the start of the
+# innermost enclosing loop, re-evaluating the condition and skipping the
+# rest of the body — including a fused trailing increment, exactly like
+# the AST interpreter, where SkipSignal escapes the whole body.
+
+# Skip the rest of the body only.
+create i: number = 0
+repeat while i < 5:
+    i = i + 1
+    if i is 2:
+        skip
+    amen
+    say i
+amen
+say i
+
+# Skip jumps past the back-edge to the condition, so the trailing
+# increment is not run (the AST interpreter hangs here too: without the
+# increment the condition never becomes false — kept small on purpose).
+create j: number = 0
+repeat while yes:
+    j = j + 1
+    if j > 3:
+        break
+    amen
+    if j is 2:
+        skip
+    amen
+    say j
+amen
+say j
+
+# Skip from an 'otherwise' branch.
+create k: number = 0
+repeat while k < 3:
+    k = k + 1
+    if k is 1:
+        say "one"
+    otherwise:
+        skip
+    amen
+    say k
+amen
+say k
+
+# Only the innermost loop is skipped.
+create outer: number = 0
+repeat while outer < 3:
+    outer = outer + 1
+    create inner: number = 0
+    repeat while inner < 5:
+        inner = inner + 1
+        if inner is 2:
+            skip
+        amen
+        say inner
+    amen
+    say outer
+amen

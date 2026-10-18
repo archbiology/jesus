@@ -20,6 +20,7 @@
 #include "ast/stmt/print_stmt.hpp"
 #include "ast/stmt/repeat_while_stmt.hpp"
 #include "ast/stmt/break_stmt.hpp"
+#include "ast/stmt/skip_stmt.hpp"
 
 /**
  * @brief Converts an Abstract Syntax Tree (AST) into bytecode.
@@ -124,14 +125,26 @@ private:
     bool compilingMethodBody = false;
 
     /**
-     * @brief Jumps awaiting a patch, one entry per enclosing loop (innermost
-     * last).
+     * @brief A loop being compiled, tracking the jumps its `break` and
+     * `skip` statements still need patched.
      *
-     * A `break` emits a JUMP placeholder recorded in the innermost entry;
-     * once the loop is compiled, every recorded jump is patched to the loop
-     * exit (the same target as the loop's own exit jump).
+     *  - breakJumps → the loop exit (same target as a failed condition;
+     *    reached after the back-edge, so a fused trailing increment never
+     *    runs).
+     *  - skipJumps → loopStart (rest of the body, including a fused
+     *    trailing increment, is skipped and the condition re-evaluated).
      */
-    std::vector<std::vector<uint32_t>> breakJumps;
+    struct LoopContext
+    {
+        uint32_t loopStart;
+        std::vector<uint32_t> breakJumps;
+        std::vector<uint32_t> skipJumps;
+    };
+
+    /**
+     * @brief Enclosing loops, innermost last.
+     */
+    std::vector<LoopContext> loops;
 
     void compileStmt(const Stmt &stmt);
 
@@ -285,6 +298,16 @@ private:
      * signal escape and crashes at that point; both abort the program).
      */
     void compileBreakStmt(const BreakStmt &stmt);
+
+    /**
+     * Compiles `skip` (continue) as a jump back to the start of the
+     * innermost enclosing loop, skipping the rest of the body — including a
+     * fused trailing increment, exactly like the AST interpreter, where the
+     * SkipSignal escapes the whole body — and re-evaluating the condition.
+     *
+     * Throws when there is no enclosing loop.
+     */
+    void compileSkipStmt(const SkipStmt &stmt);
 
     void compileCreateClassStmt(const CreateClassStmt &stmt);
     void compileCreateInstanceExpr(const CreateInstanceExpr &expr);
