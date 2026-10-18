@@ -1,0 +1,32 @@
+# ConditionalExpr on the VM: `then if condition otherwise else`.
+#
+# Lowered to JUMP_IF_FALSE/JUMP with one join point (no new opcode).
+# Every variable read under a conditional is also reassigned somewhere
+# in this file, so the optimizer's constant propagator cannot fold the
+# operands into literals (which would hide the lowering from the VM).
+
+create age: number = 33
+create flag: truth = yes
+create other: truth = no
+create grade: number = 0
+
+say "adult" if age >= 18 otherwise "minor"
+say -age if flag otherwise age
+say "young" if age < 18 otherwise "old"
+
+age = 1 if flag otherwise 0
+say age
+
+grade = 10 if age otherwise 20
+say grade
+
+flag = grade is 20
+create verdict: text = "pass" if grade otherwise "fail"
+say verdict
+
+# A statement condition that is itself a conditional expression.
+if flag if other otherwise yes:
+    say "nested-cond-if"
+otherwise:
+    say "no"
+amen

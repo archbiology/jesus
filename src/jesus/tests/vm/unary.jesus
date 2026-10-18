@@ -1,0 +1,32 @@
+# UnaryExpr on the VM: `-x`, `+x` and `not x`.
+#
+# Every variable read under a unary operator is also reassigned somewhere
+# in this file, so the optimizer's constant propagator cannot fold the
+# operand into a literal (which would keep the unary opcodes off the VM).
+
+create age: number = 33
+create believer: truth = yes
+
+say -age
+say +age
+say not age
+say not believer
+
+age = -age
+say age
+
+believer = not believer
+say believer
+
+create steps: number = -age
+say steps
+
+if not believer:
+    say "Walking in darkness"
+otherwise:
+    say "Walking in light"
+amen
+
+create countdown: number = steps
+countdown = -countdown
+say countdown

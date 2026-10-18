@@ -392,6 +392,15 @@ std::string opcodeToString(OpCode opcode)
     case OpCode::SUBTRACT_ADD_LOCAL_LOCAL_LOCAL_STORE:
         return "SUBTRACT_ADD_LOCAL_LOCAL_LOCAL_STORE";
 
+    case OpCode::POSITIVE:
+        return "POSITIVE";
+
+    case OpCode::NEGATE:
+        return "NEGATE";
+
+    case OpCode::NOT:
+        return "NOT";
+
     default:
         return "UNKNOWN_OPCODE";
     }

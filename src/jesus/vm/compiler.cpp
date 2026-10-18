@@ -1,6 +1,7 @@
 #include "compiler.hpp"
 #include "ast/stmt/create_method_stmt.hpp"
 #include "ast/expr/get_attr_expr.hpp"
+#include "ast/expr/grouping_expr.hpp"
 #include "interpreter/runtime/method.hpp"
 #include "spirit/heart.hpp"
 
@@ -84,36 +85,55 @@ void Compiler::compilePrintStmt(const PrintStmt &stmt)
     emit(OpCode::PRINT);
 }
 
-void Compiler::compileExpr(const Expr &expr)
+bool Compiler::compileExpr(const Expr &expr)
 {
     if (auto literal = dynamic_cast<const LiteralExpr *>(&expr))
     {
         compileLiteralExpr(*literal);
-        return;
+        return false;
     }
 
     if (auto binary = dynamic_cast<const BinaryExpr *>(&expr))
     {
         compileBinaryExpr(*binary);
-        return;
+        return false;
+    }
+
+    if (auto unary = dynamic_cast<const UnaryExpr *>(&expr))
+    {
+        compileUnaryExpr(*unary);
+        return false;
+    }
+
+    if (auto conditional = dynamic_cast<const ConditionalExpr *>(&expr))
+    {
+        compileConditionalExpr(*conditional);
+        return true;
+    }
+
+    if (auto grouping = dynamic_cast<const GroupingExpr *>(&expr))
+    {
+        // Transparent: parentheses only affect precedence during parsing,
+        // so compile the inner expression and keep its join status.
+        return compileExpr(*grouping->expression);
     }
 
     if (auto var = dynamic_cast<const VariableExpr *>(&expr))
     {
         compileVariableExpr(*var);
-        return;
+        return false;
     }
 
     if (auto instance = dynamic_cast<const CreateInstanceExpr *>(&expr))
     {
         compileCreateInstanceExpr(*instance);
-        return;
+        return false;
     }
 
     if (auto methodCall = dynamic_cast<const MethodCallExpr *>(&expr))
     {
         compileMethodCallExpr(*methodCall);
-        return;
+        return false;
     }
 
     throw std::runtime_error("Expression not supported by VM yet: " + expr.toString());
@@ -434,8 +454,8 @@ static bool rightToLocalLocalStore(OpCode right, OpCode &out)
 
 void Compiler::compileBinaryExpr(const BinaryExpr &expr)
 {
-    compileExpr(*expr.left);
-    compileExpr(*expr.right);
+    const bool leftJoins = compileExpr(*expr.left);
+    const bool rightJoins = compileExpr(*expr.right);
 
     // -----------------------------------------------------------------
     // Peephole: fold operand fetches plus the binary op into a single fused
@@ -451,7 +471,14 @@ void Compiler::compileBinaryExpr(const BinaryExpr &expr)
     // the stack and the operation reuses its slot:
     //   ...; READ_LOCAL b; <op>   -> ...; <OP>_LOCAL_RIGHT   (b)
     //   ...; PUSH_LITERAL k; <op> -> ...; <OP>_LITERAL_RIGHT (k)
+    //
+    // The peephole is skipped when either operand ends in a conditional
+    // join: the fused forms rewrite the chunk tail, which only one of the
+    // paths reaches, and the *_RIGHT forms assume the left operand sits
+    // directly on top of the stack — both false across a join. The plain
+    // opcode is always safe: both paths leave exactly one value.
     // -----------------------------------------------------------------
+    if (!leftJoins && !rightJoins)
     {
         auto &ins = currentChunk->instructions;
 
@@ -574,6 +601,66 @@ void Compiler::compileBinaryExpr(const BinaryExpr &expr)
     }
 }
 
+void Compiler::compileUnaryExpr(const UnaryExpr &expr)
+{
+    // -----------------------------------------------------------------
+    // `+x`, `-x` and `not x`: compile the operand, then apply the
+    // matching unary opcode in place on top of the stack.
+    // -----------------------------------------------------------------
+    compileExpr(*expr.right);
+
+    switch (expr.op.type)
+    {
+    case TokenType::PLUS:
+        emit(OpCode::POSITIVE);
+        break;
+    case TokenType::MINUS:
+        emit(OpCode::NEGATE);
+        break;
+    case TokenType::NOT:
+        emit(OpCode::NOT);
+        break;
+
+    default:
+        throw std::runtime_error("Unary operator not supported by VM yet: " + expr.op.lexeme);
+    }
+}
+
+void Compiler::compileConditionalExpr(const ConditionalExpr &expr)
+{
+    // -----------------------------------------------------------------
+    // `then if condition otherwise else`:
+    //
+    //     evaluate condition
+    //     JUMP_IF_FALSE -> elseBranch
+    //     <thenBranch>       (leaves its value on the stack)
+    //     JUMP -> end
+    //     elseBranch:        (leaves its value on the stack)
+    //     end:
+    //
+    // Both paths leave exactly one value, so consumers (say, creates,
+    // updates, binary operators) can treat the expression as an ordinary
+    // stack value. The fusion peepholes must still skip it — see
+    // compileExpr's return value.
+    // -----------------------------------------------------------------
+    const bool conditionJoins = compileExpr(*expr.condition);
+
+    uint32_t jumpToElse = emitConditionalJump(/*allowFusion=*/!conditionJoins);
+
+    compileExpr(*expr.thenBranch);
+
+    uint32_t jumpToEnd = emitPlaceholder(OpCode::JUMP);
+
+    patchJump(jumpToElse);
+
+    if (expr.elseBranch)
+        compileExpr(*expr.elseBranch);
+    else
+        emit(OpCode::PUSH_LITERAL, addConstant(Value::formless()));
+
+    patchJump(jumpToEnd);
+}
+
 void Compiler::compileLiteralExpr(const LiteralExpr &expr)
 {
     uint32_t constantIndex = addConstant(expr.value);
@@ -598,8 +685,16 @@ void Compiler::emit(OpCode opcode, uint32_t operand)
     currentChunk->instructions.push_back({opcode, operand});
 }
 
-void Compiler::emitStoreToLocal(uint32_t slot)
+void Compiler::emitStoreToLocal(uint32_t slot, bool allowFusion)
 {
+    // A value ending in a conditional join only reaches the chunk tail on
+    // one of its paths, so no fusion (which rewrites that tail) is safe.
+    if (!allowFusion)
+    {
+        emit(OpCode::WRITE_LOCAL, slot);
+        return;
+    }
+
     auto &ins = currentChunk->instructions;
 
     if (ins.empty() || slot >= 0x100)
@@ -754,11 +849,11 @@ uint32_t Compiler::registerGlobalVar(const std::string &name)
 
 void Compiler::compileCreateVarStmt(const CreateVarStmt &stmt)
 {
-    compileExpr(*stmt.value);
+    const bool valueJoins = compileExpr(*stmt.value);
 
     if (compilingMethodBody)
     {
-        emitStoreToLocal(localSlot(stmt.name));
+        emitStoreToLocal(localSlot(stmt.name), /*allowFusion=*/!valueJoins);
         return;
     }
 
@@ -808,14 +903,14 @@ void Compiler::compileVariableExpr(const VariableExpr &expr)
 
 void Compiler::compileUpdateVarStmt(const UpdateVarStmt &stmt)
 {
-    compileExpr(*stmt.value);
+    const bool valueJoins = compileExpr(*stmt.value);
 
     if (compilingMethodBody)
     {
         auto it = localSlots.find(stmt.name);
         if (it != localSlots.end())
         {
-            emitStoreToLocal(it->second);
+            emitStoreToLocal(it->second, /*allowFusion=*/!valueJoins);
             return;
         }
     }
@@ -839,11 +934,11 @@ uint32_t Compiler::emitPlaceholder(OpCode opcode)
     return index;
 }
 
-uint32_t Compiler::emitConditionalJump()
+uint32_t Compiler::emitConditionalJump(bool allowFusion)
 {
     auto &instructions = currentChunk->instructions;
 
-    if (!instructions.empty())
+    if (allowFusion && !instructions.empty())
     {
         // Fold `(a + b) CMP constant` — the ADD that produced the comparison's
         // left operand and the comparison itself become one branch.
@@ -898,9 +993,9 @@ void Compiler::compileRepeatWhileStmt(const RepeatWhileStmt &stmt)
 {
     uint32_t loopStart = currentOffset();
 
-    compileExpr(*stmt.condition);
+    const bool conditionJoins = compileExpr(*stmt.condition);
 
-    uint32_t jumpOut = emitConditionalJump();
+    uint32_t jumpOut = emitConditionalJump(/*allowFusion=*/!conditionJoins);
 
     for (const auto &bodyStmt : stmt.body)
     {
@@ -1106,9 +1201,9 @@ void Compiler::compileIfStmt(const IfStmt &stmt)
     //   otherwise
     //   end:
     // ---------------------------------------------------------------
-    compileExpr(*stmt.condition);
+    const bool conditionJoins = compileExpr(*stmt.condition);
 
-    uint32_t jumpToOtherwise = emitConditionalJump();
+    uint32_t jumpToOtherwise = emitConditionalJump(/*allowFusion=*/!conditionJoins);
 
     for (const auto &thenStmt : stmt.thenBranch)
     {
