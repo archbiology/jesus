@@ -1,0 +1,8 @@
+[VM]
+adult
+(double) -33.000000
+old
+(int) 1
+(int) 10
+pass
+nested-cond-if

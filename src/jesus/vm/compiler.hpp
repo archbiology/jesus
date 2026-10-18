@@ -4,6 +4,7 @@
 
 #include "ast/expr/binary_expr.hpp"
 #include "ast/expr/unary_expr.hpp"
+#include "ast/expr/conditional_expr.hpp"
 #include "ast/expr/create_instance_expr.hpp"
 #include "ast/expr/literal_expr.hpp"
 #include "ast/expr/variable_expr.hpp"
@@ -123,13 +124,41 @@ private:
 
     void compileStmt(const Stmt &stmt);
 
-    void compileExpr(const Expr &expr);
+    /**
+     * @brief Compiles an expression, leaving its result on the operand stack.
+     *
+     * @return true when the expression's compilation ends in a "join" —
+     *  the point where the two paths of a conditional expression meet —
+     *  so only the last path's instructions are visible in the chunk tail.
+     *
+     *  Optimizations must not combine instructions across such a
+     *  point (see emitStoreToLocal and emitConditionalJump).
+     *  All other expressions end with their own single instruction
+     *  and return false.
+     */
+    bool compileExpr(const Expr &expr);
 
     void compileLiteralExpr(const LiteralExpr &expr);
 
     void compileBinaryExpr(const BinaryExpr &expr);
 
     void compileUnaryExpr(const UnaryExpr &expr);
+
+    /**
+     * @brief Compiles `then if condition otherwise else` with jumps:
+     *
+     *     evaluate condition
+     *     JUMP_IF_FALSE -> elseBranch
+     *     <thenBranch>       (leaves its value on the stack)
+     *     JUMP -> end
+     *     elseBranch:        (leaves its value on the stack)
+     *     end:
+     *
+     * Both paths leave exactly one value, so the whole expression behaves
+     * like any other stack value. Optimizations must not combine instructions
+     * from opposite sides of the point where the two branches meet.
+     */
+    void compileConditionalExpr(const ConditionalExpr &expr);
 
     void compilePrintStmt(const PrintStmt &stmt);
 
@@ -158,8 +187,12 @@ private:
      * (MULTIPLY_LOCAL_LOCAL_STORE) so the result goes straight into the slot
      * without ever touching the operand stack. Otherwise a plain WRITE_LOCAL
      * is emitted.
+     *
+     * @param allowFusion must be false when the compiled value ends in a
+     *  conditional join (see compileExpr): the fused form rewrites the last
+     *  instruction, which only the else path ever reaches.
      */
-    void emitStoreToLocal(uint32_t slot);
+    void emitStoreToLocal(uint32_t slot, bool allowFusion);
 
     uint32_t registerGlobalVar(const std::string &name);
     void compileCreateVarStmt(const CreateVarStmt &stmt);
@@ -200,10 +233,13 @@ private:
      * that skips materialising a boolean); otherwise it emits a plain
      * JUMP_IF_FALSE.
      *
+     * @param allowFusion must be false when the compiled condition ends in a
+     *  conditional join (see compileExpr): the fusion rewrites the last
+     *  instruction, which only one of the paths ever reaches.
      * @return uint32_t the index of the instruction whose operand is patched
      *                  with the jump target.
      */
-    uint32_t emitConditionalJump();
+    uint32_t emitConditionalJump(bool allowFusion);
 
     /**
      * @brief Patches a previously emitted jump instruction with the current instruction position.
