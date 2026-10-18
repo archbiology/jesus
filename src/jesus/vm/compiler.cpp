@@ -13,6 +13,7 @@ Chunk Compiler::compile(const std::vector<std::unique_ptr<Stmt>> &statements)
     localSlots.clear();
     localCount = 0;
     compilingMethodBody = false;
+    loops.clear();
     currentChunk = &chunk;
 
     for (const auto &stmt : statements)
@@ -66,6 +67,18 @@ void Compiler::compileStmt(const Stmt &stmt)
     if (auto repeat_while = dynamic_cast<const RepeatWhileStmt *>(&stmt))
     {
         compileRepeatWhileStmt(*repeat_while);
+        return;
+    }
+
+    if (auto break_stmt = dynamic_cast<const BreakStmt *>(&stmt))
+    {
+        compileBreakStmt(*break_stmt);
+        return;
+    }
+
+    if (auto skip_stmt = dynamic_cast<const SkipStmt *>(&stmt))
+    {
+        compileSkipStmt(*skip_stmt);
         return;
     }
 
@@ -993,6 +1006,8 @@ void Compiler::compileRepeatWhileStmt(const RepeatWhileStmt &stmt)
 {
     uint32_t loopStart = currentOffset();
 
+    loops.push_back({loopStart, {}, {}});
+
     const bool conditionJoins = compileExpr(*stmt.condition);
 
     uint32_t jumpOut = emitConditionalJump(/*allowFusion=*/!conditionJoins);
@@ -1001,6 +1016,9 @@ void Compiler::compileRepeatWhileStmt(const RepeatWhileStmt &stmt)
     {
         compileStmt(*bodyStmt);
     }
+
+    auto loop = std::move(loops.back());
+    loops.pop_back();
 
     emit(OpCode::JUMP, loopStart);
 
@@ -1017,6 +1035,33 @@ void Compiler::compileRepeatWhileStmt(const RepeatWhileStmt &stmt)
     }
 
     patchJump(jumpOut);
+
+    // `break` leaves the loop at the same point as a failed condition —
+    // after the back-edge (and its fused increment), which never runs.
+    for (uint32_t jump : loop.breakJumps)
+        patchJump(jump);
+
+    // `skip` jumps straight past the back-edge to the condition, so a
+    // fused trailing increment never runs on it either (patchJump would
+    // target the loop exit; this needs the captured loopStart instead).
+    for (uint32_t jump : loop.skipJumps)
+        currentChunk->instructions[jump].operand = loop.loopStart;
+}
+
+void Compiler::compileBreakStmt(const BreakStmt &)
+{
+    if (loops.empty())
+        throw std::runtime_error("`break` outside of a loop");
+
+    loops.back().breakJumps.push_back(emitPlaceholder(OpCode::JUMP));
+}
+
+void Compiler::compileSkipStmt(const SkipStmt &)
+{
+    if (loops.empty())
+        throw std::runtime_error("`skip` outside of a loop");
+
+    loops.back().skipJumps.push_back(emitPlaceholder(OpCode::JUMP));
 }
 
 void Compiler::compileCreateClassStmt(const CreateClassStmt &stmt)

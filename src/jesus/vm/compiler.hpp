@@ -19,6 +19,8 @@
 #include "ast/stmt/return_stmt.hpp"
 #include "ast/stmt/print_stmt.hpp"
 #include "ast/stmt/repeat_while_stmt.hpp"
+#include "ast/stmt/break_stmt.hpp"
+#include "ast/stmt/skip_stmt.hpp"
 
 /**
  * @brief Converts an Abstract Syntax Tree (AST) into bytecode.
@@ -121,6 +123,28 @@ private:
      * resolve to localSlots instead of globals.
      */
     bool compilingMethodBody = false;
+
+    /**
+     * @brief A loop being compiled, tracking the jumps its `break` and
+     * `skip` statements still need patched.
+     *
+     *  - breakJumps → the loop exit (same target as a failed condition;
+     *    reached after the back-edge, so a fused trailing increment never
+     *    runs).
+     *  - skipJumps → loopStart (rest of the body, including a fused
+     *    trailing increment, is skipped and the condition re-evaluated).
+     */
+    struct LoopContext
+    {
+        uint32_t loopStart;
+        std::vector<uint32_t> breakJumps;
+        std::vector<uint32_t> skipJumps;
+    };
+
+    /**
+     * @brief Enclosing loops, innermost last.
+     */
+    std::vector<LoopContext> loops;
 
     void compileStmt(const Stmt &stmt);
 
@@ -265,6 +289,25 @@ private:
      *  exit:
      */
     void compileRepeatWhileStmt(const RepeatWhileStmt &stmt);
+
+    /**
+     * Compiles `break` as a jump to the exit of the innermost enclosing
+     * loop, instead of throwing a C++ signal like the AST interpreter does.
+     *
+     * Throws when there is no enclosing loop (the AST interpreter lets the
+     * signal escape and crashes at that point; both abort the program).
+     */
+    void compileBreakStmt(const BreakStmt &stmt);
+
+    /**
+     * Compiles `skip` (continue) as a jump back to the start of the
+     * innermost enclosing loop, skipping the rest of the body — including a
+     * fused trailing increment, exactly like the AST interpreter, where the
+     * SkipSignal escapes the whole body — and re-evaluating the condition.
+     *
+     * Throws when there is no enclosing loop.
+     */
+    void compileSkipStmt(const SkipStmt &stmt);
 
     void compileCreateClassStmt(const CreateClassStmt &stmt);
     void compileCreateInstanceExpr(const CreateInstanceExpr &expr);
