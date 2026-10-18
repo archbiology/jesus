@@ -20,6 +20,7 @@
 #include "ast/stmt/print_stmt.hpp"
 #include "ast/stmt/repeat_while_stmt.hpp"
 #include "ast/stmt/repeat_times_stmt.hpp"
+#include "ast/stmt/repeat_forever_stmt.hpp"
 #include "ast/stmt/break_stmt.hpp"
 #include "ast/stmt/skip_stmt.hpp"
 
@@ -322,6 +323,31 @@ private:
      * compileRepeatWhileStmt.
      */
     void compileRepeatTimesStmt(const RepeatTimesStmt &stmt);
+
+    /**
+     * Compiles:
+     *
+     * repeat forever:
+     *     body
+     * amen
+     *
+     * Control flow shape — a `repeat while` without the condition:
+     *
+     *  loopStart:
+     *     body
+     *     jump loopStart
+     *  exit:
+     *
+     * Only `break` reaches exit; `skip` jumps to loopStart.
+     */
+    void compileRepeatForeverStmt(const RepeatForeverStmt &stmt);
+
+    /**
+     * @brief Patches a finished loop's recorded jumps: `break` to the
+     * current position (the loop exit, right after the back-edge) and
+     * `skip` to the captured loopStart.
+     */
+    void patchLoopJumps(const LoopContext &loop);
 
     /**
      * @brief Rewrites the pair (trailing `i = i + k` store, back-edge JUMP

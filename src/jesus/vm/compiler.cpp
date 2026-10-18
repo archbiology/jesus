@@ -77,6 +77,12 @@ void Compiler::compileStmt(const Stmt &stmt)
         return;
     }
 
+    if (auto repeat_forever = dynamic_cast<const RepeatForeverStmt *>(&stmt))
+    {
+        compileRepeatForeverStmt(*repeat_forever);
+        return;
+    }
+
     if (auto break_stmt = dynamic_cast<const BreakStmt *>(&stmt))
     {
         compileBreakStmt(*break_stmt);
@@ -1031,17 +1037,7 @@ void Compiler::compileRepeatWhileStmt(const RepeatWhileStmt &stmt)
     fuseTrailingIncrement();
 
     patchJump(jumpOut);
-
-    // `break` leaves the loop at the same point as a failed condition —
-    // after the back-edge (and its fused increment), which never runs.
-    for (uint32_t jump : loop.breakJumps)
-        patchJump(jump);
-
-    // `skip` jumps straight past the back-edge to the condition, so a
-    // fused trailing increment never runs on it either (patchJump would
-    // target the loop exit; this needs the captured loopStart instead).
-    for (uint32_t jump : loop.skipJumps)
-        currentChunk->instructions[jump].operand = loop.loopStart;
+    patchLoopJumps(loop);
 }
 
 void Compiler::compileRepeatTimesStmt(const RepeatTimesStmt &stmt)
@@ -1096,10 +1092,41 @@ void Compiler::compileRepeatTimesStmt(const RepeatTimesStmt &stmt)
     fuseTrailingIncrement();
 
     patchJump(jumpOut);
+    patchLoopJumps(loop);
+}
 
+void Compiler::compileRepeatForeverStmt(const RepeatForeverStmt &stmt)
+{
+    // `repeat forever` is a `repeat while` without the condition: only
+    // `break` reaches the code after the back-edge.
+    uint32_t loopStart = currentOffset();
+
+    loops.push_back({loopStart, {}, {}});
+
+    for (const auto &bodyStmt : stmt.body)
+    {
+        compileStmt(*bodyStmt);
+    }
+
+    auto loop = std::move(loops.back());
+    loops.pop_back();
+
+    emit(OpCode::JUMP, loopStart);
+    fuseTrailingIncrement();
+
+    patchLoopJumps(loop);
+}
+
+void Compiler::patchLoopJumps(const LoopContext &loop)
+{
+    // `break` leaves the loop at the current position — after the
+    // back-edge (and its fused increment), which never runs.
     for (uint32_t jump : loop.breakJumps)
         patchJump(jump);
 
+    // `skip` jumps straight past the back-edge to the loop head, so a
+    // fused trailing increment never runs on it either (patchJump would
+    // target the loop exit; this needs the captured loopStart instead).
     for (uint32_t jump : loop.skipJumps)
         currentChunk->instructions[jump].operand = loop.loopStart;
 }
