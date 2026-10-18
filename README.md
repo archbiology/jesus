@@ -62,17 +62,24 @@ Each test is composed of:
 
 ### ▶️ How to Run Tests
 
-Make sure both the `jesus` binary and the `test_runner` are built. Build the `test_runner` using this command:
-```
-cd src/jesus/
+Building the project with `make` also builds the `test_runner` automatically.
+It is emitted next to its source at `src/jesus/test_runner` (not inside the
+`build/` folder), while the interpreter is built as `build/jesus`.
 
-g++ -std=c++23 -o test_runner test_runner.cpp
-```
-
-Then simply run:
+Run the whole suite with `jesus` available on your `PATH`:
 
 ```bash
-./test_runner
+cd src/jesus
+
+PATH="$(pwd)/../../build:$PATH" ./test_runner
+```
+
+The `test_runner` can still be compiled by hand
+(for example, after editing its source without re-running `make`):
+
+```bash
+cd src/jesus
+g++ -std=c++23 -o test_runner test_runner.cpp
 ```
 
 ✅ What It Does
