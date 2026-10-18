@@ -179,7 +179,9 @@ void VM::run(const Chunk &chunk)
         // Unary operators: OP_POSITIVE, OP_NEGATE, OP_NOT
         &&OP_POSITIVE,                                          // POSITIVE
         &&OP_NEGATE,                                            // NEGATE
-        &&OP_NOT                                                // NOT
+        &&OP_NOT,                                               // NOT
+        // Repeat stmts
+        &&OP_INIT_REPEAT_COUNT                                  // INIT_REPEAT_COUNT
     };
 
     // Dispatch to the main program's first instruction.
@@ -1340,6 +1342,29 @@ void VM::run(const Chunk &chunk)
                 globals.resize(index + 1);
 
             globals[index] = value;
+
+            ++ip;
+            goto NEXT_OP;
+        }
+
+    // Counted-loop setup: the count was evaluated once, before the loop,
+    // exactly like the AST interpreter binding `countVal` before its
+    // for-loop — and it must be an int, or the AST interpreter throws
+    // `repeat times expects a numeric value.`
+    OP_INIT_REPEAT_COUNT:
+        {
+            Value count = std::move(stack.back());
+            stack.pop_back();
+
+            if (!count.IS_INT)
+                throw std::runtime_error("repeat times expects a numeric value.");
+
+            uint32_t index = ip->operand;
+
+            if (index >= globals.size())
+                globals.resize(index + 1);
+
+            globals[index] = count;
 
             ++ip;
             goto NEXT_OP;

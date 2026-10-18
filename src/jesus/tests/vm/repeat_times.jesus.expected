@@ -1,0 +1,22 @@
+[VM]
+tick
+tick
+tick
+done
+bound-once
+bound-once
+bound-once
+(int) 100
+after-zero
+(int) 5
+(int) 1
+(int) 3
+(int) 3
+inner
+inner
+inner
+(int) 3
+inner
+inner
+inner
+(int) 4

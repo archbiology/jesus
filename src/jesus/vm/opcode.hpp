@@ -255,7 +255,14 @@ enum class OpCode : uint8_t
     // NEGATE always produces a double; NOT negates truthiness.
     POSITIVE,
     NEGATE,
-    NOT
+    NOT,
+
+    // Counted-loop setup (`repeat N times`): pops the count evaluated
+    // before the loop, validates it is an int (matching the AST
+    // interpreter's `repeat times expects a numeric value.` error) and
+    // stores it in the compiler-generated remaining-count global whose
+    // slot is the operand.
+    INIT_REPEAT_COUNT
 };
 
 /**

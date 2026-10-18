@@ -14,6 +14,7 @@ Chunk Compiler::compile(const std::vector<std::unique_ptr<Stmt>> &statements)
     localCount = 0;
     compilingMethodBody = false;
     loops.clear();
+    repeatCountSerial = 0;
     currentChunk = &chunk;
 
     for (const auto &stmt : statements)
@@ -67,6 +68,18 @@ void Compiler::compileStmt(const Stmt &stmt)
     if (auto repeat_while = dynamic_cast<const RepeatWhileStmt *>(&stmt))
     {
         compileRepeatWhileStmt(*repeat_while);
+        return;
+    }
+
+    if (auto repeat_times = dynamic_cast<const RepeatTimesStmt *>(&stmt))
+    {
+        compileRepeatTimesStmt(*repeat_times);
+        return;
+    }
+
+    if (auto repeat_forever = dynamic_cast<const RepeatForeverStmt *>(&stmt))
+    {
+        compileRepeatForeverStmt(*repeat_forever);
         return;
     }
 
@@ -1021,31 +1034,114 @@ void Compiler::compileRepeatWhileStmt(const RepeatWhileStmt &stmt)
     loops.pop_back();
 
     emit(OpCode::JUMP, loopStart);
-
-    // Fuse the loop's usual trailing increment (`i = i + k`) with the
-    // back-edge JUMP, saving a dispatch per iteration. The JUMP instruction
-    // stays as the target holder for the fused store; it is never executed.
-    {
-        auto &ins = currentChunk->instructions;
-        if (ins.size() >= 2 &&
-            ins[ins.size() - 2].opcode == OpCode::ADD_LOCAL_LITERAL_STORE)
-        {
-            ins[ins.size() - 2].opcode = OpCode::ADD_LOCAL_LITERAL_STORE_JUMP;
-        }
-    }
+    fuseTrailingIncrement();
 
     patchJump(jumpOut);
+    patchLoopJumps(loop);
+}
 
-    // `break` leaves the loop at the same point as a failed condition —
-    // after the back-edge (and its fused increment), which never runs.
+void Compiler::compileRepeatTimesStmt(const RepeatTimesStmt &stmt)
+{
+    // -----------------------------------------------------------------
+    // `repeat N times` mirrors the AST interpreter's
+    // `for (i = 0; i < times; ++i)`:
+    //
+    //     evaluate N once          (bound before the loop, so reassigning
+    //                               it inside the body cannot change the
+    //                               number of iterations)
+    //     INIT_REPEAT_COUNT slot   (int check + store; the slot is a
+    //                               compiler-generated global)
+    //  loopStart:
+    //     remaining > 0 ? else exit
+    //     remaining -= 1           (at the loop HEAD, so `skip`, which
+    //                               jumps to loopStart, still consumes an
+    //                               iteration like `continue` does)
+    //     body
+    //     jump loopStart
+    //  exit: break jumps here, skip back to loopStart
+    // -----------------------------------------------------------------
+    compileExpr(*stmt.countExpr);
+
+    const std::string slotName = "$repeat_" + std::to_string(repeatCountSerial++);
+    uint32_t slot = registerGlobalVar(slotName);
+    emit(OpCode::INIT_REPEAT_COUNT, slot);
+
+    uint32_t loopStart = currentOffset();
+
+    loops.push_back({loopStart, {}, {}});
+
+    emit(OpCode::READ_GLOBAL, slot);
+    emit(OpCode::PUSH_LITERAL, addConstant(Value(0)));
+    emit(OpCode::GREATER);
+    uint32_t jumpOut = emitConditionalJump(/*allowFusion=*/false);
+
+    emit(OpCode::READ_GLOBAL, slot);
+    emit(OpCode::PUSH_LITERAL, addConstant(Value(1)));
+    emit(OpCode::SUBTRACT);
+    emit(OpCode::WRITE_GLOBAL, slot);
+
+    for (const auto &bodyStmt : stmt.body)
+    {
+        compileStmt(*bodyStmt);
+    }
+
+    auto loop = std::move(loops.back());
+    loops.pop_back();
+
+    emit(OpCode::JUMP, loopStart);
+    fuseTrailingIncrement();
+
+    patchJump(jumpOut);
+    patchLoopJumps(loop);
+}
+
+void Compiler::compileRepeatForeverStmt(const RepeatForeverStmt &stmt)
+{
+    // `repeat forever` is a `repeat while` without the condition: only
+    // `break` reaches the code after the back-edge.
+    uint32_t loopStart = currentOffset();
+
+    loops.push_back({loopStart, {}, {}});
+
+    for (const auto &bodyStmt : stmt.body)
+    {
+        compileStmt(*bodyStmt);
+    }
+
+    auto loop = std::move(loops.back());
+    loops.pop_back();
+
+    emit(OpCode::JUMP, loopStart);
+    fuseTrailingIncrement();
+
+    patchLoopJumps(loop);
+}
+
+void Compiler::patchLoopJumps(const LoopContext &loop)
+{
+    // `break` leaves the loop at the current position — after the
+    // back-edge (and its fused increment), which never runs.
     for (uint32_t jump : loop.breakJumps)
         patchJump(jump);
 
-    // `skip` jumps straight past the back-edge to the condition, so a
+    // `skip` jumps straight past the back-edge to the loop head, so a
     // fused trailing increment never runs on it either (patchJump would
     // target the loop exit; this needs the captured loopStart instead).
     for (uint32_t jump : loop.skipJumps)
         currentChunk->instructions[jump].operand = loop.loopStart;
+}
+
+void Compiler::fuseTrailingIncrement()
+{
+    // Fuse the loop's usual trailing increment (`i = i + k`) with the
+    // back-edge JUMP, saving a dispatch per iteration. The JUMP instruction
+    // stays as the target holder for the fused store; it is never executed.
+    auto &ins = currentChunk->instructions;
+    if (ins.size() >= 2 &&
+        ins[ins.size() - 2].opcode == OpCode::ADD_LOCAL_LITERAL_STORE)
+    {
+        ins[ins.size() - 2].opcode = OpCode::ADD_LOCAL_LITERAL_STORE_JUMP;
+    }
 }
 
 void Compiler::compileBreakStmt(const BreakStmt &)

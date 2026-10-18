@@ -19,6 +19,8 @@
 #include "ast/stmt/return_stmt.hpp"
 #include "ast/stmt/print_stmt.hpp"
 #include "ast/stmt/repeat_while_stmt.hpp"
+#include "ast/stmt/repeat_times_stmt.hpp"
+#include "ast/stmt/repeat_forever_stmt.hpp"
 #include "ast/stmt/break_stmt.hpp"
 #include "ast/stmt/skip_stmt.hpp"
 
@@ -145,6 +147,13 @@ private:
      * @brief Enclosing loops, innermost last.
      */
     std::vector<LoopContext> loops;
+
+    /**
+     * @brief Serial number for compiler-generated `$repeat_N` remaining-count
+     * globals, so counted loops in different chunks (program vs. method
+     * bodies) never share a slot.
+     */
+    uint32_t repeatCountSerial = 0;
 
     void compileStmt(const Stmt &stmt);
 
@@ -289,6 +298,64 @@ private:
      *  exit:
      */
     void compileRepeatWhileStmt(const RepeatWhileStmt &stmt);
+
+    /**
+     * Compiles:
+     *
+     * repeat N times:
+     *     body
+     * amen
+     *
+     * Control flow shape, mirroring the AST interpreter's
+     * `for (i = 0; i < times; ++i)`:
+     *
+     *     evaluate N once
+     *     INIT_REPEAT_COUNT slot    (int check; stores the remaining count)
+     *  loopStart:
+     *     remaining > 0 ? else exit
+     *     remaining -= 1            (at the head, so `skip` still counts
+     *                                an iteration like `continue` does)
+     *     body
+     *     jump loopStart
+     *  exit:
+     *
+     * `break` jumps to exit; `skip` to loopStart — same loop context as
+     * compileRepeatWhileStmt.
+     */
+    void compileRepeatTimesStmt(const RepeatTimesStmt &stmt);
+
+    /**
+     * Compiles:
+     *
+     * repeat forever:
+     *     body
+     * amen
+     *
+     * Control flow shape — a `repeat while` without the condition:
+     *
+     *  loopStart:
+     *     body
+     *     jump loopStart
+     *  exit:
+     *
+     * Only `break` reaches exit; `skip` jumps to loopStart.
+     */
+    void compileRepeatForeverStmt(const RepeatForeverStmt &stmt);
+
+    /**
+     * @brief Patches a finished loop's recorded jumps: `break` to the
+     * current position (the loop exit, right after the back-edge) and
+     * `skip` to the captured loopStart.
+     */
+    void patchLoopJumps(const LoopContext &loop);
+
+    /**
+     * @brief Rewrites the pair (trailing `i = i + k` store, back-edge JUMP
+     * just emitted) into ADD_LOCAL_LITERAL_STORE_JUMP, sharing one dispatch
+     * per iteration. The JUMP stays as the target holder and is never
+     * executed. No-op when the body does not end with that store shape.
+     */
+    void fuseTrailingIncrement();
 
     /**
      * Compiles `break` as a jump to the exit of the innermost enclosing

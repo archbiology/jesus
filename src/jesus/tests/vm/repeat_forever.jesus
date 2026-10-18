@@ -1,0 +1,40 @@
+# RepeatForeverStmt on the VM: `repeat forever` compiles like
+# `repeat while` without the condition — body, back-edge JUMP, repeat.
+# Only `break` reaches the code after the loop; `skip` jumps back to the
+# loop head (a fused trailing increment never runs on either).
+
+# Break is the only exit; code after the loop runs because of it.
+create i: number = 0
+repeat forever:
+    i = i + 1
+    if i is 3:
+        break
+    amen
+    say i
+amen
+say i
+
+# Skip goes back to the loop head, consuming nothing but the iteration.
+create s: number = 0
+repeat forever:
+    s = s + 1
+    if s is 5:
+        break
+    amen
+    if s is 2:
+        skip
+    amen
+    say s
+amen
+say s
+
+# Break skips the trailing increment, as in `repeat while`.
+create t: number = 0
+repeat forever:
+    if t is 3:
+        break
+    amen
+    t = t + 1
+    say t
+amen
+say t
