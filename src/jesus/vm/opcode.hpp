@@ -247,7 +247,15 @@ enum class OpCode : uint8_t
     // chained in-place stores it reads every operand before writing `dest`,
     // so it is correct even when `c` (or `a`, `b`) aliases the destination.
     // Operand packs: a bits 0-7, b bits 8-15, c bits 16-23, dest bits 24-31.
-    SUBTRACT_ADD_LOCAL_LOCAL_LOCAL_STORE
+    SUBTRACT_ADD_LOCAL_LOCAL_LOCAL_STORE,
+
+    // Unary operators (`+x`, `-x`, `not x`). The operand is on top of the
+    // stack and the result replaces it in place. POSITIVE only validates
+    // that the operand is a number (matching the AST interpreter's error);
+    // NEGATE always produces a double; NOT negates truthiness.
+    POSITIVE,
+    NEGATE,
+    NOT
 };
 
 /**

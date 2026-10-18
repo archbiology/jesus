@@ -3,6 +3,7 @@
 #include "chunk.hpp"
 
 #include "ast/expr/binary_expr.hpp"
+#include "ast/expr/unary_expr.hpp"
 #include "ast/expr/create_instance_expr.hpp"
 #include "ast/expr/literal_expr.hpp"
 #include "ast/expr/variable_expr.hpp"
@@ -127,6 +128,8 @@ private:
     void compileLiteralExpr(const LiteralExpr &expr);
 
     void compileBinaryExpr(const BinaryExpr &expr);
+
+    void compileUnaryExpr(const UnaryExpr &expr);
 
     void compilePrintStmt(const PrintStmt &stmt);
 

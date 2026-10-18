@@ -40,7 +40,7 @@ bool shouldUseVm(const std::filesystem::path &path)
 {
     for (const auto &part : path)
     {
-        if (part == "benchmark")
+        if (part == "benchmark" || part == "vm")
             return true;
     }
 

@@ -175,7 +175,11 @@ void VM::run(const Chunk &chunk)
         &&OP_JUMP_IF_NOT_ADD_LOCAL_LOCAL_GREATER_EQUAL_LITERAL, // JUMP_IF_NOT_ADD_LOCAL_LOCAL_GREATER_EQUAL_LITERAL
         &&OP_MULTIPLY_ADD_LOCAL_RIGHT_STORE,                    // MULTIPLY_ADD_LOCAL_RIGHT_STORE
         &&OP_ADD_LOCAL_LITERAL_STORE_JUMP,                      // ADD_LOCAL_LITERAL_STORE_JUMP
-        &&OP_SUBTRACT_ADD_LOCAL_LOCAL_LOCAL_STORE               // SUBTRACT_ADD_LOCAL_LOCAL_LOCAL_STORE
+        &&OP_SUBTRACT_ADD_LOCAL_LOCAL_LOCAL_STORE,              // SUBTRACT_ADD_LOCAL_LOCAL_LOCAL_STORE
+        // Unary operators: OP_POSITIVE, OP_NEGATE, OP_NOT
+        &&OP_POSITIVE,                                          // POSITIVE
+        &&OP_NEGATE,                                            // NEGATE
+        &&OP_NOT                                                // NOT
     };
 
     // Dispatch to the main program's first instruction.
@@ -193,6 +197,46 @@ void VM::run(const Chunk &chunk)
         {
             std::cout << stack.back().toString() << std::endl;
             stack.pop_back();
+
+            ++ip;
+            goto NEXT_OP;
+        }
+
+    // -----------------------------------------------------------------
+    // Unary operators, mirroring UnaryExpr::evaluate from the AST
+    // interpreter: '+' only validates the operand is a number, '-'
+    // always produces a double, and 'not' negates truthiness. The
+    // operand sits on top of the stack and the result replaces it.
+    // -----------------------------------------------------------------
+    OP_POSITIVE:
+        {
+            const Value &operand = stack.back();
+
+            if (!operand.IS_NUMBER)
+                throw std::runtime_error("Unary '+' applied to non-number: " + operand.toString());
+
+            ++ip;
+            goto NEXT_OP;
+        }
+
+    OP_NEGATE:
+        {
+            Value &operand = stack.back();
+
+            if (!operand.IS_NUMBER)
+                throw std::runtime_error("Unary '-' applied to non-number: " + operand.toString());
+
+            operand.vmSetAsDouble(-operand.number);
+
+            ++ip;
+            goto NEXT_OP;
+        }
+
+    OP_NOT:
+        {
+            Value &operand = stack.back();
+
+            operand.setAsBoolean(!operand.truthy());
 
             ++ip;
             goto NEXT_OP;

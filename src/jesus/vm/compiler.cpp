@@ -98,6 +98,12 @@ void Compiler::compileExpr(const Expr &expr)
         return;
     }
 
+    if (auto unary = dynamic_cast<const UnaryExpr *>(&expr))
+    {
+        compileUnaryExpr(*unary);
+        return;
+    }
+
     if (auto var = dynamic_cast<const VariableExpr *>(&expr))
     {
         compileVariableExpr(*var);
@@ -571,6 +577,31 @@ void Compiler::compileBinaryExpr(const BinaryExpr &expr)
 
     default:
         throw std::runtime_error("Binary operator not supported by VM yet: " + expr.op.lexeme);
+    }
+}
+
+void Compiler::compileUnaryExpr(const UnaryExpr &expr)
+{
+    // -----------------------------------------------------------------
+    // `+x`, `-x` and `not x`: compile the operand, then apply the
+    // matching unary opcode in place on top of the stack.
+    // -----------------------------------------------------------------
+    compileExpr(*expr.right);
+
+    switch (expr.op.type)
+    {
+    case TokenType::PLUS:
+        emit(OpCode::POSITIVE);
+        break;
+    case TokenType::MINUS:
+        emit(OpCode::NEGATE);
+        break;
+    case TokenType::NOT:
+        emit(OpCode::NOT);
+        break;
+
+    default:
+        throw std::runtime_error("Unary operator not supported by VM yet: " + expr.op.lexeme);
     }
 }
 
