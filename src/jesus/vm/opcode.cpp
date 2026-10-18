@@ -401,6 +401,9 @@ std::string opcodeToString(OpCode opcode)
     case OpCode::NOT:
         return "NOT";
 
+    case OpCode::INIT_REPEAT_COUNT:
+        return "INIT_REPEAT_COUNT";
+
     default:
         return "UNKNOWN_OPCODE";
     }

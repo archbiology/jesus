@@ -1,0 +1,61 @@
+# RepeatTimesStmt on the VM: `repeat N times` — the count is evaluated
+# and int-checked ONCE before the loop (INIT_REPEAT_COUNT), stored as a
+# remaining-count that decrements at the loop head, so `skip` still
+# consumes an iteration (like the AST interpreter's `continue`) and
+# reassigning the count variable inside the body cannot change it.
+
+# Variable count.
+create n: number = 3
+repeat n times:
+    say "tick"
+amen
+say "done"
+
+# Count bound once: reassignment inside the body does not extend the loop.
+create bound: number = 3
+repeat bound times:
+    bound = 100
+    say "bound-once"
+amen
+say bound
+
+# Zero iterations (reassigned after so it stays a runtime value).
+create zero: number = 0
+repeat zero times:
+    say "never"
+amen
+say "after-zero"
+zero = 7
+
+# Break exits before the remaining count runs out.
+create b: number = 5
+repeat b times:
+    if b is 5:
+        break
+    amen
+    say "unreachable"
+amen
+say b
+
+# Skip consumes an iteration but keeps the loop going.
+create s: number = 0
+repeat 3 times:
+    s = s + 1
+    if s is 2:
+        skip
+    amen
+    say s
+amen
+say s
+
+# Nested and re-entered counted loops each keep their own count.
+create outer: number = 2
+repeat while outer < 4:
+    outer = outer + 1
+    create inner: number = 3
+    repeat inner times:
+        say "inner"
+    amen
+    say outer
+    inner = 4
+amen
