@@ -1291,10 +1291,18 @@ std::vector<std::unique_ptr<Stmt>> DeadCodeEliminator::optimizeStatement(
     {
         optimizeBlock(createClass->body, usedVars, usedClasses);
 
-        if (canDiscard(createClass, usedClasses))
+        // -------------------------------------------------------------
+        // When retainClasses is set (imported modules), class definitions are
+        // never removed: the importing module holds methods that point back
+        // into this module's AST. The main module leaves it off, so its unused
+        // classes are eliminated as usual.
+        // -------------------------------------------------------------
+        if (retainClasses || !canDiscard(createClass, usedClasses))
+        {
+            result.push_back(std::move(stmt));
             return result;
+        }
 
-        result.push_back(std::move(stmt));
         return result;
     }
 

@@ -2,8 +2,11 @@
 
 #include <string>
 #include <memory>
+#include <unordered_map>
+#include <vector>
 #include "../../spirit/heart.hpp"
 #include "../../spirit/symbol_table.hpp"
+#include "../../ast/stmt/stmt.hpp"
 
 REGISTER_FOR_UML(
     Module,
@@ -22,6 +25,28 @@ public:
      * "The good man brings good things out of the good stored up in his heart…" — Luke 6:45
      */
     std::shared_ptr<SymbolTable> symbol_table;
+
+    /**
+     * @brief Top-level AST nodes that must outlive execution of this module.
+     *
+     * A module may be imported by another module. Because Method::definition
+     * is a raw pointer into the AST, the nodes are retained here so they stay
+     * valid after the module's interpreter has finished running.
+     *
+     * "The stone the builders rejected has become the cornerstone." — Psalm 118:22
+     */
+    std::vector<std::unique_ptr<Stmt>> retainedAst;
+
+    /**
+     * @brief Imported names bound in this module, mapped to the full path of
+     * the module they were imported from.
+     *
+     * Importing the same module twice in the same module must not declare the
+     * imported name twice. This record lets the parser ignore a repeated
+     * import while still reporting a real conflict when two different modules
+     * expose the same name.
+     */
+    std::unordered_map<std::string, std::string> importedNames;
 
     explicit Module(std::string name, std::string path, std::shared_ptr<SymbolTable> symbol_table)
         : name(name), file_path(path), symbol_table(std::move(symbol_table)) {}

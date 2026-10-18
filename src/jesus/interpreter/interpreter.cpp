@@ -474,6 +474,11 @@ void Interpreter::visitCreateClass(const CreateClassStmt &stmt)
 
     KnownTypes::registerType(userClass);
     registerAstNodeForInspection(userClass->name, &stmt);
+
+    // A class is a member of its module. Expose it as a module variable so it
+    // shows up when the module is inspected/printed.
+    if (!scope->localVarExists(userClass->name))
+        currentModule->symbol_table->createVar(userClass, userClass->name, Value(userClass), /*isParam=*/false);
 }
 
 void Interpreter::visitCreateVarType(const CreateVarTypeStmt &stmt)
@@ -1101,6 +1106,87 @@ std::string Interpreter::resolveModuleToPath(int relativeDepth, const std::vecto
     return resolveAbsoluteModulePath(modules);
 }
 
+void Interpreter::declareImportAtParseTime(const ImportModuleStmt &stmt)
+{
+    std::string fullpath = resolveModuleToPath(stmt.relativeDepth, stmt.modules);
+
+    // -----------------
+    // come <moduleName>
+    // -----------------
+    if (stmt.importedSymbols.empty())
+    {
+        std::string name = stmt.moduleAlias.empty()
+                               ? std::filesystem::path(fullpath).stem().string()
+                               : stmt.moduleAlias;
+
+        // Importing the same module again in the same module must not declare
+        // its name twice: the second import is a no-op. A name already bound to
+        // a *different* module still falls through and reports the conflict.
+        if (alreadyImportedFrom(name, fullpath))
+            return;
+
+        currentModule->symbol_table->declareVar(KnownTypes::MODULE, name);
+        currentModule->importedNames[name] = fullpath;
+        return;
+    }
+
+    // -------------------------------
+    // from moduleName come MemberName
+    // -------------------------------
+    // The module must run now so that the imported members' types are known
+    // at parse time (e.g. so an imported class can be instantiated).
+    if (!Interpreter::moduleRegistered(fullpath))
+    {
+        // keepAst is off: the imported module's AST must be owned by its own
+        // module (retainedAst) and not by this temporary interpreter, which is
+        // destroyed as soon as the module finishes. Otherwise the classes and
+        // methods of the imported module would dangle afterwards.
+        Faith michael(useVm, /*keepAst=*/false, /*retainClasses=*/true);
+        michael.execute(fullpath); // Declare classes, methods, etc.
+    }
+    auto importedModule = Interpreter::getModule(fullpath);
+
+    for (const auto &symbol : stmt.importedSymbols)
+    {
+        std::string symbolToExpose = symbol.alias.empty() ? symbol.originalName : symbol.alias;
+
+        // Importing the same member again from the same module is a no-op; a
+        // name already bound to a different module falls through and reports
+        // the conflict.
+        if (alreadyImportedFrom(symbolToExpose, fullpath))
+            continue;
+
+        // Imported classes are registered globally under the module they were
+        // declared in, not as regular variables of that module.
+        VarType memberType = nullptr;
+        if (importedModule->symbol_table->isClassKnown(symbol.originalName))
+            memberType = KnownTypes::resolve(symbol.originalName, importedModule->name);
+
+        if (!memberType)
+            memberType = importedModule->getVarType(symbol.originalName);
+
+        if (!memberType)
+            memberType = KnownTypes::CREATION;
+
+        currentModule->symbol_table->declareVar(memberType, symbolToExpose);
+        currentModule->importedNames[symbolToExpose] = fullpath;
+    }
+}
+
+bool Interpreter::alreadyImportedFrom(const std::string &name, const std::string &fullpath)
+{
+    // The name is not bound yet: nothing to skip.
+    if (!currentModule->symbol_table->currentScope()->localVarExists(name))
+        return false;
+
+    auto imported = currentModule->importedNames.find(name);
+
+    // Only a repeated import from the very same module is a no-op. Anything
+    // else (a different module or a plain variable) is left to report its
+    // conflict when the name is declared.
+    return imported != currentModule->importedNames.end() && imported->second == fullpath;
+}
+
 void Interpreter::visitImportModuleStmt(const ImportModuleStmt &stmt)
 {
     std::string fullpath = resolveModuleToPath(stmt.relativeDepth, stmt.modules);
@@ -1113,7 +1199,9 @@ void Interpreter::visitImportModuleStmt(const ImportModuleStmt &stmt)
         // --------------------
         // Interpret the module
         // --------------------
-        Faith michael(useVm, keepAst);
+        // keepAst is off so the imported module owns its own AST (retainedAst);
+        // this temporary interpreter dies as soon as the module is executed.
+        Faith michael(useVm, /*keepAst=*/false, /*retainClasses=*/true);
         michael.execute(fullpath); // Declare classes, methods, etc.
     }
     auto importedModule = Interpreter::getModule(fullpath);
@@ -1124,10 +1212,9 @@ void Interpreter::visitImportModuleStmt(const ImportModuleStmt &stmt)
     if (stmt.importedSymbols.empty())
     {
         std::string name = stmt.moduleAlias.empty() ? importedModule->name : stmt.moduleAlias;
-        const bool isParam = false;
 
-        // Bind module object to its name
-        currentModule->symbol_table->createVar(KnownTypes::MODULE, name, Value(importedModule), isParam);
+        // The slot was declared at parse time; bind the module object to it.
+        currentModule->symbol_table->updateVar(name, Value(importedModule));
         registerAstNodeForInspection(name, &stmt);
         return;
     }
@@ -1135,17 +1222,29 @@ void Interpreter::visitImportModuleStmt(const ImportModuleStmt &stmt)
     // -------------------------------
     // from moduleName come MemberName
     // -------------------------------
-    // FIXME: This was disabled when using slots instead of string as varnames to speed things up. We need it back.
-    // for (const auto& symbol : stmt.importedSymbols)
-    // {
-    //     std::string symbolToExpose = symbol.alias.empty() ? symbol.originalName : symbol.alias;
-    //     // Value member = importedModule->getVar(symbol.originalName);
-    //     Value member = importedModule->getVar(symbol.originalName);
-    //     auto memberType = importedModule->getVarType(symbol.originalName);
+    for (const auto &symbol : stmt.importedSymbols)
+    {
+        std::string symbolToExpose = symbol.alias.empty() ? symbol.originalName : symbol.alias;
 
-    //     currentModule->symbol_table->createVar(memberType, symbolToExpose, member);
-    //     registerAstNodeForInspection(symbolToExpose, &stmt);
-    // }
+        // Imported classes were already resolved at parse time and are not
+        // stored as variables of their module; bind their type value instead.
+        if (importedModule->symbol_table->isClassKnown(symbol.originalName))
+        {
+            auto klass = KnownTypes::resolve(symbol.originalName, importedModule->name);
+            if (klass)
+            {
+                currentModule->symbol_table->updateVar(symbolToExpose, Value(klass));
+                registerAstNodeForInspection(symbolToExpose, &stmt);
+            }
+            continue;
+        }
+
+        Value member = importedModule->symbol_table->getVar(symbol.originalName);
+
+        // The slot was declared at parse time; bind the member to it.
+        currentModule->symbol_table->updateVar(symbolToExpose, member);
+        registerAstNodeForInspection(symbolToExpose, &stmt);
+    }
 }
 
 void Interpreter::addModule(const std::string &path, std::shared_ptr<Module> module)

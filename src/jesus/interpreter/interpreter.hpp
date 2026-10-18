@@ -138,6 +138,27 @@ public:
         currentModule->symbol_table->registerClassName(className);
     }
 
+    /**
+     * @brief Declares the names brought in by an import statement, at parse time.
+     *
+     * Because variable references are resolved to slot-based addresses while
+     * parsing, an imported name must already exist in the symbol table before
+     * later statements are parsed. For `from <module> come <Member>`, the
+     * module is executed now so that an imported class type is known and can be
+     * instantiated by the parser.
+     */
+    void declareImportAtParseTime(const ImportModuleStmt &stmt);
+
+    /**
+     * @brief Whether @p name is already bound in the current module by an
+     * import of the module at @p fullpath.
+     *
+     * A repeated import of the same module must not declare the name twice, so
+     * the parser skips it. A name bound by a different module is not matched
+     * here, letting the declaration report the conflict.
+     */
+    bool alreadyImportedFrom(const std::string &name, const std::string &fullpath);
+
     void unregisterClassName(const std::string &className)
     {
         currentModule->symbol_table->unregisterClassName(className);
@@ -147,6 +168,12 @@ public:
     void registerParseTimeType(const std::shared_ptr<CreationType> &type)
     {
         typeRegistry->registerType(type);
+
+        // Also make the type globally known. A user-defined class may be
+        // exported through an import before it is ever used, and only
+        // registered here (at parse time) it survives dead-code elimination
+        // of an uninstantiated class definition.
+        KnownTypes::registerType(type);
     }
 
     bool isClassKnown(const std::string &className) const
@@ -239,10 +266,18 @@ public:
         return it == astDebugIndex.end() ? nullptr : it->second;
     }
 
-    std::vector<std::unique_ptr<Stmt>> persistedAST;
-    void persistAST(std::unique_ptr<Stmt> node)
+    /**
+     * @brief Hands a top-level AST node to the current module, which keeps it
+     * alive for as long as the module exists.
+     *
+     * The module owns the program's AST; inspectors read it from
+     * `Module::retainedAst`. Imported modules run in a temporary interpreter,
+     * so their nodes must be owned by the module rather than by the interpreter
+     * that ran them.
+     */
+    void retainAst(std::unique_ptr<Stmt> node)
     {
-        persistedAST.push_back(std::move(node));
+        currentModule->retainedAst.push_back(std::move(node));
     }
 
     std::shared_ptr<Module> currentModule;

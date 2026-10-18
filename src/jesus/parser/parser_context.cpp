@@ -23,6 +23,11 @@ VariableAddress ParserContext::declareVar(const VarType &type, const std::string
     return interpreter->declareVar(type, name);
 }
 
+void ParserContext::declareImport(const ImportModuleStmt &stmt)
+{
+    interpreter->declareImportAtParseTime(stmt);
+}
+
 void ParserContext::updatePolymorphicVarType(const std::string &name, const VarType &type)
 {
     interpreter->updatePolymorphicVarType(name, type);

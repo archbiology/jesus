@@ -1,6 +1,6 @@
 
 from routes come Route53
 
-create Route53 dns = 1
+create dns = Route53()
 
-dns createRecord 'www.mylovelyjesusministry.com'
+dns createRecord 'www.mylovelyjesuschrist.com'

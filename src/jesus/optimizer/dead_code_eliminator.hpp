@@ -50,6 +50,15 @@ class DeadCodeEliminator
 {
   public:
     /**
+     * @brief When enabled, class definitions are never eliminated.
+     *
+     * An imported module must keep its classes because the importing module
+     * holds methods that point back into that module's AST. The main module
+     * leaves this off, so only imported modules preserve their classes.
+     */
+    DeadCodeEliminator(bool retainClasses = false) : retainClasses(retainClasses) {}
+
+    /**
      * @brief Removes dead code from the program.
      *
      * The AST is modified in place.
@@ -72,6 +81,8 @@ class DeadCodeEliminator
     void run(std::vector<std::unique_ptr<Stmt>> &program);
 
   private:
+    bool retainClasses;
+
     void collectReferencedVariables(const Stmt &statement, std::unordered_set<std::string> &usedVars);
     void collectReferencedVariables(const Expr *expression, std::unordered_set<std::string> &usedVars);
 

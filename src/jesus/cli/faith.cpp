@@ -21,7 +21,10 @@ void Faith::interpret(Interpreter &jesus, const std::string &source, const std::
             statements.push_back(std::move(stmt));
     }
 
-    Optimizer optimizer;
+    // Only imported modules keep their classes: the importing module holds
+    // methods that point back into the imported module's AST. The main module
+    // always eliminates its unused classes on DeadCodeEliminator.
+    Optimizer optimizer(retainClasses);
     optimizer.optimize(statements);
 
     if (useVm)
@@ -34,12 +37,18 @@ void Faith::interpret(Interpreter &jesus, const std::string &source, const std::
         return;
     }
 
-    if (keepAst)
+    // Keep the AST only while it may still be needed, to save memory: when the
+    // user asked to inspect it (`keepAst`), or when this module is imported
+    // (`retainClasses`), because the importing module holds methods that point
+    // back into it (`Method::definition` is a raw pointer into the AST).
+    // Otherwise each node is released as soon as it has run.
+    const bool mustRetainAst = keepAst || retainClasses;
+    if (mustRetainAst)
     {
         for (auto &you : statements)
         {
             jesus.loves(you);
-            jesus.persistAST(std::move(you));
+            jesus.retainAst(std::move(you));
         }
     }
     else

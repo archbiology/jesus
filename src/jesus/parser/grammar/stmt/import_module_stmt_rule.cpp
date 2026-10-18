@@ -31,7 +31,13 @@ std::unique_ptr<Stmt> ImportModuleStmtRule::parseComeModule(ParserContext &ctx)
         moduleAlias = ctx.previous().lexeme;
     }
 
-    return std::make_unique<ImportModuleStmt>(path.depth, path.parts, moduleAlias, noSymbols);
+    auto stmt = std::make_unique<ImportModuleStmt>(path.depth, path.parts, moduleAlias, noSymbols);
+
+    // Reserve the imported name in the symbol table now, so later statements
+    // can resolve it (variable references are bound to slots while parsing).
+    ctx.declareImport(*stmt);
+
+    return stmt;
 }
 
 std::unique_ptr<Stmt> ImportModuleStmtRule::parseFromModuleComeMember(ParserContext &ctx)
@@ -55,7 +61,13 @@ std::unique_ptr<Stmt> ImportModuleStmtRule::parseFromModuleComeMember(ParserCont
     }
 
     std::string moduleAlias = "";
-    return std::make_unique<ImportModuleStmt>(path.depth, path.parts, moduleAlias, importedSymbols);
+    auto stmt = std::make_unique<ImportModuleStmt>(path.depth, path.parts, moduleAlias, importedSymbols);
+
+    // Reserve the imported names in the symbol table now, so later statements
+    // can resolve them (variable references are bound to slots while parsing).
+    ctx.declareImport(*stmt);
+
+    return stmt;
 }
 
 ParsedModulePath ImportModuleStmtRule::parseModulePath(ParserContext &ctx)
