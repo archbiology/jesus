@@ -19,6 +19,7 @@
 #include "ast/stmt/return_stmt.hpp"
 #include "ast/stmt/print_stmt.hpp"
 #include "ast/stmt/repeat_while_stmt.hpp"
+#include "ast/stmt/break_stmt.hpp"
 
 /**
  * @brief Converts an Abstract Syntax Tree (AST) into bytecode.
@@ -121,6 +122,16 @@ private:
      * resolve to localSlots instead of globals.
      */
     bool compilingMethodBody = false;
+
+    /**
+     * @brief Jumps awaiting a patch, one entry per enclosing loop (innermost
+     * last).
+     *
+     * A `break` emits a JUMP placeholder recorded in the innermost entry;
+     * once the loop is compiled, every recorded jump is patched to the loop
+     * exit (the same target as the loop's own exit jump).
+     */
+    std::vector<std::vector<uint32_t>> breakJumps;
 
     void compileStmt(const Stmt &stmt);
 
@@ -265,6 +276,15 @@ private:
      *  exit:
      */
     void compileRepeatWhileStmt(const RepeatWhileStmt &stmt);
+
+    /**
+     * Compiles `break` as a jump to the exit of the innermost enclosing
+     * loop, instead of throwing a C++ signal like the AST interpreter does.
+     *
+     * Throws when there is no enclosing loop (the AST interpreter lets the
+     * signal escape and crashes at that point; both abort the program).
+     */
+    void compileBreakStmt(const BreakStmt &stmt);
 
     void compileCreateClassStmt(const CreateClassStmt &stmt);
     void compileCreateInstanceExpr(const CreateInstanceExpr &expr);

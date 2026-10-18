@@ -13,6 +13,7 @@ Chunk Compiler::compile(const std::vector<std::unique_ptr<Stmt>> &statements)
     localSlots.clear();
     localCount = 0;
     compilingMethodBody = false;
+    breakJumps.clear();
     currentChunk = &chunk;
 
     for (const auto &stmt : statements)
@@ -66,6 +67,12 @@ void Compiler::compileStmt(const Stmt &stmt)
     if (auto repeat_while = dynamic_cast<const RepeatWhileStmt *>(&stmt))
     {
         compileRepeatWhileStmt(*repeat_while);
+        return;
+    }
+
+    if (auto break_stmt = dynamic_cast<const BreakStmt *>(&stmt))
+    {
+        compileBreakStmt(*break_stmt);
         return;
     }
 
@@ -997,10 +1004,15 @@ void Compiler::compileRepeatWhileStmt(const RepeatWhileStmt &stmt)
 
     uint32_t jumpOut = emitConditionalJump(/*allowFusion=*/!conditionJoins);
 
+    breakJumps.emplace_back();
+
     for (const auto &bodyStmt : stmt.body)
     {
         compileStmt(*bodyStmt);
     }
+
+    auto breaks = std::move(breakJumps.back());
+    breakJumps.pop_back();
 
     emit(OpCode::JUMP, loopStart);
 
@@ -1017,6 +1029,19 @@ void Compiler::compileRepeatWhileStmt(const RepeatWhileStmt &stmt)
     }
 
     patchJump(jumpOut);
+
+    // `break` leaves the loop at the same point as a failed condition —
+    // after the back-edge (and its fused increment), which never runs.
+    for (uint32_t jump : breaks)
+        patchJump(jump);
+}
+
+void Compiler::compileBreakStmt(const BreakStmt &)
+{
+    if (breakJumps.empty())
+        throw std::runtime_error("`break` outside of a loop");
+
+    breakJumps.back().push_back(emitPlaceholder(OpCode::JUMP));
 }
 
 void Compiler::compileCreateClassStmt(const CreateClassStmt &stmt)

@@ -1,0 +1,52 @@
+# BreakStmt on the VM: `break` compiles to a JUMP patched to the exit of
+# the innermost enclosing loop — the same target as a failed loop
+# condition — instead of the C++ BreakSignal the AST interpreter throws.
+# The jump lands after the back-edge, so a fused trailing increment
+# (`i = i + 1`) never runs on break.
+
+create i: number = 0
+repeat while i < 5:
+    i = i + 1
+    if i is 3:
+        break
+    amen
+    say i
+amen
+say i
+
+# `repeat while yes` + break: the only exit is the break itself.
+create counter: number = 0
+repeat while yes:
+    counter = counter + 1
+    say counter
+    if counter is 3:
+        break
+    amen
+amen
+say counter
+
+# Break skips a fused trailing increment at the end of the body.
+create j: number = 0
+repeat while j < 10:
+    if j is 3:
+        break
+    amen
+    j = j + 1
+    say j
+amen
+say j
+
+# Only the innermost loop exits.
+create nest: number = 0
+repeat while nest < 3:
+    nest = nest + 1
+    create inner: number = 0
+    repeat while inner < 3:
+        inner = inner + 1
+        if inner is 2:
+            break
+        amen
+        say inner
+    amen
+    say nest
+amen
