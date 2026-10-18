@@ -276,3 +276,18 @@ add_custom_command(
 )
 add_custom_target(generate_compressed_bible DEPENDS ${COMPRESSED_BIBLE_HPP})
 add_dependencies(jesus generate_compressed_bible)
+
+# ------------------------------------------------------------------------------
+# Add the `test_runner` executable
+#
+# It is emitted next to its source in `src/jesus/` (and NOT in the build folder)
+# so that it can be run straight from the source tree, matching README.md.
+#
+# It uses C++23 (`std::string::contains`), hence the per-target standard below.
+# ------------------------------------------------------------------------------
+add_executable(test_runner src/jesus/test_runner.cpp)
+set_target_properties(test_runner PROPERTIES
+    CXX_STANDARD 23
+    CXX_STANDARD_REQUIRED True
+    RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/src/jesus
+)

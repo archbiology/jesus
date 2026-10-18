@@ -88,7 +88,7 @@ void Disciple::processBuffer(std::string &buffer)
     for (auto &you : statements)
     {
         jesus.loves(you);
-        jesus.persistAST(std::move(you));
+        jesus.retainAst(std::move(you));
     }
 
     buffer.clear();

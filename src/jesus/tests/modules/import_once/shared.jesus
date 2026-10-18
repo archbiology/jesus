@@ -1,0 +1,7 @@
+let there be Greeter:
+  purpose greet():
+    say "Hello from shared"
+  amen
+amen
+
+say "shared imported"

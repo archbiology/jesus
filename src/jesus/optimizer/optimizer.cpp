@@ -11,21 +11,21 @@ void Optimizer::optimize(std::vector<std::unique_ptr<Stmt>> &program)
     ConstantFolder().run(program);
     ConstantPropagator().run(program);
     ConstantFolder().run(program);
-    DeadCodeEliminator().run(program);
+    DeadCodeEliminator(retainClasses).run(program);
 
     MethodInliner().run(program);
 
     ConstantFolder().run(program);
     ConstantPropagator().run(program);
     ConstantFolder().run(program);
-    DeadCodeEliminator().run(program);
+    DeadCodeEliminator(retainClasses).run(program);
 
     DeterministicLoopOptimizer().run(program);
     ConstantFolder().run(program);
     ConstantPropagator().run(program);
     ConstantFolder().run(program);
-    DeadCodeEliminator().run(program);
+    DeadCodeEliminator(retainClasses).run(program);
 
     LoopUnroller().run(program);
-    DeadCodeEliminator().run(program);
+    DeadCodeEliminator(retainClasses).run(program);
 }

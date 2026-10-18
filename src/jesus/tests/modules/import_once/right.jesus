@@ -1,0 +1,3 @@
+from shared come Greeter
+
+say "right imported"

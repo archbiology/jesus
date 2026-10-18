@@ -47,7 +47,7 @@ std::string maybeGreen(std::string text)
 void BytecodeInspector::inspect(Interpreter &jesus, const InspectStmt &)
 {
     Compiler compiler;
-    Chunk chunk = compiler.compile(jesus.persistedAST);
+    Chunk chunk = compiler.compile(jesus.currentModule->retainedAst);
 
     std::cout << "Bytecode:\n";
 

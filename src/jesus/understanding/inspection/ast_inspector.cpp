@@ -22,7 +22,7 @@ void AstInspector::inspect(Interpreter &jesus, const InspectStmt &stmt)
     // Case 1 - print the whole AST.
     if (stmt.symbolName.empty())
     {
-        for (auto &node : jesus.persistedAST)
+        for (auto &node : jesus.currentModule->retainedAst)
         {
             std::cout << node->toString() << "\n";
         }

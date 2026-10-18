@@ -26,7 +26,16 @@ REGISTER_FOR_UML(
 class Faith
 {
 public:
-    explicit Faith(bool useVm, bool keepAst) : useVm(useVm), keepAst(keepAst) {};
+    /**
+     * @brief @param retainClasses keeps class definitions while optimizing.
+     *
+     * It is on only while executing an imported module: the importing module
+     * holds methods that point back into the imported module's AST, so that
+     * module must keep its classes alive. The main module leaves it off, so
+     * its unused classes are eliminated as usual.
+     */
+    explicit Faith(bool useVm, bool keepAst, bool retainClasses = false)
+        : useVm(useVm), keepAst(keepAst), retainClasses(retainClasses) {};
 
     /**
      * @brief Loads a file and execute it.
@@ -38,6 +47,7 @@ public:
 private:
     bool useVm;
     bool keepAst;
+    bool retainClasses;
     /**
      * @brief Interpret and execute the source of a file
      *
