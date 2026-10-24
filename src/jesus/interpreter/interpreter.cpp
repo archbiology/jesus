@@ -1141,7 +1141,7 @@ void Interpreter::declareImportAtParseTime(const ImportModuleStmt &stmt)
         // module (retainedAst) and not by this temporary interpreter, which is
         // destroyed as soon as the module finishes. Otherwise the classes and
         // methods of the imported module would dangle afterwards.
-        Faith michael(useVm, /*keepAst=*/false, /*retainClasses=*/true);
+        Faith michael(useVm, /*keepAst=*/false, /*useJit=*/false, /*retainClasses=*/true);
         michael.execute(fullpath); // Declare classes, methods, etc.
     }
     auto importedModule = Interpreter::getModule(fullpath);
@@ -1201,7 +1201,7 @@ void Interpreter::visitImportModuleStmt(const ImportModuleStmt &stmt)
         // --------------------
         // keepAst is off so the imported module owns its own AST (retainedAst);
         // this temporary interpreter dies as soon as the module is executed.
-        Faith michael(useVm, /*keepAst=*/false, /*retainClasses=*/true);
+        Faith michael(useVm, /*keepAst=*/false, /*useJit=*/false, /*retainClasses=*/true);
         michael.execute(fullpath); // Declare classes, methods, etc.
     }
     auto importedModule = Interpreter::getModule(fullpath);

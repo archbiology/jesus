@@ -5,12 +5,15 @@
 #include <optional>
 #include "utils/file_utils.hpp"
 
-std::string runJesusInterpreter(const std::string &inputFile, bool useRepl, bool keepAst, bool useVm)
+std::string runJesusInterpreter(const std::string &inputFile, bool useRepl, bool keepAst, bool useVm, bool useJit)
 {
     std::string command = "jesus";
 
     if (useVm)
         command += " --vm";
+
+    if (useJit)
+        command += " --jit";
 
     if (keepAst)
         command += " --keep-ast";
@@ -19,6 +22,11 @@ std::string runJesusInterpreter(const std::string &inputFile, bool useRepl, bool
         command = "jesus --quiet < '" + inputFile + "' 2>&1";
     else
         command += " '" + inputFile + "' 2>&1";
+
+    // JIT tests run the assembler on the raw bytecode, before constant folding
+    // erases the arithmetic they are meant to test.
+    if (useJit)
+        command = "JESUS_JIT_NO_OPT=1 " + command;
 
     std::string result;
 
@@ -41,6 +49,17 @@ bool shouldUseVm(const std::filesystem::path &path)
     for (const auto &part : path)
     {
         if (part == "benchmark" || part == "vm")
+            return true;
+    }
+
+    return false;
+}
+
+bool shouldUseJit(const std::filesystem::path &path)
+{
+    for (const auto &part : path)
+    {
+        if (part == "jit")
             return true;
     }
 
@@ -126,7 +145,8 @@ int main()
 
             bool keepAst = shouldKeepAst(fullInputFile);
             bool useVm = shouldUseVm(entry.path());
-            std::string output = runJesusInterpreter(inputFile, useRepl, keepAst, useVm);
+            bool useJit = shouldUseJit(entry.path());
+            std::string output = runJesusInterpreter(inputFile, useRepl, keepAst, useVm, useJit);
             auto expectedOpt = loadFile(expectedFile);
 
             if (!expectedOpt.has_value())
@@ -146,6 +166,9 @@ int main()
                 {
                     if (useVm)
                         std::cout << "--vm ";
+
+                    if (useJit)
+                        std::cout << "--jit ";
 
                     if (keepAst)
                         std::cout << "--keep-ast ";

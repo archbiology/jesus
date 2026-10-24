@@ -69,6 +69,29 @@ configure_file(
 message(NOTICE "\n   Build date (Jerusalem Scriptural Time / UTC+9): ${JESUS_BUILD_DATE} ${JESUS_BUILD_TIME}\n")
 message(NOTICE "   Build type: ${CMAKE_BUILD_TYPE}\n")
 
+# -----------------
+# asmjit (for JIT)
+# -----------------
+set(ASMJIT_SOURCE_DIR "${CMAKE_SOURCE_DIR}/src/third_party/asmjit")
+if(EXISTS "${ASMJIT_SOURCE_DIR}/CMakeLists.txt")
+    message(NOTICE "   [Jesus] Using existing dependency: asmjit")
+else()
+    message(NOTICE "   [Jesus] Downloading dependency: asmjit")
+    message(NOTICE "   [Jesus] Repository: https://github.com/archbiology/asmjit.git")
+endif()
+include(FetchContent)
+FetchContent_Declare(
+    asmjit
+    GIT_REPOSITORY https://github.com/archbiology/asmjit.git
+    GIT_TAG        0464e1c8f1f43c861a0c73d4e59437fff255cdd9
+    SOURCE_DIR     "${ASMJIT_SOURCE_DIR}"
+    BINARY_DIR     "${CMAKE_BINARY_DIR}/asmjit-build"
+)
+set(FETCHCONTENT_UPDATES_DISCONNECTED ON)
+FetchContent_MakeAvailable(asmjit)
+set(ASMJIT_STATIC ON CACHE BOOL "" FORCE)  # Link asmjit statically so the interpreter binary stays self-contained.
+message(NOTICE "\n   [Jesus] Dependency ready: src/third_party/asmjit\n")
+
 # -------------------
 # Define source files
 # -------------------
@@ -245,6 +268,12 @@ set(JESUS_CPP_FILES
     # --------
     src/jesus/builtins/io/socket/tcpv4_socket.cpp
     src/jesus/builtins/net/protocols/http/http_server.cpp
+
+    # --------------
+    # JIT (Assembly)
+    # --------------
+    src/jesus/jit/jit_engine.cpp
+    src/jesus/jit/x86_64/x86_assembler.cpp
 )
 
 # --------------------------
@@ -275,6 +304,7 @@ add_custom_command(
     VERBATIM
 )
 add_custom_target(generate_compressed_bible DEPENDS ${COMPRESSED_BIBLE_HPP})
+target_link_libraries(jesus PRIVATE asmjit)
 add_dependencies(jesus generate_compressed_bible)
 
 # ------------------------------------------------------------------------------

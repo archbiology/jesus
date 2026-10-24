@@ -5,6 +5,8 @@
 #include "optimizer/optimizer.hpp"
 #include "vm/compiler.hpp"
 #include "vm/vm.hpp"
+#include "jit/jit_engine.hpp"
+#include <cstdlib>
 
 void Faith::interpret(Interpreter &jesus, const std::string &source, const std::string &moduleName)
 {
@@ -24,13 +26,33 @@ void Faith::interpret(Interpreter &jesus, const std::string &source, const std::
     // Only imported modules keep their classes: the importing module holds
     // methods that point back into the imported module's AST. The main module
     // always eliminates its unused classes on DeadCodeEliminator.
-    Optimizer optimizer(retainClasses);
-    optimizer.optimize(statements);
+    //
+    // `JESUS_JIT_NO_OPT` lets the JIT run without optimizations, which
+    // is useful while an assembler only implements a subset of the IR.
+    const bool skipOptimizer = useJit && std::getenv("JESUS_JIT_NO_OPT") != nullptr;
+    if (!skipOptimizer)
+    {
+        Optimizer optimizer(retainClasses);
+        optimizer.optimize(statements);
+    }
 
-    if (useVm)
+    // VM and JIT share the same platform-independent IR (the Chunk). The only
+    // difference is who consumes it.
+    if (useVm || useJit)
     {
         Compiler compiler;
         Chunk chunk = compiler.compile(statements);
+
+        if (useJit)
+        {
+            jit::JitEngine assembler(jit::createAssembler());
+
+            // The assembler may not implement this chunk yet (unsupported
+            // opcode); in that case the VM runs the very same IR.
+            if (assembler.execute(chunk))
+                return;
+        }
+
         VM vm;
 
         vm.run(chunk);

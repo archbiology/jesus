@@ -38,6 +38,22 @@ After running, you’ll see the REPL prompt:
 
 Type any valid expression or command and press enter.
 
+##### Execution modes
+
+By default the program is executed by the AST-walking interpreter.
+
+```bash
+jesus program.jesus          # AST interpreter (default)
+jesus --vm program.jesus     # bytecode VM
+jesus --jit program.jesus    # native code generator (asmjit, x86-64)
+```
+
+`--jit` compiles the same platform-independent IR used by the VM. When the
+current assembler does not implement an instruction yet, the JIT falls back to
+the VM for that chunk, so `--jit` always runs the program. See
+[docs/jit.md](docs/jit.md) for the architecture and the currently supported
+operations.
+
 ##### IDE Notice: Generated Files
 
 On a fresh clone, `src/jesus/utils/version.hpp` **does not exist yet**.
