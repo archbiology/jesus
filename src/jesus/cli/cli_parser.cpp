@@ -47,6 +47,12 @@ ParsedCLI CLIParser::parse(int argc, char **argv)
             continue;
         }
 
+        if (arg == "--jit")
+        {
+            out.useJit = true;
+            continue;
+        }
+
         if (arg == "--export-uml")
         {
             out.export_language_uml = true;

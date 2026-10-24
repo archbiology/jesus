@@ -20,6 +20,7 @@ struct ParsedCLI
     bool export_language_uml = false;
 
     bool useVm = false;
+    bool useJit = false;
 
     std::string filename;          // ex: "serve" or serve.jesus
     std::vector<std::string> args; // everything after the command

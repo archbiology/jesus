@@ -83,7 +83,7 @@ int main(int argc, char **argv)
             return 1;
         }
 
-        Faith michael(cli.useVm, cli.keepAst);
+        Faith michael(cli.useVm, cli.keepAst, cli.useJit);
         return michael.execute(cli.filename);
     }
 

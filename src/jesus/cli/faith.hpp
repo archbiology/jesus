@@ -34,8 +34,8 @@ public:
      * module must keep its classes alive. The main module leaves it off, so
      * its unused classes are eliminated as usual.
      */
-    explicit Faith(bool useVm, bool keepAst, bool retainClasses = false)
-        : useVm(useVm), keepAst(keepAst), retainClasses(retainClasses) {};
+    explicit Faith(bool useVm, bool keepAst, bool useJit = false, bool retainClasses = false)
+        : useVm(useVm), keepAst(keepAst), useJit(useJit), retainClasses(retainClasses) {};
 
     /**
      * @brief Loads a file and execute it.
@@ -47,6 +47,7 @@ public:
 private:
     bool useVm;
     bool keepAst;
+    bool useJit;
     bool retainClasses;
     /**
      * @brief Interpret and execute the source of a file
