@@ -4,8 +4,8 @@
 #include <string>
 
 #include "jit_engine.hpp"
-#include "x86_64/x86_assembler.hpp"
-// #include "arm64/arm64_assembler.hpp"
+#include "assembler/x86_64/x86_assembler.hpp"
+// #include "assembler/arm64/arm64_assembler.hpp"
 
 #include "vm/opcode.hpp"
 
