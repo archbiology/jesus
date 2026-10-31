@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.10)
+cmake_minimum_required(VERSION 3.19)
 
 # --------------------
 # Set the project name
@@ -91,6 +91,7 @@ set(FETCHCONTENT_UPDATES_DISCONNECTED ON)
 FetchContent_MakeAvailable(asmjit)
 set(ASMJIT_STATIC ON CACHE BOOL "" FORCE)  # Link asmjit statically so the interpreter binary stays self-contained.
 message(NOTICE "\n   [Jesus] Dependency ready: src/third_party/asmjit\n")
+include(.config/cmake/configure_vscode_intellisense.cmake)
 
 # -------------------
 # Define source files
