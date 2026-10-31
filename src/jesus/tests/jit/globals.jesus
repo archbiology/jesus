@@ -1,0 +1,14 @@
+# CREATE_GLOBAL / READ_GLOBAL
+create x = 1
+say x
+
+# WRITE_GLOBAL
+create y = 1
+y = 2
+say y
+
+# Two independent global slots
+create b = 1
+create c = 2
+say b
+say c

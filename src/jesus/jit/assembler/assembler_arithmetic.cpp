@@ -114,7 +114,7 @@ bool Assembler::emitArithmeticOperation(
         // -------------------------------------
         // set the result type for the assembler
         // -------------------------------------
-        result = Slot{Kind::Int};
+        result = Slot{JitValueType::Int};
 
         return true;
     }
@@ -155,7 +155,7 @@ bool Assembler::emitArithmeticOperation(
     // -------------------------------------
     // set the result type for the assembler
     // -------------------------------------
-    result = Slot{Kind::Double};
+    result = Slot{JitValueType::Double};
 
     return true;
 }
@@ -214,7 +214,7 @@ bool Assembler::emitBinaryArithmeticOperation(OpCode opcode)
     const MemoryOffset rightOffset = leftOffset + JIT_SLOT_SIZE_BYTES;
     constexpr bool isRightOperandInMemory = true;
 
-    Slot result{Kind::Int};
+    Slot result{JitValueType::Int};
     if (!emitArithmeticOperation(opcode, left, leftOffset, right, isRightOperandInMemory, rightOffset, result))
         return false;
 
@@ -230,7 +230,7 @@ bool Assembler::emitFusedLiteralRight(OpCode base, const Instruction &instructio
     const std::uint32_t literalIndex = extractLower16Bits(instruction.operand);
     const Value &literal = ir->literals[literalIndex];
 
-    Slot right{Kind::Int};
+    Slot right{JitValueType::Int};
     if (literal.IS_INT)
         right = Slot::Int(literal.intValue);
     else
@@ -242,7 +242,7 @@ bool Assembler::emitFusedLiteralRight(OpCode base, const Instruction &instructio
     const std::size_t leftOffset = (jitStack.size() - 1) * JIT_SLOT_SIZE_BYTES;
     constexpr bool isRightOperandInMemory = false;
 
-    Slot result{Kind::Int};
+    Slot result{JitValueType::Int};
     if (!emitArithmeticOperation(base, left, leftOffset, right, isRightOperandInMemory, /*rightOffset */ 0, result))
         return false;
 

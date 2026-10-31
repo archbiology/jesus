@@ -12,6 +12,8 @@ enum class Register
      * @brief RAX = Accumulator: Traditionally used for arithmetic, return values,
      * and certain instructions that implicitly operate on RAX.
      * A function returning a 64-bit integer normally places its result in RAX.
+     *
+     * System V: RAX/EAX contains the return values of functions.
      */
     RAX, // Accumulator
     EAX, // 32-bit lower bit of RAX
@@ -38,13 +40,18 @@ enum class Register
      * such as multiplication and division.
      *
      * Use it to hold another operand, a function argument,
-     * or part of a multiplication/division result
+     * or part of a multiplication/division result.
+     *
+     * System V: RDX/EDX contains the third argument of a function.
      */
     RDX, // Data
+    EDX, // 32-bit lower part of RDX
 
     /**
      * @brief RSI = Source index: Traditionally points to the source data when copying
      * or processing sequences of bytes, such as strings or arrays.
+     *
+     * System V: RSI contains the second argument of a function.
      *
      * Use it to hold a pointer to source data or a function argument.
      */
@@ -53,6 +60,8 @@ enum class Register
     /**
      * @brief RDI = Destination index: Traditionally points to the destination when
      * copying or processing sequences of bytes, such as strings or arrays.
+     *
+     * System V: RDI/EDI contains the first argument of a function.
      *
      * Use it to hold a pointer to destination data or a function argument.
      * RDI: 64-bit register
@@ -94,7 +103,16 @@ enum class Register
  */
 enum class SimdRegister
 {
+    /**
+     * @brief System V: XMM0 contains the first floating-point argument of a function.
+     *
+     * System V: XMM0 contains the floating-point return values of functions.
+     */
     XMM0,
+
+    /**
+     * @brief System V: XMM1 contains the second floating-point argument of a function.
+     */
     XMM1
 };
 

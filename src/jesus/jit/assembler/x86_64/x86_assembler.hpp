@@ -35,6 +35,7 @@ protected:
     // ---------
     void mov(Register destination, Immediate value) override;
     void mov(Register destination, DwordMemory source) override;
+    void mov(Register destination, QwordMemory source) override;
     void mov(DwordMemory destination, Register source) override;
     void mov(DwordMemory destination, Immediate value) override;
     void mov(QwordMemory destination, Register source) override;

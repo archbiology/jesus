@@ -186,6 +186,8 @@ static asmjit::x86::Gp toAsmJit(Register reg)
         return ecx;
     case Register::RDX:
         return rdx;
+    case Register::EDX:
+        return edx;
     case Register::RSI:
         return rsi;
     case Register::RDI:
@@ -229,6 +231,11 @@ void X86Assembler::mov(Register destination, Immediate value)
 void X86Assembler::mov(Register destination, DwordMemory source)
 {
     assembler->mov(toAsmJit(destination), asmjit::x86::dword_ptr(toAsmJit(source.base_register), source.offset));
+}
+
+void X86Assembler::mov(Register destination, QwordMemory source)
+{
+    assembler->mov(toAsmJit(destination), asmjit::x86::qword_ptr(toAsmJit(source.base_register), source.offset));
 }
 
 void X86Assembler::mov(DwordMemory destination, Register source)

@@ -29,7 +29,7 @@ bool Assembler::emitPrint()
 
     const MemoryOffset offset = static_cast<MemoryOffset>(jitStack.size() * JIT_SLOT_SIZE_BYTES);
 
-    if (value.kind == Kind::Int)
+    if (value.valueType == JitValueType::Int)
     {
         // ----------------------------------------------------
         // Move the 32-bit integer value from memory into EDI.

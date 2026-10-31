@@ -83,6 +83,7 @@ protected:
     // ---------
     virtual void mov(Register destination, Immediate value) = 0;
     virtual void mov(Register destination, DwordMemory source) = 0;
+    virtual void mov(Register destination, QwordMemory source) = 0;
     virtual void mov(DwordMemory destination, Register source) = 0;
     virtual void mov(DwordMemory destination, Immediate value) = 0;
     virtual void mov(QwordMemory destination, Register source) = 0;
@@ -153,6 +154,7 @@ protected:
 
 private:
     std::vector<Slot> jitStack;
+    std::vector<JitValueType> globalVariableTypes;
     const IR *ir = nullptr;
 
     void pushSlot(const Slot &slot)
@@ -161,6 +163,15 @@ private:
     }
     static std::int32_t offsetOf(std::size_t byteOffset);
     void emitPushLiteral(const Instruction &instruction);
+    /**
+     * @brief RDI contains the first arg of functions
+     *
+     * Loads the JitContext for the JitRuntime* functions when storing/reading globals.
+     */
+    void loadJitContextPointerIntoRDI();
+    void recordGlobalVarType(std::uint32_t index, JitValueType valueType);
+    bool emitStoreGlobal(const Instruction &instruction);
+    bool emitReadGlobal(const Instruction &instruction);
     void loadNumberFromMemoryToSimd(const Slot &slot, MemoryOffset offset, const SimdRegister &simdRegister);
     void loadNumberToSimd(
         const Slot &slot,

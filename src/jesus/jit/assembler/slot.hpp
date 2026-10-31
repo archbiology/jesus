@@ -3,7 +3,7 @@
 namespace jit
 {
 
-enum class Kind
+enum class JitValueType
 {
     Int,
     Double
@@ -20,20 +20,20 @@ enum class Kind
  */
 struct Slot
 {
-    Kind kind;
+    JitValueType valueType;
 
     /** @brief True when the value is known during compilation. */
     bool isConstant = false;
 
-    /** @brief Used when kind is Kind::Int. */
+    /** @brief Used when valueType is int. */
     int intValue = 0;
 
-    /** Used when kind is Kind::Double */
+    /** Used when valueType is double */
     double doubleValue = 0.0;
 
     static Slot Int(int v)
     {
-        Slot slot{Kind::Int};
+        Slot slot{JitValueType::Int};
         slot.isConstant = true;
         slot.intValue = v;
         slot.doubleValue = static_cast<double>(v);
@@ -42,7 +42,7 @@ struct Slot
 
     static Slot Double(double v)
     {
-        Slot slot{Kind::Double};
+        Slot slot{JitValueType::Double};
         slot.isConstant = true;
         slot.doubleValue = v;
         return slot;
@@ -50,12 +50,12 @@ struct Slot
 
     double asDouble() const
     {
-        return kind == Kind::Int ? static_cast<double>(intValue) : doubleValue;
+        return valueType == JitValueType::Int ? static_cast<double>(intValue) : doubleValue;
     }
 
     bool isInt() const
     {
-        return kind == Kind::Int;
+        return valueType == JitValueType::Int;
     }
 };
 
