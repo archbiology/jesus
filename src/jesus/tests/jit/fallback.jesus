@@ -1,0 +1,11 @@
+# The JIT assembler does not implement globals, jumps or calls yet.
+# When it meets an unsupported opcode it must fall back to the VM and still
+# produce the correct result (never fail the program).
+
+create total: number = 0
+create idx: number = 0
+repeat while idx < 5:
+  total = total + idx
+  idx = idx + 1
+amen
+say total

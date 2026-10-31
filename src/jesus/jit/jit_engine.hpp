@@ -2,7 +2,7 @@
 
 #include <memory>
 
-#include "assembler.hpp"
+#include "jit/assembler/assembler.hpp"
 #include "compiler/ir.hpp"
 
 namespace jit

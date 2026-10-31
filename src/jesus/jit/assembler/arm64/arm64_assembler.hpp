@@ -1,6 +1,6 @@
 #pragma once
 
-#include "jit/assembler.hpp"
+#include "jit/assembler/assembler.hpp"
 
 namespace jit
 {
