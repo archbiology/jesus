@@ -83,6 +83,7 @@ protected:
     // ---------
     virtual void mov(Register destination, Immediate value) = 0;
     virtual void mov(Register destination, DwordMemory source) = 0;
+    virtual void mov(Register destination, QwordMemory source) = 0;
     virtual void mov(DwordMemory destination, Register source) = 0;
     virtual void mov(DwordMemory destination, Immediate value) = 0;
     virtual void mov(QwordMemory destination, Register source) = 0;
@@ -127,8 +128,33 @@ protected:
     virtual void call(Register target) = 0;
     virtual void ret() = 0;
 
+    /**
+    * @brief The distance, in bytes, from RSP to the memory location where we store the JitContext*.
+    *
+    * X86Assembler::assemble sets this offset before calling compileToMachineCode()
+    *
+    * The JIT value slots start at offset 0.
+    * The JitContext pointer is stored immediately after the last value slot.
+    * Example:
+    *   RSP
+        |
+        +---------------------------+
+        | Value slot 0 (8 bytes)    | Offset 0
+        +---------------------------+
+        | Value slot 1 (8 bytes)    | Offset 8
+        +---------------------------+
+        | Value slot 2 (8 bytes)    | Offset 16
+        +---------------------------+
+        | Value slot 3 (8 bytes)    | Offset 24
+        +---------------------------+
+        | JitContext* (8 bytes)     | Offset 32  <-- jitContextOffset
+        +---------------------------+
+    */
+    MemoryOffset jitContextOffset = 0;
+
 private:
     std::vector<Slot> jitStack;
+    std::vector<JitValueType> globalVariableTypes;
     const IR *ir = nullptr;
 
     void pushSlot(const Slot &slot)
@@ -137,6 +163,15 @@ private:
     }
     static std::int32_t offsetOf(std::size_t byteOffset);
     void emitPushLiteral(const Instruction &instruction);
+    /**
+     * @brief RDI contains the first arg of functions
+     *
+     * Loads the JitContext for the JitRuntime* functions when storing/reading globals.
+     */
+    void loadJitContextPointerIntoRDI();
+    void recordGlobalVarType(std::uint32_t index, JitValueType valueType);
+    bool emitStoreGlobal(const Instruction &instruction);
+    bool emitReadGlobal(const Instruction &instruction);
     void loadNumberFromMemoryToSimd(const Slot &slot, MemoryOffset offset, const SimdRegister &simdRegister);
     void loadNumberToSimd(
         const Slot &slot,

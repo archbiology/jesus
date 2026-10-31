@@ -16,6 +16,7 @@ namespace jit
 bool Assembler::compileToMachineCode(const IR &input)
 {
     jitStack.clear();
+    globalVariableTypes.clear();
     ir = &input;
 
     for (const Instruction &instruction : ir->instructions)
@@ -25,6 +26,22 @@ bool Assembler::compileToMachineCode(const IR &input)
         if (opcode == OpCode::PUSH_LITERAL)
         {
             emitPushLiteral(instruction);
+            continue;
+        }
+
+        if (opcode == OpCode::CREATE_GLOBAL || opcode == OpCode::WRITE_GLOBAL)
+        {
+            if (!emitStoreGlobal(instruction))
+                return false;
+
+            continue;
+        }
+
+        if (opcode == OpCode::READ_GLOBAL)
+        {
+            if (!emitReadGlobal(instruction))
+                return false;
+
             continue;
         }
 

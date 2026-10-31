@@ -28,6 +28,7 @@ inline bool isDivisionByZero(const OpCode &opcode, const Slot &right)
 bool Assembler::validateSupportedJitOperations(const IR &ir, std::size_t &maxSlots)
 {
     std::vector<Slot> tempStack;
+    std::vector<JitValueType> tempGlobalVariableTypes;
     maxSlots = 0;
 
     auto push = [&](const Slot &slot)
@@ -61,6 +62,32 @@ bool Assembler::validateSupportedJitOperations(const IR &ir, std::size_t &maxSlo
             continue;
         }
 
+        if (opcode == OpCode::CREATE_GLOBAL || opcode == OpCode::WRITE_GLOBAL)
+        {
+            if (tempStack.empty())
+                return false;
+
+            const Slot value = tempStack.back();
+            tempStack.pop_back();
+
+            const std::uint32_t index = instruction.operand;
+            if (index >= tempGlobalVariableTypes.size())
+                tempGlobalVariableTypes.resize(index + 1);
+
+            tempGlobalVariableTypes[index] = value.valueType;
+            continue;
+        }
+
+        if (opcode == OpCode::READ_GLOBAL)
+        {
+            const std::uint32_t index = instruction.operand;
+            if (index >= tempGlobalVariableTypes.size())
+                return false;
+
+            push(Slot{tempGlobalVariableTypes[index]});
+            continue;
+        }
+
         // ----------------------------------------------------------------
         // If isArithmetic, validate division by zero,
         // pop the operands and add the slot size (int/double) to the stack
@@ -85,7 +112,7 @@ bool Assembler::validateSupportedJitOperations(const IR &ir, std::size_t &maxSlo
             // --------------------------------------------
             const bool bothInt = left.isInt() && right.isInt();
             const bool resultIsDouble = opcode == OpCode::DIVIDE || !bothInt;
-            push(Slot{resultIsDouble ? Kind::Double : Kind::Int});
+            push(Slot{resultIsDouble ? JitValueType::Double : JitValueType::Int});
             continue;
         }
 
@@ -107,7 +134,7 @@ bool Assembler::validateSupportedJitOperations(const IR &ir, std::size_t &maxSlo
             // Extract the literal (right) value of the IR
             // --------------------------------------------
             const Value &literal = ir.literals[literalIndex];
-            Slot right{Kind::Int};
+            Slot right{JitValueType::Int};
             if (literal.IS_INT)
                 right = Slot::Int(literal.intValue);
             else if (literal.IS_DOUBLE)
@@ -124,7 +151,7 @@ bool Assembler::validateSupportedJitOperations(const IR &ir, std::size_t &maxSlo
             const Slot left = tempStack.back();
             const bool bothInt = left.isInt() && right.isInt();
             const bool resultIsDouble = base_operation == OpCode::DIVIDE || !bothInt;
-            tempStack.back() = Slot{resultIsDouble ? Kind::Double : Kind::Int};
+            tempStack.back() = Slot{resultIsDouble ? JitValueType::Double : JitValueType::Int};
             continue;
         }
 

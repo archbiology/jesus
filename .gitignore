@@ -1,6 +1,7 @@
 .vscode
 ignore-this-folder
 build
+src/jesus/jesus
 src/jesus/utils/version.hpp
 src/bible/include/bible/compressed_bible.hpp
 src/third_party/
