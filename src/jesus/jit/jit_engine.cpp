@@ -4,6 +4,7 @@
 #include <string>
 
 #include "jit_engine.hpp"
+#include "jit_context.hpp"
 #include "assembler/x86_64/x86_assembler.hpp"
 // #include "assembler/arm64/arm64_assembler.hpp"
 
@@ -58,7 +59,8 @@ bool JitEngine::execute(const IR &ir)
     }
 
     std::cout << "[JIT:" << assembler->name() << "]\n";
-    code->execute();
+    JitContext context;
+    code->execute(context);
     return true;
 }
 

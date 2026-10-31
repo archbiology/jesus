@@ -29,9 +29,26 @@ std::unique_ptr<ExecutableCode> X86Assembler::assemble(const IR &ir)
     assembler = std::make_unique<asmjit::x86::Assembler>(code.get());
 
     // --------------------------------------------------------------------
-    // Reserve C++ stack memory for the JIT's temporary values.
+    // Reserve C++ stack memory for the JIT's temporary values plus one
+    // extra slot that holds the JitContext pointer passed in RDI.
     // Each JIT-compiler stack slot occupies 8 bytes (64 bits).
-    const std::size_t usedBytes = maxSlots * JIT_SLOT_SIZE_BYTES;
+    // Example:
+    //    RSP
+    //     |
+    //     +---------------------------+
+    //     | Value slot 0 (8 bytes)    | Offset 0
+    //     +---------------------------+
+    //     | Value slot 1 (8 bytes)    | Offset 8
+    //     +---------------------------+
+    //     | Value slot 2 (8 bytes)    | Offset 16
+    //     +---------------------------+
+    //     | Value slot 3 (8 bytes)    | Offset 24
+    //     +---------------------------+
+    //     | JitContext* (8 bytes)     | Offset 32  <-- jitContextOffset
+    //     +---------------------------+
+    // --------------------------------------------------------------------
+    jitContextOffset = static_cast<MemoryOffset>(maxSlots * JIT_SLOT_SIZE_BYTES);
+    const std::size_t usedBytes = (maxSlots + 1) * JIT_SLOT_SIZE_BYTES;
 
     // ---------------------------------------------------------------
     // Before calling our function, the CPU put its 8-byte (64 bits)
@@ -66,6 +83,10 @@ std::unique_ptr<ExecutableCode> X86Assembler::assemble(const IR &ir)
 
     // -----------------------------------------------------------------------
     // Step 1: Reserve space for the JIT runtime values.
+    //
+    // At runtime, move the stack pointer to the beginning of the memory area
+    // reserved for the JIT runtime (the JIT runtime stack), because when
+    // the JIT runtime is called, RSP is "at the end of the stack".
     //
     // The x86-64 stack grows toward LOWER memory addresses.
     //
@@ -102,6 +123,24 @@ std::unique_ptr<ExecutableCode> X86Assembler::assemble(const IR &ir)
     // assembly function is called with code->execute() by the JitEngine.
     // -----------------------------------------------------------------------
     sub(RSP, Immediate(static_cast<std::int64_t>(frameSize)));
+
+    // --------------------------------------------------------
+    // Store the address contained in RDI at the memory
+    // location identified by RSP + jitContextOffset.
+    //
+    // System V: RDI contains the first function argument.
+    // When the following code is called by the JitEngine:
+    //
+    //      JitContext context;
+    //      code->execute(context);
+    //
+    // RDI contains the address of JitContext*.
+    //
+    // We save the JitContext address received in RDI
+    // into the JIT runtime stack for later use, because
+    // other function calls may change RDI.
+    // ---------------------------------------------------
+    mov(qword_ptr(RSP, jitContextOffset), RDI);
 
     // -----------------------------------------------
     // Step 2: generate the assembly for the user code

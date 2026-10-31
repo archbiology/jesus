@@ -2,6 +2,8 @@
 
 #include <memory>
 
+#include "jit/jit_context.hpp"
+
 namespace jit
 {
 
@@ -15,16 +17,19 @@ namespace jit
 class ExecutableCode
 {
 public:
-    using Entrypoint = void (*)();
+    using Entrypoint = void (*)(JitContext *);
 
     ExecutableCode(Entrypoint entrypoint, std::shared_ptr<void> runtime)
         : entrypoint(entrypoint), runtime(std::move(runtime))
     {
     }
 
-    void execute() const
+    /**
+     * @brief `JitContext` is passed in `RDI` (System V first argument).
+     */
+    void execute(JitContext &context) const
     {
-        entrypoint();
+        entrypoint(&context);
     }
 
 private:

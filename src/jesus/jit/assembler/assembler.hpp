@@ -127,6 +127,30 @@ protected:
     virtual void call(Register target) = 0;
     virtual void ret() = 0;
 
+    /**
+    * @brief The distance, in bytes, from RSP to the memory location where we store the JitContext*.
+    *
+    * X86Assembler::assemble sets this offset before calling compileToMachineCode()
+    *
+    * The JIT value slots start at offset 0.
+    * The JitContext pointer is stored immediately after the last value slot.
+    * Example:
+    *   RSP
+        |
+        +---------------------------+
+        | Value slot 0 (8 bytes)    | Offset 0
+        +---------------------------+
+        | Value slot 1 (8 bytes)    | Offset 8
+        +---------------------------+
+        | Value slot 2 (8 bytes)    | Offset 16
+        +---------------------------+
+        | Value slot 3 (8 bytes)    | Offset 24
+        +---------------------------+
+        | JitContext* (8 bytes)     | Offset 32  <-- jitContextOffset
+        +---------------------------+
+    */
+    MemoryOffset jitContextOffset = 0;
+
 private:
     std::vector<Slot> jitStack;
     const IR *ir = nullptr;
