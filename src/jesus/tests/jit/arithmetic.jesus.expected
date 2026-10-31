@@ -1,0 +1,10 @@
+[JIT:x86-64]
+(int) 5
+(int) 6
+(int) 42
+(double) 4.000000
+(double) 3.500000
+(double) 3.500000
+(double) 10.000000
+(double) 7.000000
+(double) 7.500000
