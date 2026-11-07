@@ -67,6 +67,9 @@ bool Assembler::emitArithmeticOperation(
     MemoryOffset rightOffset,
     Slot &result)
 {
+    if (!left.isNumeric() || !right.isNumeric())
+        return false;
+
     const bool bothInt = left.isInt() && right.isInt();
     const bool resultIsDouble = opcode == OpCode::DIVIDE || !bothInt;
 
@@ -233,8 +236,10 @@ bool Assembler::emitFusedLiteralRight(OpCode base, const Instruction &instructio
     Slot right{JitValueType::Int};
     if (literal.IS_INT)
         right = Slot::Int(literal.intValue);
-    else
+    else if (literal.IS_DOUBLE)
         right = Slot::Double(literal.number);
+    else
+        return false;
 
     // The left operand is already on top of the stack; the result replaces
     // it, exactly like the VM's *_LITERAL_RIGHT handlers.

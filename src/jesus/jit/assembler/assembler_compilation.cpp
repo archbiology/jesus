@@ -25,7 +25,9 @@ bool Assembler::compileToMachineCode(const IR &input)
 
         if (opcode == OpCode::PUSH_LITERAL)
         {
-            emitPushLiteral(instruction);
+            if (!emitPushLiteral(instruction))
+                return false;
+
             continue;
         }
 
@@ -40,6 +42,14 @@ bool Assembler::compileToMachineCode(const IR &input)
         if (opcode == OpCode::READ_GLOBAL)
         {
             if (!emitReadGlobal(instruction))
+                return false;
+
+            continue;
+        }
+
+        if (opcode == OpCode::CREATE_INSTANCE)
+        {
+            if (!emitCreateInstance())
                 return false;
 
             continue;

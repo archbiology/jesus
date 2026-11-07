@@ -42,10 +42,6 @@ bool Assembler::validateSupportedJitOperations(const IR &ir, std::size_t &maxSlo
     {
         const OpCode opcode = instruction.opcode;
 
-        // -----------------------------------------------------
-        // If PUSH_LITERAL, check if the literal is a number
-        // because we only support arithmethic operations for now
-        // ------------------------------------------------------
         if (opcode == OpCode::PUSH_LITERAL)
         {
             if (instruction.operand >= ir.literals.size())
@@ -56,6 +52,8 @@ bool Assembler::validateSupportedJitOperations(const IR &ir, std::size_t &maxSlo
                 push(Slot::Int(literal.intValue));
             else if (literal.IS_DOUBLE)
                 push(Slot::Double(literal.number));
+            else if (literal.IS_CLASS || literal.IS_FORMLESS)
+                push(Slot::ValueIndex());
             else
                 return false;
 
@@ -88,6 +86,15 @@ bool Assembler::validateSupportedJitOperations(const IR &ir, std::size_t &maxSlo
             continue;
         }
 
+        if (opcode == OpCode::CREATE_INSTANCE)
+        {
+            if (tempStack.empty() || !tempStack.back().isValueIndex())
+                return false;
+
+            tempStack.back() = Slot::ValueIndex();
+            continue;
+        }
+
         // ----------------------------------------------------------------
         // If isArithmetic, validate division by zero,
         // pop the operands and add the slot size (int/double) to the stack
@@ -104,6 +111,10 @@ bool Assembler::validateSupportedJitOperations(const IR &ir, std::size_t &maxSlo
             tempStack.pop_back();
             const Slot left = tempStack.back();
             tempStack.pop_back();
+
+            if (!left.isNumeric() || !right.isNumeric())
+                return false;
+
             if (isDivisionByZero(opcode, right))
                 return false;
 
@@ -142,6 +153,9 @@ bool Assembler::validateSupportedJitOperations(const IR &ir, std::size_t &maxSlo
             else
                 return false;
 
+            if (!right.isNumeric())
+                return false;
+
             if (isDivisionByZero(base_operation, right))
                 return false;
 
@@ -149,6 +163,9 @@ bool Assembler::validateSupportedJitOperations(const IR &ir, std::size_t &maxSlo
             // Add the slot size (int/double) to the stack
             // --------------------------------------------
             const Slot left = tempStack.back();
+            if (!left.isNumeric())
+                return false;
+
             const bool bothInt = left.isInt() && right.isInt();
             const bool resultIsDouble = base_operation == OpCode::DIVIDE || !bothInt;
             tempStack.back() = Slot{resultIsDouble ? JitValueType::Double : JitValueType::Int};

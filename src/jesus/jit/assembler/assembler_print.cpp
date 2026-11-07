@@ -9,14 +9,19 @@ namespace jit
 // They live on the C++ side and reproduce exactly the VM's PRINT formatting
 // (`Value::toString()`), so `--jit` and `--vm` produce identical output.
 // --------------------------------------------------------------------------
-extern "C" void JesusJitPrintInt(int value)
+extern "C" void JitRuntimePrintInt(int value)
 {
     std::cout << Value(value).toString() << std::endl;
 }
 
-extern "C" void JesusJitPrintDouble(double value)
+extern "C" void JitRuntimePrintDouble(double value)
 {
     std::cout << Value(value).toString() << std::endl;
+}
+
+extern "C" void JitRuntimePrintValue(JitContext *ctx, std::uint32_t index)
+{
+    std::cout << ctx->globals[index].toString() << std::endl;
 }
 
 bool Assembler::emitPrint()
@@ -29,7 +34,7 @@ bool Assembler::emitPrint()
 
     const MemoryOffset offset = static_cast<MemoryOffset>(jitStack.size() * JIT_SLOT_SIZE_BYTES);
 
-    if (value.valueType == JitValueType::Int)
+    if (value.isInt())
     {
         // ----------------------------------------------------
         // Move the 32-bit integer value from memory into EDI.
@@ -50,11 +55,11 @@ bool Assembler::emitPrint()
         mov(EDI, dword_ptr(RSP, offset));
 
         // ---------------------------------------------
-        // Move the address of our print function to RAX
+        // Load the address of our print function into RAX
         // ---------------------------------------------
-        mov(RAX, Immediate(&JesusJitPrintInt));
+        mov(RAX, Immediate(&JitRuntimePrintInt));
     }
-    else
+    else if (value.isDouble())
     {
         // -------------------------------------------------------------
         // Move the 64-bit double value from memory into XMM0.
@@ -75,9 +80,28 @@ bool Assembler::emitPrint()
         movsd(XMM0, qword_ptr(RSP, offset));
 
         // ---------------------------------------------
-        // Move the address of our print function to RAX
+        // Load the address of our print function into RAX
         // ---------------------------------------------
-        mov(RAX, Immediate(&JesusJitPrintDouble));
+        mov(RAX, Immediate(&JitRuntimePrintDouble));
+    }
+    else
+    {
+        // ---------------------------------------------------------
+        // Then it is a ValueIndex (an index to an object)
+        //
+        // Fist, load JitContext for `JitRuntimePrintValue` into RDI
+        // ---------------------------------------------------------
+        loadJitContextPointerIntoRDI();
+
+        // --------------------------------------
+        // Load the second arg (`index`) into RSI
+        // --------------------------------------
+        mov(RSI, dword_ptr(RSP, offset));
+
+        // ---------------------------------------------
+        // Load the address of our print function to RAX
+        // ---------------------------------------------
+        mov(RAX, Immediate(&JitRuntimePrintValue));
     }
 
     // -----------------------------------------------
