@@ -281,6 +281,7 @@ set(JESUS_CPP_FILES
     src/jesus/jit/assembler/assembler_print.cpp
     src/jesus/jit/assembler/assembler_values.cpp
     src/jesus/jit/assembler/assembler_globals.cpp
+    src/jesus/jit/assembler/assembler_objects.cpp
 
     src/jesus/jit/assembler/x86_64/x86_assembler.cpp
 )

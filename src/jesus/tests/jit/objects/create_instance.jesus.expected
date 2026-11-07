@@ -1,0 +1,6 @@
+[JIT:x86-64]
+{type: "instance",
+ class: "Box",
+ attributes: { }
+}
+(int) 42

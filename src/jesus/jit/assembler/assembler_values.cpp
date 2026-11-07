@@ -6,7 +6,10 @@
 namespace jit
 {
 
-void Assembler::emitPushLiteral(const Instruction &instruction)
+// Implemented in assembler_objects.cpp
+extern "C" std::uint32_t JitRuntimeAppendLiteral(JitContext *ctx, const Value *value);
+
+bool Assembler::emitPushLiteral(const Instruction &instruction)
 {
     const Value &literal = ir->literals[instruction.operand];
     const MemoryOffset offset = static_cast<MemoryOffset>(jitStack.size() * JIT_SLOT_SIZE_BYTES);
@@ -24,8 +27,10 @@ void Assembler::emitPushLiteral(const Instruction &instruction)
         // -----------------------------------------------
         mov(dword_ptr(RSP, offset), Immediate(literal.intValue));
         pushSlot(Slot::Int(literal.intValue));
+        return true;
     }
-    else
+
+    if (literal.IS_DOUBLE)
     {
         std::uint64_t bits = 0;
         static_assert(sizeof(bits) == sizeof(literal.number));
@@ -53,7 +58,41 @@ void Assembler::emitPushLiteral(const Instruction &instruction)
         // ----------------------------------------------------------------
         mov(qword_ptr(RSP, offset), RAX);
         pushSlot(Slot::Double(literal.number));
+        return true;
     }
+
+    if (literal.IS_CLASS || literal.IS_FORMLESS)
+    {
+        // --------------------------------------------------------
+        // Non-numeric values are copied into `JitContext::globals`
+        // The stack slot stores the returned index.
+        //
+        // Lets load the JitRuntimeAppendLiteral's params
+        // Start loading the `JitContext` in RDI (the first arg)
+        // --------------------------------------------------------
+        loadJitContextPointerIntoRDI();
+
+        // ------------------------------------------------
+        // Now, load the second argument (`value`) into RSI
+        // ------------------------------------------------
+        mov(RSI, Immediate(reinterpret_cast<std::int64_t>(&literal)));
+
+        // ----------------------------------------------------------
+        // Now put the function address in RAX, and call the function
+        // ----------------------------------------------------------
+        mov(RAX, Immediate(&JitRuntimeAppendLiteral));
+        call(RAX);
+
+        // ----------------------------------------------------
+        // The function's return, the instance index, is at EAX
+        // Let's take it from EAX and save it into the stack
+        // ----------------------------------------------------
+        mov(dword_ptr(RSP, offset), EAX);
+        pushSlot(Slot::ValueIndex());
+        return true;
+    }
+
+    return false;
 }
 
 /**

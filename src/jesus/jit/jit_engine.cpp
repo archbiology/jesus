@@ -13,6 +13,44 @@
 namespace jit
 {
 
+/**
+ * @brief Counts the slots needed for global variables.
+ *
+ * Scans all IR instructions to find the highest global index.
+ * Returns the highest index plus one because indexes start at zero.
+ *
+ * This ensures all global variable slots exist before execution,
+ * so the runtime can safely access globals[index].
+ *
+ * Check JitRuntimeUpdateGlobalValue if you plan to
+ * refactor this function.
+ */
+std::size_t countGlobalSlots(const IR &ir)
+{
+    std::uint32_t maxIndex = 0;
+    bool found = false;
+
+    for (const Instruction &instruction : ir.instructions)
+    {
+        switch (instruction.opcode)
+        {
+        case OpCode::CREATE_GLOBAL:
+        case OpCode::READ_GLOBAL:
+        case OpCode::WRITE_GLOBAL:
+        case OpCode::INIT_REPEAT_COUNT:
+            if (!found || instruction.operand > maxIndex)
+                maxIndex = instruction.operand;
+            found = true;
+            break;
+
+        default:
+            break;
+        }
+    }
+
+    return found ? static_cast<std::size_t>(maxIndex) + 1 : 0;
+}
+
 std::unique_ptr<Assembler> createAssembler()
 {
 #if defined(__x86_64__) || defined(_M_X64)
@@ -60,6 +98,7 @@ bool JitEngine::execute(const IR &ir)
 
     std::cout << "[JIT:" << assembler->name() << "]\n";
     JitContext context;
+    context.globals.resize(countGlobalSlots(ir));
     code->execute(context);
     return true;
 }

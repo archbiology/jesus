@@ -6,7 +6,16 @@ namespace jit
 enum class JitValueType
 {
     Int,
-    Double
+    Double,
+
+    /**
+     * @brief An index into `JitContext::globals`.
+     *
+     * Classes, instances and formless values use this kind.
+    * The JIT stack stores a 32-bit index instead of a pointer,
+    * avoiding pointer invalidation when the vector grows.
+     */
+    ValueIndex
 };
 
 /**
@@ -48,6 +57,11 @@ struct Slot
         return slot;
     }
 
+    static Slot ValueIndex()
+    {
+        return Slot{JitValueType::ValueIndex};
+    }
+
     double asDouble() const
     {
         return valueType == JitValueType::Int ? static_cast<double>(intValue) : doubleValue;
@@ -56,6 +70,21 @@ struct Slot
     bool isInt() const
     {
         return valueType == JitValueType::Int;
+    }
+
+    bool isDouble() const
+    {
+        return valueType == JitValueType::Double;
+    }
+
+    bool isNumeric() const
+    {
+        return valueType == JitValueType::Int || valueType == JitValueType::Double;
+    }
+
+    bool isValueIndex() const
+    {
+        return valueType == JitValueType::ValueIndex;
     }
 };
 

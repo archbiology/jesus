@@ -162,7 +162,7 @@ private:
         jitStack.push_back(slot);
     }
     static std::int32_t offsetOf(std::size_t byteOffset);
-    void emitPushLiteral(const Instruction &instruction);
+    bool emitPushLiteral(const Instruction &instruction);
     /**
      * @brief RDI contains the first arg of functions
      *
@@ -172,6 +172,7 @@ private:
     void recordGlobalVarType(std::uint32_t index, JitValueType valueType);
     bool emitStoreGlobal(const Instruction &instruction);
     bool emitReadGlobal(const Instruction &instruction);
+    bool emitCreateInstance();
     void loadNumberFromMemoryToSimd(const Slot &slot, MemoryOffset offset, const SimdRegister &simdRegister);
     void loadNumberToSimd(
         const Slot &slot,

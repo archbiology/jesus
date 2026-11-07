@@ -50,6 +50,10 @@ extern "C" double JitRuntimeReadGlobalDouble(JitContext *ctx, std::uint32_t inde
     return ctx->globals[index].number;
 }
 
+// *GlobalValue(...) functions are implemented in assembler_objects.cpp
+extern "C" void JitRuntimeUpdateGlobalValue(JitContext *ctx, std::uint32_t globalIndex, std::uint32_t valueIndex);
+extern "C" std::uint32_t JitRuntimeCopyGlobalValue(JitContext *ctx, std::uint32_t globalIndex);
+
 void Assembler::recordGlobalVarType(std::uint32_t index, JitValueType valueType)
 {
     if (index >= globalVariableTypes.size())
@@ -104,7 +108,7 @@ bool Assembler::emitStoreGlobal(const Instruction &instruction)
         mov(EDX, dword_ptr(RSP, valueOffset));
         mov(RAX, Immediate(&JitRuntimeStoreGlobalInt));
     }
-    else
+    else if (value.isDouble())
     {
         // -------------------------------------------------------------------
         // Pass the double `value` as the first floating-point argument (XMM0)
@@ -112,6 +116,14 @@ bool Assembler::emitStoreGlobal(const Instruction &instruction)
         // -------------------------------------------------------------------
         movsd(XMM0, qword_ptr(RSP, valueOffset));
         mov(RAX, Immediate(&JitRuntimeStoreGlobalDouble));
+    }
+    else
+    {
+        // -------------------------------------------------
+        // Pass the Value index as the third argument (EDX)
+        // -------------------------------------------------
+        mov(EDX, dword_ptr(RSP, valueOffset));
+        mov(RAX, Immediate(&JitRuntimeUpdateGlobalValue));
     }
 
     // -------------------------------------------------------------
@@ -157,7 +169,7 @@ bool Assembler::emitReadGlobal(const Instruction &instruction)
         mov(dword_ptr(RSP, destOffset), EAX);
         pushSlot(Slot{JitValueType::Int});
     }
-    else
+    else if (valueType == JitValueType::Double)
     {
         // ----------------------------
         // Read the global double value
@@ -170,6 +182,20 @@ bool Assembler::emitReadGlobal(const Instruction &instruction)
         // ------------------------
         movsd(qword_ptr(RSP, destOffset), XMM0);
         pushSlot(Slot{JitValueType::Double});
+    }
+    else
+    {
+        // ------------------------------------------------
+        // Read the global Value and return its copied index
+        // ------------------------------------------------
+        mov(RAX, Immediate(&JitRuntimeCopyGlobalValue));
+        call(RAX);
+
+        // --------------------------------
+        // Return value is a Value index
+        // --------------------------------
+        mov(dword_ptr(RSP, destOffset), EAX);
+        pushSlot(Slot::ValueIndex());
     }
 
     return true;

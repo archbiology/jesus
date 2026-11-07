@@ -1,0 +1,8 @@
+let there be Box:
+amen
+
+create b = Box()
+create answer = 42
+
+say b
+say answer
