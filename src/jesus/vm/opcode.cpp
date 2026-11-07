@@ -88,6 +88,9 @@ std::string opcodeToString(OpCode opcode)
     case OpCode::RETURN:
         return "RETURN";
 
+    case OpCode::EXIT:
+        return "EXIT";
+
     case OpCode::ADD_LOCAL_LOCAL:
         return "ADD_LOCAL_LOCAL";
 

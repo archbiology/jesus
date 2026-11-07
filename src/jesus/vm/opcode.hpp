@@ -57,6 +57,7 @@ enum class OpCode : uint8_t
 
     CALL,
     RETURN,
+    EXIT,
 
     // -----------------------------------------------------------------
     // Fused opcodes that avoid the operand stack for local arithmetic.
