@@ -1,4 +1,6 @@
 #include "assembler.hpp"
+
+#include "interpreter/runtime/method.hpp"
 #include "spirit/value.hpp"
 #include "vm/opcode.hpp"
 
@@ -95,6 +97,31 @@ bool Assembler::validateSupportedJitOperations(const IR &ir, std::size_t &maxSlo
             continue;
         }
 
+        if (opcode == OpCode::CALL)
+        {
+            if (instruction.operand >= ir.literals.size())
+                return false;
+
+            const Value &literal = ir.literals[instruction.operand];
+            if (!literal.IS_METHOD)
+                return false;
+
+            const auto method = std::dynamic_pointer_cast<Method>(literal.asMethod());
+            if (!method)
+                return false;
+
+            std::uint32_t paramsCount = method->params ? method->params->paramsCount : 0;
+            paramsCount++; // Why? We always have $self instance as first arg.
+            if (tempStack.size() < paramsCount)
+                return false;
+
+            for (std::uint32_t index = 0; index < paramsCount; ++index)
+                tempStack.pop_back();
+
+            push(Slot::ValueIndex());
+            continue;
+        }
+
         // ----------------------------------------------------------------
         // If isArithmetic, validate division by zero,
         // pop the operands and add the slot size (int/double) to the stack
@@ -181,10 +208,25 @@ bool Assembler::validateSupportedJitOperations(const IR &ir, std::size_t &maxSlo
             continue;
         }
 
+        if (opcode == OpCode::EXIT)
+        {
+            // EXIT only ends the top-level program chunk.
+            if (ir.localCount != 0)
+                return false;
+
+            // Anything after EXIT is unreachable and is ignored here as well.
+            return true;
+        }
+
         if (opcode == OpCode::RETURN)
         {
-            // Top-level RETURN ends the program chunk. Anything after it is
-            // unreachable for the VM and is ignored here as well.
+            // RETURN only returns from a method and hands its top stack value
+            // back to the caller.
+            if (ir.localCount == 0 || tempStack.empty())
+                return false;
+
+            // Anything after RETURN is unreachable for the VM and is ignored
+            // here as well.
             return true;
         }
 

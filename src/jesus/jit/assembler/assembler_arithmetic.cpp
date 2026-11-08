@@ -201,19 +201,19 @@ bool Assembler::emitArithmeticOperation(
  */
 bool Assembler::emitBinaryArithmeticOperation(OpCode opcode)
 {
-    if (jitStack.size() < 2)
+    if (jitCompilationStack.size() < 2)
         return false;
 
-    const Slot right = jitStack.back();
-    jitStack.pop_back();
-    const Slot left = jitStack.back();
-    jitStack.pop_back();
+    const Slot right = jitCompilationStack.back();
+    jitCompilationStack.pop_back();
+    const Slot left = jitCompilationStack.back();
+    jitCompilationStack.pop_back();
 
     // ---------------------------------------------------------------------------------
     // Above we removed two values from the compiler's internal stack model,
     // but the corresponding values are still stored in the memory that JIT runtime uses.
     // ---------------------------------------------------------------------------------
-    const MemoryOffset leftOffset = static_cast<MemoryOffset>(jitStack.size() * JIT_SLOT_SIZE_BYTES);
+    const MemoryOffset leftOffset = static_cast<MemoryOffset>(jitCompilationStack.size() * JIT_SLOT_SIZE_BYTES);
     const MemoryOffset rightOffset = leftOffset + JIT_SLOT_SIZE_BYTES;
     constexpr bool isRightOperandInMemory = true;
 
@@ -227,7 +227,7 @@ bool Assembler::emitBinaryArithmeticOperation(OpCode opcode)
 
 bool Assembler::emitFusedLiteralRight(OpCode base, const Instruction &instruction)
 {
-    if (jitStack.empty())
+    if (jitCompilationStack.empty())
         return false;
 
     const std::uint32_t literalIndex = extractLower16Bits(instruction.operand);
@@ -243,15 +243,15 @@ bool Assembler::emitFusedLiteralRight(OpCode base, const Instruction &instructio
 
     // The left operand is already on top of the stack; the result replaces
     // it, exactly like the VM's *_LITERAL_RIGHT handlers.
-    const Slot left = jitStack.back();
-    const std::size_t leftOffset = (jitStack.size() - 1) * JIT_SLOT_SIZE_BYTES;
+    const Slot left = jitCompilationStack.back();
+    const std::size_t leftOffset = (jitCompilationStack.size() - 1) * JIT_SLOT_SIZE_BYTES;
     constexpr bool isRightOperandInMemory = false;
 
     Slot result{JitValueType::Int};
     if (!emitArithmeticOperation(base, left, leftOffset, right, isRightOperandInMemory, /*rightOffset */ 0, result))
         return false;
 
-    jitStack.back() = result;
+    jitCompilationStack.back() = result;
     return true;
 }
 

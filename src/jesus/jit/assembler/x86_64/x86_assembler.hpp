@@ -25,6 +25,8 @@ public:
 
     std::unique_ptr<ExecutableCode> assemble(const IR &ir) override;
 
+    void releaseCompilationData() override;
+
 private:
     std::unique_ptr<asmjit::CodeHolder> code;
     std::unique_ptr<asmjit::x86::Assembler> assembler;

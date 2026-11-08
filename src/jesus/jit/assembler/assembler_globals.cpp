@@ -75,11 +75,11 @@ void Assembler::loadJitContextPointerIntoRDI()
 
 bool Assembler::emitStoreGlobal(const Instruction &instruction)
 {
-    if (jitStack.empty())
+    if (jitCompilationStack.empty())
         return false;
 
-    const Slot value = jitStack.back();
-    const MemoryOffset valueOffset = static_cast<MemoryOffset>((jitStack.size() - 1) * JIT_SLOT_SIZE_BYTES);
+    const Slot value = jitCompilationStack.back();
+    const MemoryOffset valueOffset = static_cast<MemoryOffset>((jitCompilationStack.size() - 1) * JIT_SLOT_SIZE_BYTES);
     const std::uint32_t index = instruction.operand;
 
     // -----------------------------------------------------
@@ -132,7 +132,7 @@ bool Assembler::emitStoreGlobal(const Instruction &instruction)
     call(RAX);
 
     recordGlobalVarType(index, value.valueType);
-    jitStack.pop_back();
+    jitCompilationStack.pop_back();
     return true;
 }
 
@@ -143,7 +143,7 @@ bool Assembler::emitReadGlobal(const Instruction &instruction)
         return false;
 
     const JitValueType valueType = globalVariableTypes[index];
-    const MemoryOffset destOffset = static_cast<MemoryOffset>(jitStack.size() * JIT_SLOT_SIZE_BYTES);
+    const MemoryOffset destOffset = static_cast<MemoryOffset>(jitCompilationStack.size() * JIT_SLOT_SIZE_BYTES);
 
     // -----------------------------------------------------
     // Pass the `context` value as the first argument (RDI)

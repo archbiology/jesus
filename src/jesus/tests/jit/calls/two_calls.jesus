@@ -1,0 +1,9 @@
+let there be Greeter:
+    purpose hello():
+        say 1
+    amen
+amen
+
+create g = Greeter()
+g hello
+g hello

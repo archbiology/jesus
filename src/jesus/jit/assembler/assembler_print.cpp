@@ -26,13 +26,13 @@ extern "C" void JitRuntimePrintValue(JitContext *ctx, std::uint32_t index)
 
 bool Assembler::emitPrint()
 {
-    if (jitStack.empty())
+    if (jitCompilationStack.empty())
         return false;
 
-    const Slot value = jitStack.back();
-    jitStack.pop_back();
+    const Slot value = jitCompilationStack.back();
+    jitCompilationStack.pop_back();
 
-    const MemoryOffset offset = static_cast<MemoryOffset>(jitStack.size() * JIT_SLOT_SIZE_BYTES);
+    const MemoryOffset offset = static_cast<MemoryOffset>(jitCompilationStack.size() * JIT_SLOT_SIZE_BYTES);
 
     if (value.isInt())
     {

@@ -12,7 +12,7 @@ extern "C" std::uint32_t JitRuntimeAppendLiteral(JitContext *ctx, const Value *v
 bool Assembler::emitPushLiteral(const Instruction &instruction)
 {
     const Value &literal = ir->literals[instruction.operand];
-    const MemoryOffset offset = static_cast<MemoryOffset>(jitStack.size() * JIT_SLOT_SIZE_BYTES);
+    const MemoryOffset offset = static_cast<MemoryOffset>(jitCompilationStack.size() * JIT_SLOT_SIZE_BYTES);
 
     if (literal.IS_INT)
     {

@@ -98,12 +98,12 @@ extern "C" std::uint32_t JitRuntimeCopyGlobalValue(JitContext *ctx, std::uint32_
 
 bool Assembler::emitCreateInstance()
 {
-    if (jitStack.empty() || !jitStack.back().isValueIndex())
+    if (jitCompilationStack.empty() || !jitCompilationStack.back().isValueIndex())
         return false;
 
-    jitStack.pop_back();
+    jitCompilationStack.pop_back();
 
-    const MemoryOffset offset = static_cast<MemoryOffset>(jitStack.size() * JIT_SLOT_SIZE_BYTES);
+    const MemoryOffset offset = static_cast<MemoryOffset>(jitCompilationStack.size() * JIT_SLOT_SIZE_BYTES);
 
     // -----------------------------------------------------
     // Pass the args of the function JitRuntimeCreateInstance
