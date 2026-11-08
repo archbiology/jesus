@@ -17,27 +17,28 @@ namespace jit
 class ExecutableCode
 {
 public:
-    using Entrypoint = void (*)(JitContext *);
-
-    ExecutableCode(Entrypoint entrypoint, std::shared_ptr<void> runtime)
+    ExecutableCode(JitEntrypoint entrypoint, std::shared_ptr<void> runtime)
         : entrypoint(entrypoint), runtime(std::move(runtime))
     {
     }
 
     /**
      * @brief `JitContext` is passed in `RDI` (System V first argument).
+     *
+     * The initial program frame base is passed in `RSI` (System V second arg)
      */
     void execute(JitContext &context) const
     {
-        entrypoint(&context);
+        constexpr MethodBaseSlot slotOfFirstFrame = 0;
+        entrypoint(&context, slotOfFirstFrame);
     }
 
-private:
     /**
      * @brief The address of the generated machine code (assembly).
      */
-    Entrypoint entrypoint = nullptr;
+    const JitEntrypoint entrypoint = nullptr;
 
+private:
     /**
      * @brief (asmjit::JitRuntime) keeps the executable memory alive.
      *

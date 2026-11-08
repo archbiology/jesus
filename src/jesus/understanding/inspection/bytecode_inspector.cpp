@@ -71,6 +71,7 @@ void BytecodeInspector::inspect(Interpreter &jesus, const InspectStmt &)
             opcode_str = maybeRed(padded_opcode);
             break;
         case OpCode::RETURN:
+        case OpCode::EXIT:
         case OpCode::CALL:
             opcode_str = maybeBold(padded_opcode);
             break;

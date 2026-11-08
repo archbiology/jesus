@@ -274,6 +274,7 @@ set(JESUS_CPP_FILES
     # JIT (Assembly)
     # --------------
     src/jesus/jit/jit_engine.cpp
+    src/jesus/jit/jit_chunks.cpp
     src/jesus/jit/assembler/assembler_validation.cpp
     src/jesus/jit/assembler/assembler_compilation.cpp
 
@@ -282,6 +283,7 @@ set(JESUS_CPP_FILES
     src/jesus/jit/assembler/assembler_values.cpp
     src/jesus/jit/assembler/assembler_globals.cpp
     src/jesus/jit/assembler/assembler_objects.cpp
+    src/jesus/jit/assembler/assembler_calls.cpp
 
     src/jesus/jit/assembler/x86_64/x86_assembler.cpp
 )

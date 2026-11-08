@@ -10,12 +10,22 @@
 namespace jit
 {
 
+void Assembler::releaseCompilationData()
+{
+    jitCompilationStack.clear();
+    jitCompilationStack.shrink_to_fit();
+    globalVariableTypes.clear();
+    globalVariableTypes.shrink_to_fit();
+    ir = nullptr;
+    chunksMap = nullptr;
+}
+
 /**
  * @brief Compiles validated IR instructions into assembly.
  */
 bool Assembler::compileToMachineCode(const IR &input)
 {
-    jitStack.clear();
+    jitCompilationStack.clear();
     globalVariableTypes.clear();
     ir = &input;
 
@@ -55,6 +65,14 @@ bool Assembler::compileToMachineCode(const IR &input)
             continue;
         }
 
+        if (opcode == OpCode::CALL)
+        {
+            if (!emitCall(instruction))
+                return false;
+
+            continue;
+        }
+
         if (isArithmetic(opcode))
         {
             if (!emitBinaryArithmeticOperation(opcode))
@@ -80,8 +98,11 @@ bool Assembler::compileToMachineCode(const IR &input)
             continue;
         }
 
+        if (opcode == OpCode::EXIT)
+            return ir->localCount == 0;
+
         if (opcode == OpCode::RETURN)
-            return true;
+            return ir->localCount > 0 && emitReturn();
 
         return false;
     }

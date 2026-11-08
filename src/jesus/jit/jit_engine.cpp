@@ -1,55 +1,47 @@
-
+#include <cstddef>
 #include <cstdlib>
 #include <iostream>
-#include <string>
+#include <memory>
+#include <utility>
+#include <vector>
 
 #include "jit_engine.hpp"
+#include "jit_chunks.hpp"
 #include "jit_context.hpp"
 #include "assembler/x86_64/x86_assembler.hpp"
 // #include "assembler/arm64/arm64_assembler.hpp"
 
-#include "vm/opcode.hpp"
-
 namespace jit
+{
+namespace
 {
 
 /**
- * @brief Counts the slots needed for global variables.
+ * @brief Releases assembler state as soon as code generation finishes.
  *
- * Scans all IR instructions to find the highest global index.
- * Returns the highest index plus one because indexes start at zero.
- *
- * This ensures all global variable slots exist before execution,
- * so the runtime can safely access globals[index].
- *
- * Check JitRuntimeUpdateGlobalValue if you plan to
- * refactor this function.
+ * The destructor runs while the chunk map is still alive, so the assembler
+ * never keeps a dangling pointer to compilation-only chunk data.
  */
-std::size_t countGlobalSlots(const IR &ir)
+class CompilationDataGuard
 {
-    std::uint32_t maxIndex = 0;
-    bool found = false;
-
-    for (const Instruction &instruction : ir.instructions)
+public:
+    explicit CompilationDataGuard(Assembler &assembler) : assembler(assembler)
     {
-        switch (instruction.opcode)
-        {
-        case OpCode::CREATE_GLOBAL:
-        case OpCode::READ_GLOBAL:
-        case OpCode::WRITE_GLOBAL:
-        case OpCode::INIT_REPEAT_COUNT:
-            if (!found || instruction.operand > maxIndex)
-                maxIndex = instruction.operand;
-            found = true;
-            break;
-
-        default:
-            break;
-        }
     }
 
-    return found ? static_cast<std::size_t>(maxIndex) + 1 : 0;
-}
+    ~CompilationDataGuard()
+    {
+        assembler.releaseCompilationData();
+    }
+
+    CompilationDataGuard(const CompilationDataGuard &) = delete;
+    CompilationDataGuard &operator=(const CompilationDataGuard &) = delete;
+
+private:
+    Assembler &assembler;
+};
+
+} // namespace
 
 std::unique_ptr<Assembler> createAssembler()
 {
@@ -76,30 +68,82 @@ bool JitEngine::execute(const IR &ir)
     if (!assembler)
         return false;
 
-    if (std::getenv("JESUS_JIT_DUMP"))
+    const bool shouldDump = std::getenv("JESUS_JIT_DUMP") != nullptr;
+
+    std::vector<std::unique_ptr<ExecutableCode>> executableChunks;
+    JitContext context;
+
+    // ----------------------------------------------------------
+    // Compilation-only data lives only in this block.
+    // It is released before main->execute() below,
+    // so it does not occupy memory while native code is running.
+    // ----------------------------------------------------------
     {
-        std::cerr << "[JIT] " << assembler->name() << " chunk:\n";
-        for (std::size_t i = 0; i < ir.instructions.size(); ++i)
+        JitChunks jitChunks(ir);
+        CompilationDataGuard compilationDataGuard(*assembler);
+
+        // -------------------------
+        // First, extract all chunks
+        // -------------------------
+        if (!jitChunks.registerAllChunks())
         {
-            const Instruction &instruction = ir.instructions[i];
-            std::cerr << "  " << i << ": " << opcodeToString(instruction.opcode) << " " << instruction.operand << "\n";
+            if (shouldDump)
+                std::cerr << "[JIT] " << assembler->name()
+                          << " cannot register all method chunks; falling back to VM\n";
+
+            return false;
+        }
+
+        assembler->setChunksMap(jitChunks.map());
+
+        // -----------------------------------------
+        // Assemble each chunk to JIT executable code
+        // -----------------------------------------
+        if (shouldDump)
+            jitChunks.dump(*assembler);
+
+        const auto &chunks = jitChunks.all();
+        executableChunks.reserve(chunks.size());
+
+        for (std::size_t chunkId = 0; chunkId < chunks.size(); ++chunkId)
+        {
+            auto jitCode = assembler->assemble(*chunks[chunkId].chunk);
+
+            if (!jitCode)
+            {
+                if (shouldDump)
+                    std::cerr << "[JIT] " << assembler->name() << " cannot compile this chunk; falling back to VM\n";
+
+                return false;
+            }
+
+            executableChunks.push_back(std::move(jitCode));
+        }
+
+        // -------------------------
+        // Prepare runtime-only state
+        // -------------------------
+        context.globals.resize(jitChunks.countGlobalSlots());
+        context.jitMethods.resize(chunks.size());
+
+        for (std::size_t id = 0; id < chunks.size(); ++id)
+        {
+            context.jitMethods[id] = JitMethod{
+                executableChunks[id]->entrypoint,
+                chunks[id].paramsCount,
+                chunks[id].localCount,
+            };
         }
     }
 
-    auto code = assembler->assemble(ir);
-
-    if (!code)
-    {
-        if (std::getenv("JESUS_JIT_DUMP"))
-            std::cerr << "[JIT] " << assembler->name() << " cannot compile this chunk; falling back to VM\n";
-
-        return false;
-    }
-
+    // -------------------------
+    // Now execute the JIT code
+    // -------------------------
     std::cout << "[JIT:" << assembler->name() << "]\n";
-    JitContext context;
-    context.globals.resize(countGlobalSlots(ir));
-    code->execute(context);
+
+    auto &main = executableChunks.front();
+    main->execute(context);
+
     return true;
 }
 

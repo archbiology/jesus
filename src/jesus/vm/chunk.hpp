@@ -29,7 +29,7 @@
  *     PUSH_LITERAL 1
  *     ADD
  *     PRINT
- *     RETURN
+ *     EXIT
  *
  * The VM executes instructions stored in `code`
  * and loads literal values from `literals`.

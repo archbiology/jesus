@@ -1,0 +1,5 @@
+say "before"
+if yes:
+    return
+amen
+say "after"

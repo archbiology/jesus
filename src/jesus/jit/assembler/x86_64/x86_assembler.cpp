@@ -29,8 +29,9 @@ std::unique_ptr<ExecutableCode> X86Assembler::assemble(const IR &ir)
     assembler = std::make_unique<asmjit::x86::Assembler>(code.get());
 
     // --------------------------------------------------------------------
-    // Reserve C++ stack memory for the JIT's temporary values plus one
-    // extra slot that holds the JitContext pointer passed in RDI.
+    // Reserve C++ stack memory for the JIT's temporary values plus two
+    // extra slots: the JitContext pointer passed in RDI and the frame's
+    // locals base passed in RSI.
     // Each JIT-compiler stack slot occupies 8 bytes (64 bits).
     // Example:
     //    RSP
@@ -46,9 +47,12 @@ std::unique_ptr<ExecutableCode> X86Assembler::assemble(const IR &ir)
     //     +---------------------------+
     //     | JitContext* (8 bytes)     | Offset 32  <-- jitContextOffset
     //     +---------------------------+
+    //     | locals base (8 bytes)     | Offset 40  <-- jitMethodsOffset
+    //     +---------------------------+
     // --------------------------------------------------------------------
     jitContextOffset = static_cast<MemoryOffset>(maxSlots * JIT_SLOT_SIZE_BYTES);
-    const std::size_t usedBytes = (maxSlots + 1) * JIT_SLOT_SIZE_BYTES;
+    jitMethodsOffset = jitContextOffset + static_cast<MemoryOffset>(JIT_SLOT_SIZE_BYTES);
+    const std::size_t usedBytes = (maxSlots + 2) * JIT_SLOT_SIZE_BYTES;
 
     // ---------------------------------------------------------------
     // Before calling our function, the CPU put its 8-byte (64 bits)
@@ -142,6 +146,12 @@ std::unique_ptr<ExecutableCode> X86Assembler::assemble(const IR &ir)
     // ---------------------------------------------------
     mov(qword_ptr(RSP, jitContextOffset), RDI);
 
+    // ----------------------------------------
+    // Save the jitMethodsOffset received in RSI
+    // into the JIT runtime stack.
+    // ----------------------------------------
+    mov(qword_ptr(RSP, jitMethodsOffset), RSI);
+
     // -----------------------------------------------
     // Step 2: generate the assembly for the user code
     // -----------------------------------------------
@@ -161,11 +171,18 @@ std::unique_ptr<ExecutableCode> X86Assembler::assemble(const IR &ir)
     if (assembler->finalize() != asmjit::Error::kOk)
         return nullptr;
 
-    ExecutableCode::Entrypoint entrypoint = nullptr;
+    JitEntrypoint entrypoint = nullptr;
     if (runtime->add(&entrypoint, code.get()) != asmjit::Error::kOk || entrypoint == nullptr)
         return nullptr;
 
     return std::make_unique<ExecutableCode>(entrypoint, std::move(runtime));
+}
+
+void X86Assembler::releaseCompilationData()
+{
+    assembler.reset();
+    code.reset();
+    Assembler::releaseCompilationData();
 }
 
 static asmjit::x86::Gp toAsmJit(Register reg)

@@ -73,7 +73,7 @@
  *         PUSH_LITERAL 1
  *         ADD
  *         PRINT
- *         RETURN
+ *         EXIT
  *
  * The Compiler does not execute code.
  * Its only responsibility is generating bytecode.

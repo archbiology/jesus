@@ -22,7 +22,7 @@ Chunk Compiler::compile(const std::vector<std::unique_ptr<Stmt>> &statements)
         compileStmt(*stmt);
     }
 
-    emit(OpCode::RETURN);
+    emit(OpCode::EXIT);
 
     return chunk;
 }
@@ -1252,7 +1252,7 @@ void Compiler::compileMethodBody(const CreateMethodStmt &method)
     //     slot 1.. -> the parameters, then the vars created in the body
     //
     // Reaching the end of a body returns nothing;
-    // an explicit 'return' is not compiled by the VM yet.
+    // an explicit 'return' produces a method RETURN.
     // ---------------------------------------------------------------
 
     // Saving the top-level context, so a method body does not leak its
@@ -1379,5 +1379,8 @@ void Compiler::compileReturnStmt(const ReturnStmt &stmt)
     {
         emit(OpCode::PUSH_LITERAL, addConstant(Value::formless()));
     }
-    emit(OpCode::RETURN);
+
+    // RETURN belongs to methods. A top-level 'return' still means "stop the
+    // program", so it compiles to EXIT instead.
+    emit(compilingMethodBody ? OpCode::RETURN : OpCode::EXIT);
 }

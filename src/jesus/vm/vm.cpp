@@ -62,6 +62,7 @@ void VM::run(const Chunk &chunk)
         &&OP_JUMP_IF_FALSE,   // JUMP_IF_FALSE
         &&OP_CALL,            // CALL
         &&OP_RETURN,          // RETURN
+        &&OP_EXIT,            // EXIT
         &&OP_ADD_LOCAL_LOCAL,             // ADD_LOCAL_LOCAL
         &&OP_SUBTRACT_LOCAL_LOCAL,        // SUBTRACT_LOCAL_LOCAL
         &&OP_MULTIPLY_LOCAL_LOCAL,        // MULTIPLY_LOCAL_LOCAL
@@ -1528,13 +1529,16 @@ void VM::run(const Chunk &chunk)
             goto NEXT_OP;
         }
 
+    OP_EXIT:
+        {
+            // EXIT ends the program. Mthod bodies use RETURN.
+            return;
+        }
+
     OP_RETURN:
         {
             if (frames.size() == 1)
-            {
-                // The program itself is returning, so finish execution.
-                return;
-            }
+                throw std::runtime_error("RETURN executed outside of a method");
 
             // A method is returning: hand the value back to the caller.
             Value result = std::move(stack.back());

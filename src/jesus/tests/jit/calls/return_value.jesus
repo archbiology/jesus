@@ -1,0 +1,8 @@
+let there be Answer:
+    purpose value() -> number:
+        return 42
+    amen
+amen
+
+create ans = Answer()
+say ans value

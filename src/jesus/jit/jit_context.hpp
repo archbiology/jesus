@@ -7,6 +7,9 @@
 namespace jit
 {
 
+struct JitMethod; // forward declaration
+using MethodBaseSlot = std::uint32_t;
+
 /**
  * @brief Runtime state shared by every native function on `--jit` runs.
  *
@@ -45,6 +48,57 @@ struct JitContext
         +-------+----------------------+-------------------+
      */
     std::vector<Value> globals;
+
+    /**
+     * @brief Stores values used during method calls.
+     *
+     * When one method calls another, the instance and arguments are placed
+     * on this stack before the called method starts executing.
+     *
+     * The called method's frame begins at the position of slot 0 (`$self`).
+     * This gives the method a predictable starting position for accessing
+     * its instance, arguments and local variables.
+     *
+     * When the called method executes RETURN, its frame is removed from
+     * the stack, but its return value is kept. This allows the calling
+     * method to use the returned value without losing its own variables
+     * and other values already on the stack.
+     *
+     * After RETURN, the return value occupies slot 0, replacing the
+     * instance that was there before the method was called.
+     */
+    std::vector<Value> jitRuntimeStack;
+
+    /**
+     * @brief JIT-compiled methods.
+     */
+    std::vector<JitMethod> jitMethods;
+
+    /**
+     * @brief Slot where the current frame begins in `jitRuntimeStack`.
+     */
+    MethodBaseSlot currentMethodBaseSlot = 0;
+};
+
+/**
+ * @brief Entry point of one compiled chunk.
+ *
+ * RDI receives the shared JitContext.
+ * RSI receives the base slot of the current method/frame.
+ */
+using JitEntrypoint = void (*)(JitContext *, MethodBaseSlot);
+
+/**
+ * @brief JIT method
+ *
+* It provides the JIT entrypoint of methods, the number of
+* parameters and local variables required by the corresponding chunk.
+ */
+struct JitMethod
+{
+    JitEntrypoint entrypoint = nullptr;
+    std::uint32_t paramsCount = 0;
+    std::uint32_t localCount = 0;
 };
 
 } // namespace jit

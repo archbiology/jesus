@@ -49,7 +49,7 @@ struct CallFrame
  *     [1,2]
  *     [3]
  *
- * The VM continues until a RETURN instruction is reached.
+ * The VM continues until an EXIT instruction is reached.
  */
 class VM
 {
@@ -77,7 +77,7 @@ public:
     VM() = default;
 
     /**
-     * Executes the loaded Chunk until a RETURN
+     * Executes the loaded Chunk until an EXIT
      * instruction is encountered.
      */
     void run(const Chunk &chunk);

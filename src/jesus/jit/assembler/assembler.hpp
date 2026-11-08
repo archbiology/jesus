@@ -3,6 +3,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <memory>
+#include <unordered_map>
 #include <vector>
 
 #include "compiler/ir.hpp"
@@ -14,6 +15,12 @@
 
 namespace jit
 {
+
+/**
+ * @brief Maps each compiled chunk to its runtime CALL target id.
+ */
+using ChunkId = std::uint32_t;
+using ChunksMap = std::unordered_map<const IR *, ChunkId>;
 
 /**
  * @brief Memory position, measured in bytes, relative to the stack pointer.
@@ -58,6 +65,25 @@ public:
      * the same IR on the bytecode VM, so `--jit` never rejects a program.
      */
     virtual std::unique_ptr<ExecutableCode> assemble(const IR &ir) = 0;
+
+    /**
+     * @brief Sets the ids used by CALL instructions in the chunks being
+     * compiled.
+     *
+     * The JIT engine assigns one id per reachable chunk and later uses the
+     * same ids to fill JitContext::jitMethods. The map only needs to stay
+     * alive while chunks are assembled; call releaseCompilationData() before
+     * execution starts.
+     */
+    void setChunksMap(const ChunksMap &targets)
+    {
+        chunksMap = &targets;
+    }
+
+    /**
+     * @brief Releases data that is only needed while generating machine code.
+     */
+    virtual void releaseCompilationData();
 
     virtual ~Assembler() = default;
 
@@ -152,14 +178,20 @@ protected:
     */
     MemoryOffset jitContextOffset = 0;
 
+    /**
+     * @brief Offset of the current frame's locals base in the JIT stack.
+     */
+    MemoryOffset jitMethodsOffset = 0;
+
 private:
-    std::vector<Slot> jitStack;
+    std::vector<Slot> jitCompilationStack;
     std::vector<JitValueType> globalVariableTypes;
     const IR *ir = nullptr;
+    const ChunksMap *chunksMap = nullptr;
 
     void pushSlot(const Slot &slot)
     {
-        jitStack.push_back(slot);
+        jitCompilationStack.push_back(slot);
     }
     static std::int32_t offsetOf(std::size_t byteOffset);
     bool emitPushLiteral(const Instruction &instruction);
@@ -173,6 +205,8 @@ private:
     bool emitStoreGlobal(const Instruction &instruction);
     bool emitReadGlobal(const Instruction &instruction);
     bool emitCreateInstance();
+    bool emitCall(const Instruction &instruction);
+    bool emitReturn();
     void loadNumberFromMemoryToSimd(const Slot &slot, MemoryOffset offset, const SimdRegister &simdRegister);
     void loadNumberToSimd(
         const Slot &slot,
