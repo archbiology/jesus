@@ -88,6 +88,24 @@ bool Assembler::validateSupportedJitOperations(const IR &ir, std::size_t &maxSlo
             continue;
         }
 
+        if (opcode == OpCode::READ_LOCAL)
+        {
+            if (ir.localCount == 0 || instruction.operand >= ir.localCount)
+                return false;
+
+            push(Slot::ValueIndex());
+            continue;
+        }
+
+        if (opcode == OpCode::WRITE_LOCAL)
+        {
+            if (ir.localCount == 0 || instruction.operand >= ir.localCount || tempStack.empty())
+                return false;
+
+            tempStack.pop_back();
+            continue;
+        }
+
         if (opcode == OpCode::CREATE_INSTANCE)
         {
             if (tempStack.empty() || !tempStack.back().isValueIndex())
