@@ -1,0 +1,13 @@
+let there be Counter:
+    purpose run(limit: number) -> number:
+        create i: number = 0
+        repeat while i < limit:
+            say i
+            i = i + 1
+        amen
+        return i
+    amen
+amen
+
+create counter = Counter()
+say counter run 3

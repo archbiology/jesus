@@ -16,7 +16,9 @@ std::unique_ptr<ExecutableCode> X86Assembler::assemble(const IR &ir)
 
     // ----------------------------------------------------------
     // Destroy the previous code holder before creating a new one.
+    // Labels belong to the previous CodeHolder, so drop them too.
     // ----------------------------------------------------------
+    labels.clear();
     assembler.reset();
     code.reset();
 
@@ -180,6 +182,7 @@ std::unique_ptr<ExecutableCode> X86Assembler::assemble(const IR &ir)
 
 void X86Assembler::releaseCompilationData()
 {
+    labels.clear();
     assembler.reset();
     code.reset();
     Assembler::releaseCompilationData();
@@ -368,6 +371,94 @@ void X86Assembler::call(Register target)
 void X86Assembler::ret()
 {
     assembler->ret();
+}
+
+// -----------------
+// Control flow
+// -----------------
+void X86Assembler::ensureLabel(std::uint32_t index)
+{
+    while (labels.size() <= index)
+        labels.push_back(assembler->new_label());
+}
+
+void X86Assembler::markJumpTarget(std::uint32_t index)
+{
+    ensureLabel(index);
+    assembler->bind(labels[index]);
+}
+
+void X86Assembler::jump(std::uint32_t target)
+{
+    ensureLabel(target);
+    assembler->jmp(labels[target]);
+}
+
+void X86Assembler::jumpIfZero(Register condition, std::uint32_t target)
+{
+    const asmjit::x86::Gp reg = toAsmJit(condition);
+    ensureLabel(target);
+    assembler->test(reg, reg);
+    assembler->j(asmjit::x86::CondCode::kZero, labels[target]);
+}
+
+void X86Assembler::compareDoubles(SimdRegister left, SimdRegister right)
+{
+    assembler->comisd(toAsmJit(left), toAsmJit(right));
+}
+
+void X86Assembler::setComparisonResult(JitCondition condition, Register destination)
+{
+    using namespace asmjit::x86;
+
+    if (destination != Register::EAX)
+        throw std::invalid_argument("setComparisonResult expects EAX as its destination");
+
+    switch (condition)
+    {
+    case JitCondition::Equal:
+        assembler->set(CondCode::kNP, al);
+        assembler->movzx(eax, al);
+        assembler->set(CondCode::kEqual, cl);
+        assembler->movzx(ecx, cl);
+        assembler->and_(eax, ecx);
+        break;
+    case JitCondition::NotEqual:
+        assembler->set(CondCode::kP, al);
+        assembler->movzx(eax, al);
+        assembler->set(CondCode::kNotEqual, cl);
+        assembler->movzx(ecx, cl);
+        assembler->or_(eax, ecx);
+        break;
+    case JitCondition::Less:
+        assembler->set(CondCode::kNP, al);
+        assembler->movzx(eax, al);
+        assembler->set(CondCode::kUnsignedLT, cl);
+        assembler->movzx(ecx, cl);
+        assembler->and_(eax, ecx);
+        break;
+    case JitCondition::LessEqual:
+        assembler->set(CondCode::kNP, al);
+        assembler->movzx(eax, al);
+        assembler->set(CondCode::kUnsignedLE, cl);
+        assembler->movzx(ecx, cl);
+        assembler->and_(eax, ecx);
+        break;
+    case JitCondition::Greater:
+        assembler->set(CondCode::kNP, al);
+        assembler->movzx(eax, al);
+        assembler->set(CondCode::kUnsignedGT, cl);
+        assembler->movzx(ecx, cl);
+        assembler->and_(eax, ecx);
+        break;
+    case JitCondition::GreaterEqual:
+        assembler->set(CondCode::kNP, al);
+        assembler->movzx(eax, al);
+        assembler->set(CondCode::kUnsignedGE, cl);
+        assembler->movzx(ecx, cl);
+        assembler->and_(eax, ecx);
+        break;
+    }
 }
 
 } // namespace jit

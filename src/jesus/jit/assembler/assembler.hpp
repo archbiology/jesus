@@ -31,6 +31,21 @@ using ChunksMap = std::unordered_map<const IR *, ChunkId>;
 using MemoryOffset = std::int32_t;
 
 /**
+ * @brief Platform-independent conditions used by comparison and jump helpers.
+ *
+ * The order matches the comparison opcodes emitted by the compiler.
+ */
+enum class JitCondition : std::uint8_t
+{
+    Equal,
+    NotEqual,
+    Less,
+    LessEqual,
+    Greater,
+    GreaterEqual,
+};
+
+/**
  * @brief Each JIT slot occupies 8 bytes (64 bits)
  *
  * This constant refers to a slot in the JIT's runtime stack, not to the
@@ -154,6 +169,15 @@ protected:
     virtual void call(Register target) = 0;
     virtual void ret() = 0;
 
+    // -------------
+    // Control flow
+    // -------------
+    virtual void markJumpTarget(std::uint32_t index) = 0;
+    virtual void jump(std::uint32_t target) = 0;
+    virtual void jumpIfZero(Register condition, std::uint32_t target) = 0;
+    virtual void compareDoubles(SimdRegister left, SimdRegister right) = 0;
+    virtual void setComparisonResult(JitCondition condition, Register destination) = 0;
+
     /**
     * @brief The distance, in bytes, from RSP to the memory location where we store the JitContext*.
     *
@@ -211,6 +235,16 @@ private:
     bool emitCreateInstance();
     bool emitCall(const Instruction &instruction);
     bool emitReturn();
+
+    // ------
+    // Loops
+    // ------
+    bool emitJump(const Instruction &instruction);
+    bool emitJumpIfFalse(const Instruction &instruction);
+    bool emitComparisonBranch(const Instruction &instruction, std::uint32_t target);
+    bool emitAddLiteralToLocalAndJump(const Instruction &instruction, std::uint32_t target);
+    static bool isComparisonBranch(OpCode opcode);
+
     void loadNumberFromMemoryToSimd(const Slot &slot, MemoryOffset offset, const SimdRegister &simdRegister);
     void loadNumberToSimd(
         const Slot &slot,

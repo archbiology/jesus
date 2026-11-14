@@ -16,6 +16,43 @@ inline bool isDivisionByZero(const OpCode &opcode, const Slot &right)
     return opcode == OpCode::DIVIDE && right.isConstant && right.asDouble() == 0.0;
 }
 
+namespace
+{
+
+int comparisonBranchFamily(OpCode opcode)
+{
+    using OpCodeValue = std::underlying_type_t<OpCode>;
+
+    struct Family
+    {
+        OpCode first;
+        OpCode last;
+    };
+
+    static constexpr Family families[] = {
+        {OpCode::JUMP_IF_NOT_EQUAL_LOCAL_LOCAL, OpCode::JUMP_IF_NOT_GREATER_EQUAL_LOCAL_LOCAL},
+        {OpCode::JUMP_IF_NOT_EQUAL_LOCAL_LITERAL, OpCode::JUMP_IF_NOT_GREATER_EQUAL_LOCAL_LITERAL},
+        {OpCode::JUMP_IF_NOT_EQUAL_LITERAL_LOCAL, OpCode::JUMP_IF_NOT_GREATER_EQUAL_LITERAL_LOCAL},
+        {OpCode::JUMP_IF_NOT_EQUAL_LOCAL_RIGHT, OpCode::JUMP_IF_NOT_GREATER_EQUAL_LOCAL_RIGHT},
+        {OpCode::JUMP_IF_NOT_EQUAL_LITERAL_RIGHT, OpCode::JUMP_IF_NOT_GREATER_EQUAL_LITERAL_RIGHT},
+    };
+
+    const auto value = static_cast<OpCodeValue>(opcode);
+
+    for (int index = 0; index < 5; ++index)
+    {
+        const auto first = static_cast<OpCodeValue>(families[index].first);
+        const auto last = static_cast<OpCodeValue>(families[index].last);
+
+        if (value >= first && value <= last)
+            return index;
+    }
+
+    return -1;
+}
+
+} // namespace
+
 /**
  * @brief First pass: validate the whole chunk can be compiled by JIT.
  *
@@ -40,8 +77,9 @@ bool Assembler::validateSupportedJitOperations(const IR &ir, std::size_t &maxSlo
             maxSlots = tempStack.size();
     };
 
-    for (const Instruction &instruction : ir.instructions)
+    for (std::size_t instructionIndex = 0; instructionIndex < ir.instructions.size(); ++instructionIndex)
     {
+        const Instruction &instruction = ir.instructions[instructionIndex];
         const OpCode opcode = instruction.opcode;
 
         if (opcode == OpCode::PUSH_LITERAL)
@@ -137,6 +175,105 @@ bool Assembler::validateSupportedJitOperations(const IR &ir, std::size_t &maxSlo
                 tempStack.pop_back();
 
             push(Slot::ValueIndex());
+            continue;
+        }
+
+        if (opcode == OpCode::JUMP)
+        {
+            if (instruction.operand >= ir.instructions.size())
+                return false;
+
+            continue;
+        }
+
+        if (opcode == OpCode::JUMP_IF_FALSE)
+        {
+            if (tempStack.empty() || instruction.operand >= ir.instructions.size())
+                return false;
+
+            tempStack.pop_back();
+            continue;
+        }
+
+        if (isComparisonBranch(opcode))
+        {
+            if (instructionIndex + 1 >= ir.instructions.size())
+                return false;
+
+            const std::uint32_t target = ir.instructions[instructionIndex + 1].operand;
+            if (target >= ir.instructions.size())
+                return false;
+
+            const std::uint32_t left = instruction.operand & 0xFFFF;
+            const std::uint32_t right = instruction.operand >> 16;
+            const int family = comparisonBranchFamily(opcode);
+
+            auto validLocal = [&](std::uint32_t slot)
+            {
+                return ir.localCount != 0 && slot < ir.localCount;
+            };
+
+            auto validNumericLiteral = [&](std::uint32_t literalIndex)
+            {
+                if (literalIndex >= ir.literals.size())
+                    return false;
+
+                const Value &literal = ir.literals[literalIndex];
+                return literal.IS_INT || literal.IS_DOUBLE;
+            };
+
+            switch (family)
+            {
+            case 0:
+                if (!validLocal(left) || !validLocal(right))
+                    return false;
+                break;
+            case 1:
+                if (!validLocal(left) || !validNumericLiteral(right))
+                    return false;
+                break;
+            case 2:
+                if (!validNumericLiteral(right) || !validLocal(left))
+                    return false;
+                break;
+            case 3:
+            case 4:
+                if (tempStack.empty() || !tempStack.back().isNumeric())
+                    return false;
+                tempStack.pop_back();
+
+                if (family == 3)
+                {
+                    if (!validLocal(left))
+                        return false;
+                }
+                else if (!validNumericLiteral(left))
+                {
+                    return false;
+                }
+                break;
+            default:
+                return false;
+            }
+
+            continue;
+        }
+
+        if (opcode == OpCode::ADD_LOCAL_LITERAL_STORE_JUMP)
+        {
+            const std::uint32_t sourceSlot = instruction.operand & 0xFF;
+            const std::uint32_t literalIndex = (instruction.operand >> 8) & 0xFFFF;
+            const std::uint32_t destinationSlot = (instruction.operand >> 24) & 0xFF;
+
+            if (ir.localCount == 0 || sourceSlot >= ir.localCount || destinationSlot >= ir.localCount ||
+                literalIndex >= ir.literals.size() || instructionIndex + 1 >= ir.instructions.size())
+            {
+                return false;
+            }
+
+            if (ir.instructions[instructionIndex + 1].operand >= ir.instructions.size())
+                return false;
+
             continue;
         }
 

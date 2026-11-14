@@ -1,6 +1,8 @@
 #pragma once
 
+#include <cstdint>
 #include <memory>
+#include <vector>
 
 #include <asmjit/x86.h>
 
@@ -30,6 +32,9 @@ public:
 private:
     std::unique_ptr<asmjit::CodeHolder> code;
     std::unique_ptr<asmjit::x86::Assembler> assembler;
+    std::vector<asmjit::Label> labels;
+
+    void ensureLabel(std::uint32_t index);
 
 protected:
     // ---------
@@ -81,6 +86,15 @@ protected:
     // --------------------------
     void call(Register target) override;
     void ret() override;
+
+    // -----------------
+    // Control flow
+    // -----------------
+    void markJumpTarget(std::uint32_t index) override;
+    void jump(std::uint32_t target) override;
+    void jumpIfZero(Register condition, std::uint32_t target) override;
+    void compareDoubles(SimdRegister left, SimdRegister right) override;
+    void setComparisonResult(JitCondition condition, Register destination) override;
 };
 
 } // namespace jit

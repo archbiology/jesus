@@ -32,8 +32,19 @@ bool Assembler::compileToMachineCode(const IR &input)
     localVariableTypes.clear();
     ir = &input;
 
-    for (const Instruction &instruction : ir->instructions)
+    bool skipTargetHolder = false;
+
+    for (std::size_t index = 0; index < ir->instructions.size(); ++index)
     {
+        markJumpTarget(static_cast<std::uint32_t>(index));
+
+        if (skipTargetHolder)
+        {
+            skipTargetHolder = false;
+            continue;
+        }
+
+        const Instruction &instruction = ir->instructions[index];
         const OpCode opcode = instruction.opcode;
 
         if (opcode == OpCode::PUSH_LITERAL)
@@ -89,6 +100,43 @@ bool Assembler::compileToMachineCode(const IR &input)
             if (!emitCall(instruction))
                 return false;
 
+            continue;
+        }
+
+        if (opcode == OpCode::JUMP)
+        {
+            if (!emitJump(instruction))
+                return false;
+
+            continue;
+        }
+
+        if (opcode == OpCode::JUMP_IF_FALSE)
+        {
+            if (!emitJumpIfFalse(instruction))
+                return false;
+
+            continue;
+        }
+
+        if (isComparisonBranch(opcode) || opcode == OpCode::ADD_LOCAL_LITERAL_STORE_JUMP)
+        {
+            if (index + 1 >= ir->instructions.size())
+                return false;
+
+            const std::uint32_t target = ir->instructions[index + 1].operand;
+
+            if (isComparisonBranch(opcode))
+            {
+                if (!emitComparisonBranch(instruction, target))
+                    return false;
+            }
+            else if (!emitAddLiteralToLocalAndJump(instruction, target))
+            {
+                return false;
+            }
+
+            skipTargetHolder = true;
             continue;
         }
 
