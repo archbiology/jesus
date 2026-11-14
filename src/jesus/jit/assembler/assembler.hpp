@@ -186,6 +186,7 @@ protected:
 private:
     std::vector<Slot> jitCompilationStack;
     std::vector<JitValueType> globalVariableTypes;
+    std::vector<JitValueType> localVariableTypes;
     const IR *ir = nullptr;
     const ChunksMap *chunksMap = nullptr;
 
@@ -204,6 +205,9 @@ private:
     void recordGlobalVarType(std::uint32_t index, JitValueType valueType);
     bool emitStoreGlobal(const Instruction &instruction);
     bool emitReadGlobal(const Instruction &instruction);
+    void recordLocalVarType(std::uint32_t index, JitValueType valueType);
+    bool emitStoreLocal(const Instruction &instruction);
+    bool emitReadLocal(const Instruction &instruction);
     bool emitCreateInstance();
     bool emitCall(const Instruction &instruction);
     bool emitReturn();

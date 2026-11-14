@@ -1,0 +1,9 @@
+let there be Witnesses:
+    purpose testify(first: number, second: number):
+        say first
+        say second
+    amen
+amen
+
+create team = Witnesses()
+team testify 2, 7

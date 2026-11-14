@@ -16,6 +16,8 @@ void Assembler::releaseCompilationData()
     jitCompilationStack.shrink_to_fit();
     globalVariableTypes.clear();
     globalVariableTypes.shrink_to_fit();
+    localVariableTypes.clear();
+    localVariableTypes.shrink_to_fit();
     ir = nullptr;
     chunksMap = nullptr;
 }
@@ -27,6 +29,7 @@ bool Assembler::compileToMachineCode(const IR &input)
 {
     jitCompilationStack.clear();
     globalVariableTypes.clear();
+    localVariableTypes.clear();
     ir = &input;
 
     for (const Instruction &instruction : ir->instructions)
@@ -52,6 +55,22 @@ bool Assembler::compileToMachineCode(const IR &input)
         if (opcode == OpCode::READ_GLOBAL)
         {
             if (!emitReadGlobal(instruction))
+                return false;
+
+            continue;
+        }
+
+        if (opcode == OpCode::WRITE_LOCAL)
+        {
+            if (!emitStoreLocal(instruction))
+                return false;
+
+            continue;
+        }
+
+        if (opcode == OpCode::READ_LOCAL)
+        {
+            if (!emitReadLocal(instruction))
                 return false;
 
             continue;

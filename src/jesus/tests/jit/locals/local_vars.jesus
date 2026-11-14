@@ -1,0 +1,9 @@
+let there be Messenger:
+    purpose proclaim():
+        create god_is = 1
+        say god_is
+    amen
+amen
+
+create herald = Messenger()
+herald proclaim

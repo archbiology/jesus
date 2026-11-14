@@ -1,0 +1,7 @@
+[VM]
+Good News
+{type: "instance",
+ class: "Disciple",
+ attributes: { }
+}
+null

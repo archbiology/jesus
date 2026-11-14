@@ -1,0 +1,9 @@
+let there be Disciple:
+    purpose share(message: text):
+        say message
+        say me
+    amen
+amen
+
+create witness = Disciple()
+witness share "Good News"
