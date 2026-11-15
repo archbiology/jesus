@@ -178,6 +178,8 @@ protected:
     virtual void jumpIfZero(Register condition, std::uint32_t target) = 0;
     virtual void compareDoubles(SimdRegister left, SimdRegister right) = 0;
     virtual void setComparisonResult(JitCondition condition, Register destination) = 0;
+    virtual void compareInts(Register left, Register right) = 0;
+    virtual void setIntComparisonResult(JitCondition condition, Register destination) = 0;
 
     /**
     * @brief The distance, in bytes, from RSP to the memory location where we store the JitContext*.
@@ -256,6 +258,16 @@ private:
      */
     bool emitAddLocalLiteralStoreJump(const Instruction &instruction, std::uint32_t target);
 
+    /**
+     * @brief Emits counted-loop setup (`repeat N times`).
+     *
+     * INIT_REPEAT_COUNT pops the count evaluated before the loop and stores it
+     * in the compiler-generated remaining-count global named by the operand.
+     * The VM requires an int; any other count falls back to the VM so it can
+     * report the same error.
+     */
+    bool emitInitRepeatCount(const Instruction &instruction);
+
     void loadNumberFromMemoryToSimd(const Slot &slot, MemoryOffset offset, const SimdRegister &simdRegister);
     void loadNumberToSimd(
         const Slot &slot,
@@ -263,6 +275,21 @@ private:
         std::size_t memoryOffset,
         const SimdRegister &simdRegister);
     static bool isArithmetic(OpCode opcode);
+
+    /**
+     * @brief True for the numeric comparisons that produce an int boolean.
+     *
+     * These are the plain comparison opcodes, not the fused compare-and-jump
+     * forms used by conditionals and loops.
+     */
+    static bool isValueComparison(OpCode opcode);
+
+    /**
+     * @brief Emits a numeric comparison and replaces the two operand slots
+     * with an int result (0 for false, 1 for true).
+     */
+    bool emitValueComparison(OpCode opcode);
+
     static bool isFusedOpForRightLiteral(OpCode opcode, OpCode &operation);
     bool emitArithmeticOperation(
         OpCode opcode,

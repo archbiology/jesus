@@ -198,4 +198,43 @@ void X86Assembler::setComparisonResult(JitCondition condition, Register destinat
     }
 }
 
+void X86Assembler::compareInts(Register left, Register right)
+{
+    assembler->cmp(toAsmJit(left), toAsmJit(right));
+}
+
+void X86Assembler::setIntComparisonResult(JitCondition condition, Register destination)
+{
+    using namespace asmjit::x86;
+
+    if (destination != Register::EAX)
+        throw std::invalid_argument("setIntComparisonResult expects EAX as its destination");
+
+    // `cmp` has already set the CPU flags for a signed integer comparison.
+    switch (condition)
+    {
+    case JitCondition::Equal:
+        assembler->set(CondCode::kEqual, al);
+        break;
+    case JitCondition::NotEqual:
+        assembler->set(CondCode::kNotEqual, al);
+        break;
+    case JitCondition::Less:
+        assembler->set(CondCode::kSignedLT, al);
+        break;
+    case JitCondition::LessEqual:
+        assembler->set(CondCode::kSignedLE, al);
+        break;
+    case JitCondition::Greater:
+        assembler->set(CondCode::kSignedGT, al);
+        break;
+    case JitCondition::GreaterEqual:
+        assembler->set(CondCode::kSignedGE, al);
+        break;
+    }
+
+    // Widen the 0/1 byte result so it can live in a 32-bit JIT stack slot.
+    assembler->movzx(eax, al);
+}
+
 } // namespace jit

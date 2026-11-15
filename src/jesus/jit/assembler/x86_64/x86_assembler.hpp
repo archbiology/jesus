@@ -93,6 +93,8 @@ protected:
     void jumpIfZero(Register condition, std::uint32_t target) override;
     void compareDoubles(SimdRegister left, SimdRegister right) override;
     void setComparisonResult(JitCondition condition, Register destination) override;
+    void compareInts(Register left, Register right) override;
+    void setIntComparisonResult(JitCondition condition, Register destination) override;
 };
 
 static asmjit::x86::Gp toAsmJit(Register reg)
