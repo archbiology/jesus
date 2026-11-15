@@ -127,6 +127,14 @@ bool Assembler::compileToMachineCode(const IR &input)
             continue;
         }
 
+        if (opcode == OpCode::ADD_LOCAL_LITERAL_STORE)
+        {
+            if (!emitAddLocalLiteralStore(instruction))
+                return false;
+
+            continue;
+        }
+
         if (opcode == OpCode::ADD_LOCAL_LITERAL_STORE_JUMP)
         {
             // ------------------------------------------------------------

@@ -35,7 +35,7 @@ Value &localAt(JitContext *ctx, std::uint32_t baseSlot, std::uint32_t slot)
 //      bits 8-23   literal index
 //      bits 24-31  destination local slot
 // --------------------------------------------------------------------------
-extern "C" void JitRuntimeAddLocalLiteralStoreJump(
+extern "C" void JitRuntimeAddLocalLiteralStore(
     JitContext *ctx, std::uint32_t baseSlot, std::uint32_t packedOperand, const Value *literal)
 {
     const std::uint32_t sourceSlot = packedOperand & 0xFF;
@@ -46,9 +46,9 @@ extern "C" void JitRuntimeAddLocalLiteralStoreJump(
     localAt(ctx, baseSlot, destinationSlot) = localAt(ctx, baseSlot, sourceSlot) + *literal;
 }
 
-bool Assembler::emitAddLocalLiteralStoreJump(const Instruction &instruction, std::uint32_t target)
+bool Assembler::emitAddLocalLiteralStore(const Instruction &instruction)
 {
-    if (ir == nullptr || target >= ir->instructions.size())
+    if (ir == nullptr)
         return false;
 
     const std::uint32_t sourceSlot = instruction.operand & 0xFF;
@@ -64,7 +64,7 @@ bool Assembler::emitAddLocalLiteralStoreJump(const Instruction &instruction, std
     const Value &literal = ir->literals[literalIndex];
 
     // ------------------------------------------------------------------
-    // Pass the arguments to JitRuntimeAddLocalLiteralStoreJump.
+    // Pass the arguments to JitRuntimeAddLocalLiteralStore.
     //
     // System V x86-64:
     //      RDI: ctx
@@ -87,7 +87,7 @@ bool Assembler::emitAddLocalLiteralStoreJump(const Instruction &instruction, std
     mov(RCX, Immediate(reinterpret_cast<std::int64_t>(&literal)));
 
     // Call the helper through RAX.
-    mov(RAX, Immediate(&JitRuntimeAddLocalLiteralStoreJump));
+    mov(RAX, Immediate(&JitRuntimeAddLocalLiteralStore));
     call(RAX);
 
     // Keep local type information accurate for instructions that read this
@@ -103,6 +103,17 @@ bool Assembler::emitAddLocalLiteralStoreJump(const Instruction &instruction, std
         resultType = JitValueType::Double;
 
     recordLocalVarType(destinationSlot, resultType);
+
+    return true;
+}
+
+bool Assembler::emitAddLocalLiteralStoreJump(const Instruction &instruction, std::uint32_t target)
+{
+    if (ir == nullptr || target >= ir->instructions.size())
+        return false;
+
+    if (!emitAddLocalLiteralStore(instruction))
+        return false;
 
     // Fused back-edge: jump to the loop condition without dispatching the
     // target-holder JUMP that follows this instruction in the IR.

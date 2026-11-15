@@ -226,23 +226,29 @@ bool Assembler::validateSupportedJitOperations(const IR &ir, std::size_t &maxSlo
             continue;
         }
 
-        if (opcode == OpCode::ADD_LOCAL_LITERAL_STORE_JUMP)
+        if (opcode == OpCode::ADD_LOCAL_LITERAL_STORE || opcode == OpCode::ADD_LOCAL_LITERAL_STORE_JUMP)
         {
             // ------------------------------------------------------------
-            // Fused loop tail: local[dest] = local[source] + literal
-            // The following JUMP is only the target holder for this opcode.
+            // local[dest] = local[source] + literal
             //
-            // Operand layout (same as ADD_LOCAL_LITERAL_STORE):
+            // The _JUMP form is a fused loop tail; its following JUMP is only
+            // the target holder. The plain form is emitted when `repeat
+            // forever` increments a local before evaluating the condition.
+            //
+            // Operand layout:
             //   bits 0-7    source local slot
             //   bits 8-23   literal index
             //   bits 24-31  destination local slot
             // ------------------------------------------------------------
-            if (instructionIndex + 1 >= ir.instructions.size())
-                return false;
+            if (opcode == OpCode::ADD_LOCAL_LITERAL_STORE_JUMP)
+            {
+                if (instructionIndex + 1 >= ir.instructions.size())
+                    return false;
 
-            const Instruction &targetHolder = ir.instructions[instructionIndex + 1];
-            if (targetHolder.opcode != OpCode::JUMP || targetHolder.operand >= ir.instructions.size())
-                return false;
+                const Instruction &targetHolder = ir.instructions[instructionIndex + 1];
+                if (targetHolder.opcode != OpCode::JUMP || targetHolder.operand >= ir.instructions.size())
+                    return false;
+            }
 
             if (ir.localCount == 0)
                 return false;

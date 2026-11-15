@@ -251,6 +251,14 @@ private:
     // Repeat statements
     // -----------------
     /**
+     * @brief Emits `local[dest] = local[source] + literal`.
+     *
+     * `repeat forever` bodies often increment a local before the condition,
+     * so this store is not necessarily a fused loop tail.
+     */
+    bool emitAddLocalLiteralStore(const Instruction &instruction);
+
+    /**
      * @brief Emits the fused loop tail `i = i + literal` followed by the
      * back-edge jump. The jump target lives in the operand of the following
      * instruction, which code generation skips because it is only a target
