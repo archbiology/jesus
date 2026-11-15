@@ -158,18 +158,24 @@ enum class OpCode : uint8_t
     GREATER_LITERAL_RIGHT,
     GREATER_EQUAL_LITERAL_RIGHT,
 
-    // Comparison-and-branch: used when a comparison result only feeds a
+    // compare-and-jump: used when a comparison result only feeds a
     // conditional jump. They evaluate the comparison and jump when it is
     // false, without materialising a boolean Value. The operand holds the
     // same packed operands as the matching comparison opcode; the jump
     // target is the operand of the instruction that immediately follows.
-    JUMP_IF_NOT_EQUAL_LOCAL_LOCAL,
-    JUMP_IF_NOT_NOT_EQUAL_LOCAL_LOCAL,
-    JUMP_IF_NOT_LESS_LOCAL_LOCAL,
-    JUMP_IF_NOT_LESS_EQUAL_LOCAL_LOCAL,
-    JUMP_IF_NOT_GREATER_LOCAL_LOCAL,
-    JUMP_IF_NOT_GREATER_EQUAL_LOCAL_LOCAL,
+    // ----------------------------
+    // 1 - compare local with local
+    // ----------------------------        // JitCondition:
+    JUMP_IF_NOT_EQUAL_LOCAL_LOCAL,         // ==
+    JUMP_IF_NOT_NOT_EQUAL_LOCAL_LOCAL,     // !=
+    JUMP_IF_NOT_LESS_LOCAL_LOCAL,          // <
+    JUMP_IF_NOT_LESS_EQUAL_LOCAL_LOCAL,    // <=
+    JUMP_IF_NOT_GREATER_LOCAL_LOCAL,       // >
+    JUMP_IF_NOT_GREATER_EQUAL_LOCAL_LOCAL, // > =
 
+    // ------------------------------
+    // 2 - compare local with literal
+    // ------------------------------
     JUMP_IF_NOT_EQUAL_LOCAL_LITERAL,
     JUMP_IF_NOT_NOT_EQUAL_LOCAL_LITERAL,
     JUMP_IF_NOT_LESS_LOCAL_LITERAL,
@@ -177,6 +183,9 @@ enum class OpCode : uint8_t
     JUMP_IF_NOT_GREATER_LOCAL_LITERAL,
     JUMP_IF_NOT_GREATER_EQUAL_LOCAL_LITERAL,
 
+    // ------------------------------
+    // 3 - compare literal with local
+    // ------------------------------
     JUMP_IF_NOT_EQUAL_LITERAL_LOCAL,
     JUMP_IF_NOT_NOT_EQUAL_LITERAL_LOCAL,
     JUMP_IF_NOT_LESS_LITERAL_LOCAL,
@@ -184,6 +193,9 @@ enum class OpCode : uint8_t
     JUMP_IF_NOT_GREATER_LITERAL_LOCAL,
     JUMP_IF_NOT_GREATER_EQUAL_LITERAL_LOCAL,
 
+    // -----------------------------
+    // 4 - compare local with stack
+    // -----------------------------
     JUMP_IF_NOT_EQUAL_LOCAL_RIGHT,
     JUMP_IF_NOT_NOT_EQUAL_LOCAL_RIGHT,
     JUMP_IF_NOT_LESS_LOCAL_RIGHT,
@@ -191,6 +203,9 @@ enum class OpCode : uint8_t
     JUMP_IF_NOT_GREATER_LOCAL_RIGHT,
     JUMP_IF_NOT_GREATER_EQUAL_LOCAL_RIGHT,
 
+    // ------------------------------
+    // 5 - compare literal with stack
+    // ------------------------------
     JUMP_IF_NOT_EQUAL_LITERAL_RIGHT,
     JUMP_IF_NOT_NOT_EQUAL_LITERAL_RIGHT,
     JUMP_IF_NOT_LESS_LITERAL_RIGHT,
@@ -216,7 +231,7 @@ enum class OpCode : uint8_t
     DIVIDE_LITERAL_RIGHT_STORE,
     MODULO_LITERAL_RIGHT_STORE,
 
-    // Comparison-and-branch over a sum of two locals, e.g. the classic
+    // compare-and-jump over a sum of two locals, e.g. the classic
     // divergence test `if x2 + y2 > 4.0`. The compiler folds the ADD that
     // produced the left operand and the following comparison into a single
     // branch, so neither the sum nor a boolean is ever materialised. Operand

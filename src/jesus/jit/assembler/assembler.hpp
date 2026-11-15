@@ -31,6 +31,22 @@ using ChunksMap = std::unordered_map<const IR *, ChunkId>;
 using MemoryOffset = std::int32_t;
 
 /**
+ * @brief Platform-independent conditions used by compare-and-jump helpers.
+ *
+ * The order matches the six compare-and-jump opcodes in each group
+ * defined in opcode.hpp.
+ */
+enum class JitCondition : std::uint8_t
+{
+    Equal,
+    NotEqual,
+    Less,
+    LessEqual,
+    Greater,
+    GreaterEqual,
+};
+
+/**
  * @brief Each JIT slot occupies 8 bytes (64 bits)
  *
  * This constant refers to a slot in the JIT's runtime stack, not to the
@@ -154,6 +170,15 @@ protected:
     virtual void call(Register target) = 0;
     virtual void ret() = 0;
 
+    // -------------
+    // Control flow
+    // -------------
+    virtual void markJumpTarget(std::uint32_t index) = 0;
+    virtual void jump(std::uint32_t target) = 0;
+    virtual void jumpIfZero(Register condition, std::uint32_t target) = 0;
+    virtual void compareDoubles(SimdRegister left, SimdRegister right) = 0;
+    virtual void setComparisonResult(JitCondition condition, Register destination) = 0;
+
     /**
     * @brief The distance, in bytes, from RSP to the memory location where we store the JitContext*.
     *
@@ -211,6 +236,15 @@ private:
     bool emitCreateInstance();
     bool emitCall(const Instruction &instruction);
     bool emitReturn();
+
+    // -----------
+    // Conditionals
+    // -----------
+    bool emitJump(const Instruction &instruction);
+    bool emitJumpIfFalse(const Instruction &instruction);
+    bool emitComparisonBranch(const Instruction &instruction, std::uint32_t target);
+    static bool isComparisonBranch(OpCode opcode);
+
     void loadNumberFromMemoryToSimd(const Slot &slot, MemoryOffset offset, const SimdRegister &simdRegister);
     void loadNumberToSimd(
         const Slot &slot,
@@ -243,6 +277,32 @@ inline std::uint32_t extractLower16Bits(std::uint32_t value)
     //      result: 00000000 00000000 11110000 00001111
     // -----------------------------------------------------------
     return value & 0xFFFF;
+}
+
+inline std::uint32_t extractUpper16Bits(std::uint32_t value)
+{
+    // ----------------------------------------------------------------
+    // Shift the upper 16 bits to the right, removing the lower 16 bits.
+    //
+    //      value:  10101010 11001100 11110000 00001111
+    //              -----------------------------------
+    //       >> 16: 00000000 00000000 10101010 11001100
+    // ----------------------------------------------------------------
+    return value >> 16;
+}
+
+inline std::uint32_t pack16Bits(std::uint32_t lower, std::uint32_t upper)
+{
+    // ----------------------------------------------------------------
+    // Place the lower 16 bits in the low half and the upper 16 bits in
+    // the high half.
+    //
+    //      lower:  00000000 00000000 11110000 00001111
+    //      upper:  00000000 00000000 10101010 11001100
+    //              -----------------------------------
+    //      result: 10101010 11001100 11110000 00001111
+    // ----------------------------------------------------------------
+    return extractLower16Bits(lower) | (extractLower16Bits(upper) << 16);
 }
 
 } // namespace jit

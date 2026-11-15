@@ -1,0 +1,11 @@
+create zero: number = 0.0
+if zero:
+    say 1
+otherwise:
+    say 2
+amen
+
+create value: number = 1.5
+if value > 1.0:
+    say 3
+amen

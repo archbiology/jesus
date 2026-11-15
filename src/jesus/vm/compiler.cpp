@@ -246,7 +246,7 @@ static const OpCode kLiteralRightOps[FUSED_OP_COUNT] = {
     OpCode::NOT_EQUAL_LITERAL_RIGHT, OpCode::LESS_LITERAL_RIGHT, OpCode::LESS_EQUAL_LITERAL_RIGHT,
     OpCode::GREATER_LITERAL_RIGHT, OpCode::GREATER_EQUAL_LITERAL_RIGHT};
 
-// Maps a fused comparison opcode to its comparison-and-branch counterpart.
+// Maps a fused comparison opcode to its compare-and-jump counterpart.
 // Returns false for anything that is not a comparison.
 static bool branchVariant(OpCode comparison, OpCode &branch)
 {
@@ -998,7 +998,7 @@ uint32_t Compiler::emitConditionalJump(bool allowFusion)
 
         if (branchVariant(instructions.back().opcode, branch))
         {
-            // Turn the comparison into a comparison-and-branch. It keeps its
+            // Turn the comparison into a compare-and-jump. It keeps its
             // packed operands and reads the jump target from the operand of
             // the instruction emitted just below.
             instructions.back().opcode = branch;

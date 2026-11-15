@@ -1,0 +1,11 @@
+create flag: number = 1
+if flag:
+    say 7
+amen
+
+create other: number = 0
+if other:
+    say 8
+otherwise:
+    say 9
+amen

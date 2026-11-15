@@ -262,7 +262,7 @@ private:
      * comparison is false.
      *
      * When the previous instruction is a fused comparison the call fuses it
-     * with the jump (the comparison becomes a comparison-and-branch opcode
+     * with the jump (the comparison becomes a compare-and-jump opcode
      * that skips materialising a boolean); otherwise it emits a plain
      * JUMP_IF_FALSE.
      *

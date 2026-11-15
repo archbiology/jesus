@@ -30,6 +30,9 @@ public:
 private:
     std::unique_ptr<asmjit::CodeHolder> code;
     std::unique_ptr<asmjit::x86::Assembler> assembler;
+    std::vector<asmjit::Label> jumpLabels;
+
+    void ensureJumpLabelExistsUpTo(std::uint32_t index);
 
 protected:
     // ---------
@@ -81,6 +84,67 @@ protected:
     // --------------------------
     void call(Register target) override;
     void ret() override;
+
+    // -----------------
+    // Control flow
+    // -----------------
+    void markJumpTarget(std::uint32_t index) override;
+    void jump(std::uint32_t target) override;
+    void jumpIfZero(Register condition, std::uint32_t target) override;
+    void compareDoubles(SimdRegister left, SimdRegister right) override;
+    void setComparisonResult(JitCondition condition, Register destination) override;
 };
+
+static asmjit::x86::Gp toAsmJit(Register reg)
+{
+    using namespace asmjit::x86;
+
+    switch (reg)
+    {
+    case Register::RAX:
+        return rax;
+    case Register::EAX:
+        return eax;
+    case Register::RBX:
+        return rbx;
+    case Register::RCX:
+        return rcx;
+    case Register::ECX:
+        return ecx;
+    case Register::RDX:
+        return rdx;
+    case Register::EDX:
+        return edx;
+    case Register::RSI:
+        return rsi;
+    case Register::RDI:
+        return rdi;
+    case Register::EDI:
+        return edi;
+    case Register::RBP:
+        return rbp;
+    case Register::RSP:
+        return rsp;
+
+    default:
+        throw std::invalid_argument("Register is not a general-purpose x86_64 register");
+    }
+}
+
+static asmjit::x86::Vec toAsmJit(SimdRegister reg)
+{
+    using namespace asmjit::x86;
+
+    switch (reg)
+    {
+    case SimdRegister::XMM0:
+        return xmm0;
+    case SimdRegister::XMM1:
+        return xmm1;
+
+    default:
+        throw std::invalid_argument("Expected an XMM register");
+    }
+}
 
 } // namespace jit

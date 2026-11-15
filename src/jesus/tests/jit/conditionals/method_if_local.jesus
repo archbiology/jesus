@@ -1,0 +1,13 @@
+let there be Judge:
+    purpose choose(left: number, right: number) -> number:
+        if left < right:
+            return 11
+        otherwise:
+            return 22
+        amen
+    amen
+amen
+
+create judge = Judge()
+say judge choose 5, 2
+say judge choose 2, 5
