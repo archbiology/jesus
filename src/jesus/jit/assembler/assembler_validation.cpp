@@ -194,6 +194,40 @@ bool Assembler::validateSupportedJitOperations(const IR &ir, std::size_t &maxSlo
             continue;
         }
 
+        if (opcode == OpCode::ADD_LOCAL_LITERAL_STORE_JUMP)
+        {
+            // ------------------------------------------------------------
+            // Fused loop tail: local[dest] = local[source] + literal
+            // The following JUMP is only the target holder for this opcode.
+            //
+            // Operand layout (same as ADD_LOCAL_LITERAL_STORE):
+            //   bits 0-7    source local slot
+            //   bits 8-23   literal index
+            //   bits 24-31  destination local slot
+            // ------------------------------------------------------------
+            if (instructionIndex + 1 >= ir.instructions.size())
+                return false;
+
+            const Instruction &targetHolder = ir.instructions[instructionIndex + 1];
+            if (targetHolder.opcode != OpCode::JUMP || targetHolder.operand >= ir.instructions.size())
+                return false;
+
+            if (ir.localCount == 0)
+                return false;
+
+            const std::uint32_t sourceSlot = instruction.operand & 0xFF;
+            const std::uint32_t literalIndex = (instruction.operand >> 8) & 0xFFFF;
+            const std::uint32_t destinationSlot = (instruction.operand >> 24) & 0xFF;
+
+            if (sourceSlot >= ir.localCount || destinationSlot >= ir.localCount ||
+                literalIndex >= ir.literals.size())
+                return false;
+
+            // The fused operation only writes a local; it does not push or pop
+            // an operand-stack value.
+            continue;
+        }
+
         if (isComparisonBranch(opcode))
         {
             if (instructionIndex + 1 >= ir.instructions.size())

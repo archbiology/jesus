@@ -1,0 +1,5 @@
+create keep_going: number = 1
+repeat while keep_going:
+    say 42
+    break
+amen

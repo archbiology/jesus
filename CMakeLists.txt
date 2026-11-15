@@ -284,6 +284,7 @@ set(JESUS_CPP_FILES
     src/jesus/jit/assembler/assembler_globals.cpp
     src/jesus/jit/assembler/assembler_locals.cpp
     src/jesus/jit/assembler/assembler_control.cpp
+    src/jesus/jit/assembler/repeat_while_stmt.cpp
     src/jesus/jit/assembler/assembler_objects.cpp
     src/jesus/jit/assembler/assembler_calls.cpp
 

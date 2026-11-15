@@ -119,6 +119,23 @@ bool Assembler::compileToMachineCode(const IR &input)
             continue;
         }
 
+        if (opcode == OpCode::ADD_LOCAL_LITERAL_STORE_JUMP)
+        {
+            // ------------------------------------------------------------
+            // [index]     ADD_LOCAL_LITERAL_STORE_JUMP
+            // [index + 1] JUMP <loopStart>   (target holder, never executed)
+            // ------------------------------------------------------------
+            if (index + 1 >= ir->instructions.size())
+                return false;
+
+            const std::uint32_t jumpTarget = ir->instructions[index + 1].operand;
+            if (!emitAddLocalLiteralStoreJump(instruction, jumpTarget))
+                return false;
+
+            skipNextInstruction = true;
+            continue;
+        }
+
         if (isComparisonBranch(opcode))
         {
             // -------------------------------------

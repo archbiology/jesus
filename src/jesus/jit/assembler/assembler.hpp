@@ -245,6 +245,17 @@ private:
     bool emitComparisonBranch(const Instruction &instruction, std::uint32_t target);
     static bool isComparisonBranch(OpCode opcode);
 
+    // -----------------
+    // Repeat statements
+    // -----------------
+    /**
+     * @brief Emits the fused loop tail `i = i + literal` followed by the
+     * back-edge jump. The jump target lives in the operand of the following
+     * instruction, which code generation skips because it is only a target
+     * holder.
+     */
+    bool emitAddLocalLiteralStoreJump(const Instruction &instruction, std::uint32_t target);
+
     void loadNumberFromMemoryToSimd(const Slot &slot, MemoryOffset offset, const SimdRegister &simdRegister);
     void loadNumberToSimd(
         const Slot &slot,
