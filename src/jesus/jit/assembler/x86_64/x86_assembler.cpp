@@ -16,7 +16,9 @@ std::unique_ptr<ExecutableCode> X86Assembler::assemble(const IR &ir)
 
     // ----------------------------------------------------------
     // Destroy the previous code holder before creating a new one.
+    // Labels belong to the previous CodeHolder, so drop them too.
     // ----------------------------------------------------------
+    jumpLabels.clear();
     assembler.reset();
     code.reset();
 
@@ -180,61 +182,10 @@ std::unique_ptr<ExecutableCode> X86Assembler::assemble(const IR &ir)
 
 void X86Assembler::releaseCompilationData()
 {
+    jumpLabels.clear();
     assembler.reset();
     code.reset();
     Assembler::releaseCompilationData();
-}
-
-static asmjit::x86::Gp toAsmJit(Register reg)
-{
-    using namespace asmjit::x86;
-
-    switch (reg)
-    {
-    case Register::RAX:
-        return rax;
-    case Register::EAX:
-        return eax;
-    case Register::RBX:
-        return rbx;
-    case Register::RCX:
-        return rcx;
-    case Register::ECX:
-        return ecx;
-    case Register::RDX:
-        return rdx;
-    case Register::EDX:
-        return edx;
-    case Register::RSI:
-        return rsi;
-    case Register::RDI:
-        return rdi;
-    case Register::EDI:
-        return edi;
-    case Register::RBP:
-        return rbp;
-    case Register::RSP:
-        return rsp;
-
-    default:
-        throw std::invalid_argument("Register is not a general-purpose x86_64 register");
-    }
-}
-
-static asmjit::x86::Vec toAsmJit(SimdRegister reg)
-{
-    using namespace asmjit::x86;
-
-    switch (reg)
-    {
-    case SimdRegister::XMM0:
-        return xmm0;
-    case SimdRegister::XMM1:
-        return xmm1;
-
-    default:
-        throw std::invalid_argument("Expected an XMM register");
-    }
 }
 
 // ---------

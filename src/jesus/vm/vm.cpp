@@ -881,7 +881,7 @@ void VM::run(const Chunk &chunk)
     FUSED_CMP_RIGHT_OP(GREATER_EQUAL_LITERAL_RIGHT, FUSED_LITERAL_RIGHT_OPERANDS, >=)
 
     // -----------------------------------------------------------------
-    // Comparison-and-branch handlers.
+    // compare-and-jump handlers.
     //
     // A comparison whose only consumer is a conditional jump does not need
     // to materialise a boolean on the stack. The operand packs the same
@@ -981,7 +981,7 @@ void VM::run(const Chunk &chunk)
     BRANCH_LITERAL_RIGHT(JUMP_IF_NOT_GREATER_EQUAL_LITERAL_RIGHT, >=)
 
     // -----------------------------------------------------------------
-    // Comparison-and-branch over a sum of two locals against a constant.
+    // compare-and-jump over a sum of two locals against a constant.
     //
     // Matches the divergence test `if x2 + y2 > 4.0`: the sum never reaches
     // the stack, so this replaces the ADD plus the comparison-branch with a

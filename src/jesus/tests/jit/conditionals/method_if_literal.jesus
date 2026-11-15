@@ -1,0 +1,13 @@
+let there be Judge:
+    purpose classify(value: number) -> number:
+        if value < 3:
+            return 11
+        otherwise:
+            return 22
+        amen
+    amen
+amen
+
+create judge = Judge()
+say judge classify 2
+say judge classify 5

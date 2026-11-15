@@ -1,0 +1,16 @@
+create x: number = 2
+if x < 3:
+    say 1
+otherwise:
+    say 2
+amen
+
+if x is 2:
+    say 3
+amen
+
+if x > 5:
+    say 4
+otherwise:
+    say 5
+amen
