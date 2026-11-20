@@ -198,4 +198,56 @@ void X86Assembler::setComparisonResult(JitCondition condition, Register destinat
     }
 }
 
+void X86Assembler::compareInts(Register left, Register right)
+{
+    assembler->cmp(toAsmJit(left), toAsmJit(right));
+}
+
+void X86Assembler::setIntComparisonResult(JitCondition condition, Register destination)
+{
+    using namespace asmjit::x86;
+
+    if (destination != Register::EAX)
+        throw std::invalid_argument("setIntComparisonResult expects EAX as its destination");
+
+    // -----------------------------------------------------------------
+    // `cmp` has already compared the two integers and set the CPU flags.
+    //
+    // Unlike floating-point comparisons, integer comparisons use signed
+    // conditions (Less, LessEqual, Greater and GreaterEqual).
+    //
+    // Let's SET 1 or 0 into AL, depending on the comparison condition.
+    // -----------------------------------------------------------------
+    switch (condition)
+    {
+    case JitCondition::Equal:
+        assembler->set(CondCode::kEqual, al);
+        break;
+    case JitCondition::NotEqual:
+        assembler->set(CondCode::kNotEqual, al);
+        break;
+    case JitCondition::Less:
+        assembler->set(CondCode::kSignedLT, al);
+        break;
+    case JitCondition::LessEqual:
+        assembler->set(CondCode::kSignedLE, al);
+        break;
+    case JitCondition::Greater:
+        assembler->set(CondCode::kSignedGT, al);
+        break;
+    case JitCondition::GreaterEqual:
+        assembler->set(CondCode::kSignedGE, al);
+        break;
+    }
+
+    // ---------------------------------------------------------------
+    // SET only writes the lower 8 bits (AL).
+    // Let's convert the 0/1 byte result into a 32-bit JIT stack slot.
+    //
+    //     AL  =                            00000001
+    //     EAX = 00000000 00000000 00000000 00000001
+    // ---------------------------------------------------------------
+    assembler->movzx(eax, al);
+}
+
 } // namespace jit

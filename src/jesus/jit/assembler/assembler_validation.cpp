@@ -67,6 +67,7 @@ bool Assembler::validateSupportedJitOperations(const IR &ir, std::size_t &maxSlo
 {
     std::vector<Slot> tempStack;
     std::vector<JitValueType> tempGlobalVariableTypes;
+    std::vector<JitValueType> tempLocalVariableTypes;
     maxSlots = 0;
 
     auto push = [&](const Slot &slot)
@@ -130,7 +131,10 @@ bool Assembler::validateSupportedJitOperations(const IR &ir, std::size_t &maxSlo
             if (ir.localCount == 0 || instruction.operand >= ir.localCount)
                 return false;
 
-            push(Slot::ValueIndex());
+            const std::uint32_t index = instruction.operand;
+            const JitValueType valueType =
+                index < tempLocalVariableTypes.size() ? tempLocalVariableTypes[index] : JitValueType::ValueIndex;
+            push(Slot{valueType});
             continue;
         }
 
@@ -139,6 +143,11 @@ bool Assembler::validateSupportedJitOperations(const IR &ir, std::size_t &maxSlo
             if (ir.localCount == 0 || instruction.operand >= ir.localCount || tempStack.empty())
                 return false;
 
+            const std::uint32_t index = instruction.operand;
+            if (index >= tempLocalVariableTypes.size())
+                tempLocalVariableTypes.resize(index + 1, JitValueType::ValueIndex);
+
+            tempLocalVariableTypes[index] = tempStack.back().valueType;
             tempStack.pop_back();
             continue;
         }
@@ -191,6 +200,24 @@ bool Assembler::validateSupportedJitOperations(const IR &ir, std::size_t &maxSlo
                 return false;
 
             tempStack.pop_back();
+            continue;
+        }
+
+        if (opcode == OpCode::INIT_REPEAT_COUNT)
+        {
+            // ---------------
+            // repeat N times
+            // ---------------
+            if (tempStack.empty() || !tempStack.back().isInt())
+                return false;
+
+            tempStack.pop_back();
+
+            const std::uint32_t index = instruction.operand;
+            if (index >= tempGlobalVariableTypes.size())
+                tempGlobalVariableTypes.resize(index + 1);
+
+            tempGlobalVariableTypes[index] = JitValueType::Int;
             continue;
         }
 
@@ -284,6 +311,27 @@ bool Assembler::validateSupportedJitOperations(const IR &ir, std::size_t &maxSlo
                 return false;
             }
 
+            continue;
+        }
+
+        // -----------------------------------------------------------------
+        // Numeric comparisons consume two values and produce an int boolean
+        // (0 or 1), which JUMP_IF_FALSE can then consume.
+        // -----------------------------------------------------------------
+        if (isComparison(opcode))
+        {
+            if (tempStack.size() < 2)
+                return false;
+
+            const Slot right = tempStack.back();
+            tempStack.pop_back();
+            const Slot left = tempStack.back();
+            tempStack.pop_back();
+
+            if (!left.isNumeric() || !right.isNumeric())
+                return false;
+
+            push(Slot{JitValueType::Int});
             continue;
         }
 

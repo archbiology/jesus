@@ -178,6 +178,8 @@ protected:
     virtual void jumpIfZero(Register condition, std::uint32_t target) = 0;
     virtual void compareDoubles(SimdRegister left, SimdRegister right) = 0;
     virtual void setComparisonResult(JitCondition condition, Register destination) = 0;
+    virtual void compareInts(Register left, Register right) = 0;
+    virtual void setIntComparisonResult(JitCondition condition, Register destination) = 0;
 
     /**
     * @brief The distance, in bytes, from RSP to the memory location where we store the JitContext*.
@@ -249,6 +251,7 @@ private:
     // Repeat statements
     // -----------------
     bool emitRepeatWhile(const Instruction &instruction, std::uint32_t jumpTarget);
+    bool emitRepeatNTimes(const Instruction &instruction);
 
     void loadNumberFromMemoryToSimd(const Slot &slot, MemoryOffset offset, const SimdRegister &simdRegister);
     void loadNumberToSimd(
@@ -257,6 +260,21 @@ private:
         std::size_t memoryOffset,
         const SimdRegister &simdRegister);
     static bool isArithmetic(OpCode opcode);
+
+    /**
+     * @brief True for the numeric comparisons: ==, !=, <, <=, >, >=
+     *
+     * These are the plain comparison opcodes, not the fused compare-and-jump
+     * forms used by conditionals and loops.
+     */
+    static bool isComparison(OpCode opcode);
+
+    /**
+     * @brief Emits a numeric comparison and replaces the two operand slots
+     * with an int result (0 for false, 1 for true).
+     */
+    bool emitComparison(OpCode opcode);
+
     static bool isFusedOpForRightLiteral(OpCode opcode, OpCode &operation);
     bool emitArithmeticOperation(
         OpCode opcode,

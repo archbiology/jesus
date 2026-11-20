@@ -100,4 +100,12 @@ bool Assembler::emitRepeatWhile(const Instruction &instruction, std::uint32_t ju
     return true;
 }
 
+bool Assembler::emitRepeatNTimes(const Instruction &instruction)
+{
+    if (jitCompilationStack.empty() || !jitCompilationStack.back().isInt())
+        return false;
+
+    return emitStoreGlobal(instruction);
+}
+
 } // namespace jit

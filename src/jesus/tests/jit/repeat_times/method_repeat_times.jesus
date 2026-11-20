@@ -1,0 +1,13 @@
+let there be Counter:
+    purpose count() -> number:
+        create total: number = 0
+        create limit: number = 4
+        repeat limit times:
+            total = total + 1
+        amen
+        return total
+    amen
+amen
+
+create counter = Counter()
+say counter count
