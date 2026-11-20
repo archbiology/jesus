@@ -19,6 +19,54 @@ bool Assembler::isArithmetic(OpCode opcode)
     }
 }
 
+bool Assembler::isComparison(OpCode opcode)
+{
+    switch (opcode)
+    {
+    case OpCode::EQUAL:
+    case OpCode::NOT_EQUAL:
+    case OpCode::LESS:
+    case OpCode::LESS_EQUAL:
+    case OpCode::GREATER:
+    case OpCode::GREATER_EQUAL:
+        return true;
+    default:
+        return false;
+    }
+}
+
+namespace
+{
+
+bool convertToJitCondition(OpCode opcode, JitCondition &condition)
+{
+    switch (opcode)
+    {
+    case OpCode::EQUAL:
+        condition = JitCondition::Equal;
+        return true;
+    case OpCode::NOT_EQUAL:
+        condition = JitCondition::NotEqual;
+        return true;
+    case OpCode::LESS:
+        condition = JitCondition::Less;
+        return true;
+    case OpCode::LESS_EQUAL:
+        condition = JitCondition::LessEqual;
+        return true;
+    case OpCode::GREATER:
+        condition = JitCondition::Greater;
+        return true;
+    case OpCode::GREATER_EQUAL:
+        condition = JitCondition::GreaterEqual;
+        return true;
+    default:
+        return false;
+    }
+}
+
+} // namespace
+
 /**
  * @brief Arithmetic that consumes the top of the stack and a literal.
  *
@@ -222,6 +270,58 @@ bool Assembler::emitBinaryArithmeticOperation(OpCode opcode)
         return false;
 
     pushSlot(result);
+    return true;
+}
+
+bool Assembler::emitComparison(OpCode opcode)
+{
+    if (jitCompilationStack.size() < 2)
+        return false;
+
+    JitCondition condition{};
+    if (!convertToJitCondition(opcode, condition))
+        return false;
+
+    const Slot right = jitCompilationStack.back();
+    jitCompilationStack.pop_back();
+    const Slot left = jitCompilationStack.back();
+    jitCompilationStack.pop_back();
+
+    if (!left.isNumeric() || !right.isNumeric())
+        return false;
+
+    const MemoryOffset leftOffset = static_cast<MemoryOffset>(jitCompilationStack.size() * JIT_SLOT_SIZE_BYTES);
+    const MemoryOffset rightOffset = leftOffset + JIT_SLOT_SIZE_BYTES;
+
+    if (left.isInt() && right.isInt())
+    {
+        // ----------------------------------------------
+        // Compare the two 32-bit integers and set the
+        // result (CPU flags) into an int boolean in EAX.
+        // ----------------------------------------------
+        mov(EAX, dword_ptr(RSP, leftOffset));
+        mov(ECX, dword_ptr(RSP, rightOffset));
+        compareInts(EAX, ECX);
+        setIntComparisonResult(condition, EAX);
+    }
+    else
+    {
+        // ------------------------------------------------
+        // At least one operand is a double, so compare in
+        // SIMD registers. loadNumberFromMemoryToSimd
+        // converts an int to double when necessary.
+        // ------------------------------------------------
+        loadNumberFromMemoryToSimd(left, leftOffset, XMM0);
+        loadNumberFromMemoryToSimd(right, rightOffset, XMM1);
+        compareDoubles(XMM0, XMM1);
+        setComparisonResult(condition, EAX);
+    }
+
+    // --------------------------------------------------
+    // The result (EAX) replaces the left operand's slot.
+    // --------------------------------------------------
+    mov(dword_ptr(RSP, leftOffset), EAX);
+    pushSlot(Slot{JitValueType::Int});
     return true;
 }
 

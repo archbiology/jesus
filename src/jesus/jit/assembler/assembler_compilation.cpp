@@ -119,6 +119,14 @@ bool Assembler::compileToMachineCode(const IR &input)
             continue;
         }
 
+        if (opcode == OpCode::INIT_REPEAT_COUNT)
+        {
+            if (!emitRepeatNTimes(instruction))
+                return false;
+
+            continue;
+        }
+
         if (opcode == OpCode::ADD_LOCAL_LITERAL_STORE_JUMP)
         {
             // -----------------------------------------
@@ -181,6 +189,14 @@ bool Assembler::compileToMachineCode(const IR &input)
             // "If age is NOT less than 18, jump to instruction 5."
             // ----------------------------------------------------
             skipNextInstruction = true;
+            continue;
+        }
+
+        if (isComparison(opcode))
+        {
+            if (!emitComparison(opcode))
+                return false;
+
             continue;
         }
 

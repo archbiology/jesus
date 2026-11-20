@@ -1,0 +1,5 @@
+create total: number = 0
+repeat 0 times:
+    total = total + 1
+amen
+say total

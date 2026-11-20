@@ -1,5 +1,5 @@
-# Counted loops still use the unsupported INIT_REPEAT_COUNT opcode, so the
-# JIT must fall back to the VM and still produce the correct result.
+# The JIT cannot compile string literals, so it falls back to the VM.
+create label = "fallback"
 
 create total: number = 0
 create idx: number = 0
