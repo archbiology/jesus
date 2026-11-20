@@ -1,0 +1,19 @@
+let there be Counter:
+    purpose count() -> number:
+        create i: number = 0
+        repeat forever:
+            i = i + 1
+            if i is 2:
+                skip
+            amen
+            if i is 4:
+                break
+            amen
+            say i
+        amen
+        return i
+    amen
+amen
+
+create counter = Counter()
+say counter count

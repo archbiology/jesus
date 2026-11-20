@@ -221,7 +221,7 @@ bool Assembler::validateSupportedJitOperations(const IR &ir, std::size_t &maxSlo
             continue;
         }
 
-        if (opcode == OpCode::ADD_LOCAL_LITERAL_STORE_JUMP)
+        if (opcode == OpCode::ADD_LOCAL_LITERAL_STORE_JUMP || opcode == OpCode::ADD_LOCAL_LITERAL_STORE)
         {
             // ------------------------------------------------------------
             // Fused loop tail: local[dest] = local[source] + literal
@@ -231,12 +231,15 @@ bool Assembler::validateSupportedJitOperations(const IR &ir, std::size_t &maxSlo
             //   bits 8-23   literal index
             //   bits 24-31  destination local slot
             // ------------------------------------------------------------
-            if (instructionIndex + 1 >= ir.instructions.size())
-                return false;
+            if (opcode == OpCode::ADD_LOCAL_LITERAL_STORE_JUMP)
+            {
+                if (instructionIndex + 1 >= ir.instructions.size())
+                    return false;
 
-            const Instruction &targetHolder = ir.instructions[instructionIndex + 1];
-            if (targetHolder.opcode != OpCode::JUMP || targetHolder.operand >= ir.instructions.size())
-                return false;
+                const Instruction &targetHolder = ir.instructions[instructionIndex + 1];
+                if (targetHolder.opcode != OpCode::JUMP || targetHolder.operand >= ir.instructions.size())
+                    return false;
+            }
 
             if (ir.localCount == 0)
                 return false;
