@@ -250,7 +250,7 @@ private:
     // -----------------
     // Repeat statements
     // -----------------
-    bool emitRepeatWhile(const Instruction &instruction, std::uint32_t jumpTarget);
+    bool emitUpdateLoopVariable(const Instruction &instruction);
     bool emitRepeatNTimes(const Instruction &instruction);
 
     void loadNumberFromMemoryToSimd(const Slot &slot, MemoryOffset offset, const SimdRegister &simdRegister);

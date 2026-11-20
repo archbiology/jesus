@@ -127,20 +127,13 @@ bool Assembler::compileToMachineCode(const IR &input)
             continue;
         }
 
-        if (opcode == OpCode::ADD_LOCAL_LITERAL_STORE_JUMP)
+        if (opcode == OpCode::ADD_LOCAL_LITERAL_STORE || opcode == OpCode::ADD_LOCAL_LITERAL_STORE_JUMP)
         {
-            // -----------------------------------------
-            // [index]     ADD_LOCAL_LITERAL_STORE_JUMP
-            // [index + 1] JUMP <loopStart>
-            // -----------------------------------------
-            if (index + 1 >= ir->instructions.size())
+            // We normally have this in 'repeat while', 'repeat N times'
+            if (!emitUpdateLoopVariable(instruction))
                 return false;
 
-            const std::uint32_t jumpTarget = ir->instructions[index + 1].operand;
-            if (!emitRepeatWhile(instruction, jumpTarget))
-                return false;
-
-            skipNextInstruction = true;
+            // The fused VM opcode leaves its JUMP in the IR. Emit it on the next pass.
             continue;
         }
 

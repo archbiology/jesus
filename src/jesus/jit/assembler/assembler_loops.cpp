@@ -41,9 +41,9 @@ extern "C" void JitRuntimeUpdateLoopVariable(
     localAt(ctx, baseSlot, destinationSlot) = localAt(ctx, baseSlot, sourceSlot) + *literal;
 }
 
-bool Assembler::emitRepeatWhile(const Instruction &instruction, std::uint32_t jumpTarget)
+bool Assembler::emitUpdateLoopVariable(const Instruction &instruction)
 {
-    if (ir == nullptr || jumpTarget >= ir->instructions.size())
+    if (ir == nullptr)
         return false;
 
     const std::uint32_t sourceSlot = extractLower8Bits(instruction.operand);
@@ -57,6 +57,18 @@ bool Assembler::emitRepeatWhile(const Instruction &instruction, std::uint32_t ju
     }
 
     const Value &literal = ir->literals[literalIndex];
+    const JitValueType destinationType = destinationSlot < localVariableTypes.size()
+        ? localVariableTypes[destinationSlot] : JitValueType::ValueIndex;
+    const JitValueType sourceType = sourceSlot < localVariableTypes.size()
+        ? localVariableTypes[sourceSlot] : JitValueType::ValueIndex;
+
+    if (sourceType == JitValueType::ValueIndex || !literal.IS_NUMBER)
+        return false;
+
+    const auto resultType = sourceType == JitValueType::Int && literal.IS_INT
+        ? JitValueType::Int : JitValueType::Double;
+    if (destinationType != JitValueType::ValueIndex && destinationType != resultType)
+        return false;
 
     // ------------------------------------------------
     // Pass the arguments to JitRuntimeUpdateLoopVariable.
@@ -93,10 +105,6 @@ bool Assembler::emitRepeatWhile(const Instruction &instruction, std::uint32_t ju
     mov(RAX, Immediate(&JitRuntimeUpdateLoopVariable));
     call(RAX);
 
-    // ---------------------------------------
-    // Go to the beginning of the repeat-while
-    // ---------------------------------------
-    jump(jumpTarget);
     return true;
 }
 

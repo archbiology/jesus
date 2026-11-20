@@ -1,0 +1,15 @@
+let there be Counter:
+    purpose count() -> number:
+        create i: number = 0
+        repeat forever:
+            i = i + 1
+            if i is 3:
+                break
+            amen
+        amen
+        return i
+    amen
+amen
+
+create counter = Counter()
+say counter count
