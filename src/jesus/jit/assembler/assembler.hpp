@@ -245,6 +245,11 @@ private:
     bool emitComparisonBranch(const Instruction &instruction, std::uint32_t target);
     static bool isComparisonBranch(OpCode opcode);
 
+    // -----------------
+    // Repeat statements
+    // -----------------
+    bool emitRepeatWhile(const Instruction &instruction, std::uint32_t jumpTarget);
+
     void loadNumberFromMemoryToSimd(const Slot &slot, MemoryOffset offset, const SimdRegister &simdRegister);
     void loadNumberToSimd(
         const Slot &slot,
@@ -303,6 +308,21 @@ inline std::uint32_t pack16Bits(std::uint32_t lower, std::uint32_t upper)
     //      result: 10101010 11001100 11110000 00001111
     // ----------------------------------------------------------------
     return extractLower16Bits(lower) | (extractLower16Bits(upper) << 16);
+}
+
+inline std::uint32_t extractLower8Bits(std::uint32_t value)
+{
+    return value & 0xFF;
+}
+
+inline std::uint32_t extractMiddle16Bits(std::uint32_t value)
+{
+    return (value >> 8) & 0xFFFF;
+}
+
+inline std::uint32_t extractUpper8Bits(std::uint32_t value)
+{
+    return (value >> 24) & 0xFF;
 }
 
 } // namespace jit
