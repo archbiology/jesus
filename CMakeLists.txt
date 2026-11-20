@@ -10,7 +10,7 @@ include_directories(src/jesus src/bible/include)
 # --------------------
 # Set the C++ standard
 # --------------------
-set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
 message(NOTICE "\n   Jesus Christ loves YOU!!!\n")
@@ -286,6 +286,7 @@ set(JESUS_CPP_FILES
     src/jesus/jit/assembler/assembler_control.cpp
     src/jesus/jit/assembler/assembler_objects.cpp
     src/jesus/jit/assembler/assembler_calls.cpp
+    src/jesus/jit/assembler/assembler_loops.cpp
 
     src/jesus/jit/assembler/x86_64/x86_assembler.cpp
     src/jesus/jit/assembler/x86_64/x86_assembler_comparisons.cpp

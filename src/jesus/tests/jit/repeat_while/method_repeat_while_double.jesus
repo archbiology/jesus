@@ -1,0 +1,13 @@
+let there be Counter:
+    purpose run() -> number:
+        create x: number = 0.0
+        repeat while x < 2.0:
+            say x
+            x = x + 1.0
+        amen
+        return 2
+    amen
+amen
+
+create counter = Counter()
+say counter run

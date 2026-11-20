@@ -1,0 +1,13 @@
+let there be Counter:
+    purpose run() -> number:
+        create i: number = 0
+        repeat while i < 3:
+            say i
+            i = i + 1
+        amen
+        return 3
+    amen
+amen
+
+create counter = Counter()
+say counter run
