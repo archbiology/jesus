@@ -129,6 +129,7 @@ protected:
     virtual void mov(DwordMemory destination, Register source) = 0;
     virtual void mov(DwordMemory destination, Immediate value) = 0;
     virtual void mov(QwordMemory destination, Register source) = 0;
+    virtual void lea(Register destination, QwordMemory source) = 0;
 
     /**
      * @brief Move data from a general-purpose register to an XMM register.
@@ -214,6 +215,7 @@ private:
     std::vector<Slot> jitCompilationStack;
     std::vector<JitValueType> globalVariableTypes;
     std::vector<JitValueType> localVariableTypes;
+    std::vector<bool> fusedLocalsToReadAsValues;
     const IR *ir = nullptr;
     const ChunksMap *chunksMap = nullptr;
 
@@ -235,6 +237,26 @@ private:
     void recordLocalVarType(std::uint32_t index, JitValueType valueType);
     bool emitStoreLocal(const Instruction &instruction);
     bool emitReadLocal(const Instruction &instruction);
+
+    // ----------------
+    // Fused operations
+    // ----------------
+    static bool isFusedLocalOperation(OpCode opcode);
+    /**
+     * @brief Finds fused local variables whose values must be read as Value objects
+     *  rather than directly as integers or doubles.
+     */
+    static std::vector<bool> findFusedLocalsToReadAsValues(const IR &ir);
+    static JitValueType localReadType(
+        std::uint32_t slot, const std::vector<JitValueType> &types, const std::vector<bool> &localsToReadAsValues);
+    static bool validateFusedLocalOperation(
+        const IR &ir,
+        std::size_t index,
+        std::vector<Slot> &stack,
+        std::vector<JitValueType> &localTypes,
+        const std::vector<bool> &localsToReadAsValues);
+    bool emitExecuteFusedLocalOperation(std::size_t index);
+
     bool emitCreateInstance();
     bool emitCall(const Instruction &instruction);
     bool emitReturn();

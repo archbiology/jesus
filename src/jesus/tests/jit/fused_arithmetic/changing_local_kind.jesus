@@ -1,0 +1,15 @@
+let there be Step:
+    purpose run(cy: number):
+        create x: number = 1
+        create y: number = 2
+        create i = 0
+        repeat while i < 2:
+            say y
+            y = 2.0 * x * y + cy
+            i = i + 1
+        amen
+    amen
+amen
+
+create step = Step()
+step run 0.5

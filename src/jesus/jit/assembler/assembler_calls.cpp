@@ -43,14 +43,14 @@ extern "C" void JitRuntimePushValue(JitContext *ctx, std::uint32_t valueIndex)
     ctx->jitRuntimeStack.push_back(ctx->globals[valueIndex]);
 }
 
-extern "C" void JitRuntimeCallMethod(JitContext *ctx, std::uint32_t targetIndex)
+extern "C" int JitRuntimeCallMethod(JitContext *ctx, std::uint32_t targetIndex)
 {
     if (targetIndex >= ctx->jitMethods.size())
-        return;
+        return false;
 
     const JitMethod &method = ctx->jitMethods[targetIndex];
     if (method.entrypoint == nullptr || ctx->jitRuntimeStack.size() < method.paramsCount + 1)
-        return;
+        return false;
 
     const std::size_t baseSlot = ctx->jitRuntimeStack.size() - (method.paramsCount + 1);
     ctx->jitRuntimeStack.resize(baseSlot + method.localCount);
@@ -64,6 +64,7 @@ extern "C" void JitRuntimeCallMethod(JitContext *ctx, std::uint32_t targetIndex)
     method.entrypoint(ctx, static_cast<std::uint32_t>(baseSlot));
 
     ctx->currentMethodBaseSlot = previousBase;
+    return !ctx->jitException;
 }
 
 extern "C" std::uint32_t JitRuntimeMoveReturnValueToGlobals(JitContext *ctx)
@@ -161,6 +162,12 @@ bool Assembler::emitCall(const Instruction &instruction)
     mov(RSI, Immediate(target->second));
     mov(RAX, Immediate(&JitRuntimeCallMethod));
     call(RAX);
+
+    // ---------------------------------------------------------------
+    // EAX is zero when the called method could not return a result.
+    // Happens if dividing by zero, for example (divide_by_zero.jesus)
+    // ---------------------------------------------------------------
+    jumpIfZero(EAX, static_cast<std::uint32_t>(ir->instructions.size()));
 
     loadJitContextPointerIntoRDI();
     mov(RAX, Immediate(&JitRuntimeMoveReturnValueToGlobals));

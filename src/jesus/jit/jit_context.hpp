@@ -1,5 +1,6 @@
 #pragma once
 
+#include <exception>
 #include <vector>
 
 #include "spirit/value.hpp"
@@ -78,6 +79,8 @@ struct JitContext
      * @brief Slot where the current frame begins in `jitRuntimeStack`.
      */
     MethodBaseSlot currentMethodBaseSlot = 0;
+
+    std::exception_ptr jitException;
 };
 
 /**

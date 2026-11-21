@@ -1,5 +1,7 @@
 #include "assembler.hpp"
 
+#include <algorithm>
+
 #include "interpreter/runtime/method.hpp"
 #include "spirit/value.hpp"
 #include "vm/opcode.hpp"
@@ -68,6 +70,7 @@ bool Assembler::validateSupportedJitOperations(const IR &ir, std::size_t &maxSlo
     std::vector<Slot> tempStack;
     std::vector<JitValueType> tempGlobalVariableTypes;
     std::vector<JitValueType> tempLocalVariableTypes;
+    const auto tmpFusedLocalsToReadAsValues = findFusedLocalsToReadAsValues(ir);
     maxSlots = 0;
 
     auto push = [&](const Slot &slot)
@@ -132,8 +135,7 @@ bool Assembler::validateSupportedJitOperations(const IR &ir, std::size_t &maxSlo
                 return false;
 
             const std::uint32_t index = instruction.operand;
-            const JitValueType valueType =
-                index < tempLocalVariableTypes.size() ? tempLocalVariableTypes[index] : JitValueType::ValueIndex;
+            const JitValueType valueType = localReadType(index, tempLocalVariableTypes, tmpFusedLocalsToReadAsValues);
             push(Slot{valueType});
             continue;
         }
@@ -253,6 +255,34 @@ bool Assembler::validateSupportedJitOperations(const IR &ir, std::size_t &maxSlo
 
             // The fused operation only writes a local;
             // it does not push or pop an operand-stack value.
+            continue;
+        }
+
+        if (isFusedLocalOperation(opcode))
+        {
+            if (!validateFusedLocalOperation(
+                    ir, instructionIndex, tempStack, tempLocalVariableTypes, tmpFusedLocalsToReadAsValues))
+                return false;
+
+            maxSlots = std::max(maxSlots, tempStack.size());
+
+            // ----------------------------------------------------------------
+            // This fused instruction also uses the next instruction to store
+            // its jump destination. Skip it because it is not an instruction.
+            //
+            //   Instruction N:     JUMP_IF_NOT_ADD_LOCAL_LOCAL_GREATER_LITERAL
+            //   Instruction N + 1: Jump destination
+            //   Instruction N + 2: Next instruction
+            //
+            // Used in a loop like this:
+            //   repeat while i <= limit:
+            //     say i
+            //     i = i + 1
+            //   amen
+            // ----------------------------------------------------------------
+            if (opcode == OpCode::JUMP_IF_NOT_ADD_LOCAL_LOCAL_GREATER_LITERAL)
+                ++instructionIndex;
+
             continue;
         }
 
@@ -441,9 +471,9 @@ bool Assembler::validateSupportedJitOperations(const IR &ir, std::size_t &maxSlo
             if (ir.localCount == 0 || tempStack.empty())
                 return false;
 
-            // Anything after RETURN is unreachable for the VM and is ignored
-            // here as well.
-            return true;
+            // RETURN consumes one value.
+            tempStack.pop_back();
+            continue;
         }
 
         // Any other opcode: the JIT engine will run this chunk on the VM.

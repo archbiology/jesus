@@ -1,0 +1,25 @@
+let there be MandelbrotStep:
+    purpose run(cx: number, cy: number, width: number, initialY: number) -> number:
+        create x: number = 1.0
+        create y: number = initialY
+        create x2: number = x * x
+        create y2: number = y * y
+        say x2
+        say y2
+        say x * 3.0 / width
+
+        if x2 + y2 > 4.0:
+            return 1
+        amen
+
+        y = 2.0 * x * y + cy
+        x = x2 - y2 + cx
+        say x
+        say y
+        return 0
+    amen
+amen
+
+create step = MandelbrotStep()
+say step run 3.25, 0.5, 4, 2.0
+say step run 3.25, 0.5, 5, 1.0

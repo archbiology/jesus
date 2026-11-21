@@ -18,6 +18,8 @@ void Assembler::releaseCompilationData()
     globalVariableTypes.shrink_to_fit();
     localVariableTypes.clear();
     localVariableTypes.shrink_to_fit();
+    fusedLocalsToReadAsValues.clear();
+    fusedLocalsToReadAsValues.shrink_to_fit();
     ir = nullptr;
     chunksMap = nullptr;
 }
@@ -31,6 +33,7 @@ bool Assembler::compileToMachineCode(const IR &input)
     globalVariableTypes.clear();
     localVariableTypes.clear();
     ir = &input;
+    fusedLocalsToReadAsValues = findFusedLocalsToReadAsValues(input);
 
     bool skipNextInstruction = false;
 
@@ -137,6 +140,15 @@ bool Assembler::compileToMachineCode(const IR &input)
             continue;
         }
 
+        if (isFusedLocalOperation(opcode))
+        {
+            if (!emitExecuteFusedLocalOperation(index))
+                return false;
+
+            skipNextInstruction = opcode == OpCode::JUMP_IF_NOT_ADD_LOCAL_LOCAL_GREATER_LITERAL;
+            continue;
+        }
+
         if (isComparisonBranch(opcode))
         {
             // -------------------------------------
@@ -219,7 +231,13 @@ bool Assembler::compileToMachineCode(const IR &input)
         }
 
         if (opcode == OpCode::EXIT)
-            return ir->localCount == 0;
+        {
+            // EXIT inside methods is not supported by the JIT yet.
+            if (ir->localCount != 0)
+                return false;
+
+            break;
+        }
 
         if (opcode == OpCode::RETURN)
         {

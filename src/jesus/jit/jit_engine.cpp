@@ -143,6 +143,8 @@ bool JitEngine::execute(const IR &ir)
 
     auto &main = executableChunks.front();
     main->execute(context);
+    if (context.jitException)
+        std::rethrow_exception(context.jitException);
 
     return true;
 }
