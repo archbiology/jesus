@@ -44,6 +44,7 @@ protected:
     void mov(DwordMemory destination, Register source) override;
     void mov(DwordMemory destination, Immediate value) override;
     void mov(QwordMemory destination, Register source) override;
+    void lea(Register destination, QwordMemory source) override;
 
     /**
      * @brief Move data from general-purpose to floating-point registers.
@@ -123,6 +124,10 @@ static asmjit::x86::Gp toAsmJit(Register reg)
         return rdi;
     case Register::EDI:
         return edi;
+    case Register::R8:
+        return asmjit::x86::r8;
+    case Register::R9:
+        return asmjit::x86::r9;
     case Register::RBP:
         return rbp;
     case Register::RSP:

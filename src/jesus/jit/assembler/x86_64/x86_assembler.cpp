@@ -224,6 +224,14 @@ void X86Assembler::mov(QwordMemory destination, Register source)
 }
 
 /**
+ * @brief LEA Computes the effective address only (without reading the memory at it).
+ */
+void X86Assembler::lea(Register destination, QwordMemory source)
+{
+    assembler->lea(toAsmJit(destination), asmjit::x86::qword_ptr(toAsmJit(source.base_register), source.offset));
+}
+
+/**
  * @brief Move data between general-purpose and floating-point registers.
  */
 void X86Assembler::movq(SimdRegister destination, Register source)

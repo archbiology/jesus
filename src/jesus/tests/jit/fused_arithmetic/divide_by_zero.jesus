@@ -1,0 +1,11 @@
+let there be Scale:
+    purpose run(width: number):
+        create x: number = 6
+        say x * 3.0 / width
+        say 1
+    amen
+amen
+
+create scale = Scale()
+scale run 0
+say 2

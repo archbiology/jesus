@@ -86,6 +86,10 @@ enum class Register
      */
     RBP, // Base/frame pointer
 
+    // (64-bit) System V: fifth and sixth integer or pointer arguments.
+    R8,
+    R9,
+
     /**
      * @brief RSP = Stack pointer: Holds the address of the top of the current stack.
      * PUSH and POP, function calls, returns, and local-variable storage
