@@ -18,8 +18,10 @@ void Assembler::releaseCompilationData()
     globalVariableTypes.shrink_to_fit();
     localVariableTypes.clear();
     localVariableTypes.shrink_to_fit();
-    fusedLocalsToReadAsValues.clear();
-    fusedLocalsToReadAsValues.shrink_to_fit();
+    localsToReadFromStack.clear();
+    localsToReadFromStack.shrink_to_fit();
+    globalsToReadFromStack.clear();
+    globalsToReadFromStack.shrink_to_fit();
     ir = nullptr;
     chunksMap = nullptr;
 }
@@ -33,7 +35,6 @@ bool Assembler::compileToMachineCode(const IR &input)
     globalVariableTypes.clear();
     localVariableTypes.clear();
     ir = &input;
-    fusedLocalsToReadAsValues = findFusedLocalsToReadAsValues(input);
 
     bool skipNextInstruction = false;
 

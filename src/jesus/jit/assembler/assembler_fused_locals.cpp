@@ -1,7 +1,6 @@
 #include "assembler.hpp"
 
 #include <bit>
-#include <cstring>
 #include <limits>
 
 #include "jit/jit_context.hpp"
@@ -9,8 +8,6 @@
 #include "vm/opcode.hpp"
 
 namespace jit
-{
-namespace
 {
 
 // Each field uses the same packing as its VM handler. Keep unused fields
@@ -71,43 +68,6 @@ JitValueType getArithmeticResultType(JitValueType left, JitValueType right)
         return JitValueType::StackIndex;
 
     return left == JitValueType::Double || right == JitValueType::Double ? JitValueType::Double : JitValueType::Int;
-}
-
-Value readStackOperand(const JitContext &context, const void *address, JitValueType type)
-{
-    if (type == JitValueType::Double)
-    {
-        double number;
-        std::memcpy(&number, address, sizeof(number));
-        return Value(number);
-    }
-
-    // -------------------------------------------------------------
-    // Not double, so it's either an integer or a globals StackIndex
-    // -------------------------------------------------------------
-    std::uint32_t bits;
-    std::memcpy(&bits, address, sizeof(bits));
-    return type == JitValueType::Int ? Value(std::bit_cast<int>(bits)) : context.globals[bits];
-}
-
-void writeStackResult(JitContext &context, void *address, JitValueType type, Value result)
-{
-    if (type == JitValueType::Double)
-        std::memcpy(address, &result.doubleValue, sizeof(result.doubleValue));
-
-    else if (type == JitValueType::Int)
-        std::memcpy(address, &result.intValue, sizeof(result.intValue));
-
-    else
-    {
-        // ------------------------------------------
-        // Store the Value in context.globals
-        // and write its index to the assembly stack.
-        // ------------------------------------------
-        const auto index = static_cast<std::uint32_t>(context.globals.size());
-        context.globals.push_back(std::move(result));
-        std::memcpy(address, &index, sizeof(index));
-    }
 }
 
 Value multiply(const Value &left, const Value &right)
@@ -207,17 +167,17 @@ int executeFusedLocalOperation(
         switch (instruction->opcode)
         {
         case OpCode::MULTIPLY_LOCAL_LITERAL:
-            writeStackResult(*context, stackSlot, stackType, multiply(first, *literal));
+            writeToStack(*context, stackSlot, stackType, multiply(first, *literal));
             break;
 
         case OpCode::MULTIPLY_LITERAL_LOCAL:
-            writeStackResult(*context, stackSlot, stackType, multiply(*literal, first));
+            writeToStack(*context, stackSlot, stackType, multiply(*literal, first));
             break;
 
         case OpCode::DIVIDE_LOCAL_RIGHT:
             // Value division always returns a double and reports a zero divisor.
-            writeStackResult(
-                *context, stackSlot, JitValueType::Double, readStackOperand(*context, stackSlot, stackType) / first);
+            writeToStack(
+                *context, stackSlot, JitValueType::Double, readFromStack(*context, stackSlot, stackType) / first);
             break;
 
         case OpCode::MULTIPLY_LOCAL_LOCAL_STORE:
@@ -228,7 +188,7 @@ int executeFusedLocalOperation(
             // Evaluate the full right-hand side before writing the destination,
             // which can alias a source local (as y does in Mandelbrot).
             local(operands.destination) =
-                multiplyThenAdd(readStackOperand(*context, stackSlot, stackType), first, local(operands.second));
+                multiplyThenAdd(readFromStack(*context, stackSlot, stackType), first, local(operands.second));
             break;
 
         case OpCode::SUBTRACT_ADD_LOCAL_LOCAL_LOCAL_STORE:
@@ -269,47 +229,23 @@ int executeFusedLocalOperation(
     }
 }
 
-} // namespace
-
 bool Assembler::isFusedLocalOperation(OpCode opcode)
 {
     return decodeFusedLocalOperands(Instruction{opcode, 0}).first != FusedLocalOperands::unused;
 }
 
-std::vector<bool> Assembler::findFusedLocalsToReadAsValues(const IR &ir)
+std::vector<bool> Assembler::findFusedLocalsToReadFromStack(const IR &ir)
 {
-    bool hasJump = false;
-    for (const Instruction &instruction : ir.instructions)
-    {
-        if (instruction.opcode == OpCode::JUMP || instruction.opcode == OpCode::JUMP_IF_FALSE)
-        {
-            hasJump = true;
-            break;
-        }
-    }
-    if (!hasJump)
-        return {};
-
-    std::vector<bool> fusedLocalsToReadAsValues(ir.localCount);
+    std::vector<bool> localsToReadFromStack(ir.localCount);
     for (const Instruction &instruction : ir.instructions)
     {
         const auto destination = decodeFusedLocalOperands(instruction).destination;
-        // ---------------------------------------------------------------
-        // destination != FusedLocalOperands::unused (unued = UINT32_MAX)?
-        // ---------------------------------------------------------------
-        if (destination < ir.localCount)
-            fusedLocalsToReadAsValues[destination] = true;
+
+        if (destination != FusedLocalOperands::unused)
+            localsToReadFromStack[destination] = true;
     }
-    return fusedLocalsToReadAsValues;
-}
 
-JitValueType Assembler::localReadType(
-    std::uint32_t slot, const std::vector<JitValueType> &types, const std::vector<bool> &boxedLocals)
-{
-    if (slot >= types.size() || (slot < boxedLocals.size() && boxedLocals[slot]))
-        return JitValueType::StackIndex;
-
-    return types[slot];
+    return localsToReadFromStack;
 }
 
 bool Assembler::validateFusedLocalOperation(
@@ -348,7 +284,7 @@ bool Assembler::validateFusedLocalOperation(
     if (usesOperandFromStack(instruction.opcode) && stack.empty())
         return false;
 
-    auto localType = [&](std::uint32_t slot) { return localReadType(slot, localTypes, boxedLocals); };
+    auto localType = [&](std::uint32_t slot) { return readVarType(slot, localTypes, boxedLocals); };
     const JitValueType first = localType(operands.first);
     if (instruction.opcode == OpCode::DIVIDE_LOCAL_RIGHT)
     {
@@ -394,7 +330,7 @@ bool Assembler::emitExecuteFusedLocalOperation(std::size_t index)
         return false;
 
     auto stackType = readsStack ? jitCompilationStack.back().valueType : JitValueType::StackIndex;
-    if (!validateFusedLocalOperation(*ir, index, jitCompilationStack, localVariableTypes, fusedLocalsToReadAsValues))
+    if (!validateFusedLocalOperation(*ir, index, jitCompilationStack, localVariableTypes, localsToReadFromStack))
         return false;
 
     const bool pushesResult = jitCompilationStack.size() > stackSize;

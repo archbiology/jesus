@@ -1,10 +1,73 @@
 #include "assembler.hpp"
+#include "jit/jit_context.hpp"
 #include "spirit/value.hpp"
+
+#include <bit>
 
 #include <cstring>
 
 namespace jit
 {
+
+JitValueType Assembler::readVarType(
+    std::uint32_t slot, const std::vector<JitValueType> &types, const std::vector<bool> &varsToReadAsValues)
+{
+
+    // -------------------------------------------------------------
+    // If the slot has no known (int/double) type, return StackIndex
+    // -------------------------------------------------------------
+    if (slot >= types.size())
+        return JitValueType::StackIndex;
+
+    // ------------------------------------------
+    // If the slot exists in varsToReadAsValues
+    // and its value is true, return StackIndex.
+    // ------------------------------------------
+    if (slot < varsToReadAsValues.size() && varsToReadAsValues[slot])
+        return JitValueType::StackIndex;
+
+    // ----------------------------------------------------
+    // Return its type from `types`. It's an int or double.
+    // ----------------------------------------------------
+    return types[slot];
+}
+
+Value readFromStack(const JitContext &context, const void *address, JitValueType type)
+{
+    if (type == JitValueType::Double)
+    {
+        double doubleValue;
+        std::memcpy(&doubleValue, address, sizeof(doubleValue));
+        return Value(doubleValue);
+    }
+
+    // -------------------------------------------------------------
+    // Not double, so it's either an integer or a globals StackIndex
+    // -------------------------------------------------------------
+    std::uint32_t bits;
+    std::memcpy(&bits, address, sizeof(bits));
+    return type == JitValueType::Int ? Value(std::bit_cast<int>(bits)) : context.globals[bits];
+}
+
+void writeToStack(JitContext &context, void *address, JitValueType type, Value result)
+{
+    if (type == JitValueType::Double)
+        std::memcpy(address, &result.doubleValue, sizeof(result.doubleValue));
+
+    else if (type == JitValueType::Int)
+        std::memcpy(address, &result.intValue, sizeof(result.intValue));
+
+    else
+    {
+        // ------------------------------------------
+        // Store the Value in context.globals
+        // and write its index to the assembly stack.
+        // ------------------------------------------
+        const auto index = static_cast<std::uint32_t>(context.globals.size());
+        context.globals.push_back(std::move(result));
+        std::memcpy(address, &index, sizeof(index));
+    }
+}
 
 // Implemented in assembler_objects.cpp
 extern "C" std::uint32_t JitRuntimeAppendLiteral(JitContext *ctx, const Value *value);

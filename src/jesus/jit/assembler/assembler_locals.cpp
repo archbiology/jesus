@@ -156,7 +156,7 @@ bool Assembler::emitReadLocal(const Instruction &instruction)
         return false;
 
     const std::uint32_t index = instruction.operand;
-    const JitValueType valueType = localReadType(index, localVariableTypes, fusedLocalsToReadAsValues);
+    const JitValueType valueType = readVarType(index, localVariableTypes, localsToReadFromStack);
     const MemoryOffset destOffset = static_cast<MemoryOffset>(jitCompilationStack.size() * JIT_SLOT_SIZE_BYTES);
 
     // -----------------------------------------------------
