@@ -47,7 +47,7 @@ extern "C" int JitRuntimeReadGlobalInt(JitContext *ctx, std::uint32_t index)
 
 extern "C" double JitRuntimeReadGlobalDouble(JitContext *ctx, std::uint32_t index)
 {
-    return ctx->globals[index].number;
+    return ctx->globals[index].doubleValue;
 }
 
 // *GlobalValue(...) functions are implemented in assembler_objects.cpp

@@ -94,7 +94,7 @@ bool Assembler::validateSupportedJitOperations(const IR &ir, std::size_t &maxSlo
             if (literal.IS_INT)
                 push(Slot::Int(literal.intValue));
             else if (literal.IS_DOUBLE)
-                push(Slot::Double(literal.number));
+                push(Slot::Double(literal.doubleValue));
             else if (literal.IS_CLASS || literal.IS_FORMLESS)
                 push(Slot::ValueIndex());
             else
@@ -422,7 +422,7 @@ bool Assembler::validateSupportedJitOperations(const IR &ir, std::size_t &maxSlo
             if (literal.IS_INT)
                 right = Slot::Int(literal.intValue);
             else if (literal.IS_DOUBLE)
-                right = Slot::Double(literal.number);
+                right = Slot::Double(literal.doubleValue);
             else
                 return false;
 

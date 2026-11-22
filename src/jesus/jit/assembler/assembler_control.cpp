@@ -139,7 +139,7 @@ bool literalAsSlot(const Value &literal, Slot &slot)
 
     if (literal.IS_DOUBLE)
     {
-        slot = Slot::Double(literal.number);
+        slot = Slot::Double(literal.doubleValue);
         return true;
     }
 
@@ -163,17 +163,17 @@ bool jitRuntimeCompareValues(const Value &left, const Value &right, JitCondition
         switch (condition)
         {
         case JitCondition::Equal:
-            return left.number == right.number;
+            return left.doubleValue == right.doubleValue;
         case JitCondition::NotEqual:
-            return left.number != right.number;
+            return left.doubleValue != right.doubleValue;
         case JitCondition::Less:
-            return left.number < right.number;
+            return left.doubleValue < right.doubleValue;
         case JitCondition::LessEqual:
-            return left.number <= right.number;
+            return left.doubleValue <= right.doubleValue;
         case JitCondition::Greater:
-            return left.number > right.number;
+            return left.doubleValue > right.doubleValue;
         case JitCondition::GreaterEqual:
-            return left.number >= right.number;
+            return left.doubleValue >= right.doubleValue;
         }
     }
 

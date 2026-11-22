@@ -101,23 +101,23 @@ public:
     /**
      * @brief Cached numeric value, filled in when the Value is constructed.
      *
-     * Reading the number is the hottest operation in the VM's arithmetic,
+     * Reading the doubleValue is the hottest operation in the VM's arithmetic,
      * and reaching it through std::variant (std::get) is measurably the
      * dominant cost. Values are effectively immutable once constructed,
      * so the numeric payload can be cached here and copied for free.
      */
-    double number = 0.0;
+    double doubleValue = 0.0;
 
     /**
-     * Cached integer payload for IS_INT values. Like `number`, it is stored
+     * Cached integer payload for IS_INT values. Like `doubleValue`, it is stored
      * outside the variant so integer copies never touch the variant.
      */
     int intValue = 0;
 
     Value() : IS_FORMLESS(true), AS_BOOLEAN(false) {}
     explicit Value(std::monostate) : IS_FORMLESS(true), AS_BOOLEAN(false) {}
-    explicit Value(int v) : IS_INT(true), IS_NUMBER(true), number(static_cast<double>(v)), intValue(v) {}
-    explicit Value(double v) : IS_DOUBLE(true), IS_NUMBER(true), number(v) {}
+    explicit Value(int v) : IS_INT(true), IS_NUMBER(true), doubleValue(static_cast<double>(v)), intValue(v) {}
+    explicit Value(double v) : IS_DOUBLE(true), IS_NUMBER(true), doubleValue(v) {}
     explicit Value(bool v) : IS_BOOLEAN(true), AS_BOOLEAN(v) {}
     explicit Value(const std::string &v) : IS_STRING(true), AS_BOOLEAN(v != ""), value(std::make_unique<Dust>(v)) {}
     explicit Value(const char *v) : IS_STRING(true), AS_BOOLEAN(std::string(v) != ""), value(std::make_unique<Dust>(std::string(v))) {}
@@ -129,7 +129,7 @@ public:
     explicit Value(const std::shared_ptr<DictValue> &v) : IS_DICT(true), AS_BOOLEAN(!v->empty()), value(std::make_unique<Dust>(v)) {}
 
     Value(const Value &other)
-        : __flags(other.__flags), number(other.number), intValue(other.intValue)
+        : __flags(other.__flags), doubleValue(other.doubleValue), intValue(other.intValue)
     {
         // Scalars leave `value` null; only heavy payloads are cloned.
         if (other.value)
@@ -137,7 +137,7 @@ public:
     }
 
     Value(Value &&other) noexcept
-        : __flags(other.__flags), number(other.number), intValue(other.intValue),
+        : __flags(other.__flags), doubleValue(other.doubleValue), intValue(other.intValue),
           value(std::move(other.value))
     {
     }
@@ -148,7 +148,7 @@ public:
             return *this;
 
         __flags = other.__flags;
-        number = other.number;
+        doubleValue = other.doubleValue;
         intValue = other.intValue;
 
         if (other.value)
@@ -165,7 +165,7 @@ public:
             return *this;
 
         __flags = other.__flags;
-        number = other.number;
+        doubleValue = other.doubleValue;
         intValue = other.intValue;
         value = std::move(other.value);
 
@@ -189,7 +189,7 @@ public:
     {
         if (IS_NUMBER)
         {
-            return number;
+            return doubleValue;
         }
 
         throw std::runtime_error("Value is not a number");
@@ -206,7 +206,7 @@ public:
     [[gnu::always_inline]] bool truthy() const
     {
         if (IS_NUMBER)
-            return number != 0.0;
+            return doubleValue != 0.0;
 
         return AS_BOOLEAN;
     }
@@ -218,7 +218,7 @@ public:
     [[gnu::always_inline]] void setAsBoolean(bool v)
     {
         value.reset();
-        number = 0.0;
+        doubleValue = 0.0;
         intValue = 0;
         __flags = F_BOOLEAN | (v ? F_ASBOOL : 0);
     }
@@ -229,7 +229,7 @@ public:
     [[gnu::always_inline]] void setAsInt(int v)
     {
         value.reset();
-        number = static_cast<double>(v);
+        doubleValue = static_cast<double>(v);
         intValue = v;
         __flags = F_INT | F_NUMBER;
     }
@@ -240,7 +240,7 @@ public:
     [[gnu::always_inline]] void setAsDouble(double v)
     {
         value.reset();
-        number = v;
+        doubleValue = v;
         __flags = F_DOUBLE | F_NUMBER;
     }
 
@@ -248,7 +248,7 @@ public:
     {
         // if (IS_NUMBER)
         // {
-            return (int)number;
+        return (int)doubleValue;
         // }
 
         // throw std::runtime_error("Value is not a number");
@@ -461,20 +461,20 @@ private:
      */
     void vmSetAsInt(int v)
     {
-        number = static_cast<double>(v);
+        doubleValue = static_cast<double>(v);
         intValue = v;
         __flags = F_INT | F_NUMBER;
     }
 
     void vmSetAsDouble(double v)
     {
-        number = v;
+        doubleValue = v;
         __flags = F_DOUBLE | F_NUMBER;
     }
 
     void vmSetAsBoolean(bool v)
     {
-        number = 0.0;
+        doubleValue = 0.0;
         intValue = 0;
         __flags = F_BOOLEAN | (v ? F_ASBOOL : 0);
     }

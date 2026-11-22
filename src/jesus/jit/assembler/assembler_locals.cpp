@@ -60,7 +60,7 @@ extern "C" int JitRuntimeReadLocalInt(JitContext *ctx, std::uint32_t baseSlot, s
 
 extern "C" double JitRuntimeReadLocalDouble(JitContext *ctx, std::uint32_t baseSlot, std::uint32_t slot)
 {
-    return localAt(ctx, baseSlot, slot).number;
+    return localAt(ctx, baseSlot, slot).doubleValue;
 }
 
 extern "C" std::uint32_t JitRuntimeCopyLocalValue(JitContext *ctx, std::uint32_t baseSlot, std::uint32_t slot)

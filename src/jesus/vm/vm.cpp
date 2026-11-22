@@ -229,7 +229,7 @@ void VM::run(const Chunk &chunk)
             if (!operand.IS_NUMBER)
                 throw std::runtime_error("Unary '-' applied to non-number: " + operand.toString());
 
-            operand.vmSetAsDouble(-operand.number);
+            operand.vmSetAsDouble(-operand.doubleValue);
 
             ++ip;
             goto NEXT_OP;
@@ -263,7 +263,7 @@ void VM::run(const Chunk &chunk)
         if (left.IS_NUMBER && right.IS_NUMBER) \
         { \
             if (left.IS_DOUBLE || right.IS_DOUBLE) \
-                left.vmSetAsDouble(left.number dblop right.number); \
+                left.vmSetAsDouble(left.doubleValue dblop right.doubleValue); \
             else \
                 left.vmSetAsInt(left.intValue intop right.intValue); \
             stack.pop_back(); \
@@ -282,10 +282,10 @@ void VM::run(const Chunk &chunk)
             BINARY_OPERANDS
             if (left.IS_NUMBER && right.IS_NUMBER)
             {
-                const double divisor = right.number;
+                const double divisor = right.doubleValue;
                 if (divisor == 0.0)
                     throw std::runtime_error("Division by zero");
-                left.vmSetAsDouble(left.number / divisor);
+                left.vmSetAsDouble(left.doubleValue / divisor);
                 stack.pop_back();
                 ++ip;
                 goto NEXT_OP;
@@ -299,7 +299,7 @@ void VM::run(const Chunk &chunk)
             if (left.IS_NUMBER && right.IS_NUMBER)
             {
                 if (left.IS_DOUBLE || right.IS_DOUBLE)
-                    throw std::runtime_error("'" + std::to_string(left.number) + " mod " + std::to_string(right.number) + "' invalid — 'mod' only supports integers.");
+                    throw std::runtime_error("'" + std::to_string(left.doubleValue) + " mod " + std::to_string(right.doubleValue) + "' invalid — 'mod' only supports integers.");
                 left.vmSetAsInt(left.toInt() % right.toInt());
                 stack.pop_back();
                 ++ip;
@@ -314,7 +314,7 @@ void VM::run(const Chunk &chunk)
         BINARY_OPERANDS \
         if (left.IS_NUMBER && right.IS_NUMBER) \
         { \
-            left.vmSetAsBoolean(left.number dblop right.number); \
+            left.vmSetAsBoolean(left.doubleValue dblop right.doubleValue); \
             stack.pop_back(); \
             ++ip; \
             goto NEXT_OP; \
@@ -352,7 +352,7 @@ void VM::run(const Chunk &chunk)
         { \
             if (a.IS_DOUBLE || b.IS_DOUBLE) \
             { \
-                const double result = a.number op b.number; \
+                const double result = a.doubleValue op b.doubleValue; \
                 stack.emplace_back(); \
                 stack.back().vmSetAsDouble(result); \
             } \
@@ -380,9 +380,9 @@ void VM::run(const Chunk &chunk)
             FUSED_OPERANDS
             if (a.IS_NUMBER && b.IS_NUMBER)
             {
-                if (b.number == 0.0)
+                if (b.doubleValue == 0.0)
                     throw std::runtime_error("Division by zero");
-                const double result = a.number / b.number;
+                const double result = a.doubleValue / b.doubleValue;
                 stack.emplace_back();
                 stack.back().vmSetAsDouble(result);
             }
@@ -400,7 +400,7 @@ void VM::run(const Chunk &chunk)
             if (a.IS_NUMBER && b.IS_NUMBER)
             {
                 if (a.IS_DOUBLE || b.IS_DOUBLE)
-                    throw std::runtime_error("'" + std::to_string(a.number) + " mod " + std::to_string(b.number) + "' invalid — 'mod' only supports integers.");
+                    throw std::runtime_error("'" + std::to_string(a.doubleValue) + " mod " + std::to_string(b.doubleValue) + "' invalid — 'mod' only supports integers.");
                 const int result = a.intValue % b.intValue;
                 stack.emplace_back();
                 stack.back().vmSetAsInt(result);
@@ -419,7 +419,7 @@ void VM::run(const Chunk &chunk)
         FUSED_OPERANDS \
         if (a.IS_NUMBER && b.IS_NUMBER) \
         { \
-            const bool result = a.number op b.number; \
+            const bool result = a.doubleValue op b.doubleValue; \
             stack.emplace_back(); \
             stack.back().vmSetAsBoolean(result); \
         } \
@@ -466,7 +466,7 @@ void VM::run(const Chunk &chunk)
         { \
             if (a.IS_DOUBLE || b.IS_DOUBLE) \
             { \
-                const double result = a.number op b.number; \
+                const double result = a.doubleValue op b.doubleValue; \
                 stack.emplace_back(); \
                 stack.back().vmSetAsDouble(result); \
             } \
@@ -491,7 +491,7 @@ void VM::run(const Chunk &chunk)
         operands \
         if (a.IS_NUMBER && b.IS_NUMBER) \
         { \
-            const bool result = a.number op b.number; \
+            const bool result = a.doubleValue op b.doubleValue; \
             stack.emplace_back(); \
             stack.back().vmSetAsBoolean(result); \
         } \
@@ -512,10 +512,10 @@ void VM::run(const Chunk &chunk)
             FUSED_LOCAL_LITERAL_OPERANDS
             if (a.IS_NUMBER && b.IS_NUMBER)
             {
-                if (b.number == 0.0)
+                if (b.doubleValue == 0.0)
                     throw std::runtime_error("Division by zero");
                 stack.emplace_back();
-                stack.back().vmSetAsDouble(a.number / b.number);
+                stack.back().vmSetAsDouble(a.doubleValue / b.doubleValue);
             }
             else
             {
@@ -531,7 +531,7 @@ void VM::run(const Chunk &chunk)
             if (a.IS_NUMBER && b.IS_NUMBER)
             {
                 if (a.IS_DOUBLE || b.IS_DOUBLE)
-                    throw std::runtime_error("'" + std::to_string(a.number) + " mod " + std::to_string(b.number) + "' invalid — 'mod' only supports integers.");
+                    throw std::runtime_error("'" + std::to_string(a.doubleValue) + " mod " + std::to_string(b.doubleValue) + "' invalid — 'mod' only supports integers.");
                 stack.emplace_back();
                 stack.back().vmSetAsInt(a.intValue % b.intValue);
             }
@@ -559,10 +559,10 @@ void VM::run(const Chunk &chunk)
             FUSED_LITERAL_LOCAL_OPERANDS
             if (a.IS_NUMBER && b.IS_NUMBER)
             {
-                if (b.number == 0.0)
+                if (b.doubleValue == 0.0)
                     throw std::runtime_error("Division by zero");
                 stack.emplace_back();
-                stack.back().vmSetAsDouble(a.number / b.number);
+                stack.back().vmSetAsDouble(a.doubleValue / b.doubleValue);
             }
             else
             {
@@ -578,7 +578,7 @@ void VM::run(const Chunk &chunk)
             if (a.IS_NUMBER && b.IS_NUMBER)
             {
                 if (a.IS_DOUBLE || b.IS_DOUBLE)
-                    throw std::runtime_error("'" + std::to_string(a.number) + " mod " + std::to_string(b.number) + "' invalid — 'mod' only supports integers.");
+                    throw std::runtime_error("'" + std::to_string(a.doubleValue) + " mod " + std::to_string(b.doubleValue) + "' invalid — 'mod' only supports integers.");
                 stack.emplace_back();
                 stack.back().vmSetAsInt(a.intValue % b.intValue);
             }
@@ -621,7 +621,7 @@ void VM::run(const Chunk &chunk)
         if (a.IS_NUMBER && b.IS_NUMBER) \
         { \
             if (a.IS_DOUBLE || b.IS_DOUBLE) \
-                dest.setAsDouble(a.number op b.number); \
+                dest.setAsDouble(a.doubleValue op b.doubleValue); \
             else \
                 dest.setAsInt(a.intValue op b.intValue); \
         } \
@@ -642,9 +642,9 @@ void VM::run(const Chunk &chunk)
             FUSED_STORE_OPERANDS
             if (a.IS_NUMBER && b.IS_NUMBER)
             {
-                if (b.number == 0.0)
+                if (b.doubleValue == 0.0)
                     throw std::runtime_error("Division by zero");
-                dest.setAsDouble(a.number / b.number);
+                dest.setAsDouble(a.doubleValue / b.doubleValue);
             }
             else
             {
@@ -660,7 +660,7 @@ void VM::run(const Chunk &chunk)
             if (a.IS_NUMBER && b.IS_NUMBER)
             {
                 if (a.IS_DOUBLE || b.IS_DOUBLE)
-                    throw std::runtime_error("'" + std::to_string(a.number) + " mod " + std::to_string(b.number) + "' invalid — 'mod' only supports integers.");
+                    throw std::runtime_error("'" + std::to_string(a.doubleValue) + " mod " + std::to_string(b.doubleValue) + "' invalid — 'mod' only supports integers.");
                 dest.setAsInt(a.intValue % b.intValue);
             }
             else
@@ -690,7 +690,7 @@ void VM::run(const Chunk &chunk)
         if (a.IS_NUMBER && b.IS_NUMBER) \
         { \
             if (a.IS_DOUBLE || b.IS_DOUBLE) \
-                dest.setAsDouble(a.number op b.number); \
+                dest.setAsDouble(a.doubleValue op b.doubleValue); \
             else \
                 dest.setAsInt(a.intValue op b.intValue); \
         } \
@@ -711,9 +711,9 @@ void VM::run(const Chunk &chunk)
             FUSED_LOCAL_LITERAL_STORE_OPERANDS
             if (a.IS_NUMBER && b.IS_NUMBER)
             {
-                if (b.number == 0.0)
+                if (b.doubleValue == 0.0)
                     throw std::runtime_error("Division by zero");
-                dest.setAsDouble(a.number / b.number);
+                dest.setAsDouble(a.doubleValue / b.doubleValue);
             }
             else
             {
@@ -729,7 +729,7 @@ void VM::run(const Chunk &chunk)
             if (a.IS_NUMBER && b.IS_NUMBER)
             {
                 if (a.IS_DOUBLE || b.IS_DOUBLE)
-                    throw std::runtime_error("'" + std::to_string(a.number) + " mod " + std::to_string(b.number) + "' invalid — 'mod' only supports integers.");
+                    throw std::runtime_error("'" + std::to_string(a.doubleValue) + " mod " + std::to_string(b.doubleValue) + "' invalid — 'mod' only supports integers.");
                 dest.setAsInt(a.intValue % b.intValue);
             }
             else
@@ -766,7 +766,7 @@ void VM::run(const Chunk &chunk)
         if (left.IS_NUMBER && b.IS_NUMBER) \
         { \
             if (left.IS_DOUBLE || b.IS_DOUBLE) \
-                left.vmSetAsDouble(left.number op b.number); \
+                left.vmSetAsDouble(left.doubleValue op b.doubleValue); \
             else \
                 left.vmSetAsInt(left.intValue op b.intValue); \
         } \
@@ -783,7 +783,7 @@ void VM::run(const Chunk &chunk)
     { \
         operands \
         if (left.IS_NUMBER && b.IS_NUMBER) \
-            left.vmSetAsBoolean(left.number op b.number); \
+            left.vmSetAsBoolean(left.doubleValue op b.doubleValue); \
         else \
             left = Value(left op b); \
         ++ip; \
@@ -799,9 +799,9 @@ void VM::run(const Chunk &chunk)
             FUSED_LOCAL_RIGHT_OPERANDS
             if (left.IS_NUMBER && b.IS_NUMBER)
             {
-                if (b.number == 0.0)
+                if (b.doubleValue == 0.0)
                     throw std::runtime_error("Division by zero");
-                left.vmSetAsDouble(left.number / b.number);
+                left.vmSetAsDouble(left.doubleValue / b.doubleValue);
             }
             else
             {
@@ -817,7 +817,7 @@ void VM::run(const Chunk &chunk)
             if (left.IS_NUMBER && b.IS_NUMBER)
             {
                 if (left.IS_DOUBLE || b.IS_DOUBLE)
-                    throw std::runtime_error("'" + std::to_string(left.number) + " mod " + std::to_string(b.number) + "' invalid — 'mod' only supports integers.");
+                    throw std::runtime_error("'" + std::to_string(left.doubleValue) + " mod " + std::to_string(b.doubleValue) + "' invalid — 'mod' only supports integers.");
                 left.vmSetAsInt(left.intValue % b.intValue);
             }
             else
@@ -844,9 +844,9 @@ void VM::run(const Chunk &chunk)
             FUSED_LITERAL_RIGHT_OPERANDS
             if (left.IS_NUMBER && b.IS_NUMBER)
             {
-                if (b.number == 0.0)
+                if (b.doubleValue == 0.0)
                     throw std::runtime_error("Division by zero");
-                left.vmSetAsDouble(left.number / b.number);
+                left.vmSetAsDouble(left.doubleValue / b.doubleValue);
             }
             else
             {
@@ -862,7 +862,7 @@ void VM::run(const Chunk &chunk)
             if (left.IS_NUMBER && b.IS_NUMBER)
             {
                 if (left.IS_DOUBLE || b.IS_DOUBLE)
-                    throw std::runtime_error("'" + std::to_string(left.number) + " mod " + std::to_string(b.number) + "' invalid — 'mod' only supports integers.");
+                    throw std::runtime_error("'" + std::to_string(left.doubleValue) + " mod " + std::to_string(b.doubleValue) + "' invalid — 'mod' only supports integers.");
                 left.vmSetAsInt(left.intValue % b.intValue);
             }
             else
@@ -899,7 +899,7 @@ void VM::run(const Chunk &chunk)
     goto NEXT_OP;
 
 #define CMP_IS_TRUE(a, b, cmpop) \
-    (((a).IS_NUMBER && (b).IS_NUMBER) ? ((a).number cmpop (b).number) : Value((a) cmpop (b)).truthy())
+    (((a).IS_NUMBER && (b).IS_NUMBER) ? ((a).doubleValue cmpop (b).doubleValue) : Value((a) cmpop (b)).truthy())
 
 #define BRANCH_LOCAL_LOCAL(label, cmpop) \
     OP_##label: \
@@ -999,9 +999,9 @@ void VM::run(const Chunk &chunk)
         if (a.IS_NUMBER && b.IS_NUMBER && lit.IS_NUMBER) \
         { \
             const double sum = (a.IS_DOUBLE || b.IS_DOUBLE) \
-                                   ? a.number + b.number \
+                                   ? a.doubleValue + b.doubleValue \
                                    : static_cast<double>(a.intValue + b.intValue); \
-            cond = sum cmpop lit.number; \
+            cond = sum cmpop lit.doubleValue; \
         } \
         else \
         { \
@@ -1038,7 +1038,7 @@ void VM::run(const Chunk &chunk)
             if (left.IS_NUMBER && b.IS_NUMBER && c.IS_NUMBER)
             {
                 if (left.IS_DOUBLE || b.IS_DOUBLE || c.IS_DOUBLE)
-                    dest.setAsDouble(left.number * b.number + c.number);
+                    dest.setAsDouble(left.doubleValue * b.doubleValue + c.doubleValue);
                 else
                     dest.setAsInt(left.intValue * b.intValue + c.intValue);
             }
@@ -1064,7 +1064,7 @@ void VM::run(const Chunk &chunk)
             if (a.IS_NUMBER && b.IS_NUMBER)
             {
                 if (a.IS_DOUBLE || b.IS_DOUBLE)
-                    dest.setAsDouble(a.number + b.number);
+                    dest.setAsDouble(a.doubleValue + b.doubleValue);
                 else
                     dest.setAsInt(a.intValue + b.intValue);
             }
@@ -1093,7 +1093,7 @@ void VM::run(const Chunk &chunk)
             if (a.IS_NUMBER && b.IS_NUMBER && c.IS_NUMBER)
             {
                 if (a.IS_DOUBLE || b.IS_DOUBLE || c.IS_DOUBLE)
-                    dest.setAsDouble(a.number - b.number + c.number);
+                    dest.setAsDouble(a.doubleValue - b.doubleValue + c.doubleValue);
                 else
                     dest.setAsInt(a.intValue - b.intValue + c.intValue);
             }
@@ -1133,7 +1133,7 @@ void VM::run(const Chunk &chunk)
         if (left.IS_NUMBER && b.IS_NUMBER) \
         { \
             if (left.IS_DOUBLE || b.IS_DOUBLE) \
-                dest.setAsDouble(left.number op b.number); \
+                dest.setAsDouble(left.doubleValue op b.doubleValue); \
             else \
                 dest.setAsInt(left.intValue op b.intValue); \
         } \
@@ -1155,9 +1155,9 @@ void VM::run(const Chunk &chunk)
             FUSED_LOCAL_RIGHT_STORE_OPERANDS
             if (left.IS_NUMBER && b.IS_NUMBER)
             {
-                if (b.number == 0.0)
+                if (b.doubleValue == 0.0)
                     throw std::runtime_error("Division by zero");
-                dest.setAsDouble(left.number / b.number);
+                dest.setAsDouble(left.doubleValue / b.doubleValue);
             }
             else
             {
@@ -1174,7 +1174,7 @@ void VM::run(const Chunk &chunk)
             if (left.IS_NUMBER && b.IS_NUMBER)
             {
                 if (left.IS_DOUBLE || b.IS_DOUBLE)
-                    throw std::runtime_error("'" + std::to_string(left.number) + " mod " + std::to_string(b.number) + "' invalid — 'mod' only supports integers.");
+                    throw std::runtime_error("'" + std::to_string(left.doubleValue) + " mod " + std::to_string(b.doubleValue) + "' invalid — 'mod' only supports integers.");
                 dest.setAsInt(left.intValue % b.intValue);
             }
             else
@@ -1195,9 +1195,9 @@ void VM::run(const Chunk &chunk)
             FUSED_LITERAL_RIGHT_STORE_OPERANDS
             if (left.IS_NUMBER && b.IS_NUMBER)
             {
-                if (b.number == 0.0)
+                if (b.doubleValue == 0.0)
                     throw std::runtime_error("Division by zero");
-                dest.setAsDouble(left.number / b.number);
+                dest.setAsDouble(left.doubleValue / b.doubleValue);
             }
             else
             {
@@ -1214,7 +1214,7 @@ void VM::run(const Chunk &chunk)
             if (left.IS_NUMBER && b.IS_NUMBER)
             {
                 if (left.IS_DOUBLE || b.IS_DOUBLE)
-                    throw std::runtime_error("'" + std::to_string(left.number) + " mod " + std::to_string(b.number) + "' invalid — 'mod' only supports integers.");
+                    throw std::runtime_error("'" + std::to_string(left.doubleValue) + " mod " + std::to_string(b.doubleValue) + "' invalid — 'mod' only supports integers.");
                 dest.setAsInt(left.intValue % b.intValue);
             }
             else

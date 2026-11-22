@@ -93,7 +93,7 @@ Value readStackOperand(const JitContext &context, const void *address, JitValueT
 void writeStackResult(JitContext &context, void *address, JitValueType type, Value result)
 {
     if (type == JitValueType::Double)
-        std::memcpy(address, &result.number, sizeof(result.number));
+        std::memcpy(address, &result.doubleValue, sizeof(result.doubleValue));
 
     else if (type == JitValueType::Int)
         std::memcpy(address, &result.intValue, sizeof(result.intValue));
@@ -126,7 +126,7 @@ Value multiplyThenAdd(const Value &left, const Value &right, const Value &valueT
         // One value is double. Example: 2 * 3 + 1.5
         // ------------------------------------------
         if (left.IS_DOUBLE || right.IS_DOUBLE || valueToAdd.IS_DOUBLE)
-            return Value(left.number * right.number + valueToAdd.number);
+            return Value(left.doubleValue * right.doubleValue + valueToAdd.doubleValue);
 
         // ---------------------------
         // Integer operands: 6 * 5 + 3
@@ -147,7 +147,7 @@ Value subtractThenAdd(const Value &left, const Value &right, const Value &valueT
     if (left.IS_NUMBER && right.IS_NUMBER && valueToAdd.IS_NUMBER)
     {
         if (left.IS_DOUBLE || right.IS_DOUBLE || valueToAdd.IS_DOUBLE)
-            return Value(left.number - right.number + valueToAdd.number);
+            return Value(left.doubleValue - right.doubleValue + valueToAdd.doubleValue);
 
         // ---------
         // Integers
@@ -242,7 +242,7 @@ int executeFusedLocalOperation(
                 first.IS_INT && second.IS_INT
                     ? Value(std::bit_cast<int>(std::uint32_t(first.intValue) + std::uint32_t(second.intValue)))
                     : first + second;
-            const bool greater = sum.IS_NUMBER && literal->IS_NUMBER ? sum.number > literal->number : sum > *literal;
+            const bool greater = sum.IS_NUMBER && literal->IS_NUMBER ? sum.doubleValue > literal->doubleValue : sum > *literal;
 
             // ---------------------------------------------------------------------
             // 1 if the operation completed successfully.

@@ -337,7 +337,7 @@ bool Assembler::emitFusedLiteralRight(OpCode base, const Instruction &instructio
     if (literal.IS_INT)
         right = Slot::Int(literal.intValue);
     else if (literal.IS_DOUBLE)
-        right = Slot::Double(literal.number);
+        right = Slot::Double(literal.doubleValue);
     else
         return false;
 

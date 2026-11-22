@@ -33,13 +33,13 @@ bool Assembler::emitPushLiteral(const Instruction &instruction)
     if (literal.IS_DOUBLE)
     {
         std::uint64_t bits = 0;
-        static_assert(sizeof(bits) == sizeof(literal.number));
+        static_assert(sizeof(bits) == sizeof(literal.doubleValue));
         // ------------------------------------------------------------
-        // Why memcpy instead of `bits = literal.number`?
+        // Why memcpy instead of `bits = literal.doubleValue`?
         //   Because number is double, but bits is int64.
         //   If we assign it directly, C++ casts 3.14 to 3, losing info
         // ------------------------------------------------------------
-        std::memcpy(&bits, &literal.number, sizeof(bits));
+        std::memcpy(&bits, &literal.doubleValue, sizeof(bits));
 
         // ------------------------------------------
         // Move the double value (bits) to 64-bit RAX
@@ -57,7 +57,7 @@ bool Assembler::emitPushLiteral(const Instruction &instruction)
         //    (32 bits can be copied directly into memory, but 64 bits, no)
         // ----------------------------------------------------------------
         mov(qword_ptr(RSP, offset), RAX);
-        pushSlot(Slot::Double(literal.number));
+        pushSlot(Slot::Double(literal.doubleValue));
         return true;
     }
 

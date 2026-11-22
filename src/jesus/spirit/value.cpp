@@ -151,7 +151,7 @@ std::string Value::toString() const
         return "(int) " + std::to_string(intValue);
 
     if (IS_DOUBLE)
-        return "(double) " + std::to_string(number);
+        return "(double) " + std::to_string(doubleValue);
 
     return std::visit(make_string_functor(), value->data);
 }
