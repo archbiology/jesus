@@ -87,7 +87,7 @@ bool Assembler::emitPrint()
     else
     {
         // ---------------------------------------------------------
-        // Then it is a ValueIndex (an index to an object)
+        // Then it is a StackIndex (an index to an object)
         //
         // Fist, load JitContext for `JitRuntimePrintValue` into RDI
         // ---------------------------------------------------------

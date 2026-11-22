@@ -58,16 +58,16 @@ bool Assembler::emitUpdateLoopVariable(const Instruction &instruction)
 
     const Value &literal = ir->literals[literalIndex];
     const JitValueType destinationType = destinationSlot < localVariableTypes.size()
-        ? localVariableTypes[destinationSlot] : JitValueType::ValueIndex;
+        ? localVariableTypes[destinationSlot] : JitValueType::StackIndex;
     const JitValueType sourceType = sourceSlot < localVariableTypes.size()
-        ? localVariableTypes[sourceSlot] : JitValueType::ValueIndex;
+        ? localVariableTypes[sourceSlot] : JitValueType::StackIndex;
 
-    if (sourceType == JitValueType::ValueIndex || !literal.IS_NUMBER)
+    if (sourceType == JitValueType::StackIndex || !literal.IS_NUMBER)
         return false;
 
     const auto resultType = sourceType == JitValueType::Int && literal.IS_INT
         ? JitValueType::Int : JitValueType::Double;
-    if (destinationType != JitValueType::ValueIndex && destinationType != resultType)
+    if (destinationType != JitValueType::StackIndex && destinationType != resultType)
         return false;
 
     // ------------------------------------------------

@@ -72,7 +72,7 @@ extern "C" std::uint32_t JitRuntimeCopyLocalValue(JitContext *ctx, std::uint32_t
 void Assembler::recordLocalVarType(std::uint32_t index, JitValueType valueType)
 {
     if (index >= localVariableTypes.size())
-        localVariableTypes.resize(index + 1, JitValueType::ValueIndex);
+        localVariableTypes.resize(index + 1, JitValueType::StackIndex);
 
     localVariableTypes[index] = valueType;
 }
@@ -127,7 +127,7 @@ bool Assembler::emitStoreLocal(const Instruction &instruction)
         movsd(XMM0, qword_ptr(RSP, valueOffset));
         mov(RAX, Immediate(&JitRuntimeUpdateLocalDouble));
     }
-    else if (value.isValueIndex())
+    else if (value.isStackIndex())
     {
         // -------------------------------------------------
         // Pass the Value index as the fourth argument (ECX)
@@ -214,7 +214,7 @@ bool Assembler::emitReadLocal(const Instruction &instruction)
         // Return value is a Value index
         // --------------------------------
         mov(dword_ptr(RSP, destOffset), EAX);
-        pushSlot(Slot::ValueIndex());
+        pushSlot(Slot::StackIndex());
     }
 
     return true;

@@ -302,7 +302,7 @@ bool Assembler::emitJumpIfFalse(const Instruction &instruction)
         return true;
     }
 
-    if (condition.isValueIndex())
+    if (condition.isStackIndex())
     {
         // ---------------------------------------------
         // Load the first param of JitRuntimeCheckTruthy

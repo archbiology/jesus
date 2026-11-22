@@ -9,13 +9,13 @@ enum class JitValueType
     Double,
 
     /**
-     * @brief An index into `JitContext::globals`.
+     * @brief An index into `JitContext::globals/jitRuntimeStack`.
      *
      * Classes, instances and formless values use this kind.
     * The JIT stack stores a 32-bit index instead of a pointer,
     * avoiding pointer invalidation when the vector grows.
      */
-    ValueIndex
+    StackIndex
 };
 
 /**
@@ -57,9 +57,9 @@ struct Slot
         return slot;
     }
 
-    static Slot ValueIndex()
+    static Slot StackIndex()
     {
-        return Slot{JitValueType::ValueIndex};
+        return Slot{JitValueType::StackIndex};
     }
 
     double asDouble() const
@@ -82,9 +82,9 @@ struct Slot
         return valueType == JitValueType::Int || valueType == JitValueType::Double;
     }
 
-    bool isValueIndex() const
+    bool isStackIndex() const
     {
-        return valueType == JitValueType::ValueIndex;
+        return valueType == JitValueType::StackIndex;
     }
 };
 

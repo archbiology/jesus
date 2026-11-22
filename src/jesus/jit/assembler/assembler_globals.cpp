@@ -51,7 +51,7 @@ extern "C" double JitRuntimeReadGlobalDouble(JitContext *ctx, std::uint32_t inde
 }
 
 // *GlobalValue(...) functions are implemented in assembler_objects.cpp
-extern "C" void JitRuntimeUpdateGlobalValue(JitContext *ctx, std::uint32_t globalIndex, std::uint32_t valueIndex);
+extern "C" void JitRuntimeUpdateGlobalValue(JitContext *ctx, std::uint32_t globalIndex, std::uint32_t stackIndex);
 extern "C" std::uint32_t JitRuntimeCopyGlobalValue(JitContext *ctx, std::uint32_t globalIndex);
 
 void Assembler::recordGlobalVarType(std::uint32_t index, JitValueType valueType)
@@ -195,7 +195,7 @@ bool Assembler::emitReadGlobal(const Instruction &instruction)
         // Return value is a Value index
         // --------------------------------
         mov(dword_ptr(RSP, destOffset), EAX);
-        pushSlot(Slot::ValueIndex());
+        pushSlot(Slot::StackIndex());
     }
 
     return true;

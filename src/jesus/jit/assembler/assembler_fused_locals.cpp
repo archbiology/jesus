@@ -67,8 +67,8 @@ bool usesOperandFromStack(OpCode opcode)
 
 JitValueType getArithmeticResultType(JitValueType left, JitValueType right)
 {
-    if (left == JitValueType::ValueIndex || right == JitValueType::ValueIndex)
-        return JitValueType::ValueIndex;
+    if (left == JitValueType::StackIndex || right == JitValueType::StackIndex)
+        return JitValueType::StackIndex;
 
     return left == JitValueType::Double || right == JitValueType::Double ? JitValueType::Double : JitValueType::Int;
 }
@@ -83,7 +83,7 @@ Value readStackOperand(const JitContext &context, const void *address, JitValueT
     }
 
     // -------------------------------------------------------------
-    // Not double, so it's either an integer or a globals ValueIndex
+    // Not double, so it's either an integer or a globals StackIndex
     // -------------------------------------------------------------
     std::uint32_t bits;
     std::memcpy(&bits, address, sizeof(bits));
@@ -307,7 +307,7 @@ JitValueType Assembler::localReadType(
     std::uint32_t slot, const std::vector<JitValueType> &types, const std::vector<bool> &boxedLocals)
 {
     if (slot >= types.size() || (slot < boxedLocals.size() && boxedLocals[slot]))
-        return JitValueType::ValueIndex;
+        return JitValueType::StackIndex;
 
     return types[slot];
 }
@@ -326,7 +326,7 @@ bool Assembler::validateFusedLocalOperation(
         !validLocal(operands.destination))
         return false;
 
-    JitValueType literalType = JitValueType::ValueIndex;
+    JitValueType literalType = JitValueType::StackIndex;
     if (operands.literal != FusedLocalOperands::unused)
     {
         if (operands.literal >= ir.literals.size())
@@ -378,7 +378,7 @@ bool Assembler::validateFusedLocalOperation(
         result = getArithmeticResultType(result, localType(operands.third));
 
     if (operands.destination >= localTypes.size())
-        localTypes.resize(operands.destination + 1, JitValueType::ValueIndex);
+        localTypes.resize(operands.destination + 1, JitValueType::StackIndex);
 
     localTypes[operands.destination] = result;
     return true;
@@ -393,7 +393,7 @@ bool Assembler::emitExecuteFusedLocalOperation(std::size_t index)
     if (readsStack && stackSize == 0)
         return false;
 
-    auto stackType = readsStack ? jitCompilationStack.back().valueType : JitValueType::ValueIndex;
+    auto stackType = readsStack ? jitCompilationStack.back().valueType : JitValueType::StackIndex;
     if (!validateFusedLocalOperation(*ir, index, jitCompilationStack, localVariableTypes, fusedLocalsToReadAsValues))
         return false;
 

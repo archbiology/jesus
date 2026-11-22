@@ -38,9 +38,9 @@ extern "C" void JitRuntimePushDouble(JitContext *ctx, double value)
     ctx->jitRuntimeStack.push_back(Value(value));
 }
 
-extern "C" void JitRuntimePushValue(JitContext *ctx, std::uint32_t valueIndex)
+extern "C" void JitRuntimePushValue(JitContext *ctx, std::uint32_t stackIndex)
 {
-    ctx->jitRuntimeStack.push_back(ctx->globals[valueIndex]);
+    ctx->jitRuntimeStack.push_back(ctx->globals[stackIndex]);
 }
 
 extern "C" int JitRuntimeCallMethod(JitContext *ctx, std::uint32_t targetIndex)
@@ -95,9 +95,9 @@ extern "C" void JitRuntimeReturnDouble(JitContext *ctx, std::uint32_t baseSlot, 
     putReturnValueOnStack(ctx, baseSlot, Value(value));
 }
 
-extern "C" void JitRuntimeReturnValue(JitContext *ctx, std::uint32_t baseSlot, std::uint32_t valueIndex)
+extern "C" void JitRuntimeReturnValue(JitContext *ctx, std::uint32_t baseSlot, std::uint32_t stackIndex)
 {
-    putReturnValueOnStack(ctx, baseSlot, ctx->globals[valueIndex]);
+    putReturnValueOnStack(ctx, baseSlot, ctx->globals[stackIndex]);
 }
 
 bool Assembler::emitCall(const Instruction &instruction)
@@ -143,7 +143,7 @@ bool Assembler::emitCall(const Instruction &instruction)
             movsd(XMM0, qword_ptr(RSP, offset));
             mov(RAX, Immediate(&JitRuntimePushDouble));
         }
-        else if (slot.isValueIndex())
+        else if (slot.isStackIndex())
         {
             mov(RSI, dword_ptr(RSP, offset));
             mov(RAX, Immediate(&JitRuntimePushValue));
@@ -175,7 +175,7 @@ bool Assembler::emitCall(const Instruction &instruction)
 
     const MemoryOffset resultOffset = static_cast<MemoryOffset>(baseIndex * JIT_SLOT_SIZE_BYTES);
     mov(dword_ptr(RSP, resultOffset), EAX);
-    pushSlot(Slot::ValueIndex());
+    pushSlot(Slot::StackIndex());
     return true;
 }
 
@@ -200,7 +200,7 @@ bool Assembler::emitReturn()
         movsd(XMM0, qword_ptr(RSP, offset));
         mov(RAX, Immediate(&JitRuntimeReturnDouble));
     }
-    else if (result.isValueIndex())
+    else if (result.isStackIndex())
     {
         mov(EDX, dword_ptr(RSP, offset));
         mov(RAX, Immediate(&JitRuntimeReturnValue));

@@ -49,7 +49,7 @@ extern "C" std::uint32_t JitRuntimeCreateInstance(JitContext *ctx, std::uint32_t
  *
  * Called when creating or updating global variables
  */
-extern "C" void JitRuntimeUpdateGlobalValue(JitContext *ctx, std::uint32_t globalIndex, std::uint32_t valueIndex)
+extern "C" void JitRuntimeUpdateGlobalValue(JitContext *ctx, std::uint32_t globalIndex, std::uint32_t stackIndex)
 {
     // ---------------------------------------------------------------
     // Here we don't need:
@@ -73,7 +73,7 @@ extern "C" void JitRuntimeUpdateGlobalValue(JitContext *ctx, std::uint32_t globa
     // See: https://www.youtube.com/watch?v=ErB1SRcksDc
     // ---------------------------------------------------------------
 
-    ctx->globals[globalIndex] = ctx->globals[valueIndex];
+    ctx->globals[globalIndex] = ctx->globals[stackIndex];
 }
 
 /**
@@ -98,7 +98,7 @@ extern "C" std::uint32_t JitRuntimeCopyGlobalValue(JitContext *ctx, std::uint32_
 
 bool Assembler::emitCreateInstance()
 {
-    if (jitCompilationStack.empty() || !jitCompilationStack.back().isValueIndex())
+    if (jitCompilationStack.empty() || !jitCompilationStack.back().isStackIndex())
         return false;
 
     jitCompilationStack.pop_back();
@@ -121,7 +121,7 @@ bool Assembler::emitCreateInstance()
     // It replaces the class value in the same stack slot.
     // ----------------------------------------------------
     mov(dword_ptr(RSP, offset), EAX);
-    pushSlot(Slot::ValueIndex());
+    pushSlot(Slot::StackIndex());
     return true;
 }
 

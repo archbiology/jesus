@@ -88,7 +88,7 @@ bool Assembler::emitPushLiteral(const Instruction &instruction)
         // Let's take it from EAX and save it into the stack
         // ----------------------------------------------------
         mov(dword_ptr(RSP, offset), EAX);
-        pushSlot(Slot::ValueIndex());
+        pushSlot(Slot::StackIndex());
         return true;
     }
 

@@ -96,7 +96,7 @@ bool Assembler::validateSupportedJitOperations(const IR &ir, std::size_t &maxSlo
             else if (literal.IS_DOUBLE)
                 push(Slot::Double(literal.doubleValue));
             else if (literal.IS_CLASS || literal.IS_FORMLESS)
-                push(Slot::ValueIndex());
+                push(Slot::StackIndex());
             else
                 return false;
 
@@ -147,7 +147,7 @@ bool Assembler::validateSupportedJitOperations(const IR &ir, std::size_t &maxSlo
 
             const std::uint32_t index = instruction.operand;
             if (index >= tempLocalVariableTypes.size())
-                tempLocalVariableTypes.resize(index + 1, JitValueType::ValueIndex);
+                tempLocalVariableTypes.resize(index + 1, JitValueType::StackIndex);
 
             tempLocalVariableTypes[index] = tempStack.back().valueType;
             tempStack.pop_back();
@@ -156,10 +156,10 @@ bool Assembler::validateSupportedJitOperations(const IR &ir, std::size_t &maxSlo
 
         if (opcode == OpCode::CREATE_INSTANCE)
         {
-            if (tempStack.empty() || !tempStack.back().isValueIndex())
+            if (tempStack.empty() || !tempStack.back().isStackIndex())
                 return false;
 
-            tempStack.back() = Slot::ValueIndex();
+            tempStack.back() = Slot::StackIndex();
             continue;
         }
 
@@ -184,7 +184,7 @@ bool Assembler::validateSupportedJitOperations(const IR &ir, std::size_t &maxSlo
             for (std::uint32_t index = 0; index < paramsCount; ++index)
                 tempStack.pop_back();
 
-            push(Slot::ValueIndex());
+            push(Slot::StackIndex());
             continue;
         }
 
