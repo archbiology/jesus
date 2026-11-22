@@ -403,6 +403,23 @@ bool Assembler::emitComparisonBranch(const Instruction &instruction, std::uint32
         if (leftIndexOrLiteral >= ir->localCount || !loadLiteral(rightIndex, XMM0))
             return false;
 
+        const bool emitOrderedBranch =
+            comparison.condition == JitCondition::Less || comparison.condition == JitCondition::Greater;
+        const auto fallback = nextInternalLabel++;
+        const auto done = nextInternalLabel++;
+        if (emitOrderedBranch)
+        {
+            loadFrameLocals();
+            guardLocalType(leftIndexOrLiteral, Value::F_NUMBER, fallback);
+            movsd(XMM1, localDouble(leftIndexOrLiteral));
+            if (comparison.condition == JitCondition::Less)
+                jumpIfNotGreater(XMM0, XMM1, jumpTarget);
+            else
+                jumpIfNotGreater(XMM1, XMM0, jumpTarget);
+            jump(done);
+            markJumpTarget(fallback);
+        }
+
         loadJitContextPointerIntoRDI();
         mov(RSI, dword_ptr(RSP, jitMethodsOffset));
         // -------------------------------------------
@@ -414,6 +431,9 @@ bool Assembler::emitComparisonBranch(const Instruction &instruction, std::uint32
         call(RAX);
 
         jumpIfZero(EAX, jumpTarget);
+        if (emitOrderedBranch)
+            markJumpTarget(done);
+
         return true;
     }
 

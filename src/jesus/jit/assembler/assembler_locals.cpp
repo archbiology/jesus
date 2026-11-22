@@ -11,12 +11,18 @@ namespace
 
 Value &localAt(JitContext *ctx, std::uint32_t baseSlot, std::uint32_t slot)
 {
-    const std::size_t index = static_cast<std::size_t>(baseSlot) + slot;
+    // The engine and method dispatcher size the frame before entering JIT code.
+    return ctx->jitRuntimeStack[static_cast<std::size_t>(baseSlot) + slot];
+}
 
-    if (index >= ctx->jitRuntimeStack.size())
-        ctx->jitRuntimeStack.resize(index + 1);
-
-    return ctx->jitRuntimeStack[index];
+// Derive offsets from the actual Value layout without requiring standard layout.
+template <typename Field>
+MemoryOffset localFieldOffset(std::uint32_t slot, Field Value::*field)
+{
+    const Value value;
+    const auto address = reinterpret_cast<std::uintptr_t>(&(value.*field));
+    const auto base = reinterpret_cast<std::uintptr_t>(&value);
+    return static_cast<MemoryOffset>(slot * sizeof(Value) + (address - base));
 }
 
 } // namespace
@@ -67,6 +73,28 @@ extern "C" std::uint32_t JitRuntimeCopyLocalValue(JitContext *ctx, std::uint32_t
 {
     ctx->globals.push_back(localAt(ctx, baseSlot, slot));
     return static_cast<std::uint32_t>(ctx->globals.size() - 1);
+}
+
+// RDX addresses the current boxed frame until the next runtime call.
+void Assembler::loadFrameLocals()
+{
+    loadJitContextPointerIntoRDI();
+    mov(RDX, qword_ptr(RDI, offsetof(JitContext, frameLocals)));
+}
+
+void Assembler::guardLocalType(std::uint32_t slot, std::uint16_t mask, std::uint32_t fallback)
+{
+    jumpIfMaskClear(RDX, localFieldOffset(slot, &Value::__flags), mask, fallback);
+}
+
+QwordMemory Assembler::localDouble(std::uint32_t slot)
+{
+    return qword_ptr(RDX, localFieldOffset(slot, &Value::doubleValue));
+}
+
+DwordMemory Assembler::localInt(std::uint32_t slot)
+{
+    return dword_ptr(RDX, localFieldOffset(slot, &Value::intValue));
 }
 
 void Assembler::recordLocalVarType(std::uint32_t index, JitValueType valueType)

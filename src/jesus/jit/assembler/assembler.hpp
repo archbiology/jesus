@@ -177,6 +177,8 @@ protected:
     virtual void markJumpTarget(std::uint32_t index) = 0;
     virtual void jump(std::uint32_t target) = 0;
     virtual void jumpIfZero(Register condition, std::uint32_t target) = 0;
+    virtual void jumpIfMaskClear(Register base, MemoryOffset offset, std::uint16_t mask, std::uint32_t target) = 0;
+    virtual void jumpIfNotGreater(SimdRegister left, SimdRegister right, std::uint32_t target) = 0;
     virtual void compareDoubles(SimdRegister left, SimdRegister right) = 0;
     virtual void setComparisonResult(JitCondition condition, Register destination) = 0;
     virtual void compareInts(Register left, Register right) = 0;
@@ -218,6 +220,12 @@ private:
     std::vector<bool> localsToReadFromStack;
     std::vector<bool> globalsToReadFromStack;
     const IR *ir = nullptr;
+    std::uint32_t nextInternalLabel = 0;
+
+    void loadFrameLocals();
+    void guardLocalType(std::uint32_t slot, std::uint16_t mask, std::uint32_t fallback);
+    static QwordMemory localDouble(std::uint32_t slot);
+    static DwordMemory localInt(std::uint32_t slot);
     const ChunksMap *chunksMap = nullptr;
 
     bool validateJitStack(const IR &ir, std::size_t &maxSlots, bool hasJump, bool &foundValueStore);
@@ -259,6 +267,8 @@ private:
         std::vector<JitValueType> &localTypes,
         const std::vector<bool> &localsToReadFromStack);
     bool emitExecuteFusedLocalOperation(std::size_t index);
+    bool emitFusedDoubleOperation(
+        std::size_t index, JitValueType stackType, MemoryOffset stackOffset, std::uint32_t fallback);
 
     bool emitCreateInstance();
     bool emitCall(const Instruction &instruction);

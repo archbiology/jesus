@@ -320,6 +320,98 @@ bool Assembler::validateFusedLocalOperation(
     return true;
 }
 
+bool Assembler::emitFusedDoubleOperation(
+    std::size_t index, JitValueType stackType, MemoryOffset stackOffset, std::uint32_t fallback)
+{
+    const Instruction &instruction = ir->instructions[index];
+    const auto operands = decodeFusedLocalOperands(instruction);
+    auto loadLocal = [&](SimdRegister reg, std::uint32_t slot, std::uint16_t type)
+    {
+        guardLocalType(slot, type, fallback);
+        movsd(reg, localDouble(slot));
+    };
+    auto storeDouble = [&]
+    {
+        // Reuse the boxed destination only if it is already a double.
+        // The helper handles initialization, type changes and owned payloads.
+        guardLocalType(operands.destination, Value::F_DOUBLE, fallback);
+        movsd(localDouble(operands.destination), XMM0);
+    };
+
+    switch (instruction.opcode)
+    {
+    case OpCode::MULTIPLY_LOCAL_LITERAL:
+    case OpCode::MULTIPLY_LITERAL_LOCAL:
+    {
+        const Value &literal = ir->literals[operands.literal];
+        if (!literal.IS_DOUBLE || stackType != JitValueType::Double)
+            return false;
+
+        loadFrameLocals();
+        const bool localFirst = instruction.opcode == OpCode::MULTIPLY_LOCAL_LITERAL;
+        loadLocal(localFirst ? XMM0 : XMM1, operands.first, Value::F_NUMBER);
+        loadNumberToSimd(Slot::Double(literal.doubleValue), false, 0, localFirst ? XMM1 : XMM0);
+        mulsd(XMM0, XMM1);
+        movsd(qword_ptr(RSP, stackOffset), XMM0);
+        return true;
+    }
+
+    case OpCode::MULTIPLY_LOCAL_LOCAL_STORE:
+        loadFrameLocals();
+        loadLocal(XMM0, operands.first, Value::F_DOUBLE);
+        if (operands.first == operands.second)
+            mulsd(XMM0, XMM0);
+        else
+        {
+            loadLocal(XMM1, operands.second, Value::F_NUMBER);
+            mulsd(XMM0, XMM1);
+        }
+        storeDouble();
+        return true;
+
+    case OpCode::MULTIPLY_ADD_LOCAL_RIGHT_STORE:
+        if (stackType != JitValueType::Double)
+            return false;
+
+        loadFrameLocals();
+        movsd(XMM0, qword_ptr(RSP, stackOffset));
+        loadLocal(XMM1, operands.first, Value::F_NUMBER);
+        mulsd(XMM0, XMM1);
+        loadLocal(XMM1, operands.second, Value::F_NUMBER);
+        addsd(XMM0, XMM1);
+        storeDouble();
+        return true;
+
+    case OpCode::SUBTRACT_ADD_LOCAL_LOCAL_LOCAL_STORE:
+        loadFrameLocals();
+        loadLocal(XMM0, operands.first, Value::F_DOUBLE);
+        loadLocal(XMM1, operands.second, Value::F_NUMBER);
+        subsd(XMM0, XMM1);
+        loadLocal(XMM1, operands.third, Value::F_NUMBER);
+        addsd(XMM0, XMM1);
+        storeDouble();
+        return true;
+
+    case OpCode::JUMP_IF_NOT_ADD_LOCAL_LOCAL_GREATER_LITERAL:
+    {
+        const Value &literal = ir->literals[operands.literal];
+        if (!literal.IS_NUMBER)
+            return false;
+
+        loadFrameLocals();
+        loadLocal(XMM0, operands.first, Value::F_DOUBLE);
+        loadLocal(XMM1, operands.second, Value::F_NUMBER);
+        addsd(XMM0, XMM1);
+        loadNumberToSimd(Slot::Double(literal.doubleValue), false, 0, XMM1);
+        jumpIfNotGreater(XMM0, XMM1, ir->instructions[index + 1].operand);
+        return true;
+    }
+
+    default:
+        return false;
+    }
+}
+
 bool Assembler::emitExecuteFusedLocalOperation(std::size_t index)
 {
     const Instruction &instruction = ir->instructions[index];
@@ -338,6 +430,16 @@ bool Assembler::emitExecuteFusedLocalOperation(std::size_t index)
         stackType = jitCompilationStack.back().valueType;
 
     const Value *literal = operands.literal == FusedLocalOperands::unused ? nullptr : &ir->literals[operands.literal];
+
+    const auto fallback = nextInternalLabel++;
+    const auto done = nextInternalLabel++;
+    const auto stackOffset = static_cast<MemoryOffset>((readsStack ? stackSize - 1 : stackSize) * JIT_SLOT_SIZE_BYTES);
+    const bool emittedFastPath = emitFusedDoubleOperation(index, stackType, stackOffset, fallback);
+    if (emittedFastPath)
+    {
+        jump(done);
+        markJumpTarget(fallback);
+    }
 
     // ----------------------------------------------
     // Load the params for executeFusedLocalOperation
@@ -365,8 +467,7 @@ bool Assembler::emitExecuteFusedLocalOperation(std::size_t index)
     // ----------------------------------------------------------------
     if (readsStack || pushesResult)
     {
-        const std::size_t slotIndex = readsStack ? stackSize - 1 : stackSize;
-        lea(R8, qword_ptr(RSP, static_cast<MemoryOffset>(slotIndex * JIT_SLOT_SIZE_BYTES)));
+        lea(R8, qword_ptr(RSP, stackOffset));
     }
     else
         mov(R8, Immediate(0));
@@ -394,6 +495,9 @@ bool Assembler::emitExecuteFusedLocalOperation(std::size_t index)
         sub(EAX, Immediate(1));
         jumpIfZero(EAX, ir->instructions[index + 1].operand);
     }
+
+    if (emittedFastPath)
+        markJumpTarget(done);
 
     return true;
 }

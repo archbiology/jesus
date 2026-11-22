@@ -80,6 +80,9 @@ struct JitContext
      */
     MethodBaseSlot currentMethodBaseSlot = 0;
 
+    // Reloaded after method calls, which can grow and relocate jitRuntimeStack.
+    Value *frameLocals = nullptr;
+
     std::exception_ptr jitException;
 };
 

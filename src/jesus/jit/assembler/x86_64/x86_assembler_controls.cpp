@@ -47,4 +47,19 @@ void X86Assembler::jumpIfZero(Register condition, std::uint32_t target)
     assembler->j(asmjit::x86::CondCode::kZero, jumpLabels[target]);
 }
 
+void X86Assembler::jumpIfMaskClear(Register base, MemoryOffset offset, std::uint16_t mask, std::uint32_t target)
+{
+    ensureJumpLabelExistsUpTo(target);
+    assembler->test(asmjit::x86::word_ptr(toAsmJit(base), offset), mask);
+    assembler->jz(jumpLabels[target]);
+}
+
+void X86Assembler::jumpIfNotGreater(SimdRegister left, SimdRegister right, std::uint32_t target)
+{
+    ensureJumpLabelExistsUpTo(target);
+    assembler->ucomisd(toAsmJit(left), toAsmJit(right));
+    // Below-or-equal also branches when either operand is NaN.
+    assembler->jbe(jumpLabels[target]);
+}
+
 } // namespace jit

@@ -35,6 +35,7 @@ bool Assembler::compileToMachineCode(const IR &input)
     globalVariableTypes.clear();
     localVariableTypes.clear();
     ir = &input;
+    nextInternalLabel = static_cast<std::uint32_t>(input.instructions.size() + 1);
 
     bool skipNextInstruction = false;
 

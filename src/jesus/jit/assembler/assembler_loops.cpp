@@ -70,6 +70,24 @@ bool Assembler::emitUpdateLoopVariable(const Instruction &instruction)
     if (destinationType != JitValueType::StackIndex && destinationType != resultType)
         return false;
 
+    const auto fallback = nextInternalLabel++;
+    const auto done = nextInternalLabel++;
+    if (resultType == JitValueType::Int)
+    {
+        loadFrameLocals();
+        guardLocalType(sourceSlot, Value::F_INT, fallback);
+        if (destinationSlot != sourceSlot)
+            guardLocalType(destinationSlot, Value::F_INT, fallback);
+
+        mov(EAX, localInt(sourceSlot));
+        add(EAX, Immediate(literal.intValue));
+        mov(localInt(destinationSlot), EAX);
+        cvtsi2sd(XMM0, EAX);
+        movsd(localDouble(destinationSlot), XMM0);
+        jump(done);
+        markJumpTarget(fallback);
+    }
+
     // ------------------------------------------------
     // Pass the arguments to JitRuntimeUpdateLoopVariable.
     //
@@ -104,6 +122,8 @@ bool Assembler::emitUpdateLoopVariable(const Instruction &instruction)
     // ---------------------------
     mov(RAX, Immediate(&JitRuntimeUpdateLoopVariable));
     call(RAX);
+    if (resultType == JitValueType::Int)
+        markJumpTarget(done);
 
     return true;
 }
