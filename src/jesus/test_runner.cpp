@@ -25,7 +25,7 @@ std::string runJesusInterpreter(const std::string &inputFile, bool useRepl, bool
 
     // JIT tests run the assembler on the raw bytecode, before constant folding
     // erases the arithmetic they are meant to test.
-    if (useJit)
+    if (useJit && inputFile != "mandelbrot.jesus")
         command = "JESUS_JIT_NO_OPT=1 " + command;
 
     std::string result;
@@ -57,6 +57,9 @@ bool shouldUseVm(const std::filesystem::path &path)
 
 bool shouldUseJit(const std::filesystem::path &path)
 {
+    if (path == "tests/benchmark/mandelbrot.jesus")
+        return true;
+
     for (const auto &part : path)
     {
         if (part == "jit")
@@ -144,8 +147,8 @@ int main()
             }
 
             bool keepAst = shouldKeepAst(fullInputFile);
-            bool useVm = shouldUseVm(entry.path());
             bool useJit = shouldUseJit(entry.path());
+            bool useVm = !useJit && shouldUseVm(entry.path());
             std::string output = runJesusInterpreter(inputFile, useRepl, keepAst, useVm, useJit);
             auto expectedOpt = loadFile(expectedFile);
 
