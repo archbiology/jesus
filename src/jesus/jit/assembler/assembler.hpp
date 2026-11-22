@@ -110,7 +110,7 @@ protected:
      * Assemblers call this before emitting the machine code so the
      * stack frame is large enough for every intermediate value.
      */
-    static bool validateSupportedJitOperations(const IR &ir, std::size_t &maxSlots);
+    bool validateSupportedJitOperations(const IR &ir, std::size_t &maxSlots);
 
     /**
      * @brief Compile @p ir (Intermediate Representation) to machine code.
@@ -215,9 +215,12 @@ private:
     std::vector<Slot> jitCompilationStack;
     std::vector<JitValueType> globalVariableTypes;
     std::vector<JitValueType> localVariableTypes;
-    std::vector<bool> fusedLocalsToReadAsValues;
+    std::vector<bool> localsToReadFromStack;
+    std::vector<bool> globalsToReadFromStack;
     const IR *ir = nullptr;
     const ChunksMap *chunksMap = nullptr;
+
+    bool validateJitStack(const IR &ir, std::size_t &maxSlots, bool hasJump, bool &foundValueStore);
 
     void pushSlot(const Slot &slot)
     {
@@ -246,15 +249,15 @@ private:
      * @brief Finds fused local variables whose values must be read as Value objects
      *  rather than directly as integers or doubles.
      */
-    static std::vector<bool> findFusedLocalsToReadAsValues(const IR &ir);
-    static JitValueType localReadType(
-        std::uint32_t slot, const std::vector<JitValueType> &types, const std::vector<bool> &localsToReadAsValues);
+    static std::vector<bool> findFusedLocalsToReadFromStack(const IR &ir);
+    static JitValueType readVarType(
+        std::uint32_t slot, const std::vector<JitValueType> &types, const std::vector<bool> &varsToReadAsValues);
     static bool validateFusedLocalOperation(
         const IR &ir,
         std::size_t index,
         std::vector<Slot> &stack,
         std::vector<JitValueType> &localTypes,
-        const std::vector<bool> &localsToReadAsValues);
+        const std::vector<bool> &localsToReadFromStack);
     bool emitExecuteFusedLocalOperation(std::size_t index);
 
     bool emitCreateInstance();
@@ -307,9 +310,13 @@ private:
         MemoryOffset rightOffset,
         Slot &result);
     bool emitBinaryArithmeticOperation(OpCode opcode);
+    void emitAddStackValues(const Slot &left, const Slot &right, MemoryOffset leftOffset);
     bool emitFusedLiteralRight(OpCode base, const Instruction &instruction);
     bool emitPrint();
 };
+
+Value readFromStack(const JitContext &context, const void *address, JitValueType type);
+void writeToStack(JitContext &context, void *address, JitValueType type, Value result);
 
 inline std::uint32_t extractLower16Bits(std::uint32_t value)
 {

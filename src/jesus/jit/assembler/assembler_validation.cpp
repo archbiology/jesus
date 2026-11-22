@@ -67,10 +67,55 @@ int comparisonBranchFamily(OpCode opcode)
  */
 bool Assembler::validateSupportedJitOperations(const IR &ir, std::size_t &maxSlots)
 {
+
+    bool hasJump = false;
+    for (const Instruction &instruction : ir.instructions)
+    {
+        if (instruction.opcode == OpCode::JUMP || instruction.opcode == OpCode::JUMP_IF_FALSE)
+        {
+            hasJump = true;
+            break;
+        }
+    }
+
+    localsToReadFromStack = hasJump ? findFusedLocalsToReadFromStack(ir) : std::vector<bool>{};
+    globalsToReadFromStack.clear();
+
+    bool foundLocalToReadFromRuntimeStack;
+    do
+    {
+        foundLocalToReadFromRuntimeStack = false;
+        if (!validateJitStack(ir, maxSlots, hasJump, foundLocalToReadFromRuntimeStack))
+            return false;
+
+    } while (foundLocalToReadFromRuntimeStack);
+
+    return true;
+}
+
+bool Assembler::validateJitStack(
+    const IR &ir, std::size_t &maxSlots, bool hasJump, bool &foundLocalToReadFromRuntimeStack)
+{
     std::vector<Slot> tempStack;
     std::vector<JitValueType> tempGlobalVariableTypes;
     std::vector<JitValueType> tempLocalVariableTypes;
-    const auto tmpFusedLocalsToReadAsValues = findFusedLocalsToReadAsValues(ir);
+
+    auto markVarToReadFromRuntimeStack =
+        [&](std::vector<bool> &varsToReadFromStack, std::uint32_t index, const Slot &value)
+    {
+        if (!hasJump || !value.isStackIndex())
+            return;
+
+        if (index >= varsToReadFromStack.size())
+            varsToReadFromStack.resize(index + 1);
+
+        if (!varsToReadFromStack[index])
+        {
+            varsToReadFromStack[index] = true;
+            foundLocalToReadFromRuntimeStack = true;
+        }
+    };
+
     maxSlots = 0;
 
     auto push = [&](const Slot &slot)
@@ -116,6 +161,7 @@ bool Assembler::validateSupportedJitOperations(const IR &ir, std::size_t &maxSlo
                 tempGlobalVariableTypes.resize(index + 1);
 
             tempGlobalVariableTypes[index] = value.valueType;
+            markVarToReadFromRuntimeStack(globalsToReadFromStack, index, value);
             continue;
         }
 
@@ -125,7 +171,7 @@ bool Assembler::validateSupportedJitOperations(const IR &ir, std::size_t &maxSlo
             if (index >= tempGlobalVariableTypes.size())
                 return false;
 
-            push(Slot{tempGlobalVariableTypes[index]});
+            push(Slot{readVarType(index, tempGlobalVariableTypes, globalsToReadFromStack)});
             continue;
         }
 
@@ -135,7 +181,7 @@ bool Assembler::validateSupportedJitOperations(const IR &ir, std::size_t &maxSlo
                 return false;
 
             const std::uint32_t index = instruction.operand;
-            const JitValueType valueType = localReadType(index, tempLocalVariableTypes, tmpFusedLocalsToReadAsValues);
+            const JitValueType valueType = readVarType(index, tempLocalVariableTypes, localsToReadFromStack);
             push(Slot{valueType});
             continue;
         }
@@ -150,6 +196,7 @@ bool Assembler::validateSupportedJitOperations(const IR &ir, std::size_t &maxSlo
                 tempLocalVariableTypes.resize(index + 1, JitValueType::StackIndex);
 
             tempLocalVariableTypes[index] = tempStack.back().valueType;
+            markVarToReadFromRuntimeStack(localsToReadFromStack, index, tempStack.back());
             tempStack.pop_back();
             continue;
         }
@@ -261,7 +308,7 @@ bool Assembler::validateSupportedJitOperations(const IR &ir, std::size_t &maxSlo
         if (isFusedLocalOperation(opcode))
         {
             if (!validateFusedLocalOperation(
-                    ir, instructionIndex, tempStack, tempLocalVariableTypes, tmpFusedLocalsToReadAsValues))
+                    ir, instructionIndex, tempStack, tempLocalVariableTypes, localsToReadFromStack))
                 return false;
 
             maxSlots = std::max(maxSlots, tempStack.size());
@@ -386,7 +433,13 @@ bool Assembler::validateSupportedJitOperations(const IR &ir, std::size_t &maxSlo
             tempStack.pop_back();
 
             if (!left.isNumeric() || !right.isNumeric())
-                return false;
+            {
+                if (opcode != OpCode::ADD)
+                    return false;
+
+                push(Slot::StackIndex());
+                continue;
+            }
 
             if (isDivisionByZero(opcode, right))
                 return false;

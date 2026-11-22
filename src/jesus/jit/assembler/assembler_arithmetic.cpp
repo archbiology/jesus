@@ -1,5 +1,8 @@
 #include "assembler.hpp"
+#include "jit/jit_context.hpp"
 #include "spirit/value.hpp"
+
+#include <bit>
 #include "vm/opcode.hpp"
 
 namespace jit
@@ -37,6 +40,43 @@ bool Assembler::isComparison(OpCode opcode)
 
 namespace
 {
+
+/**
+ * @brief Executes ADD at runtime when either stack operand is a Stack index.
+ *
+ * Jesus example: total = total + my mandelbrot cx, cy
+ *
+ * If total is 10 and mandelbrot returns 4, the right slot holds the index
+ * of the returned Value. This helper reads both operands, adds them, and
+ * replaces the left slot with the index of the result Value, (int) 14.
+ *
+ * @return 0 if an exception occurred.
+ *         1 if the operation completed successfully.
+ */
+int addStackValues(JitContext *context, void *leftAddress, std::uint32_t operandTypes) noexcept
+{
+    try
+    {
+        const auto leftType = static_cast<JitValueType>(extractLower16Bits(operandTypes));
+        const auto rightType = static_cast<JitValueType>(extractUpper16Bits(operandTypes));
+        const auto rightAddress = static_cast<char *>(leftAddress) + JIT_SLOT_SIZE_BYTES;
+        const Value left = readFromStack(*context, leftAddress, leftType);
+        const Value right = readFromStack(*context, rightAddress, rightType);
+
+        // Unsigned addition preserves the 32-bit wrap of the native ADD path.
+        Value result = left.IS_INT && right.IS_INT
+                           ? Value(std::bit_cast<int>(std::uint32_t(left.intValue) + std::uint32_t(right.intValue)))
+                           : left + right;
+
+        writeToStack(*context, leftAddress, JitValueType::StackIndex, std::move(result));
+        return 1; // success
+    }
+    catch (...)
+    {
+        context->jitException = std::current_exception();
+        return 0; // 0 = error/exception
+    }
+}
 
 bool convertToJitCondition(OpCode opcode, JitCondition &condition)
 {
@@ -212,6 +252,42 @@ bool Assembler::emitArithmeticOperation(
 }
 
 /**
+ * @brief Emits a call to addStackValues for ADD with a Stack index operand.
+ *
+ * Jesus example: total = total + my mandelbrot cx, cy
+ *
+ * CALL leaves the method result on the stack as an index into JitContext::globals.
+ * The following ADD uses this emitter to generate a call to addStackValues.
+ */
+void Assembler::emitAddStackValues(const Slot &left, const Slot &right, MemoryOffset leftOffset)
+{
+    // -----------------------------------
+    // Load the args for  addStackValues(JitContext *context, void *leftAddress, std::uint32_t operandTypes)
+    // Load `JitContext *context` into RDI
+    // -----------------------------------
+    loadJitContextPointerIntoRDI();
+
+    // ----------------------------
+    // Load `*leftAddress` into RSI
+    // ----------------------------
+    lea(RSI, qword_ptr(RSP, leftOffset));
+
+    // ----------------------------
+    // Load `operandTypes` into EDX
+    // ----------------------------
+    const auto operandTypes =
+        pack16Bits(static_cast<std::uint32_t>(left.valueType), static_cast<std::uint32_t>(right.valueType));
+    mov(EDX, Immediate(operandTypes));
+
+    // -------------------
+    // Call addStackValues
+    // -------------------
+    mov(RAX, Immediate(&addStackValues));
+    call(RAX);
+    jumpIfZero(EAX, static_cast<std::uint32_t>(ir->instructions.size()));
+}
+
+/**
  * @brief Generates machine instructions for an arithmetic operation.
  *
  * Takes the left and right operands from the JIT's internal stack,
@@ -264,6 +340,13 @@ bool Assembler::emitBinaryArithmeticOperation(OpCode opcode)
     const MemoryOffset leftOffset = static_cast<MemoryOffset>(jitCompilationStack.size() * JIT_SLOT_SIZE_BYTES);
     const MemoryOffset rightOffset = leftOffset + JIT_SLOT_SIZE_BYTES;
     constexpr bool isRightOperandInMemory = true;
+
+    if (opcode == OpCode::ADD && (left.isStackIndex() || right.isStackIndex()))
+    {
+        emitAddStackValues(left, right, leftOffset);
+        pushSlot(Slot::StackIndex());
+        return true;
+    }
 
     Slot result{JitValueType::Int};
     if (!emitArithmeticOperation(opcode, left, leftOffset, right, isRightOperandInMemory, rightOffset, result))

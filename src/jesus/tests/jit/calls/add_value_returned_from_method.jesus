@@ -1,0 +1,22 @@
+let there be Accumulator:
+    purpose increment(i: number) -> number:
+        if i < 1:
+            return 2
+        amen
+        return 0.5
+    amen
+
+    purpose run():
+        create total = 0
+        create i = 0
+
+        repeat while i < 3:
+            total = total + my increment i
+            say total
+            i = i + 1
+        amen
+    amen
+amen
+
+create accumulator = Accumulator()
+accumulator run

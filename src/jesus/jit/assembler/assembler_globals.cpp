@@ -142,7 +142,7 @@ bool Assembler::emitReadGlobal(const Instruction &instruction)
     if (index >= globalVariableTypes.size())
         return false;
 
-    const JitValueType valueType = globalVariableTypes[index];
+    const JitValueType valueType = readVarType(index, globalVariableTypes, globalsToReadFromStack);
     const MemoryOffset destOffset = static_cast<MemoryOffset>(jitCompilationStack.size() * JIT_SLOT_SIZE_BYTES);
 
     // -----------------------------------------------------
