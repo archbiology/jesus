@@ -79,6 +79,7 @@ struct JitContext
      * @brief Slot where the current frame begins in `jitRuntimeStack`.
      */
     MethodBaseSlot currentMethodBaseSlot = 0;
+    Value *currentMethodBaseSlotAddress = nullptr;
 
     std::exception_ptr jitException;
 };

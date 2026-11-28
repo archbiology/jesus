@@ -168,7 +168,7 @@ bool Assembler::emitPushLiteral(const Instruction &instruction)
  * This allows arithmetic operations to work with integers and doubles
  * using the same double-precision SIMD instructions.
  */
-void Assembler::loadNumberFromMemoryToSimd(const Slot &slot, MemoryOffset offset, const SimdRegister &simdRegister)
+void Assembler::loadNumberFromMemoryToSimd(const SimdRegister &simdRegister, const Slot &slot, MemoryOffset offset)
 {
     if (slot.isInt())
         // ------------------------------------------------------------------
@@ -183,15 +183,8 @@ void Assembler::loadNumberFromMemoryToSimd(const Slot &slot, MemoryOffset offset
         movsd(simdRegister, qword_ptr(RSP, offset));
 }
 
-void Assembler::loadNumberToSimd(
-    const Slot &slot, const bool isRightOperandInMemory, std::size_t memoryOffset, const SimdRegister &simdRegister)
+void Assembler::loadNumberToSimd(const SimdRegister &simdRegister, const Slot &slot)
 {
-    if (isRightOperandInMemory)
-    {
-        loadNumberFromMemoryToSimd(slot, memoryOffset, simdRegister);
-        return;
-    }
-
     if (slot.isInt())
     {
         mov(EAX, Immediate(slot.intValue));
@@ -199,6 +192,7 @@ void Assembler::loadNumberToSimd(
         return;
     }
 
+    // It is a double
     // ------------------------------------------------------------
     // Why memcpy instead of `bits = slot.doubleValue`?
     //   Because doubleValue is double, but bits is int64.

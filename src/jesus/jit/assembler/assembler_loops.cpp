@@ -5,43 +5,11 @@
 
 namespace jit
 {
-
-namespace
-{
-
-Value &localAt(JitContext *ctx, std::uint32_t baseSlot, std::uint32_t slot)
-{
-    return ctx->jitRuntimeStack[static_cast<std::size_t>(baseSlot) + slot];
-}
-
-} // namespace
-
-// --------------------------------------------------------------------------
-// JIT runtime helper for 'repeat while'.
-//
-// The generated assembly cannot safely perform a generic Value addition in
-// registers, so it calls back into C++ for:
-//
-//      local[destination] = local[source] + literal
-//
-// packedOperand layout (same as ADD_LOCAL_LITERAL_STORE):
-//      bits 0-7    source local slot
-//      bits 8-23   literal index
-//      bits 24-31  destination local slot
-// --------------------------------------------------------------------------
-extern "C" void JitRuntimeUpdateLoopVariable(
-    JitContext *ctx, std::uint32_t baseSlot, std::uint32_t packedOperand, const Value *literal)
-{
-    const std::uint32_t sourceSlot = extractLower8Bits(packedOperand);
-    const std::uint32_t destinationSlot = extractUpper8Bits(packedOperand);
-
-    // ------------
-    // "i = i + 1"
-    // ------------
-    localAt(ctx, baseSlot, destinationSlot) = localAt(ctx, baseSlot, sourceSlot) + *literal;
-}
-
-bool Assembler::emitUpdateLoopVariable(const Instruction &instruction)
+/** @brief Emit: destination = source + literal
+ *
+ * Example: i = i + 1
+ */
+bool Assembler::emitAddLiteralToLocal(const Instruction &instruction)
 {
     if (ir == nullptr)
         return false;
@@ -65,45 +33,56 @@ bool Assembler::emitUpdateLoopVariable(const Instruction &instruction)
     if (sourceType == JitValueType::StackIndex || !literal.IS_NUMBER)
         return false;
 
-    const auto resultType = sourceType == JitValueType::Int && literal.IS_INT
-        ? JitValueType::Int : JitValueType::Double;
-    if (destinationType != JitValueType::StackIndex && destinationType != resultType)
+    const bool bothOperandsAreIntegers = sourceType == JitValueType::Int && literal.IS_INT;
+    const JitValueType resultType = bothOperandsAreIntegers ? JitValueType::Int : JitValueType::Double;
+    if (destinationType != resultType)
         return false;
 
-    // ------------------------------------------------
-    // Pass the arguments to JitRuntimeUpdateLoopVariable.
-    //
-    // System V x86-64 argument registers:
-    //      RDI/EDI: ctx             (first argument)
-    //      RSI/ESI: baseSlot        (second argument)
-    //      RDX/EDX: packedOperand   (third argument)
-    //      RCX/ECX: literal pointer (fourth argument)
-    //      RAX: address of the C++ helper to call
-    // ------------------------------------------------
-    // Load 'JitContext *ctx' into RDI
-    // -------------------------------
-    loadJitContextPointerIntoRDI();
+    emitLoadCurrentMethodBaseSlotAddressIntoRDX();
 
-    // ------------------------
-    // Load `baseSlot` into RSI
-    // ------------------------
-    mov(RSI, dword_ptr(RSP, jitMethodsOffset));
+    if (bothOperandsAreIntegers)
+    {
+        // ---------------------------------------------
+        // Load sourceSlot.intValue into EAX.
+        // Add literal.intValue to EAX.
+        // Write the result to destinationSlot.intValue.
+        // Example: destination = source + literal
+        // ---------------------------------------------
+        mov(EAX, intValueOffset(RDX, sourceSlot));
+        add(EAX, Immediate(literal.intValue));
+        mov(intValueOffset(RDX, destinationSlot), EAX);
 
-    // -----------------------------
-    // Load `packedOperand` into EDX
-    // -----------------------------
-    mov(EDX, Immediate(instruction.operand));
+        // ------------------------------------------------------
+        // Convert the integer result in EAX to double.
+        // Write the double value to destinationSlot.doubleValue.
+        // ------------------------------------------------------
+        cvtsi2sd(XMM0, EAX);
+        movsd(doubleValueOffset(RDX, destinationSlot), XMM0);
+    }
+    else
+    {
+        // ----------------------------------------------------
+        // Convert the source .intValue to double if necessary
+        // Otherwise, load .doubleValue directly into XMM0
+        // ----------------------------------------------------
+        if (sourceType == JitValueType::Int)
+            cvtsi2sd(XMM0, intValueOffset(RDX, sourceSlot));
+        else
+            movsd(XMM0, doubleValueOffset(RDX, sourceSlot));
 
-    // ------------------------------
-    // Load `Value *literal` into RCX
-    // ------------------------------
-    mov(RCX, Immediate(reinterpret_cast<std::int64_t>(&literal)));
+        // --------------------------------------------
+        // Load the literal as a double into XMM1
+        // Value already sets .doubleValue for integers
+        // --------------------------------------------
+        loadNumberToSimd(XMM1, Slot::Double(literal.doubleValue));
 
-    // ---------------------------
-    // Call JitRuntimeUpdateLoopVariable
-    // ---------------------------
-    mov(RAX, Immediate(&JitRuntimeUpdateLoopVariable));
-    call(RAX);
+        // --------------------------------------
+        // Add the operands and write the double
+        // result to destinationSlot.doubleValue
+        // --------------------------------------
+        addsd(XMM0, XMM1);
+        movsd(doubleValueOffset(RDX, destinationSlot), XMM0);
+    }
 
     return true;
 }
