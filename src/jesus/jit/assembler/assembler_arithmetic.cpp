@@ -217,8 +217,11 @@ bool Assembler::emitArithmeticOperation(
     //     Because floating-point operations only work on SIMD registers
     //     There is no 'add xmm0, 1.5' operation avaliable in assembly.
     // -----------------------------------------------------------------
-    loadNumberFromMemoryToSimd(left, leftOffset, XMM0);
-    loadNumberToSimd(right, isRightOperandInMemory, rightOffset, XMM1);
+    loadNumberFromMemoryToSimd(XMM0, left, leftOffset);
+    if (isRightOperandInMemory)
+        loadNumberFromMemoryToSimd(XMM1, right, rightOffset);
+    else
+        loadNumberToSimd(XMM1, right);
 
     switch (opcode)
     {
@@ -394,8 +397,8 @@ bool Assembler::emitComparison(OpCode opcode)
         // SIMD registers. loadNumberFromMemoryToSimd
         // converts an int to double when necessary.
         // ------------------------------------------------
-        loadNumberFromMemoryToSimd(left, leftOffset, XMM0);
-        loadNumberFromMemoryToSimd(right, rightOffset, XMM1);
+        loadNumberFromMemoryToSimd(XMM0, left, leftOffset);
+        loadNumberFromMemoryToSimd(XMM1, right, rightOffset);
         compareDoubles(XMM0, XMM1);
         setComparisonResult(condition, EAX);
     }

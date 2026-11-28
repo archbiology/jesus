@@ -92,6 +92,8 @@ protected:
     void markJumpTarget(std::uint32_t index) override;
     void jump(std::uint32_t target) override;
     void jumpIfZero(Register condition, std::uint32_t target) override;
+    void jumpIfTypeIsNot(Register base, MemoryOffset offset, std::uint16_t mask, std::uint32_t jumpTarget) override;
+    void jumpIfNotGreater(SimdRegister left, SimdRegister right, std::uint32_t jumpTarget) override;
     void compareDoubles(SimdRegister left, SimdRegister right) override;
     void setComparisonResult(JitCondition condition, Register destination) override;
     void compareInts(Register left, Register right) override;

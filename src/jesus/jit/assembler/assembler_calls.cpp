@@ -57,6 +57,7 @@ extern "C" int JitRuntimeCallMethod(JitContext *ctx, std::uint32_t targetIndex)
 
     const std::size_t previousBase = ctx->currentMethodBaseSlot;
     ctx->currentMethodBaseSlot = baseSlot;
+    ctx->currentMethodBaseSlotAddress = ctx->jitRuntimeStack.data() + baseSlot;
 
     // ------------------
     // Execute the method
@@ -64,6 +65,7 @@ extern "C" int JitRuntimeCallMethod(JitContext *ctx, std::uint32_t targetIndex)
     method.entrypoint(ctx, static_cast<std::uint32_t>(baseSlot));
 
     ctx->currentMethodBaseSlot = previousBase;
+    ctx->currentMethodBaseSlotAddress = ctx->jitRuntimeStack.data() + previousBase;
     return !ctx->jitException;
 }
 

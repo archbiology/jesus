@@ -177,6 +177,12 @@ protected:
     virtual void markJumpTarget(std::uint32_t index) = 0;
     virtual void jump(std::uint32_t target) = 0;
     virtual void jumpIfZero(Register condition, std::uint32_t target) = 0;
+    virtual void jumpIfTypeIsNot(
+        Register localsAddress,
+        MemoryOffset typeFlagsOffset,
+        std::uint16_t requiredTypeFlag,
+        std::uint32_t jumpTarget) = 0;
+    virtual void jumpIfNotGreater(SimdRegister left, SimdRegister right, std::uint32_t jumpTarget) = 0;
     virtual void compareDoubles(SimdRegister left, SimdRegister right) = 0;
     virtual void setComparisonResult(JitCondition condition, Register destination) = 0;
     virtual void compareInts(Register left, Register right) = 0;
@@ -218,6 +224,12 @@ private:
     std::vector<bool> localsToReadFromStack;
     std::vector<bool> globalsToReadFromStack;
     const IR *ir = nullptr;
+    std::uint32_t nextInternalJumpLabel = 0;
+
+    void emitLoadCurrentMethodBaseSlotAddressIntoRDX();
+    static MemoryOffset typeFlagsOffset(std::uint32_t slot);
+    static QwordMemory doubleValueOffset(Register baseRegister, std::uint32_t slot);
+    static DwordMemory intValueOffset(Register baseRegister, std::uint32_t slot);
     const ChunksMap *chunksMap = nullptr;
 
     bool validateJitStack(const IR &ir, std::size_t &maxSlots, bool hasJump, bool &foundValueStore);
@@ -258,7 +270,14 @@ private:
         std::vector<Slot> &stack,
         std::vector<JitValueType> &localTypes,
         const std::vector<bool> &localsToReadFromStack);
-    bool emitExecuteFusedLocalOperation(std::size_t index);
+    bool emitExecuteFusedLocalOperation(std::size_t instructionIndex);
+    bool emitDirectFusedDoubleOperation(
+        std::size_t instructionIndex,
+        JitValueType stackValueType,
+        MemoryOffset stackOffset,
+        JitValueType destinationType,
+        std::uint32_t useCppHelperLabel,
+        bool &mustCheckTypeAtRuntime);
 
     bool emitCreateInstance();
     bool emitCall(const Instruction &instruction);
@@ -275,15 +294,11 @@ private:
     // -----------------
     // Repeat statements
     // -----------------
-    bool emitUpdateLoopVariable(const Instruction &instruction);
+    bool emitAddLiteralToLocal(const Instruction &instruction);
     bool emitRepeatNTimes(const Instruction &instruction);
 
-    void loadNumberFromMemoryToSimd(const Slot &slot, MemoryOffset offset, const SimdRegister &simdRegister);
-    void loadNumberToSimd(
-        const Slot &slot,
-        const bool isRightOperandInMemory,
-        std::size_t memoryOffset,
-        const SimdRegister &simdRegister);
+    void loadNumberFromMemoryToSimd(const SimdRegister &simdRegister, const Slot &slot, MemoryOffset offset);
+    void loadNumberToSimd(const SimdRegister &simdRegister, const Slot &slot);
     static bool isArithmetic(OpCode opcode);
 
     /**

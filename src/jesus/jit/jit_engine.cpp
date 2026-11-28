@@ -123,6 +123,8 @@ bool JitEngine::execute(const IR &ir)
         // -------------------------
         // Prepare runtime-only state
         // -------------------------
+        context.jitRuntimeStack.resize(chunks.front().localCount);
+        context.currentMethodBaseSlotAddress = context.jitRuntimeStack.data();
         context.globals.resize(jitChunks.countGlobalSlots());
         context.jitMethods.resize(chunks.size());
 

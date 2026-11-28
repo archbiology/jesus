@@ -35,6 +35,7 @@ bool Assembler::compileToMachineCode(const IR &input)
     globalVariableTypes.clear();
     localVariableTypes.clear();
     ir = &input;
+    nextInternalJumpLabel = static_cast<std::uint32_t>(input.instructions.size() + 1);
 
     bool skipNextInstruction = false;
 
@@ -134,7 +135,8 @@ bool Assembler::compileToMachineCode(const IR &input)
         if (opcode == OpCode::ADD_LOCAL_LITERAL_STORE || opcode == OpCode::ADD_LOCAL_LITERAL_STORE_JUMP)
         {
             // We normally have this in 'repeat while', 'repeat N times'
-            if (!emitUpdateLoopVariable(instruction))
+            // destination = source + literal (i = i + 1)
+            if (!emitAddLiteralToLocal(instruction))
                 return false;
 
             // The fused VM opcode leaves its JUMP in the IR. Emit it on the next pass.

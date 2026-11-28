@@ -285,9 +285,7 @@ bool Assembler::emitJumpIfFalse(const Instruction &instruction)
         // ------------------------------------------
         // Load 0.0 into XMM1 to compare it with XMM0
         // ------------------------------------------
-        constexpr bool isRightOperandInMemory = false;
-        constexpr std::size_t memoryOffset = 0;
-        loadNumberToSimd(Slot::Double(0.0), isRightOperandInMemory, memoryOffset, XMM1);
+        loadNumberToSimd(XMM1, Slot::Double(0.0));
 
         // -------------------------------------------------------------------
         // Compare if both numbers are equal (meaning the double value is 0.0)
@@ -345,7 +343,7 @@ bool Assembler::emitComparisonBranch(const Instruction &instruction, std::uint32
         if (!literalAsSlot(ir->literals[literalIndex], slot))
             return false;
 
-        loadNumberToSimd(slot, false, 0, destination);
+        loadNumberToSimd(destination, slot);
         return true;
     };
 
@@ -403,6 +401,37 @@ bool Assembler::emitComparisonBranch(const Instruction &instruction, std::uint32
         if (leftIndexOrLiteral >= ir->localCount || !loadLiteral(rightIndex, XMM0))
             return false;
 
+        const bool canCompareNumbersDirectly =
+            comparison.condition == JitCondition::Less || comparison.condition == JitCondition::Greater;
+
+        const JitValueType localType = leftIndexOrLiteral < localVariableTypes.size()
+                                           ? localVariableTypes[leftIndexOrLiteral]
+                                           : JitValueType::StackIndex;
+
+        // -------------------------
+        // Compare directly - faster
+        // -------------------------
+        if (canCompareNumbersDirectly && localType != JitValueType::StackIndex)
+        {
+            emitLoadCurrentMethodBaseSlotAddressIntoRDX();
+
+            // ------------------------------------
+            // Load local.doubleValue into XMM1
+            // (literal already loaded into XMM0)
+            // ------------------------------------
+            movsd(XMM1, doubleValueOffset(RDX, leftIndexOrLiteral));
+
+            if (comparison.condition == JitCondition::Greater)
+                jumpIfNotGreater(XMM1, XMM0, jumpTarget);
+            else
+                jumpIfNotGreater(XMM0, XMM1, jumpTarget);
+
+            return true;
+        }
+
+        // --------------------------------------------------------------
+        // Couldn't compare directly. Let's use JitRuntime* - much slower
+        // --------------------------------------------------------------
         loadJitContextPointerIntoRDI();
         mov(RSI, dword_ptr(RSP, jitMethodsOffset));
         // -------------------------------------------
@@ -452,7 +481,7 @@ bool Assembler::emitComparisonBranch(const Instruction &instruction, std::uint32
         const MemoryOffset leftOffset =
             static_cast<MemoryOffset>((jitCompilationStack.size() - 1) * JIT_SLOT_SIZE_BYTES);
 
-        loadNumberFromMemoryToSimd(leftValue, leftOffset, XMM0);
+        loadNumberFromMemoryToSimd(XMM0, leftValue, leftOffset);
 
         loadJitContextPointerIntoRDI();
         mov(RSI, dword_ptr(RSP, jitMethodsOffset));
@@ -487,7 +516,7 @@ bool Assembler::emitComparisonBranch(const Instruction &instruction, std::uint32
         // --------------------------------------------
         // Load the left value from the stack into XMM0
         // --------------------------------------------
-        loadNumberFromMemoryToSimd(leftValue, leftOffset, XMM0);
+        loadNumberFromMemoryToSimd(XMM0, leftValue, leftOffset);
 
         // --------------------------------
         // Load the literal value into XMM1

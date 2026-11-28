@@ -140,7 +140,7 @@ Value subtractThenAdd(const Value &left, const Value &right, const Value &valueT
  * @param instruction Fused instruction to execute.
  * @param literal     Literal value used by operations that require one.
  * @param stackSlot   Address of the assembly stack slot used by the operation.
- * @param stackType   Type of the value currently stored in that stack slot.
+ * @param stackValueType   Type of the value currently stored in that stack slot.
  *
  * @return 0 if the operation is unsupported or an exception occurred.
  *         1 if the operation completed successfully.
@@ -156,7 +156,7 @@ int executeFusedLocalOperation(
     const Instruction *instruction,
     const Value *literal,
     void *stackSlot,
-    JitValueType stackType) noexcept
+    JitValueType stackValueType) noexcept
 {
     try
     {
@@ -167,17 +167,17 @@ int executeFusedLocalOperation(
         switch (instruction->opcode)
         {
         case OpCode::MULTIPLY_LOCAL_LITERAL:
-            writeToStack(*context, stackSlot, stackType, multiply(first, *literal));
+            writeToStack(*context, stackSlot, stackValueType, multiply(first, *literal));
             break;
 
         case OpCode::MULTIPLY_LITERAL_LOCAL:
-            writeToStack(*context, stackSlot, stackType, multiply(*literal, first));
+            writeToStack(*context, stackSlot, stackValueType, multiply(*literal, first));
             break;
 
         case OpCode::DIVIDE_LOCAL_RIGHT:
             // Value division always returns a double and reports a zero divisor.
             writeToStack(
-                *context, stackSlot, JitValueType::Double, readFromStack(*context, stackSlot, stackType) / first);
+                *context, stackSlot, JitValueType::Double, readFromStack(*context, stackSlot, stackValueType) / first);
             break;
 
         case OpCode::MULTIPLY_LOCAL_LOCAL_STORE:
@@ -188,7 +188,7 @@ int executeFusedLocalOperation(
             // Evaluate the full right-hand side before writing the destination,
             // which can alias a source local (as y does in Mandelbrot).
             local(operands.destination) =
-                multiplyThenAdd(readFromStack(*context, stackSlot, stackType), first, local(operands.second));
+                multiplyThenAdd(readFromStack(*context, stackSlot, stackValueType), first, local(operands.second));
             break;
 
         case OpCode::SUBTRACT_ADD_LOCAL_LOCAL_LOCAL_STORE:
@@ -320,29 +320,231 @@ bool Assembler::validateFusedLocalOperation(
     return true;
 }
 
-bool Assembler::emitExecuteFusedLocalOperation(std::size_t index)
+bool Assembler::emitDirectFusedDoubleOperation(
+    std::size_t instructionIndex,
+    JitValueType stackValueType,
+    MemoryOffset stackOffset,
+    JitValueType destinationType,
+    std::uint32_t useCppHelper,
+    bool &mustCheckTypeAtRuntime)
 {
-    const Instruction &instruction = ir->instructions[index];
+    const Instruction &instruction = ir->instructions[instructionIndex];
+    const auto operands = decodeFusedLocalOperands(instruction);
+
+    const bool allLocalTypesAreKnown = localsToReadFromStack.empty();
+    const auto emitTypeCheckIfNeeded = [&](std::uint32_t slot, std::uint16_t requiredTypeFlag)
+    {
+        const JitValueType varType = slot == operands.destination
+                                         ? destinationType
+                                         : readVarType(slot, localVariableTypes, localsToReadFromStack);
+
+        const bool isDouble = varType == JitValueType::Double;
+        const bool isInteger = varType == JitValueType::Int;
+        const bool requiresNumber = requiredTypeFlag == Value::F_NUMBER;
+        const bool varTypeMatches = isDouble || (isInteger && requiresNumber);
+
+        if (!allLocalTypesAreKnown || !varTypeMatches)
+        {
+            jumpIfTypeIsNot(RDX, typeFlagsOffset(slot), requiredTypeFlag, useCppHelper);
+            mustCheckTypeAtRuntime = true;
+        }
+    };
+
+    // ----------------------------------------------------------------------------
+    // Every integer Value also initializes its doubleValue field.
+    // This allows native code to read numeric locals as doubles.
+    // However, some operations require the destination to already be a Double
+    // so they can update its doubleValue without changing its type or other fields.
+    // Operations that cannot safely use this approach fall back to the C++ helper.
+    // ----------------------------------------------------------------------------
+    switch (instruction.opcode)
+    {
+    case OpCode::MULTIPLY_LOCAL_LITERAL:
+    case OpCode::MULTIPLY_LITERAL_LOCAL:
+    {
+        const Value &literal = ir->literals[operands.literal];
+        if (!literal.IS_DOUBLE || stackValueType != JitValueType::Double)
+            return false;
+
+        emitLoadCurrentMethodBaseSlotAddressIntoRDX();
+        emitTypeCheckIfNeeded(operands.first, Value::F_NUMBER);
+
+        // --------------------------------------------
+        // Move the local and literal to SIMD registers
+        // --------------------------------------------
+        const bool localFirst = instruction.opcode == OpCode::MULTIPLY_LOCAL_LITERAL;
+        movsd(localFirst ? XMM0 : XMM1, doubleValueOffset(RDX, operands.first));
+        loadNumberToSimd(localFirst ? XMM1 : XMM0, Slot::Double(literal.doubleValue));
+
+        mulsd(XMM0, XMM1);
+        movsd(qword_ptr(RSP, stackOffset), XMM0);
+        return true;
+    }
+
+    case OpCode::MULTIPLY_LOCAL_LOCAL_STORE:
+        // ----------------
+        // Load first local
+        // ----------------
+        emitLoadCurrentMethodBaseSlotAddressIntoRDX();
+        emitTypeCheckIfNeeded(operands.first, Value::F_DOUBLE);
+        movsd(XMM0, doubleValueOffset(RDX, operands.first));
+
+        // --------------------------------
+        // Load second local, and multiply
+        // `n * n` can reuse the first operand without another type test or load.
+        // --------------------------------
+        if (operands.first == operands.second)
+            mulsd(XMM0, XMM0);
+        else
+        {
+            emitTypeCheckIfNeeded(operands.second, Value::F_NUMBER);
+            movsd(XMM1, doubleValueOffset(RDX, operands.second));
+            mulsd(XMM0, XMM1);
+        }
+
+        // --------------------------
+        // Update the result variable
+        // --------------------------
+        emitTypeCheckIfNeeded(operands.destination, Value::F_DOUBLE);
+        movsd(doubleValueOffset(RDX, operands.destination), XMM0);
+        return true;
+
+    case OpCode::MULTIPLY_ADD_LOCAL_RIGHT_STORE:
+        if (stackValueType != JitValueType::Double)
+            return false;
+
+        // -------------------------------
+        // Load the first `left` local var
+        // -------------------------------
+        emitLoadCurrentMethodBaseSlotAddressIntoRDX();
+        movsd(XMM0, qword_ptr(RSP, stackOffset));
+        emitTypeCheckIfNeeded(operands.first, Value::F_NUMBER);
+
+        // ----------------------------------------
+        // Load the second.doubleValue and multiply
+        // ----------------------------------------
+        movsd(XMM1, doubleValueOffset(RDX, operands.first));
+        mulsd(XMM0, XMM1);
+
+        // -----------------------------------
+        // Load third.doubleValue, and add it
+        // -----------------------------------
+        emitTypeCheckIfNeeded(operands.second, Value::F_NUMBER);
+        movsd(XMM1, doubleValueOffset(RDX, operands.second));
+        addsd(XMM0, XMM1);
+
+        // ------------------------------
+        // Update destiation.doublevalue
+        // ------------------------------
+        emitTypeCheckIfNeeded(operands.destination, Value::F_DOUBLE);
+        movsd(doubleValueOffset(RDX, operands.destination), XMM0);
+        return true;
+
+    case OpCode::SUBTRACT_ADD_LOCAL_LOCAL_LOCAL_STORE:
+        // ---------------------
+        // Load first.doubleValue
+        // ---------------------
+        emitLoadCurrentMethodBaseSlotAddressIntoRDX();
+        emitTypeCheckIfNeeded(operands.first, Value::F_DOUBLE);
+        movsd(XMM0, doubleValueOffset(RDX, operands.first));
+
+        // ---------------------------------------
+        // Load second.doubleValue and subtract it
+        // ---------------------------------------
+        emitTypeCheckIfNeeded(operands.second, Value::F_NUMBER);
+        movsd(XMM1, doubleValueOffset(RDX, operands.second));
+        subsd(XMM0, XMM1);
+
+        // -------------------------------------
+        // Load the third.doubleValue and add it
+        // -------------------------------------
+        emitTypeCheckIfNeeded(operands.third, Value::F_NUMBER);
+        movsd(XMM1, doubleValueOffset(RDX, operands.third));
+        addsd(XMM0, XMM1);
+
+        // ------------------------------
+        // Update destination.doubleValue
+        // ------------------------------
+        emitTypeCheckIfNeeded(operands.destination, Value::F_DOUBLE);
+        movsd(doubleValueOffset(RDX, operands.destination), XMM0);
+        return true;
+
+    case OpCode::JUMP_IF_NOT_ADD_LOCAL_LOCAL_GREATER_LITERAL:
+    {
+        const Value &literal = ir->literals[operands.literal];
+        // Only numeric literals can participate in the native comparison.
+        if (!literal.IS_NUMBER)
+            return false;
+
+        // ----------------------
+        // Load first.doubleValue
+        // ----------------------
+        emitLoadCurrentMethodBaseSlotAddressIntoRDX();
+        emitTypeCheckIfNeeded(operands.first, Value::F_DOUBLE);
+        movsd(XMM0, doubleValueOffset(RDX, operands.first));
+
+        // ----------------------------------
+        // Load second.doubleValue and add it
+        // ----------------------------------
+        emitTypeCheckIfNeeded(operands.second, Value::F_NUMBER);
+        movsd(XMM1, doubleValueOffset(RDX, operands.second));
+        addsd(XMM0, XMM1);
+
+        // ------------------------------------------------------
+        // Load literal into XMM1 and check `if result > literal`
+        // ------------------------------------------------------
+        loadNumberToSimd(XMM1, Slot::Double(literal.doubleValue));
+        jumpIfNotGreater(XMM0, XMM1, ir->instructions[instructionIndex + 1].operand);
+        return true;
+    }
+
+    default:
+        return false;
+    }
+}
+
+bool Assembler::emitExecuteFusedLocalOperation(std::size_t instructionIndex)
+{
+    const Instruction &instruction = ir->instructions[instructionIndex];
     const auto operands = decodeFusedLocalOperands(instruction);
     const bool readsStack = usesOperandFromStack(instruction.opcode);
     const std::size_t stackSize = jitCompilationStack.size();
     if (readsStack && stackSize == 0)
         return false;
 
-    auto stackType = readsStack ? jitCompilationStack.back().valueType : JitValueType::StackIndex;
-    if (!validateFusedLocalOperation(*ir, index, jitCompilationStack, localVariableTypes, localsToReadFromStack))
+    const JitValueType destinationType = readVarType(operands.destination, localVariableTypes, localsToReadFromStack);
+    auto stackValueType = readsStack ? jitCompilationStack.back().valueType : JitValueType::StackIndex;
+    if (!validateFusedLocalOperation(*ir, instructionIndex, jitCompilationStack, localVariableTypes, localsToReadFromStack))
         return false;
 
     const bool pushesResult = jitCompilationStack.size() > stackSize;
     if (pushesResult)
-        stackType = jitCompilationStack.back().valueType;
+        stackValueType = jitCompilationStack.back().valueType;
 
     const Value *literal = operands.literal == FusedLocalOperands::unused ? nullptr : &ir->literals[operands.literal];
 
-    // ----------------------------------------------
-    // Load the params for executeFusedLocalOperation
-    // ----------------------------------------------
+    const auto stackOffset = static_cast<MemoryOffset>((readsStack ? stackSize - 1 : stackSize) * JIT_SLOT_SIZE_BYTES);
+    const auto useCppHelper = nextInternalJumpLabel++;
+    const auto skipCppHelper = nextInternalJumpLabel++;
 
+    // Locals can still have an unknown representation. Emit the
+    // helper path only if native code needs a runtime check that can reach it.
+    bool mustCheckTypeAtRuntime = false;
+    const bool emittedDirectOperation = emitDirectFusedDoubleOperation(
+        instructionIndex, stackValueType, stackOffset, destinationType, useCppHelper, mustCheckTypeAtRuntime);
+    if (emittedDirectOperation)
+    {
+        if (!mustCheckTypeAtRuntime)
+            return true;
+
+        jump(skipCppHelper);
+        markJumpTarget(useCppHelper);
+    }
+
+    // ----------------------------------------------------------
+    // Load the params for much slower executeFusedLocalOperation
+    // when operation couldn't be done direclty
+    // ----------------------------------------------------------
     loadJitContextPointerIntoRDI();
 
     // --------------------------------------
@@ -365,16 +567,15 @@ bool Assembler::emitExecuteFusedLocalOperation(std::size_t index)
     // ----------------------------------------------------------------
     if (readsStack || pushesResult)
     {
-        const std::size_t slotIndex = readsStack ? stackSize - 1 : stackSize;
-        lea(R8, qword_ptr(RSP, static_cast<MemoryOffset>(slotIndex * JIT_SLOT_SIZE_BYTES)));
+        lea(R8, qword_ptr(RSP, stackOffset));
     }
     else
         mov(R8, Immediate(0));
 
     // -----------------------------------------------------------------------
-    // Load `JitValueType stackType` (integer, a double, or an index) into R9
+    // Load `JitValueType stackValueType` (integer, a double, or an index) into R9
     // -----------------------------------------------------------------------
-    mov(R9, Immediate(static_cast<std::uint32_t>(stackType)));
+    mov(R9, Immediate(static_cast<std::uint32_t>(stackValueType)));
 
     // ----------------------------------------
     // Call executeFusedLocalOperation
@@ -392,8 +593,11 @@ bool Assembler::emitExecuteFusedLocalOperation(std::size_t index)
         // Turning 1 into zero lets jumpIfZero implement the `otherwise` branch.
         // ----------------------------------------------------------------------------------
         sub(EAX, Immediate(1));
-        jumpIfZero(EAX, ir->instructions[index + 1].operand);
+        jumpIfZero(EAX, ir->instructions[instructionIndex + 1].operand);
     }
+
+    if (emittedDirectOperation)
+        markJumpTarget(skipCppHelper);
 
     return true;
 }

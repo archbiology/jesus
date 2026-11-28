@@ -10,6 +10,8 @@
 #   [7408178] Step 124 — Initial benchmark
 #   [4eb29ca] Step 125 — Beating Python (Fused local operations; goto; Smaller Value representation; shared locals)
 #   [769020f] Step 126 — Beating PHP (Reduced stack traffic; fused comparisons and arithmetic; Optimized hot paths)
+#   [2dfa1b5] Step 143 — Mandelbrot completely running in JIT (JIT goes from Step/PR 132 to Step 143 )
+#   [       ] Step 144 — Executing loop operations directly, without calling a method each iteration.
 #
 #
 # Results:
@@ -18,8 +20,11 @@
 #   AST [769020f]:   2m19.251 s
 #
 #   VM  [7408178]:    3m6.766 s
-#   VM  [a1c663c]:     30.652 s
+#   VM  [4eb29ca]:     30.652 s
 #   VM  [769020f]:      6.891 s
+#
+#   JIT [2dfa1b5]:     19.828 s
+#   JIT [       ]:      3.220 s
 #
 #
 # Machine:

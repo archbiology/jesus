@@ -11,12 +11,23 @@ namespace
 
 Value &localAt(JitContext *ctx, std::uint32_t baseSlot, std::uint32_t slot)
 {
-    const std::size_t index = static_cast<std::size_t>(baseSlot) + slot;
+    // --------------------------------------------------------
+    // JitEngine::execute already resized it to the right size
+    // --------------------------------------------------------
+    return ctx->jitRuntimeStack[static_cast<std::size_t>(baseSlot) + slot];
+}
 
-    if (index >= ctx->jitRuntimeStack.size())
-        ctx->jitRuntimeStack.resize(index + 1);
-
-    return ctx->jitRuntimeStack[index];
+/** @brief Calculates the byte offset of a Value field within a given slot.
+ *
+ * If Value::*field is &Value::doubleValue, for example, the offset
+ * points to the .doubleValue field in that slot.
+ */
+template <typename ValueField> MemoryOffset fieldOffsetInSlot(std::uint32_t slot, ValueField Value::*field)
+{
+    const Value value;
+    const auto address = reinterpret_cast<std::uintptr_t>(&(value.*field));
+    const auto base = reinterpret_cast<std::uintptr_t>(&value);
+    return static_cast<MemoryOffset>(slot * sizeof(Value) + (address - base));
 }
 
 } // namespace
@@ -67,6 +78,32 @@ extern "C" std::uint32_t JitRuntimeCopyLocalValue(JitContext *ctx, std::uint32_t
 {
     ctx->globals.push_back(localAt(ctx, baseSlot, slot));
     return static_cast<std::uint32_t>(ctx->globals.size() - 1);
+}
+
+void Assembler::emitLoadCurrentMethodBaseSlotAddressIntoRDX()
+{
+    // --------------------------------------
+    // Load the JitContext address into RDI.
+    // Calculate [rdi + offset],
+    // and load that base address into RDX
+    // --------------------------------------
+    loadJitContextPointerIntoRDI();
+    mov(RDX, qword_ptr(RDI, offsetof(JitContext, currentMethodBaseSlotAddress)));
+}
+
+MemoryOffset Assembler::typeFlagsOffset(std::uint32_t slot)
+{
+    return fieldOffsetInSlot(slot, &Value::__flags);
+}
+
+QwordMemory Assembler::doubleValueOffset(Register baseRegister, std::uint32_t slot)
+{
+    return qword_ptr(baseRegister, fieldOffsetInSlot(slot, &Value::doubleValue));
+}
+
+DwordMemory Assembler::intValueOffset(Register baseRegister, std::uint32_t slot)
+{
+    return dword_ptr(baseRegister, fieldOffsetInSlot(slot, &Value::intValue));
 }
 
 void Assembler::recordLocalVarType(std::uint32_t index, JitValueType valueType)
